@@ -11,10 +11,10 @@ guidelines](./CONTRIBUTING.md)
 
 ## Support
 
-This repository is maintained by [.NET SDK
-maintainers](https://github.com/orgs/open-telemetry/teams/dotnet-maintainers)
-team and [.NET SDK
-approvers](https://github.com/orgs/open-telemetry/teams/dotnet-approvers) can
+This repository is maintained by [C++ SDK
+maintainers](https://github.com/orgs/open-telemetry/teams/cpp-maintainers)
+team and [C++ SDK
+approvers](https://github.com/orgs/open-telemetry/teams/cpp-approvers) can
 help with reviews and code approval. However, as individual components are
 developed by numerous contributors, approvers and maintainers are not expected
 to directly contribute to every component.
