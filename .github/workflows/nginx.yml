@@ -1,4 +1,4 @@
-name: CI
+name: nginx instrumentation CI
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  test-agent:
+  test-nginx-agent:
     name: Test nginx agent
     runs-on: ubuntu-20.04
     steps:
@@ -15,20 +15,21 @@ jobs:
         uses: actions/checkout@v2
       - name: setup
         run: |
-          sudo ./ci/setup_test_environment.sh
+          sudo ./instrumentation/nginx/ci/setup_test_environment.sh
       - name: build docker images
         run: |
+          cd instrumentation/nginx
           docker build -t otel-nginx-test/nginx -f test/Dockerfile .
           docker build -t otel-nginx-test/express-backend -f test/backend/simple_express/Dockerfile test/backend/simple_express
       - name: run tests
         run: |
-          cd test/instrumentation
+          cd instrumentation/nginx/test/instrumentation
           mix local.hex --force --if-missing
           mix local.rebar --force --if-missing
           mix deps.get
           mix test
-  build-agent:
-    name: Build module
+  build-nginx-agent:
+    name: Build nginx agent
     runs-on: ubuntu-20.04
     timeout-minutes: 30
     steps:
@@ -36,7 +37,7 @@ jobs:
         uses: actions/checkout@v2
       - name: setup
         run: |
-          sudo ./ci/setup_ci_environment.sh
+          sudo ./instrumentation/nginx/ci/setup_ci_environment.sh
       - name: checkout grpc
         uses: actions/checkout@v2
         with: 
@@ -47,6 +48,7 @@ jobs:
           submodules: "recursive"
       - name: build grpc
         run: |
+          cd instrumentation/nginx
           ./ci/grpc.sh
       - name: checkout opentelemetry-cpp
         uses: actions/checkout@v2
@@ -57,12 +59,14 @@ jobs:
           submodules: "recursive"
       - name: build opentelemetry-cpp
         run: |
+          cd instrumentation/nginx
           ./ci/otel-cpp.sh 
       - name: build nginx module
         run: |
+          cd instrumentation/nginx
           ./ci/build_module.sh
       - name: Upload module artifact
         uses: actions/upload-artifact@v2
         with:
           name: otel-nginx
-          path: build/otel_ngx_module.so
+          path: ./instrumentation/nginx/build/otel_ngx_module.so
