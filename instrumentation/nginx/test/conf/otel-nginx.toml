@@ -1,0 +1,19 @@
+exporter = "otlp"
+processor = "simple"
+
+[exporters.otlp]
+host = "collector"
+port = 4317
+
+[exporters.jaeger]
+host = "localhost"
+port = 9090
+transport = "thrift_udp"
+
+[processors.batch]
+max_queue_size = 2048
+schedule_delay_millis = 5000
+max_export_batch_size = 512
+
+[service]
+name = "nginx-proxy"

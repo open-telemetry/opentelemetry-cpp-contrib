@@ -1,0 +1,17 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+exporters:
+  logging:
+    logLevel: debug
+  file:
+    path: /trace.json
+processors:
+  batch:
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [logging, file]
