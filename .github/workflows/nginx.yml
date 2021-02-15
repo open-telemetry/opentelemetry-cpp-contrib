@@ -44,7 +44,7 @@ jobs:
           repository: "grpc/grpc"
           ref: "v1.35.0"
           fetch-depth: 1
-          path: "grpc"
+          path: "instrumentation/nginx/grpc"
           submodules: "recursive"
       - name: build grpc
         run: |
@@ -55,7 +55,7 @@ jobs:
         with: 
           repository: "open-telemetry/opentelemetry-cpp"
           fetch-depth: 1
-          path: "opentelemetry-cpp"
+          path: "instrumentation/nginx/opentelemetry-cpp"
           submodules: "recursive"
       - name: build opentelemetry-cpp
         run: |
