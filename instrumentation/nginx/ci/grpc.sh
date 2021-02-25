@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -e
+
+mkdir -p grpc/cmake/build
+cd grpc/cmake/build
+cmake -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF \
+  -DgRPC_ZLIB_PROVIDER=package \
+  -DgRPC_SSL_PROVIDER=package \
+  -DgRPC_RE2_PROVIDER=package \
+  -DgRPC_BUILD_GRPC_NODE_PLUGIN=OFF \
+  -DgRPC_BUILD_GRPC_OBJECTIVE_C_PLUGIN=OFF \
+  -DgRPC_BUILD_GRPC_PHP_PLUGIN=OFF \
+  -DgRPC_BUILD_GRPC_PHP_PLUGIN=OFF \
+  -DgRPC_BUILD_GRPC_PYTHON_PLUGIN=OFF \
+  -DgRPC_BUILD_GRPC_RUBY_PLUGIN=OFF \
+  -DgRPC_BUILD_CSHARP_EXTENSIONS=OFF ../..
+make -j2
+sudo make install
