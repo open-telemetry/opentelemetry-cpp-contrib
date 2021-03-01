@@ -11,13 +11,16 @@ guidelines](./CONTRIBUTING.md)
 
 ## Support
 
-This repository is maintained by [C++ SDK
-maintainers](https://github.com/orgs/open-telemetry/teams/cpp-maintainers)
-team and [C++ SDK
-approvers](https://github.com/orgs/open-telemetry/teams/cpp-approvers) can
-help with reviews and code approval. However, as individual components are
-developed by numerous contributors, approvers and maintainers are not expected
-to directly contribute to every component.
+This repository accepts public contributions. Individual components are
+developed by numerous contributors. Approvers and maintainers of the main
+OpenTelemetry C++ SDK repository are not expected to directly contribute
+to every component.
+
+GitHub `CODEOWNER`S file is a simple way to automate away some of the pain
+associated with the review system on github, by automatically assigning
+reviewers to a pull request based on which files were modified. Individual
+components are encouraged to propose changes to `CODEOWNER`S file following
+the process [described here](https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/about-code-owners).
 
 This repository is great for community supported components. Vendor specific
 code that requires a higher supportability guarantees needs to be placed in
