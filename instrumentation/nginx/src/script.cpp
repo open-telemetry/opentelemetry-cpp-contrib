@@ -24,3 +24,12 @@ bool CompileScript(ngx_conf_t* conf, ngx_str_t pattern, NgxCompiledScript* scrip
   return ngx_http_script_compile(&compilation) == NGX_OK;
 }
 
+bool CompileScriptAttribute(
+  ngx_conf_t* conf, ScriptAttributeDeclaration declaration,
+  CompiledScriptAttribute* compiledAttribute) {
+  if (!CompileScript(conf, declaration.attribute, &compiledAttribute->key)) {
+    return false;
+  }
+
+  return CompileScript(conf, declaration.script, &compiledAttribute->value);
+}

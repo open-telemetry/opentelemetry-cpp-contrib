@@ -292,4 +292,17 @@ defmodule InstrumentationTest do
 
     assert status == 200
   end
+
+  test "Spans with custom attributes are produced", %{
+    trace_file: trace_file
+  } do
+    %HTTPoison.Response{status_code: status} = HTTPoison.get!("#{@host}/attrib")
+    [trace] = read_traces(trace_file, 1)
+    [span] = collect_spans(trace)
+    assert attrib(span, "test.attrib.custom") == "local"
+    assert attrib(span, "test.attrib.global") == "global"
+    assert attrib(span, "test.attrib.script") =~ ~r/\d+\.\d+/
+    assert status == 200
+  end
+
 end
