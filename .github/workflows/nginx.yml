@@ -38,7 +38,14 @@ jobs:
       - name: setup
         run: |
           sudo ./instrumentation/nginx/ci/setup_ci_environment.sh
+      - name: cache grpc checkout
+        id: cache-grpc-src
+        uses: actions/cache@v2
+        with:
+          path: "instrumentation/nginx/grpc"
+          key: ${{ runner.os }}-grpc-src
       - name: checkout grpc
+        if: steps.cache-grpc-src.outputs.cache-hit != 'true'
         uses: actions/checkout@v2
         with: 
           repository: "grpc/grpc"
@@ -46,7 +53,14 @@ jobs:
           fetch-depth: 1
           path: "instrumentation/nginx/grpc"
           submodules: "recursive"
+      - name: cache grpc build
+        id: cache-grpc-build
+        uses: actions/cache@v2
+        with:
+          path: "install/grpc"
+          key: ${{ runner.os}}-grpc-build
       - name: build grpc
+        if: steps.cache-grpc-build.outputs.cache-hit != 'true'
         run: |
           cd instrumentation/nginx
           ./ci/grpc.sh
