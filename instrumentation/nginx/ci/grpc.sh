@@ -5,7 +5,6 @@ set -e
 mkdir -p grpc/cmake/build
 cd grpc/cmake/build
 cmake -DgRPC_INSTALL=ON \
-  -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install/grpc \
   -DgRPC_BUILD_TESTS=OFF \
   -DgRPC_ZLIB_PROVIDER=package \
   -DgRPC_SSL_PROVIDER=package \
