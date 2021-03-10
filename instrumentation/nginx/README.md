@@ -9,8 +9,11 @@ Supported propagation types:
 ## Requirements
 
 * OS: Linux
-* Nginx: latest stable - [1.18.0](http://nginx.org/en/download.html)
-* Nginx modules: ngx_http_upstream_module (proxy_pass), ngx_http_fastcgi_module (fastcgi_pass)
+* Nginx
+  * latest stable - [1.18.0](http://nginx.org/en/download.html)
+* Nginx modules
+  * ngx_http_upstream_module (proxy_pass)
+  * ngx_http_fastcgi_module (fastcgi_pass)
 
 Additional platforms and/or versions coming soon.
 
