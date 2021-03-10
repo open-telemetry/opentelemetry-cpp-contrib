@@ -9,8 +9,11 @@ Supported propagation types:
 ## Requirements
 
 * OS: Linux
-* Nginx: latest stable - [1.18.0](http://nginx.org/en/download.html)
-* Nginx modules: ngx_http_upstream_module (proxy_pass), ngx_http_fastcgi_module (fastcgi_pass)
+* Nginx
+  * latest stable - [1.18.0](http://nginx.org/en/download.html)
+* Nginx modules
+  * ngx_http_upstream_module (proxy_pass)
+  * ngx_http_fastcgi_module (fastcgi_pass)
 
 Additional platforms and/or versions coming soon.
 
@@ -39,6 +42,8 @@ http {
     location = /b3 {
       opentelemetry_operation_name my_other_backend;
       opentelemetry_propagate b3;
+      # Adds a custom attribute to the span
+      opentelemetry_attribute "req.time" "$msec";
       proxy_pass http://localhost:3501/;
     }
 
@@ -80,6 +85,15 @@ Enable or disable OpenTelemetry (default: enabled).
 
 - **required**: `false`
 - **syntax**: `opentelemetry on|off`
+- **block**: `http`, `server`, `location`
+
+### `opentelemetry_attribute`
+
+Adds a custom attribute to the span. It is possible to access nginx variables, e.g.
+`opentelemetry_attribute "my.user.agent" "$http_user_agent"`.
+
+- **required**: `false`
+- **syntax**: `opentelemetry_attribute <key> <value>`
 - **block**: `http`, `server`, `location`
 
 ### `opentelemetry_config`
@@ -146,9 +160,8 @@ Dependencies:
 * [Docker Compose](https://docs.docker.com/compose/install/)
 
 ```
-cd test
-docker build -t otel-nginx-test/nginx -f Dockerfile .
-docker build -t otel-nginx-test/express-backend -f backend/simple_express/Dockerfile backend/simple_express
-cd instrumentation
+docker build -t otel-nginx-test/nginx -f test/Dockerfile .
+docker build -t otel-nginx-test/express-backend -f test/backend/simple_express/Dockerfile test/backend/simple_express
+cd test/instrumentation
 mix test
 ```

@@ -4,7 +4,8 @@ set -e
 
 mkdir -p grpc/cmake/build
 cd grpc/cmake/build
-cmake -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF \
+cmake -DgRPC_INSTALL=ON \
+  -DgRPC_BUILD_TESTS=OFF \
   -DgRPC_ZLIB_PROVIDER=package \
   -DgRPC_SSL_PROVIDER=package \
   -DgRPC_RE2_PROVIDER=package \

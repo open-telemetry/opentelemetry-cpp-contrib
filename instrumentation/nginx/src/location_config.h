@@ -11,6 +11,7 @@ struct OtelNgxLocationConf {
   ngx_flag_t enabled = NGX_CONF_UNSET;
   TracePropagationType propagationType = TracePropagationW3C;
   NgxCompiledScript operationNameScript;
+  ngx_array_t* customAttributes = nullptr;
 };
 
 inline OtelNgxLocationConf* GetOtelLocationConf(ngx_http_request_t* req) {

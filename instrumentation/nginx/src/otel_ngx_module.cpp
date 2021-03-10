@@ -1,6 +1,7 @@
 #include <opentelemetry/nostd/mpark/variant.h>
 #include <opentelemetry/sdk/trace/processor.h>
 #include <opentelemetry/trace/span.h>
+#include <unordered_map>
 #include <vector>
 
 extern "C" {
@@ -29,27 +30,15 @@ namespace nostd = opentelemetry::nostd;
 namespace sdktrace = opentelemetry::sdk::trace;
 namespace otlp = opentelemetry::exporter::otlp;
 
-struct OtelNgxScriptAttribute {
-  OtelNgxScriptAttribute(nostd::string_view attribute, nostd::string_view script)
-    : attribute(ToNgxString(attribute)), script(ToNgxString(script)) {}
-  ngx_str_t attribute;
-  ngx_str_t script;
-};
-
 constexpr char kOtelCtxVarPrefix[] = "otel_ctxvar_";
 
-const OtelNgxScriptAttribute kDefaultScriptAttributes[] = {
+const ScriptAttributeDeclaration kDefaultScriptAttributes[] = {
   {"http.scheme", "$scheme"},
 };
 
 struct OtelMainConf {
   ngx_array_t* scriptAttributes;
   OtelNgxAgentConfig agentConfig;
-};
-
-struct ScriptAttribute {
-  NgxCompiledScript key;
-  NgxCompiledScript value;
 };
 
 nostd::shared_ptr<trace::Tracer> GetTracer() {
@@ -70,7 +59,7 @@ nostd::string_view NgxHttpFlavor(ngx_http_request_t* req) {
 }
 
 static ngx_int_t OtelGetContextVar(ngx_http_request_t*, ngx_http_variable_value_t*, uintptr_t) {
-  // Filled out on cotext creation.
+  // Filled out on context creation.
   return NGX_OK;
 }
 
@@ -245,9 +234,14 @@ ngx_int_t StartNgxSpan(ngx_http_request_t* req) {
 
 void AddScriptAttributes(
   trace::Span* span, const ngx_array_t* attributes, ngx_http_request_t* req) {
-  ScriptAttribute* elements = (ScriptAttribute*)attributes->elts;
+
+  if (!attributes) {
+    return;
+  }
+
+  CompiledScriptAttribute* elements = (CompiledScriptAttribute*)attributes->elts;
   for (ngx_uint_t i = 0; i < attributes->nelts; i++) {
-    ScriptAttribute* attribute = &elements[i];
+    CompiledScriptAttribute* attribute = &elements[i];
     ngx_str_t key = ngx_null_string;
     ngx_str_t value = ngx_null_string;
 
@@ -272,28 +266,12 @@ ngx_int_t FinishNgxSpan(ngx_http_request_t* req) {
   span->SetAttribute("http.status_code", req->headers_out.status);
 
   AddScriptAttributes(span.get(), GetOtelMainConf(req)->scriptAttributes, req);
+  AddScriptAttributes(span.get(), GetOtelLocationConf(req)->customAttributes, req);
 
   span->UpdateName(GetOperationName(req));
 
   span->End();
   return NGX_DECLINED;
-}
-
-bool RegisterScriptAttribute(
-  ngx_conf_t* conf, ngx_array_t* attributes, OtelNgxScriptAttribute attrib) {
-  ScriptAttribute* scriptAttrib = (ScriptAttribute*)ngx_array_push(attributes);
-
-  if (scriptAttrib == nullptr) {
-    return false;
-  }
-
-  new (scriptAttrib) ScriptAttribute();
-
-  if (!CompileScript(conf, attrib.attribute, &scriptAttrib->key)) {
-    return false;
-  }
-
-  return CompileScript(conf, attrib.script, &scriptAttrib->value);
 }
 
 static ngx_int_t InitModule(ngx_conf_t* conf) {
@@ -330,14 +308,23 @@ static ngx_int_t InitModule(ngx_conf_t* conf) {
 
   otelMainConf->scriptAttributes = ngx_array_create(
     conf->pool, sizeof(kDefaultScriptAttributes) / sizeof(kDefaultScriptAttributes[0]),
-    sizeof(ScriptAttribute));
+    sizeof(CompiledScriptAttribute));
 
   if (otelMainConf->scriptAttributes == nullptr) {
     return NGX_ERROR;
   }
 
-  for (const auto& scriptAttribute : kDefaultScriptAttributes) {
-    if (!RegisterScriptAttribute(conf, otelMainConf->scriptAttributes, scriptAttribute)) {
+  for (const auto& attrib : kDefaultScriptAttributes) {
+    CompiledScriptAttribute* compiledAttrib =
+      (CompiledScriptAttribute*)ngx_array_push(otelMainConf->scriptAttributes);
+
+    if (compiledAttrib == nullptr) {
+      return false;
+    }
+
+    new (compiledAttrib) CompiledScriptAttribute();
+
+    if (!CompileScriptAttribute(conf, attrib, compiledAttrib)) {
       return NGX_ERROR;
     }
   }
@@ -364,6 +351,44 @@ static char* MergeLocConf(ngx_conf_t*, void* parent, void* child) {
   OtelNgxLocationConf* conf = (OtelNgxLocationConf*)child;
 
   ngx_conf_merge_value(conf->enabled, prev->enabled, 1);
+
+  if (prev->customAttributes && !conf->customAttributes) {
+    conf->customAttributes = prev->customAttributes;
+  } else if (prev->customAttributes && conf->customAttributes) {
+    std::unordered_map<nostd::string_view, CompiledScriptAttribute> mergedAttributes;
+
+    for (ngx_uint_t i = 0; i < prev->customAttributes->nelts; i++) {
+      CompiledScriptAttribute* attrib =
+        &((CompiledScriptAttribute*)prev->customAttributes->elts)[i];
+      mergedAttributes[FromNgxString(attrib->key.pattern)] = *attrib;
+    }
+
+    for (ngx_uint_t i = 0; i < conf->customAttributes->nelts; i++) {
+      CompiledScriptAttribute* attrib =
+        &((CompiledScriptAttribute*)conf->customAttributes->elts)[i];
+      mergedAttributes[FromNgxString(attrib->key.pattern)] = *attrib;
+    }
+
+    ngx_uint_t index = 0;
+    for (const auto& kv : mergedAttributes) {
+      if (index == conf->customAttributes->nelts) {
+        CompiledScriptAttribute* attribute =
+          (CompiledScriptAttribute*)ngx_array_push(conf->customAttributes);
+
+        if (!attribute) {
+          return (char*)NGX_CONF_ERROR;
+        }
+
+        *attribute = kv.second;
+      } else {
+        CompiledScriptAttribute* attributes =
+          (CompiledScriptAttribute*)conf->customAttributes->elts;
+        attributes[index] = kv.second;
+      }
+
+      index++;
+    }
+  }
 
   return NGX_CONF_OK;
 }
@@ -501,6 +526,34 @@ char* OtelNgxSetConfig(ngx_conf_t* conf, ngx_command_t*, void*) {
   return NGX_CONF_OK;
 }
 
+static char* OtelNgxSetCustomAttribute(ngx_conf_t* conf, ngx_command_t*, void* userConf) {
+  OtelNgxLocationConf* locConf = (OtelNgxLocationConf*)userConf;
+
+  if (!locConf->customAttributes) {
+    locConf->customAttributes = ngx_array_create(conf->pool, 1, sizeof(CompiledScriptAttribute));
+
+    if (!locConf->customAttributes) {
+      return (char*)NGX_CONF_ERROR;
+    }
+  }
+
+  CompiledScriptAttribute* compiledAttribute =
+    (CompiledScriptAttribute*)ngx_array_push(locConf->customAttributes);
+
+  if (!compiledAttribute) {
+    return (char*)NGX_CONF_ERROR;
+  }
+
+  ngx_str_t* args = (ngx_str_t*)conf->args->elts;
+
+  ScriptAttributeDeclaration attrib{args[1], args[2]};
+  if (!CompileScriptAttribute(conf, attrib, compiledAttribute)) {
+    return (char*)NGX_CONF_ERROR;
+  }
+
+  return NGX_CONF_OK;
+}
+
 static ngx_command_t kOtelNgxCommands[] = {
   {
     ngx_string("opentelemetry_propagate"),
@@ -522,6 +575,14 @@ static ngx_command_t kOtelNgxCommands[] = {
     ngx_string("opentelemetry_config"),
     NGX_HTTP_MAIN_CONF | NGX_CONF_TAKE1,
     OtelNgxSetConfig,
+    NGX_HTTP_LOC_CONF_OFFSET,
+    0,
+    nullptr,
+  },
+  {
+    ngx_string("opentelemetry_attribute"),
+    NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE2,
+    OtelNgxSetCustomAttribute,
     NGX_HTTP_LOC_CONF_OFFSET,
     0,
     nullptr,
