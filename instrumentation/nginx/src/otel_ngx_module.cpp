@@ -355,18 +355,18 @@ static char* MergeLocConf(ngx_conf_t*, void* parent, void* child) {
   if (prev->customAttributes && !conf->customAttributes) {
     conf->customAttributes = prev->customAttributes;
   } else if (prev->customAttributes && conf->customAttributes) {
-    std::unordered_map<nostd::string_view, CompiledScriptAttribute*> mergedAttributes;
+    std::unordered_map<nostd::string_view, CompiledScriptAttribute> mergedAttributes;
 
     for (ngx_uint_t i = 0; i < prev->customAttributes->nelts; i++) {
       CompiledScriptAttribute* attrib =
         &((CompiledScriptAttribute*)prev->customAttributes->elts)[i];
-      mergedAttributes[FromNgxString(attrib->key.pattern)] = attrib;
+      mergedAttributes[FromNgxString(attrib->key.pattern)] = *attrib;
     }
 
     for (ngx_uint_t i = 0; i < conf->customAttributes->nelts; i++) {
       CompiledScriptAttribute* attrib =
         &((CompiledScriptAttribute*)conf->customAttributes->elts)[i];
-      mergedAttributes[FromNgxString(attrib->key.pattern)] = attrib;
+      mergedAttributes[FromNgxString(attrib->key.pattern)] = *attrib;
     }
 
     ngx_uint_t index = 0;
@@ -379,12 +379,14 @@ static char* MergeLocConf(ngx_conf_t*, void* parent, void* child) {
           return (char*)NGX_CONF_ERROR;
         }
 
-        *attribute = *kv.second;
+        *attribute = kv.second;
       } else {
         CompiledScriptAttribute* attributes =
           (CompiledScriptAttribute*)conf->customAttributes->elts;
-        attributes[index++] = *kv.second;
+        attributes[index] = kv.second;
       }
+
+      index++;
     }
   }
 
