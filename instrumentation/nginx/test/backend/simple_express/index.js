@@ -6,7 +6,6 @@ const traceparentRegex = /00-[0-9a-f]{32}-[0-9a-f]{16}-0[0-1]/;
 
 app.get('/', (req, res) => {
   let traceparent = req.header("traceparent");
-  console.log(req.headers);
   if (!traceparentRegex.test(traceparent)) {
     throw "Missing traceparent header";
   }
