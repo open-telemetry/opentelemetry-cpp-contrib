@@ -136,7 +136,7 @@ defmodule InstrumentationTest do
       ])
 
     %{"traceparent" => traceparent} = Jason.decode!(body)
-    ["00", trace_id, span_id, "00"] = String.split(traceparent, "-")
+    ["00", trace_id, span_id, "01"] = String.split(traceparent, "-")
 
     [trace] = read_traces(trace_file, 1)
     [span] = collect_spans(trace)
