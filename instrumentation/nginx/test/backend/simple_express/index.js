@@ -2,7 +2,7 @@ const express = require('express')
 const app = express()
 const port = 3500
 
-const traceparentRegex = /00-[0-9a-f]{32}-[0-9a-f]{16}-00/;
+const traceparentRegex = /00-[0-9a-f]{32}-[0-9a-f]{16}-0[0-1]/;
 
 app.get('/', (req, res) => {
   let traceparent = req.header("traceparent");
