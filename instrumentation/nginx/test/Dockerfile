@@ -15,7 +15,7 @@ RUN git clone --shallow-submodules --depth 1 --recurse-submodules -b v1.35.0 htt
   && make -j2 \
   && make install
 
-RUN git clone --shallow-submodules --depth 1 --recurse-submodules \
+RUN git clone --shallow-submodules --depth 1 --recurse-submodules -b v0.3.0 \
   https://github.com/open-telemetry/opentelemetry-cpp.git \
   && cd opentelemetry-cpp \
   && mkdir build \
@@ -27,7 +27,7 @@ RUN git clone --shallow-submodules --depth 1 --recurse-submodules \
 RUN mkdir -p otel-nginx/build && mkdir -p otel-nginx/src
 COPY src otel-nginx/src/
 COPY CMakeLists.txt nginx.cmake otel-nginx/
-RUN ls otel-nginx && cd otel-nginx/build \
+RUN cd otel-nginx/build \
   && cmake -DCMAKE_INSTALL_PREFIX=/usr/share/nginx/modules .. \
   && make -j2 \
   && make install

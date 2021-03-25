@@ -1,6 +1,6 @@
 include(ExternalProject)
 
-set(NGINX_VER "1.18.0")
+set(NGINX_VER "1.18.0" CACHE STRING "Nginx version to compile against")
 
 ExternalProject_Add(project_nginx
   URL "http://nginx.org/download/nginx-${NGINX_VER}.tar.gz"
