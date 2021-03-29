@@ -38,7 +38,14 @@ jobs:
       - name: setup
         run: |
           sudo ./instrumentation/nginx/ci/setup_ci_environment.sh
+      - name: cache grpc source
+        id: checkout-grpc
+        uses: actions/cache@v2
+        with:
+          path: instrumentation/nginx/grpc
+          key: checkout-grpc
       - name: checkout grpc
+        if: steps.checkout-grpc.outputs.cache-hit != 'true'
         uses: actions/checkout@v2
         with: 
           repository: "grpc/grpc"
