@@ -57,6 +57,7 @@ jobs:
           cd instrumentation/nginx
           mkdir -p /tmp/otel_ngx/
           docker buildx build -f test/Dockerfile \
+          --target export \
           --cache-from type=local,src=/tmp/.buildx-cache \
           --output /tmp/otel_ngx \
           .

@@ -43,9 +43,6 @@ RUN cd otel-nginx/build \
   && make -j2 \
   && make install
 
-RUN pwd
-RUN ls /
-
 FROM base AS export
 COPY --from=base /otel-nginx/build/otel_ngx_module.so .
 
