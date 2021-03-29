@@ -16,11 +16,37 @@ jobs:
       - name: setup
         run: |
           sudo ./instrumentation/nginx/ci/setup_test_environment.sh
-      - name: build docker images
-        run: |
-          cd instrumentation/nginx
-          docker build -t otel-nginx-test/nginx -f test/Dockerfile .
-          docker build -t otel-nginx-test/express-backend -f test/backend/simple_express/Dockerfile test/backend/simple_express
+      - name: setup buildx
+        id: buildx
+        uses: docker-setup/setup-buildx-action@master
+        with:
+          install: true
+      - name: cache docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: nginx-${{ github.sha }}
+          restore-keys: nginx
+      - name: build express backend docker
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          builder: ${{ steps.buildx.outputs.name }}
+          file: test/backend/simple_express/Dockerfile
+          push: false
+          tags: otel-nginx-test/express-backend
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
+      - name: build nginx docker
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          builder: ${{ steps.buildx.outputs.name }}
+          file: test/Dockerfile
+          push: false
+          tags: otel-nginx-test/nginx
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
       - name: run tests
         run: |
           cd instrumentation/nginx/test/instrumentation
@@ -28,52 +54,3 @@ jobs:
           mix local.rebar --force --if-missing
           mix deps.get
           mix test
-  build-nginx-agent:
-    name: Build nginx agent
-    runs-on: ubuntu-20.04
-    timeout-minutes: 30
-    steps:
-      - name: checkout otel nginx
-        uses: actions/checkout@v2
-      - name: setup
-        run: |
-          sudo ./instrumentation/nginx/ci/setup_ci_environment.sh
-      - name: cache grpc source
-        id: checkout-grpc
-        uses: actions/cache@v2
-        with:
-          path: instrumentation/nginx/grpc
-          key: checkout-grpc
-      - name: checkout grpc
-        if: steps.checkout-grpc.outputs.cache-hit != 'true'
-        uses: actions/checkout@v2
-        with: 
-          repository: "grpc/grpc"
-          ref: "v1.35.0"
-          fetch-depth: 1
-          path: "instrumentation/nginx/grpc"
-          submodules: "recursive"
-      - name: build grpc
-        run: |
-          cd instrumentation/nginx
-          ./ci/grpc.sh
-      - name: checkout opentelemetry-cpp
-        uses: actions/checkout@v2
-        with: 
-          repository: "open-telemetry/opentelemetry-cpp"
-          fetch-depth: 1
-          path: "instrumentation/nginx/opentelemetry-cpp"
-          submodules: "recursive"
-      - name: build opentelemetry-cpp
-        run: |
-          cd instrumentation/nginx
-          ./ci/otel-cpp.sh 
-      - name: build nginx module
-        run: |
-          cd instrumentation/nginx
-          ./ci/build_module.sh
-      - name: Upload module artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: otel-nginx
-          path: ./instrumentation/nginx/build/otel_ngx_module.so
