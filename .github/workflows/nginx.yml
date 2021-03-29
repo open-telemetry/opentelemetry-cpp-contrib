@@ -33,7 +33,7 @@ jobs:
           context: instrumentation/nginx/test/backend/simple_express
           builder: ${{ steps.buildx.outputs.name }}
           file: instrumentation/nginx/test/backend/simple_express/Dockerfile
-          push: false
+          push: true
           tags: otel-nginx-test/express-backend
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
