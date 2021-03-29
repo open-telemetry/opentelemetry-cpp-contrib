@@ -43,4 +43,7 @@ RUN cd otel-nginx/build \
   && make -j2 \
   && make install
 
+RUN ls otel-nginx/build
+RUN ls /usr/share/nginx/modules
+
 CMD ["/usr/sbin/nginx", "-g", "daemon off;"]
