@@ -10,7 +10,7 @@ RUN apt-get update \
 
 RUN echo "deb http://nginx.org/packages/ubuntu `lsb_release -cs` nginx" \
   | tee /etc/apt/sources.list.d/nginx.list \
-  echo -e "Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900\n" \
+  && echo -e "Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900\n" \
   | tee /etc/apt/preferences.d/99nginx \
   && curl -o /tmp/nginx_signing.key https://nginx.org/keys/nginx_signing.key \
   && mv /tmp/nginx_signing.key /etc/apt/trusted.gpg.d/nginx_signing.asc \
