@@ -11,7 +11,11 @@ RUN git clone --shallow-submodules --depth 1 --recurse-submodules -b v1.35.0 htt
   && cd grpc \
   && mkdir -p cmake/build \
   && cd cmake/build \
-  && cmake -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DgRPC_BUILD_CSHARP_EXTENSIONS=OFF ../.. \
+  && cmake -DCMAKE_BUILD_TYPE=Release \
+    -DgRPC_INSTALL=ON \
+    -DgRPC_BUILD_TESTS=OFF \
+    -DgRPC_BUILD_CSHARP_EXTENSIONS=OFF \
+    ../.. \
   && make -j2 \
   && make install
 
@@ -20,7 +24,12 @@ RUN git clone --shallow-submodules --depth 1 --recurse-submodules -b v0.3.0 \
   && cd opentelemetry-cpp \
   && mkdir build \
   && cd build \
-  && cmake -DWITH_OTLP=ON -DBUILD_TESTING=OFF -DWITH_EXAMPLES=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON .. \
+  && cmake -DCMAKE_BUILD_TYPE=Release \
+    -DWITH_OTLP=ON \
+    -DBUILD_TESTING=OFF \
+    -DWITH_EXAMPLES=OFF \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+    .. \
   && make -j2 \
   && make install
 
@@ -28,7 +37,9 @@ RUN mkdir -p otel-nginx/build && mkdir -p otel-nginx/src
 COPY src otel-nginx/src/
 COPY CMakeLists.txt nginx.cmake otel-nginx/
 RUN cd otel-nginx/build \
-  && cmake -DCMAKE_INSTALL_PREFIX=/usr/share/nginx/modules .. \
+  && cmake -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/usr/share/nginx/modules \
+    .. \
   && make -j2 \
   && make install
 
