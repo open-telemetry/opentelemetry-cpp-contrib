@@ -15,6 +15,12 @@ RUN git clone --shallow-submodules --depth 1 --recurse-submodules -b v1.35.0 htt
     -DgRPC_INSTALL=ON \
     -DgRPC_BUILD_TESTS=OFF \
     -DgRPC_BUILD_CSHARP_EXTENSIONS=OFF \
+    -DgRPC_BUILD_GRPC_NODE_PLUGIN=OFF \
+    -DgRPC_BUILD_GRPC_OBJECTIVE_C_PLUGIN=OFF \
+    -DgRPC_BUILD_GRPC_PHP_PLUGIN=OFF \
+    -DgRPC_BUILD_GRPC_PHP_PLUGIN=OFF \
+    -DgRPC_BUILD_GRPC_PYTHON_PLUGIN=OFF \
+    -DgRPC_BUILD_GRPC_RUBY_PLUGIN=OFF \
     ../.. \
   && make -j2 \
   && make install

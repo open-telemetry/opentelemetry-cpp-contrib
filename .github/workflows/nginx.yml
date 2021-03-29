@@ -8,7 +8,7 @@ on:
 
 jobs:
   test-nginx-agent:
-    name: Test nginx agent
+    name: Build and test nginx agent
     runs-on: ubuntu-20.04
     steps:
       - name: checkout otel nginx
@@ -68,5 +68,5 @@ jobs:
       - name: upload artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: opentelemetry-nginx
+          name: otel_ngx_module-ubuntu-20-04.so
           path: /tmp/otel_ngx/otel_ngx_module.so
