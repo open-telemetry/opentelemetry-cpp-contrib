@@ -63,7 +63,7 @@ jobs:
           docker buildx build -f test/Dockerfile \
           --target export \
           --cache-from type=local,src=/tmp/.buildx-cache \
-          --output /tmp/otel_ngx \
+          --output type=local,dest=/tmp/otel_ngx \
           .
       - name: upload artifacts
         uses: actions/upload-artifact@v2

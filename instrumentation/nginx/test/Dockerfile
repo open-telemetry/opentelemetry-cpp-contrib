@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 AS base
+FROM ubuntu:20.04 AS build
 
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive \
@@ -43,7 +43,8 @@ RUN cd otel-nginx/build \
   && make -j2 \
   && make install
 
-FROM base AS export
+FROM build AS export
 COPY --from=base /otel-nginx/build/otel_ngx_module.so .
 
+FROM build AS run
 CMD ["/usr/sbin/nginx", "-g", "daemon off;"]
