@@ -52,6 +52,10 @@ jobs:
           mix local.rebar --force --if-missing
           mix deps.get
           mix test
+      - name: update cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
       - name: copy artifacts
         run: |
           cd instrumentation/nginx
@@ -66,7 +70,3 @@ jobs:
         with:
           name: opentelemetry-nginx
           path: /tmp/otel_ngx/otel_ngx_module.so
-      - name: update cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
