@@ -43,7 +43,7 @@ RUN cd otel-nginx/build \
   && make -j2 \
   && make install
 
-FROM build AS export
+FROM scratch AS export
 COPY --from=build /otel-nginx/build/otel_ngx_module.so .
 
 FROM build AS run
