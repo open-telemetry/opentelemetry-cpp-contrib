@@ -50,6 +50,10 @@ jobs:
             --cache-from type=local,src=/tmp/.buildx-cache \
             --cache-to type=local,dest=/tmp/.buildx-cache-new \
             .
+      - name: update cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
       - name: run tests
         run: |
           cd instrumentation/nginx/test/instrumentation
@@ -57,10 +61,6 @@ jobs:
           mix local.rebar --force --if-missing
           mix deps.get
           mix test
-      - name: update cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
       - name: copy artifacts
         id: artifacts
         run: |
