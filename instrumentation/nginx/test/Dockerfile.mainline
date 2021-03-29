@@ -6,17 +6,20 @@ RUN apt-get update \
      TZ="Europe/London" \
       apt-get install --no-install-recommends --no-install-suggests -y \
         build-essential autoconf libtool pkg-config ca-certificates \
-        cmake gcc g++ git libcurl4-openssl-dev libpcre3-dev gnupg2 lsb-release \
-        zlib1g-dev curl
+        gcc g++ git libcurl4-openssl-dev libpcre3-dev gnupg2 lsb-release \
+        curl apt-transport-https software-properties-common zlib1g-dev
 
-RUN /bin/bash -c 'echo "deb http://nginx.org/packages/mainline/ubuntu `lsb_release -cs` nginx"' | tee /etc/apt/sources.list.d/nginx.list \
-  && /bin/bash -c 'echo -e "Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900"' | tee /etc/apt/preferences.d/99nginx \
-  && curl -o /tmp/nginx_signing.key https://nginx.org/keys/nginx_signing.key \
-  && mv /tmp/nginx_signing.key /etc/apt/trusted.gpg.d/nginx_signing.asc \
-  && apt-get update \
+RUN curl -o /etc/apt/trusted.gpg.d/kitware.asc https://apt.kitware.com/keys/kitware-archive-latest.asc \
+  && apt-add-repository "deb https://apt.kitware.com/ubuntu/ `lsb_release -cs` main"
+
+RUN curl -o /etc/apt/trusted.gpg.d/nginx_signing.asc https://nginx.org/keys/nginx_signing.key \
+  && apt-add-repository "deb http://nginx.org/packages/mainline/ubuntu `lsb_release -cs` nginx" \
+  && /bin/bash -c 'echo -e "Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900"' | tee /etc/apt/preferences.d/99nginx
+
+RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive \
      TZ="Europe/London" apt-get --no-install-recommends --no-install-suggests -y install \
-     nginx
+     nginx cmake
 
 RUN git clone --shallow-submodules --depth 1 --recurse-submodules -b v1.36.4 https://github.com/grpc/grpc \
   && cd grpc \
@@ -27,7 +30,6 @@ RUN git clone --shallow-submodules --depth 1 --recurse-submodules -b v1.36.4 htt
     -DgRPC_BUILD_TESTS=OFF \
     -DCMAKE_INSTALL_PREFIX=/install \
     -DCMAKE_BUILD_TYPE=Release \
-    -DgRPC_ZLIB_PROVIDER=package \
     -DgRPC_BUILD_GRPC_NODE_PLUGIN=OFF \
     -DgRPC_BUILD_GRPC_OBJECTIVE_C_PLUGIN=OFF \
     -DgRPC_BUILD_GRPC_PHP_PLUGIN=OFF \
