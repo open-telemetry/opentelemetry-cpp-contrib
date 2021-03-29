@@ -30,7 +30,7 @@ jobs:
       - name: build express backend docker
         uses: docker/build-push-action@v2
         with:
-          context: .
+          context: test/backend/simple_express
           builder: ${{ steps.buildx.outputs.name }}
           file: test/backend/simple_express/Dockerfile
           push: false
