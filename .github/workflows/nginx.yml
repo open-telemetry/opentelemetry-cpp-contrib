@@ -8,7 +8,7 @@ on:
 
 jobs:
   nginx-build-test:
-    name: Build and test nginx agent
+    name: nginx
     runs-on: ubuntu-20.04
     strategy:
       matrix:
