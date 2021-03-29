@@ -7,18 +7,19 @@ on:
     branches: [ main ]
 
 jobs:
-  test-nginx-agent:
+  nginx-build-test:
     name: Build and test nginx agent
     runs-on: ubuntu-20.04
     strategy:
       matrix:
         os: [ubuntu-20.10, ubuntu-20.04, ubuntu-18.04]
+        nginx-rel: [mainline, stable]
     steps:
       - name: checkout otel nginx
         uses: actions/checkout@v2
       - name: setup
         run: |
-          sudo ./instrumentation/nginx/ci/setup_test_environment.sh
+          sudo ./instrumentation/nginx/ci/setup_environment.sh
       - name: setup buildx
         id: buildx
         uses: docker/setup-buildx-action@master
@@ -28,8 +29,8 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache
-          key: nginx-${{ matrix.os }}-${{ github.sha }}
-          restore-keys: nginx-${{ matrix.os }}
+          key: nginx-${{ matrix.os }}-${{ matrix.nginx-rel }}-${{ github.sha }}
+          restore-keys: nginx-${{ matrix.os }}-${{ matrix.nginx-rel }}
       - name: build express backend docker
         run: |
           cd instrumentation/nginx
@@ -45,7 +46,7 @@ jobs:
           cd instrumentation/nginx
           docker buildx build -t otel-nginx-test/nginx \
             --load \
-            -f test/Dockerfile \
+            -f test/Dockerfile.${{ matrix.nginx-rel }} \
             --cache-from type=local,src=/tmp/.buildx-cache \
             --cache-to type=local,dest=/tmp/.buildx-cache-new \
             .
@@ -72,5 +73,5 @@ jobs:
       - name: upload artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: otel_ngx_module-${{ matrix.os }}.so
+          name: otel_ngx_module-${{ matrix.os }}-${{ matrix.nginx-rel }}.so
           path: /tmp/otel_ngx/otel_ngx_module.so
