@@ -10,6 +10,9 @@ jobs:
   test-nginx-agent:
     name: Build and test nginx agent
     runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        os: [ubuntu:20.10, ubuntu:20.04, ubuntu:18.04]
     steps:
       - name: checkout otel nginx
         uses: actions/checkout@v2
@@ -31,6 +34,7 @@ jobs:
         run: |
           cd instrumentation/nginx
           docker buildx build -t otel-nginx-test/express-backend \
+            --build-arg image=${{ matrix.os }} \
             --load \
             -f test/backend/simple_express/Dockerfile \
             --cache-from type=local,src=/tmp/.buildx-cache \
@@ -57,16 +61,17 @@ jobs:
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
       - name: copy artifacts
+        id: artifacts
         run: |
           cd instrumentation/nginx
           mkdir -p /tmp/otel_ngx/
           docker buildx build -f test/Dockerfile \
           --target export \
           --cache-from type=local,src=/tmp/.buildx-cache \
-          --output type=local,dest=/tmp/otel_ngx \
-          .
+          --output type=local,dest=/tmp/otel_ngx .
+          echo "::set-output name=distro::$(echo ${{ matrix.os }} | sed -r s/:/-/)"
       - name: upload artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: otel_ngx_module-ubuntu-20-04.so
+          name: otel_ngx_module-${{ steps.artifacts.outputs.distro }}.so
           path: /tmp/otel_ngx/otel_ngx_module.so

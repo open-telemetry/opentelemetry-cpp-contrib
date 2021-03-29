@@ -1,4 +1,5 @@
-FROM ubuntu:20.04 AS build
+ARG image=ubuntu:20.04
+FROM $image AS build
 
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive \
