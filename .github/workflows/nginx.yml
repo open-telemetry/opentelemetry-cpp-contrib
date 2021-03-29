@@ -56,3 +56,16 @@ jobs:
           mix local.rebar --force --if-missing
           mix deps.get
           mix test
+      - name: copy artifacts
+        run: |
+          cd instrumentation/nginx
+          mkdir -p /tmp/otel_ngx/
+          docker buildx build -f test/Dockerfile \
+          --cache-from type=local,src=/tmp/.buildx-cache \
+          --output /tmp/otel_ngx \
+          .
+      - name: upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: opentelemetry-nginx
+          path: /tmp/otel_ngx/otel_ngx_module.so
