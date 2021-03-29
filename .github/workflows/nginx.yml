@@ -30,9 +30,9 @@ jobs:
       - name: build express backend docker
         uses: docker/build-push-action@v2
         with:
-          context: test/backend/simple_express
+          context: instrumentation/nginx/test/backend/simple_express
           builder: ${{ steps.buildx.outputs.name }}
-          file: test/backend/simple_express/Dockerfile
+          file: instrumentation/nginx/test/backend/simple_express/Dockerfile
           push: false
           tags: otel-nginx-test/express-backend
           cache-from: type=local,src=/tmp/.buildx-cache
@@ -42,7 +42,7 @@ jobs:
         with:
           context: .
           builder: ${{ steps.buildx.outputs.name }}
-          file: test/Dockerfile
+          file: instrumentation/nginx/test/Dockerfile
           push: false
           tags: otel-nginx-test/nginx
           cache-from: type=local,src=/tmp/.buildx-cache
