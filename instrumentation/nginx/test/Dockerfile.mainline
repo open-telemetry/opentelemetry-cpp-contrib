@@ -6,7 +6,8 @@ RUN apt-get update \
      TZ="Europe/London" \
       apt-get install --no-install-recommends --no-install-suggests -y \
         build-essential autoconf libtool pkg-config ca-certificates \
-        cmake gcc g++ git libcurl4-openssl-dev libpcre3-dev gnupg2 lsb-release curl
+        cmake gcc g++ git libcurl4-openssl-dev libpcre3-dev gnupg2 lsb-release \
+        zlib1g-dev curl
 
 RUN /bin/bash -c 'echo "deb http://nginx.org/packages/mainline/ubuntu `lsb_release -cs` nginx"' | tee /etc/apt/sources.list.d/nginx.list \
   && /bin/bash -c 'echo -e "Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900"' | tee /etc/apt/preferences.d/99nginx \
@@ -17,14 +18,16 @@ RUN /bin/bash -c 'echo "deb http://nginx.org/packages/mainline/ubuntu `lsb_relea
      TZ="Europe/London" apt-get --no-install-recommends --no-install-suggests -y install \
      nginx
 
-RUN git clone --shallow-submodules --depth 1 --recurse-submodules -b v1.35.0 https://github.com/grpc/grpc \
+RUN git clone --shallow-submodules --depth 1 --recurse-submodules -b v1.36.4 https://github.com/grpc/grpc \
   && cd grpc \
   && mkdir -p cmake/build \
   && cd cmake/build \
-  && cmake -DCMAKE_BUILD_TYPE=Release \
+  && cmake \
     -DgRPC_INSTALL=ON \
     -DgRPC_BUILD_TESTS=OFF \
-    -DgRPC_BUILD_CSHARP_EXTENSIONS=OFF \
+    -DCMAKE_INSTALL_PREFIX=/install \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DgRPC_ZLIB_PROVIDER=package \
     -DgRPC_BUILD_GRPC_NODE_PLUGIN=OFF \
     -DgRPC_BUILD_GRPC_OBJECTIVE_C_PLUGIN=OFF \
     -DgRPC_BUILD_GRPC_PHP_PLUGIN=OFF \
@@ -41,6 +44,8 @@ RUN git clone --shallow-submodules --depth 1 --recurse-submodules -b v0.3.0 \
   && mkdir build \
   && cd build \
   && cmake -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/install \
+    -DCMAKE_PREFIX_PATH=/install \
     -DWITH_OTLP=ON \
     -DBUILD_TESTING=OFF \
     -DWITH_EXAMPLES=OFF \
@@ -54,6 +59,7 @@ COPY src otel-nginx/src/
 COPY CMakeLists.txt nginx.cmake otel-nginx/
 RUN cd otel-nginx/build \
   && cmake -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_PREFIX_PATH=/install \
     -DCMAKE_INSTALL_PREFIX=/usr/share/nginx/modules \
     .. \
   && make -j2 \
