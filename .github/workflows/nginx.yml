@@ -45,10 +45,6 @@ jobs:
             --cache-from type=local,src=/tmp/.buildx-cache \
             --cache-to type=local,dest=/tmp/.buildx-cache-new \
             .
-      - name: update cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
       - name: run tests
         run: |
           cd instrumentation/nginx/test/instrumentation
@@ -69,3 +65,7 @@ jobs:
         with:
           name: opentelemetry-nginx
           path: /tmp/otel_ngx/otel_ngx_module.so
+      - name: update cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
