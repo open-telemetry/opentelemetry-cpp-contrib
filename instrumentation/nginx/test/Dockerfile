@@ -44,7 +44,7 @@ RUN cd otel-nginx/build \
   && make install
 
 FROM build AS export
-COPY --from=base /otel-nginx/build/otel_ngx_module.so .
+COPY --from=build /otel-nginx/build/otel_ngx_module.so .
 
 FROM build AS run
 CMD ["/usr/sbin/nginx", "-g", "daemon off;"]
