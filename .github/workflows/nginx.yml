@@ -3,6 +3,9 @@ name: nginx instrumentation CI
 on:
   push:
     branches: "*"
+    paths:
+      - 'instrumentation/nginx/**'
+      - '.github/workflows/nginx.yml'
   pull_request:
     branches: [ main ]
 
@@ -28,32 +31,34 @@ jobs:
       - name: cache docker layers
         uses: actions/cache@v2
         with:
-          path: /tmp/.buildx-cache
+          path: /tmp/buildx-cache/
           key: nginx-${{ matrix.os }}-${{ matrix.nginx-rel }}-${{ github.sha }}
           restore-keys: nginx-${{ matrix.os }}-${{ matrix.nginx-rel }}
       - name: build express backend docker
         run: |
           cd instrumentation/nginx
           docker buildx build -t otel-nginx-test/express-backend \
-            --build-arg image=$(echo ${{ matrix.os }} | sed s/-/:/) \
-            --load \
             -f test/backend/simple_express/Dockerfile \
-            --cache-from type=local,src=/tmp/.buildx-cache \
-            --cache-to type=local,dest=/tmp/.buildx-cache-new \
+            --cache-from type=local,src=/tmp/buildx-cache/express \
+            --cache-to type=local,dest=/tmp/buildx-cache/express-new \
+            --load \
             test/backend/simple_express
       - name: build nginx docker
         run: |
           cd instrumentation/nginx
           docker buildx build -t otel-nginx-test/nginx \
-            --load \
+            --build-arg image=$(echo ${{ matrix.os }} | sed s/-/:/) \
             -f test/Dockerfile.${{ matrix.nginx-rel }} \
-            --cache-from type=local,src=/tmp/.buildx-cache \
-            --cache-to type=local,dest=/tmp/.buildx-cache-new \
+            --cache-from type=local,src=/tmp/buildx-cache/nginx \
+            --cache-to type=local,dest=/tmp/buildx-cache/nginx-new \
+            --load \
             .
       - name: update cache
         run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+          rm -rf /tmp/buildx-cache/express
+          rm -rf /tmp/buildx-cache/nginx
+          mv /tmp/buildx-cache/express-new /tmp/buildx-cache/express
+          mv /tmp/buildx-cache/nginx-new /tmp/buildx-cache/nginx
       - name: run tests
         run: |
           cd instrumentation/nginx/test/instrumentation
