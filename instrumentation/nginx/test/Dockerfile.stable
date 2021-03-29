@@ -6,7 +6,7 @@ RUN apt-get update \
      TZ="Europe/London" \
       apt-get install --no-install-recommends --no-install-suggests -y \
         build-essential autoconf libtool pkg-config ca-certificates \
-        cmake gcc g++ python3 git nginx libpcre3-dev zlib1g-dev
+        cmake gcc g++ python3 git nginx libpcre3-dev zlib1g-dev libcurl4-openssl-dev
 
 RUN git clone --shallow-submodules --depth 1 --recurse-submodules -b v1.36.4 https://github.com/grpc/grpc \
   && cd grpc \
