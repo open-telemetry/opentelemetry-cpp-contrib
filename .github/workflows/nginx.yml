@@ -17,9 +17,6 @@ jobs:
       matrix:
         os: [ubuntu-20.10, ubuntu-20.04, ubuntu-18.04]
         nginx-rel: [mainline, stable]
-        exclude:
-          - os: ubuntu-18.04
-            nginx-rel: stable
     steps:
       - name: checkout otel nginx
         uses: actions/checkout@v2

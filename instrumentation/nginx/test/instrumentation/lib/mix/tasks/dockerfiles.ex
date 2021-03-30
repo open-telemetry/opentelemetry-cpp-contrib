@@ -6,7 +6,6 @@ defmodule Mix.Tasks.Dockerfiles do
 
   def run([out_dir | combos]) do
     out_dir_abs = Path.expand(out_dir)
-    IO.inspect(out_dir_abs)
 
     Enum.map(combos, fn v -> gen_dockerfile(v) end)
     |> Enum.each(fn {job, content} ->
@@ -72,7 +71,10 @@ defmodule Mix.Tasks.Dockerfiles do
   end
 
   defp base_packages(%{nginx: "mainline"}), do: default_packages()
-  defp base_packages(%{nginx: "stable"}), do: ["nginx" | default_packages()]
+  defp base_packages(%{nginx: "stable", version_major: ver_maj}) when ver_maj >= 20 do
+    ["nginx" | default_packages()]
+  end
+  defp base_packages(_), do: default_packages()
 
   defp base_packages_for_version(%{version_major: major}) when major >= 20, do: ["cmake"]
   defp base_packages_for_version(_), do: []
@@ -86,16 +88,30 @@ defmodule Mix.Tasks.Dockerfiles do
     """
   end
 
-  defp custom_nginx(%{nginx: "mainline"}) do
+  defp mainline_apt(), do: "http://nginx.org/packages/mainline/ubuntu"
+  defp stable_apt(), do: "http://nginx.org/packages/ubuntu"
+
+  defp custom_nginx_step(apt_url) do
     """
     RUN curl -o /etc/apt/trusted.gpg.d/nginx_signing.asc https://nginx.org/keys/nginx_signing.key \\
-        && apt-add-repository "deb http://nginx.org/packages/mainline/ubuntu `lsb_release -cs` nginx" \\
+        && apt-add-repository "deb #{apt_url} `lsb_release -cs` nginx" \\
         && /bin/bash -c 'echo -e "Package: *\\nPin: origin nginx.org\\nPin: release o=nginx\\nPin-Priority: 900"' | tee /etc/apt/preferences.d/99nginx
     """
   end
 
+  defp custom_nginx(%{nginx: "mainline"}) do
+    custom_nginx_step(mainline_apt())
+  end
+
+  defp custom_nginx(%{nginx: "stable", os: "ubuntu", version_major: 18}) do
+    custom_nginx_step(stable_apt())
+  end
+
   defp custom_nginx(_), do: ""
 
+  defp custom_packages_for_version(%{os: "ubuntu", nginx: "stable", version_major: 18}) do
+    ["cmake", "nginx"]
+  end
   defp custom_packages_for_version(%{version_major: ver_major}) when ver_major < 20, do: ["cmake"]
   defp custom_packages_for_version(_), do: []
 
@@ -126,7 +142,7 @@ defmodule Mix.Tasks.Dockerfiles do
     """
   end
 
-  defp combine(lines, sep \\ "\n") do
+  defp combine(lines, sep) do
     Enum.join(lines, sep)
   end
 

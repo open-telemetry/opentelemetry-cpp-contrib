@@ -8,14 +8,33 @@ Supported propagation types:
 
 ## Requirements
 
-* OS: Linux
-* Nginx
-  * latest stable - [1.18.0](http://nginx.org/en/download.html)
+* OS: Linux. Test suite currently runs on Ubuntu 18.04, 20.04, 20.10.
+* [Nginx](http://nginx.org/en/download.html)
+  * both stable (`1.18.0`) and mainline (`1.19.8`)
 * Nginx modules
   * ngx_http_upstream_module (proxy_pass)
   * ngx_http_fastcgi_module (fastcgi_pass)
 
 Additional platforms and/or versions coming soon.
+
+## Dependencies (for building)
+
+1. [gRPC](https://github.com/grpc/grpc) - currently the only supported exporter is OTLP. This requirement will be lifted
+   once more exporters become available.
+2. [opentelemetry-cpp](https://github.com/open-telemetry/opentelemetry-cpp) - opentelemetry-cpp needs to be built with
+   position independent code and OTLP support, e.g.:
+```
+cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DWITH_OTLP=ON ..
+```
+
+## Building
+
+```
+mkdir build
+cd build
+cmake ..
+make
+```
 
 ## Usage
 
@@ -133,25 +152,6 @@ List of exported attributes and their corresponding nginx variables if applicabl
 - `http.scheme` - `$scheme`
 - `http.server_name` - From the `server_name` directive
 
-## Dependencies
-
-1. [gRPC](https://github.com/grpc/grpc) - currently the only supported exporter is OTLP. This requirement will be lifted
-   once more exporters become available.
-2. [opentelemetry-cpp](https://github.com/open-telemetry/opentelemetry-cpp) - opentelemetry-cpp needs to be built with
-   position independent code and OTLP support, e.g.:
-```
-cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DWITH_OTLP=ON ..
-```
-
-## Building
-
-```
-mkdir build
-cd build
-cmake ..
-make
-```
-
 ## Testing
 
 Dependencies:
@@ -160,8 +160,16 @@ Dependencies:
 * [Docker Compose](https://docs.docker.com/compose/install/)
 
 ```
-docker build -t otel-nginx-test/nginx -f test/Dockerfile .
+cd test/instrumentation
+mix .. dockerfiles ubuntu-20.04:mainline
+cd ../..
+docker build -t otel-nginx-test/nginx -f test/Dockerfile.ubuntu-20.04.mainline .
 docker build -t otel-nginx-test/express-backend -f test/backend/simple_express/Dockerfile test/backend/simple_express
 cd test/instrumentation
 mix test
 ```
+
+## Troubleshooting
+
+### `otel_ngx_module.so is not binary compatible`
+- Make sure your nginx is compiled with `--with-compat`. On Ubuntu 18.04 the default nginx (`1.14.0`) from apt does not have compatibility enabled. nginx provides [repositories](https://docs.nginx.com/nginx/admin-guide/installing-nginx/installing-nginx-open-source/#prebuilt_ubuntu) to install more up to date versions.
