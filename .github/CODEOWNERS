@@ -1,0 +1,11 @@
+# Code owners file.
+# This file controls who is tagged for review for any given pull request.
+
+# Learn about CODEOWNERS file format:
+#  https://help.github.com/en/articles/about-code-owners
+#
+
+* @open-telemetry/cpp-approvers @lalitb
+
+instrumentation/httpd/* @open-telemetry/cpp-approvers @seemk @TomRoSystems @lalitb
+instrumentation/nginx/* @open-telemetry/cpp-approvers @seemk @TomRoSystems @lalitb
