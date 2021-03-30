@@ -5,7 +5,7 @@
 #  https://help.github.com/en/articles/about-code-owners
 #
 
-* @open-telemetry/cpp-approvers @lalitb
+* @ThomsonTan @jsuereth @maxgolov @lalitb @pyohannes 
 
-instrumentation/httpd/* @open-telemetry/cpp-approvers @seemk @TomRoSystems @lalitb
-instrumentation/nginx/* @open-telemetry/cpp-approvers @seemk @TomRoSystems @lalitb
+instrumentation/httpd/* @seemk @TomRoSystems @ThomsonTan @jsuereth @maxgolov @lalitb @pyohannes
+instrumentation/nginx/* @seemk @TomRoSystems @ThomsonTan @jsuereth @maxgolov @lalitb @pyohannes
