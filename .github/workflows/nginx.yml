@@ -23,6 +23,13 @@ jobs:
       - name: setup
         run: |
           sudo ./instrumentation/nginx/ci/setup_environment.sh
+      - name: generate dockerfile
+        run: |
+          cd instrumentation/nginx/test/instrumentation
+          mix local.hex --force --if-missing
+          mix local.rebar --force --if-missing
+          mix deps.get
+          mix dockerfiles .. ${{ matrix.os }}:${{ matrix.nginx-rel }}
       - name: setup buildx
         id: buildx
         uses: docker/setup-buildx-action@master
@@ -33,7 +40,8 @@ jobs:
         with:
           path: /tmp/buildx-cache/
           key: nginx-${{ matrix.os }}-${{ matrix.nginx-rel }}-${{ github.sha }}
-          restore-keys: nginx-${{ matrix.os }}-${{ matrix.nginx-rel }}
+          restore-keys: |
+            nginx-${{ matrix.os }}-${{ matrix.nginx-rel }}
       - name: build express backend docker
         run: |
           cd instrumentation/nginx
@@ -62,9 +70,6 @@ jobs:
       - name: run tests
         run: |
           cd instrumentation/nginx/test/instrumentation
-          mix local.hex --force --if-missing
-          mix local.rebar --force --if-missing
-          mix deps.get
           mix test
       - name: copy artifacts
         id: artifacts
