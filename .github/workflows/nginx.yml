@@ -56,7 +56,7 @@ jobs:
           cd instrumentation/nginx
           docker buildx build -t otel-nginx-test/nginx \
             --build-arg image=$(echo ${{ matrix.os }} | sed s/-/:/) \
-            -f test/Dockerfile.${{ matrix.nginx-rel }} \
+            -f test/Dockerfile.${{ matrix.os }}.${{ matrix.nginx-rel }} \
             --cache-from type=local,src=/tmp/buildx-cache/nginx \
             --cache-to type=local,dest=/tmp/buildx-cache/nginx-new \
             --load \
@@ -76,7 +76,7 @@ jobs:
         run: |
           cd instrumentation/nginx
           mkdir -p /tmp/otel_ngx/
-          docker buildx build -f test/Dockerfile.${{ matrix.nginx-rel}} \
+          docker buildx build -f test/Dockerfile.${{ matrix.os }}.${{ matrix.nginx-rel}} \
           --target export \
           --cache-from type=local,src=/tmp/.buildx-cache \
           --output type=local,dest=/tmp/otel_ngx .
