@@ -13,6 +13,6 @@
 instrumentation/httpd/ @TomRoSystems
 instrumentation/nginx/ @seemk
 
-* cpp-approvers
+* @open-telemetry/cpp-approvers
 
-CODEOWNERS cpp-maintainers
+CODEOWNERS @open-telemetry/cpp-maintainers
