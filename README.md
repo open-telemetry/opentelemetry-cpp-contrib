@@ -1,6 +1,6 @@
 # OpenTelemetry C++ Contrib
 
-This is a repository for OpenTelemetry C++ contributions that are not part of the [core repository](https://github.com/open-telemetry/opentelemetry-cpp) and core distribution of the API and SDK.
+This is a repository for OpenTelemetry C++ contributions that are not part of the [core repository](https://github.com/open-telemetry/opentelemetry-cpp) of the API and SDK.
 
 ## Contributing
 
