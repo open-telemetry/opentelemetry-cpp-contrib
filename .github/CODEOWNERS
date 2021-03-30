@@ -5,7 +5,4 @@
 #  https://help.github.com/en/articles/about-code-owners
 #
 
-* @ThomsonTan @jsuereth @maxgolov @lalitb @pyohannes 
-
-instrumentation/httpd/* @seemk @TomRoSystems @ThomsonTan @jsuereth @maxgolov @lalitb @pyohannes
-instrumentation/nginx/* @seemk @TomRoSystems @ThomsonTan @jsuereth @maxgolov @lalitb @pyohannes
+* @ThomsonTan @seemk @TomRoSystems @jsuereth @maxgolov @lalitb @pyohannes
