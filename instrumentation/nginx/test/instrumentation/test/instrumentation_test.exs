@@ -87,6 +87,7 @@ defmodule InstrumentationTest do
   end
 
   setup_all do
+    File.chmod!(@traces_path, 0o666)
     port = Port.open({:spawn, "docker-compose up"}, [:binary])
 
     on_exit(fn -> System.cmd("docker-compose", ["down"]) end)
