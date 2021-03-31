@@ -7,5 +7,5 @@
 
 * @open-telemetry/cpp-contrib-approvers
 
-instrumentation/httpd/* @TomRoSystems @open-telemetry/cpp-contrib-approvers
-instrumentation/nginx/* @seemk @open-telemetry/cpp-contrib-approvers
+instrumentation/httpd/ @TomRoSystems @open-telemetry/cpp-contrib-approvers
+instrumentation/nginx/ @seemk @open-telemetry/cpp-contrib-approvers
