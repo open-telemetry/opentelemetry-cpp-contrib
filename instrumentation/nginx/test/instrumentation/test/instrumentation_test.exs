@@ -13,6 +13,7 @@ defmodule InstrumentationTest do
   def wait_until_ready(port, ctx) do
     receive do
       {_, {:data, output}} ->
+        IO.puts(output)
         lines = String.split(output, "\n", trim: true)
 
         has_collector = ctx[:collector] || has_line(lines, ~r/everything is ready/i)
