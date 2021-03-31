@@ -18,6 +18,7 @@
 #define HTTPD_OPENTELEMETRY_H_
 
 #include <fstream>
+#include <unordered_map>
 
 #include "opentelemetry/exporters/ostream/span_exporter.h"
 #include "opentelemetry/sdk/trace/batch_span_processor.h"
@@ -54,6 +55,8 @@ struct OtelConfig
   // context propagation
   bool ignore_inbound;
   OtelPropagation propagation;
+  std::unordered_map<std::string, std::string> attribiutes;
+  std::unordered_map<std::string, std::string> resources;
   OtelConfig() : ignore_inbound(true) {}
 };
 

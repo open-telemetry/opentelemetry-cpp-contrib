@@ -85,8 +85,17 @@ void initTracer()
     processor = std::make_shared<sdktrace::SimpleSpanProcessor>(std::move(exporter));
   }
 
+  opentelemetry::sdk::resource::ResourceAttributes resAttrs({{"service.name", "httpd"}});
+  // add custom-configured resources
+  for(auto &it:config.resources)
+  {
+    resAttrs[it.first] = it.second;
+  }
+
   auto provider = nostd::shared_ptr<opentelemetry::trace::TracerProvider>(
-      new sdktrace::TracerProvider(processor));
+    new sdktrace::TracerProvider(processor,
+    opentelemetry::sdk::resource::Resource::Create(resAttrs))
+  );
 
   // Set the global trace provider
   opentelemetry::trace::Provider::SetTracerProvider(provider);
@@ -130,6 +139,11 @@ void ExtraRequestData::StartSpan(const HttpdStartSpanAttributes& attrs)
   if (attrs.net_ip != startAttrs.client_ip)
   {
     span->SetAttribute(kAttrNETPeerIP, startAttrs.net_ip);
+  }
+  // add custom-configured attribiutes
+  for(auto &it:config.attribiutes)
+  {
+    span->SetAttribute(it.first, it.second);
   }
 }
 
