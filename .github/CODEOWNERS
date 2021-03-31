@@ -5,4 +5,7 @@
 #  https://help.github.com/en/articles/about-code-owners
 #
 
-* @ThomsonTan @seemk @TomRoSystems @jsuereth @maxgolov @lalitb @pyohannes
+* @open-telemetry/cpp-contrib-approvers
+
+instrumentation/httpd/* @TomRoSystems @open-telemetry/cpp-contrib-approvers
+instrumentation/nginx/* @seemk @open-telemetry/cpp-contrib-approvers
