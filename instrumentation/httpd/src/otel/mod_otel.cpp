@@ -172,7 +172,7 @@ static int opentel_log_transaction(request_rec *r)
 /////////////////////////////////////////////////
 
 static int proxy_fixup_handler(request_rec *r)
-{ // adding outbound headers and setting span attribiutes
+{ // adding outbound headers and setting span attributes
   request_rec *req = r->main ? r->main : r;
 
   ExtraRequestData *req_data;
@@ -318,7 +318,7 @@ const char *otel_set_endpoint(cmd_parms *cmd, void *cfg, const char *arg)
 
 const char *otel_set_attribute(cmd_parms *cmd, void *cfg, const char *attrName, const char *attrValue)
 {
-  config.attribiutes[attrName] = attrValue;
+  config.attributes[attrName] = attrValue;
   return NULL;
 }
 

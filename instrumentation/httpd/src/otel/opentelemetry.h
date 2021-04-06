@@ -55,7 +55,7 @@ struct OtelConfig
   // context propagation
   bool ignore_inbound;
   OtelPropagation propagation;
-  std::unordered_map<std::string, std::string> attribiutes;
+  std::unordered_map<std::string, std::string> attributes;
   std::unordered_map<std::string, std::string> resources;
   OtelConfig() : ignore_inbound(true) {}
 };
@@ -89,7 +89,7 @@ struct ExtraRequestData
   nostd::shared_ptr<opentelemetry::v0::trace::Span> span;
   HttpdStartSpanAttributes startAttrs;
   HttpdEndSpanAttributes endAttrs;
-  // Sets attribiutes for HTTP request.
+  // Sets attributes for HTTP request.
   void StartSpan(const HttpdStartSpanAttributes &attrs);
   void EndSpan(const HttpdEndSpanAttributes &attrs);
   // we are called from apache when apr_pool_t is being cleaned after request

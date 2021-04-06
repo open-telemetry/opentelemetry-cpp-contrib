@@ -27,7 +27,7 @@ check_results() {
    check 'span kind' Server
    [ "`getSpanField span_id`" != "`getSpanField parent_span_id`" ] || fail "Bad span: span.id same as parent span.id"
 
-   echo Checking span attribiutes
+   echo Checking span attributes
    declare -A SPAN_ATTRS
    # transforms "http.method: GET, http.flavor: http, ..." into SPAN_ATTRS[http.method] = GET
    IFS=',' read -ra my_array <<< "`getSpanField attributes`"

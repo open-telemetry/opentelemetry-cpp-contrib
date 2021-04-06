@@ -85,7 +85,6 @@ void initTracer()
     processor = std::make_shared<sdktrace::SimpleSpanProcessor>(std::move(exporter));
   }
 
-  opentelemetry::sdk::resource::ResourceAttributes resAttrs({{"service.name", "httpd"}});
   // add custom-configured resources
   for(auto &it:config.resources)
   {
@@ -140,8 +139,8 @@ void ExtraRequestData::StartSpan(const HttpdStartSpanAttributes& attrs)
   {
     span->SetAttribute(kAttrNETPeerIP, startAttrs.net_ip);
   }
-  // add custom-configured attribiutes
-  for(auto &it:config.attribiutes)
+  // add custom-configured attributes
+  for(auto &it:config.attributes)
   {
     span->SetAttribute(it.first, it.second);
   }
