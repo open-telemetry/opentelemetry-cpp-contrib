@@ -23,9 +23,9 @@ jobs:
       - name: Setup buildtools
         run: |
           sudo ./instrumentation/httpd/setup-buildtools.sh
-          sudo ./instrumentation/httpd/setup_environment.sh
+          sudo ./instrumentation/httpd/setup-environment.sh
       - name: Compile
-        run: ./instrumentation/httpd/build.sh
+        run: cd instrumentation/httpd && ./build.sh
 
   clang_format:
     name: Check code formatting
@@ -65,9 +65,9 @@ jobs:
         run: |
           sudo ./instrumentation/httpd/tests/setup-tools.sh
           sudo ./instrumentation/httpd/setup-buildtools.sh
-          sudo ./instrumentation/httpd/setup_environment.sh
+          sudo ./instrumentation/httpd/setup-environment.sh
       - name: Compile
-        run: ./instrumentation/httpd/build.sh
+        run: cd instrumentation/httpd && ./build.sh
       - name: Run tests
         run: |
           ./instrumentation/httpd/create-otel-load.sh
