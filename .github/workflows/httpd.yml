@@ -1,15 +1,21 @@
-name: CI
+name: httpd instrumentation CI
 
 on:
   push:
-    branches: [ main ]
+    branches: "*"
+    paths:
+      - 'instrumentation/httpd/**'
+      - '.github/workflows/httpd.yml'
   pull_request:
     branches: [ main ]
 
 jobs:
   build:
     name: Build module
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-20.10]
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
@@ -46,7 +52,10 @@ jobs:
 
   e2e_tests:
     name: Run end-to-end tests
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-20.10]
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
