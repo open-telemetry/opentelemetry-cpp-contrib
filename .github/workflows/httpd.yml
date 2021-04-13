@@ -12,11 +12,7 @@ on:
 jobs:
   build:
     name: Build module
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-20.10]
+    runs-on: ubuntu-20.10
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
@@ -70,6 +66,6 @@ jobs:
         run: cd instrumentation/httpd && ./build.sh
       - name: Run tests
         run: |
-          ./instrumentation/httpd/create-otel-load.sh
-          sudo ./instrumentation/httpd/httpd_install_otel.sh
-          cd instrumentation/httpd/tests && sudo ./run-all.sh
+          cd instrumentation/httpd && ./create-otel-load.sh
+          sudo ./httpd_install_otel.sh
+          cd tests && sudo ./run-all.sh
