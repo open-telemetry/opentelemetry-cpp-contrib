@@ -67,7 +67,7 @@ jobs:
           sudo ./instrumentation/httpd/setup-buildtools.sh
           sudo ./instrumentation/httpd/setup_environment.sh
       - name: Compile
-        run: ./nstrumentation/httpd/build.sh
+        run: ./instrumentation/httpd/build.sh
       - name: Run tests
         run: |
           ./instrumentation/httpd/create-otel-load.sh
