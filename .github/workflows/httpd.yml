@@ -12,7 +12,11 @@ on:
 jobs:
   build:
     name: Build module
-    runs-on: ubuntu-20.10
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04]
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
@@ -53,7 +57,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04]
+        os: [ubuntu-18.04, ubuntu-20.04]
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2

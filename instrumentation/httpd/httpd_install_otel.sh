@@ -6,12 +6,8 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 APACHE_ALL_MODULES_DIR=/etc/apache2/mods-available
 # TODO check: sudo a2enmod opentel
 
-ls -l ${SCRIPT_DIR}
-
 ln -fs ${SCRIPT_DIR}/opentelemetry.load ${APACHE_ALL_MODULES_DIR}
 ln -fs ${SCRIPT_DIR}/opentelemetry.conf ${APACHE_ALL_MODULES_DIR}
-
-cat ${SCRIPT_DIR}/opentelemetry.load
 
 a2enmod opentelemetry
 
