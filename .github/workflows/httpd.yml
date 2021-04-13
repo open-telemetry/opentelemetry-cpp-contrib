@@ -21,8 +21,8 @@ jobs:
         uses: actions/checkout@v2
       - name: Setup buildtools
         run: |
-          sudo ./setup-buildtools.sh
-          sudo ./setup_environment.sh
+          sudo ./instrumentation/httpd/setup-buildtools.sh
+          sudo ./instrumentation/httpd/setup_environment.sh
       - name: Compile
         run: ./build.sh
 
@@ -34,9 +34,9 @@ jobs:
         uses: actions/checkout@v2
       - name: Setup formatting tool (clang)
         run: |
-          sudo ./tools/setup-tools.sh code
+          sudo ./instrumentation/httpd/tools/setup-tools.sh code
       - name: Check formatting
-        run: ./tools/format-code.sh
+        run: ./instrumentation/httpd/tools/format-code.sh
 
   build_format:
     name: Check build formatting
@@ -46,9 +46,9 @@ jobs:
         uses: actions/checkout@v2
       - name: Setup formatting tool (buildifier)
         run: |
-          sudo ./tools/setup-tools.sh buildifier
+          sudo ./instrumentation/httpd/tools/setup-tools.sh buildifier
       - name: Check formatting
-        run: ./tools/format-bazel.sh
+        run: ./instrumentation/httpd/tools/format-bazel.sh
 
   e2e_tests:
     name: Run end-to-end tests
@@ -61,13 +61,13 @@ jobs:
         uses: actions/checkout@v2
       - name: Setup buildtools
         run: |
-          sudo ./tests/setup-tools.sh
-          sudo ./setup-buildtools.sh
-          sudo ./setup_environment.sh
+          sudo ./instrumentation/httpd/tests/setup-tools.sh
+          sudo ./instrumentation/httpd/setup-buildtools.sh
+          sudo ./instrumentation/httpd/setup_environment.sh
       - name: Compile
         run: ./build.sh
       - name: Run tests
         run: |
-          ./create-otel-load.sh
-          sudo ./httpd_install_otel.sh
-          cd tests && sudo ./run-all.sh
+          ./instrumentation/httpd/create-otel-load.sh
+          sudo ./instrumentation/httpd/httpd_install_otel.sh
+          cd instrumentation/httpd/tests && sudo ./run-all.sh
