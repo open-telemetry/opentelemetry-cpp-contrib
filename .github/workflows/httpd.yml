@@ -27,10 +27,10 @@ jobs:
       - name: Compile
         run: cd instrumentation/httpd && ./build.sh
       - name: upload artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: ${{ matrix.os }}_mod-otel.so
-        path: bazel-out/k8-opt/bin/otel.so
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.os }}_mod-otel.so
+          path: bazel-out/k8-opt/bin/otel.so
 
   clang_format:
     name: Check code formatting
