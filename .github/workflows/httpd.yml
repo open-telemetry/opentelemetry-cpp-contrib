@@ -25,12 +25,14 @@ jobs:
           sudo ./instrumentation/httpd/setup-buildtools.sh
           sudo ./instrumentation/httpd/setup-environment.sh
       - name: Compile
-        run: cd instrumentation/httpd && ./build.sh
-      - name: upload artifacts
+        run: |
+          cd instrumentation/httpd && ./build.sh
+          cp bazel-out/k8-opt/bin/otel.so /tmp/mod-otel.so
+      - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.os }}_mod-otel.so
-          path: bazel-out/k8-opt/bin/otel.so
+          path: /tmp/mod-otel.so
 
   clang_format:
     name: Check code formatting
@@ -62,7 +64,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-16.04, ubuntu-18.04, ubuntu-20.04]
+        # ubuntu ubuntu-16.04 tests are failing due to bug in apache2ctl script
+        os: [ubuntu-18.04, ubuntu-20.04]
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
