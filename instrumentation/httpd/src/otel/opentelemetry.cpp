@@ -86,6 +86,7 @@ void initTracer()
   }
 
   // add custom-configured resources
+  opentelemetry::sdk::resource::ResourceAttributes resAttrs;
   for(auto &it:config.resources)
   {
     resAttrs[it.first] = it.second;
