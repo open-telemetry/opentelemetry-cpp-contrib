@@ -172,7 +172,7 @@ static int opentel_log_transaction(request_rec *r)
 /////////////////////////////////////////////////
 
 static int proxy_fixup_handler(request_rec *r)
-{ // adding outbound headers and setting span attribiutes
+{ // adding outbound headers and setting span attributes
   request_rec *req = r->main ? r->main : r;
 
   ExtraRequestData *req_data;
@@ -252,7 +252,7 @@ static int proxy_end_handler(int *status, request_rec *r)
   }
 
   int st_code = (status && *status) ? *status:r->status;
-  char *proxy_error = apr_table_get(r->notes, "error-notes");
+  const char *proxy_error = apr_table_get(r->notes, "error-notes");
   if (proxy_error)
   {
     req_data_out->span->SetStatus(opentelemetry::trace::StatusCode::kError, proxy_error);
@@ -316,6 +316,18 @@ const char *otel_set_endpoint(cmd_parms *cmd, void *cfg, const char *arg)
   return NULL;
 }
 
+const char *otel_set_attribute(cmd_parms *cmd, void *cfg, const char *attrName, const char *attrValue)
+{
+  config.attributes[attrName] = attrValue;
+  return NULL;
+}
+
+const char *otel_set_resource(cmd_parms *cmd, void *cfg, const char *attrName, const char *attrValue)
+{
+  config.resources[attrName] = attrValue;
+  return NULL;
+}
+
 const char *otel_cfg_batch(cmd_parms *cmd,
                            void *cfg,
                            const char *max_queue_size,
@@ -357,6 +369,16 @@ static const command_rec opentel_directives[] = {
                   NULL,
                   RSRC_CONF,
                   "Set endpoint for exporter"),
+    AP_INIT_TAKE2("OpenTelemetrySetAttribute",
+                  otel_set_attribute,
+                  NULL,
+                  RSRC_CONF,
+                  "Set additional attribute for each span"),
+    AP_INIT_TAKE2("OpenTelemetrySetResource",
+                  otel_set_resource,
+                  NULL,
+                  RSRC_CONF,
+                  "Set resource"),
     AP_INIT_TAKE3("OpenTelemetryBatch",
                   otel_cfg_batch,
                   NULL,
