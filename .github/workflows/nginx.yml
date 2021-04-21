@@ -8,6 +8,9 @@ on:
       - '.github/workflows/nginx.yml'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'instrumentation/nginx/**'
+      - '.github/workflows/nginx.yml'
 
 jobs:
   nginx-build-test:
