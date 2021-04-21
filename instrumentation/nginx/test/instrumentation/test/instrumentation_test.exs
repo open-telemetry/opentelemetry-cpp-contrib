@@ -8,14 +8,16 @@ defmodule InstrumentationTest do
     Enum.find(lines, fn line -> String.match?(line, re) end) != nil
   end
 
-  def poll_nginx(0), do: raise "Timed out waiting for nginx"
+  def poll_nginx(0), do: raise("Timed out waiting for nginx")
 
   def poll_nginx(attempts_remaining) do
     case HTTPoison.get("#{@host}/up") do
-      {:ok, %HTTPoison.Response{status_code: 200}} -> :ready
+      {:ok, %HTTPoison.Response{status_code: 200}} ->
+        :ready
+
       _ ->
-      Process.sleep(200)
-      poll_nginx(attempts_remaining - 1)
+        Process.sleep(200)
+        poll_nginx(attempts_remaining - 1)
     end
   end
 
@@ -325,5 +327,4 @@ defmodule InstrumentationTest do
     assert attrib(span, "test.attrib.script") =~ ~r/\d+\.\d+/
     assert status == 200
   end
-
 end
