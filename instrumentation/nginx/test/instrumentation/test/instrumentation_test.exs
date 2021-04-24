@@ -8,7 +8,27 @@ defmodule InstrumentationTest do
     Enum.find(lines, fn line -> String.match?(line, re) end) != nil
   end
 
-  def wait_until_ready(_, %{:collector => true, :express => true}), do: :ready
+  def poll_nginx(0), do: raise("Timed out waiting for nginx")
+
+  def poll_nginx(attempts_remaining) do
+    case HTTPoison.get("#{@host}/up") do
+      {:ok, %HTTPoison.Response{status_code: 200}} ->
+        :ready
+
+      _ ->
+        Process.sleep(200)
+        poll_nginx(attempts_remaining - 1)
+    end
+  end
+
+  def wait_nginx() do
+    poll_nginx(30)
+  end
+
+  def wait_until_ready(_, %{:collector => true, :express => true, :nginx => false}) do
+    wait_nginx()
+    :ready
+  end
 
   def wait_until_ready(port, ctx) do
     receive do
@@ -23,7 +43,8 @@ defmodule InstrumentationTest do
           port,
           Map.merge(ctx, %{
             collector: has_collector,
-            express: has_express
+            express: has_express,
+            nginx: false
           })
         )
     after
@@ -306,5 +327,4 @@ defmodule InstrumentationTest do
     assert attrib(span, "test.attrib.script") =~ ~r/\d+\.\d+/
     assert status == 200
   end
-
 end
