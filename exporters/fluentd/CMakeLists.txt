@@ -15,7 +15,7 @@
 include_directories(include)
 
 add_library(opentelemetry_exporter_fluentd_trace src/fluentd_exporter.cc
-                                                src/recordable.cc)
+                                                 src/recordable.cc)
 
 install(
   TARGETS opentelemetry_exporter_fluentd_trace
@@ -31,10 +31,12 @@ install(
   PATTERN "*.h")
 
 if(BUILD_TESTING)
-  add_executable(fluentd_recordable_test test/fluentd_recordable_test.cc)
+  add_executable(fluentd_recordable_test test/fluentd_recordable_test.cc test/fluentd_baseline_test.cc)
 
   target_link_libraries(
-    fluentd_recordable_test ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}
+    fluentd_recordable_test
+    ${GTEST_BOTH_LIBRARIES}
+    ${CMAKE_THREAD_LIBS_INIT}
     opentelemetry_common
     opentelemetry_trace
     opentelemetry_resources

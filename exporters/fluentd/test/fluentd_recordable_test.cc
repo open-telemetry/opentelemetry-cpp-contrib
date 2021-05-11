@@ -14,6 +14,13 @@
  * limitations under the License.
  */
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <Windows.h>
+#include <WinSock2.h>
+#endif
+
 #include "opentelemetry/sdk/trace/recordable.h"
 #include "opentelemetry/sdk/trace/simple_processor.h"
 #include "opentelemetry/sdk/trace/span_data.h"
@@ -26,7 +33,6 @@
 
 #include "opentelemetry/common/timestamp.h"
 #include "opentelemetry/exporters/fluentd/recordable.h"
-
 #include "opentelemetry/exporters/fluentd/fluentd_exporter.h"
 
 #include <iostream>
@@ -41,6 +47,7 @@ namespace nostd    = opentelemetry::nostd;
 namespace sdktrace = opentelemetry::sdk::trace;
 using json         = nlohmann::json;
 
+#if 0
 // Testing Shutdown functionality of OStreamSpanExporter, should expect no data to be sent to Stream
 TEST(FluentdSpanRecordable, SetIdentity)
 {
@@ -235,6 +242,15 @@ TEST(FluentdSpanRecordable, SetArrayAtrribute)
   EXPECT_EQ(rec.span(), j_span);
 }
 
+TEST(FluentdSpanRecordable, SetResource)
+{
+  opentelemetry::exporter::fluentd::Recordable rec;
+  std::string service_name = "test";
+  auto resource = opentelemetry::sdk::resource::Resource::Create({{"service.name", service_name}});
+  rec.SetResource(resource);
+  // EXPECT_EQ(rec.GetServiceName(), service_name);
+}
+
 /**
  * AttributeValue can contain different int types, such as int, int64_t,
  * unsigned int, and uint64_t. To avoid writing test cases for each, we can
@@ -274,30 +290,25 @@ TYPED_TEST(FluentdIntAttributeTest, SetIntArrayAttribute)
   nlohmann::json j_span = {{"tags", {{"int_arr_attr", {4, 5, 6}}}}};
   EXPECT_EQ(rec.span(), j_span);
 }
+#endif
 
 using namespace opentelemetry::sdk::trace;
 using namespace opentelemetry::sdk::resource;
 
 using Properties = std::map<std::string, opentelemetry::common::AttributeValue>;
 
-TEST(FluentdExporter, SendTraceEvents)
-{
+TEST(FluentdExporter, SendTraceEvents) {
   opentelemetry::exporter::fluentd::FluentdExporterOptions options;
-  options.endpoint     = "http://localhost:9411/api/v2/spans";
-  options.service_name = "my_service";
-  options.port         = 1000;
+  options.endpoint = "tcp://127.0.0.1:24222";
+  options.tag = "tag.my_service";
 
   auto exporter = std::unique_ptr<opentelemetry::sdk::trace::SpanExporter>(
       new opentelemetry::exporter::fluentd::FluentdExporter(options));
 
-  auto processor = std::unique_ptr<sdktrace::SpanProcessor>(
+  auto processor = std::unique_ptr<SpanProcessor>(
       new sdktrace::SimpleSpanProcessor(std::move(exporter)));
 
-  // auto idGenerator = std::unique_ptr<sdktrace::IdGenerator>(new sdktrace::RandomIdGenerator);
-
-  auto provider = nostd::shared_ptr<trace::TracerProvider>(
-   new sdktrace::TracerProvider(std::make_shared<sdktrace::TracerContext>(std::move(processor), Resource::Create({})))
-  );
+  auto provider = nostd::shared_ptr<trace::TracerProvider>(new TracerProvider(std::move(processor)));
 
   // Set the global trace provider
   opentelemetry::trace::Provider::SetTracerProvider(provider);
@@ -309,7 +320,7 @@ TEST(FluentdExporter, SendTraceEvents)
   Properties attribs = {{"attrib1", 1}, {"attrib2", 2}};
 
   auto topSpan = tracer->StartSpan("MySpanTop");
-  std::this_thread::sleep_for(std::chrono::seconds(1));
+  // std::this_thread::sleep_for(std::chrono::seconds(1));
 
   auto outerSpan = tracer->StartSpan("MySpanL2", attribs);
 
@@ -322,7 +333,7 @@ TEST(FluentdExporter, SendTraceEvents)
   Properties event1      = {
       {"uint32Key", (uint32_t)1234}, {"uint64Key", (uint64_t)1234567890}, {"strKey", "someValue"}};
   EXPECT_NO_THROW(outerSpan->AddEvent(eventName1, event1));
-  std::this_thread::sleep_for(std::chrono::seconds(1));
+  // std::this_thread::sleep_for(std::chrono::seconds(1));
 
   // Add second event
   std::string eventName2 = "MyEvent2";
@@ -331,12 +342,12 @@ TEST(FluentdExporter, SendTraceEvents)
                        {"strKey", "anotherValue"}};
 
   EXPECT_NO_THROW(outerSpan->AddEvent(eventName2, event2));
-  std::this_thread::sleep_for(std::chrono::seconds(2));
+  // std::this_thread::sleep_for(std::chrono::seconds(2));
 
   std::string eventName3 = "MyEvent3";
   Properties event3      =
   {
-      {"metadata", "ai_event"},
+      {"metadata", (const char *)"ai_event"}, // BROKEN!!!!
       {"uint32Key", (uint32_t)9876},
       {"uint64Key", (uint64_t)987654321}
   };

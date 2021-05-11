@@ -20,6 +20,10 @@
 #include "opentelemetry/sdk/trace/recordable.h"
 #include "opentelemetry/version.h"
 
+#include "opentelemetry/exporters/fluentd/fluentd_fields.h"
+
+#include <chrono>
+
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter
 {
@@ -36,10 +40,51 @@ enum class TransportFormat
   kCompressedPackedForward
 };
 
+static inline nlohmann::byte_container_with_subtype<std::vector<std::uint8_t>> get_msgpack_eventtimeext(
+    int32_t seconds     = 0,
+    int32_t nanoseconds = 0)
+{
+  if ((seconds == 0) && (nanoseconds == 0))
+  {
+    std::chrono::system_clock::time_point tp = std::chrono::system_clock::now();
+    auto duration = tp.time_since_epoch();
+    seconds       = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
+    nanoseconds   = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count() % 1000000000;
+  }
+  nlohmann::byte_container_with_subtype<std::vector<std::uint8_t>> ts{
+      std::vector<uint8_t>{0, 0, 0, 0, 0, 0, 0, 0}};
+  for (int i = 3; i >= 0; i--)
+  {
+    ts[i]     = seconds & 0xff;
+    ts[i + 4] = nanoseconds & 0xff;
+    seconds >>= 8;
+    nanoseconds >>= 8;
+  }
+  ts.set_subtype(0x00);
+  return ts;
+}
+
 class Recordable final : public sdk::trace::Recordable
 {
 public:
-  const FluentdSpan &span() const noexcept { return span_; }
+
+  Recordable(std::string tag = FLUENT_VALUE_SPAN) : sdk::trace::Recordable()
+  {
+    tag_     = tag;
+    events_ = nlohmann::json::array();
+  }
+
+  const FluentdSpan span() const noexcept
+  {
+    FluentdSpan result;
+    result["tag"]=tag_;
+    result["events"]=events_;
+    if (options_.size())
+    {
+      result["options"]=options_;
+    }
+    return result;
+  }
 
   void SetIdentity(const opentelemetry::trace::SpanContext &span_context,
                    opentelemetry::trace::SpanId parent_span_id) noexcept override;
@@ -60,7 +105,9 @@ public:
 
   void SetStartTime(opentelemetry::common::SystemTimestamp start_time) noexcept override;
 
-  virtual void SetSpanKind(opentelemetry::trace::SpanKind span_kind) noexcept override;
+  void SetSpanKind(opentelemetry::trace::SpanKind span_kind) noexcept override;
+
+  void SetResource(const opentelemetry::sdk::resource::Resource &resource) noexcept override;
 
   void SetDuration(std::chrono::nanoseconds duration) noexcept override;
 
@@ -69,8 +116,11 @@ public:
           &instrumentation_library) noexcept override;
 
 private:
-  FluentdSpan span_;
+  std::string tag_;
+  nlohmann::json events_;
+  nlohmann::json options_;
 };
+
 }  // namespace fluentd
 }  // namespace exporter
 OPENTELEMETRY_END_NAMESPACE

@@ -15,98 +15,137 @@
  */
 #include "opentelemetry/exporters/fluentd/fluentd_exporter.h"
 #include "opentelemetry/exporters/fluentd/recordable.h"
-#include "opentelemetry/ext/http/client/http_client_factory.h"
-#include "opentelemetry/ext/http/common/url_parser.h"
+#include "opentelemetry/ext/net/common/url_parser.h"
+
+#include "nlohmann/json.hpp"
+
+using UrlParser = opentelemetry::ext::http::common::UrlParser;
+
+using namespace nlohmann;
 
 OPENTELEMETRY_BEGIN_NAMESPACE
-namespace exporter
-{
-namespace fluentd
-{
+namespace exporter {
+namespace fluentd {
 
-// -------------------------------- Constructors --------------------------------
+// -------------------------------- Constructors
+// --------------------------------
 
-FluentdExporter::FluentdExporter(const FluentdExporterOptions &options)
-    : options_(options) /* , url_parser_(options_.endpoint) */
-{
-  // http_client_ = ext::http::client::HttpClientFactory::CreateSync();
-  InitializeLocalEndpoint();
+FluentdExporter::FluentdExporter(const FluentdExporterOptions& options)
+    : options_(options) {
+  Initialize();
 }
 
-FluentdExporter::FluentdExporter() : options_(FluentdExporterOptions()) /* , url_parser_(options_.endpoint) */
-{
-  // http_client_ = ext::http::client::HttpClientFactory::CreateSync();
-  InitializeLocalEndpoint();
+FluentdExporter::FluentdExporter() : options_(FluentdExporterOptions()) {
+  Initialize();
 }
 
 // ----------------------------- Exporter methods ------------------------------
 
-std::unique_ptr<sdk::trace::Recordable> FluentdExporter::MakeRecordable() noexcept
-{
+std::unique_ptr<sdk::trace::Recordable>
+FluentdExporter::MakeRecordable() noexcept {
   return std::unique_ptr<sdk::trace::Recordable>(new Recordable);
 }
 
 sdk::common::ExportResult FluentdExporter::Export(
-    const nostd::span<std::unique_ptr<sdk::trace::Recordable>> &spans) noexcept
-{
-  if (isShutdown_)
-  {
+    const nostd::span<std::unique_ptr<sdk::trace::Recordable>>&
+        spans) noexcept {
+  if (isShutdown_) {
     return sdk::common::ExportResult::kFailure;
   }
-  exporter::fluentd::FluentdSpan json_spans = {};
-  for (auto &recordable : spans)
-  {
-    auto rec = std::unique_ptr<Recordable>(static_cast<Recordable *>(recordable.release()));
-    if (rec != nullptr)
-    {
-      auto json_span = rec->span();
-      // add localEndPoint
-      json_span["localEndpoint"] = local_end_point_;
-      json_spans.push_back(json_span);
-    }
-  }
-  auto body_s = json_spans.dump();
-  printf("%s\n", body_s.c_str());
 
-  // TODO: send it here !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-/*
-  http_client::Body body_v(body_s.begin(), body_s.end());
-  auto result = http_client_->Post(url_parser_.url_, body_v);
-  if (result && result.GetResponse().GetStatusCode() == 200 ||
-      result.GetResponse().GetStatusCode() == 202)
-  {
-    return sdk::common::ExportResult::kSuccess;
-  }
-  else
-  {
-    if (result.GetSessionState() == http_client::SessionState::ConnectFailed)
-    {
-      // TODO -> Handle error / retries
-    }
+  if (spans.size() == 0) {
     return sdk::common::ExportResult::kFailure;
   }
- */
+
+  json events = {};
+
+  { // Write all Spans
+    json obj = json::array();
+    obj.push_back(FLUENT_VALUE_SPAN);
+    json spanevents = json::array();
+    for (auto& recordable : spans) {
+      auto rec = std::unique_ptr<Recordable>(
+          static_cast<Recordable*>(recordable.release()));
+      if (rec != nullptr) {
+        auto span = rec->span();
+        // Span event
+        json record = json::array();
+        record.push_back(span["options"][FLUENT_FIELD_ENDTTIME]);
+        json fields = {};
+        for (auto& kv : span["options"].items()) {
+          fields[kv.key()] = kv.value();
+        }
+        record.push_back(fields);
+        spanevents.push_back(record);
+
+        // Iterate over all events on this span
+        for (auto& v : span["events"]) {
+          auto& event = v[1];
+          std::string name = event[FLUENT_FIELD_NAME];
+          for (auto& kv : span["options"].items()) {
+            // TODO: capture only necessary fields, not all
+            event[kv.key()] = kv.value();
+          }
+          // group by event name
+          if (!events.contains(name)) {
+            events[name] = json::array();
+          }
+          events[name].push_back(v);
+        }
+      }
+    }
+    obj.push_back(spanevents);
+    std::vector<uint8_t> msg = nlohmann::json::to_msgpack(obj);
+    socket_.writeall(msg);
+  }
+
+  for (auto &kv : events.items())
+  {
+    json obj = json::array();
+    obj.push_back(kv.key());
+    json otherevents = json::array();
+    for (auto &v : kv.value())
+    {
+      otherevents.push_back(v);
+    }
+    obj.push_back(otherevents);
+    std::vector<uint8_t> msg = nlohmann::json::to_msgpack(obj);
+    socket_.writeall(msg);
+  }
 
   return sdk::common::ExportResult::kSuccess;
 }
 
-void FluentdExporter::InitializeLocalEndpoint()
-{
-  if (options_.service_name.length())
-  {
-    local_end_point_["serviceName"] = options_.service_name;
+void FluentdExporter::Initialize() {
+  UrlParser url(options_.endpoint);
+  bool isUnixDomain = false;
+
+  if (url.scheme_ == "tcp") {
+    socketparams_ = {AF_INET, SOCK_STREAM, 0};
+  } else if (url.scheme_ == "udp") {
+    socketparams_ = {AF_INET, SOCK_DGRAM, 0};
   }
-  if (options_.ipv4.length())
-  {
-    local_end_point_["ipv4"] = options_.ipv4;
+#ifdef HAVE_UNIX_DOMAIN
+  else if (url.scheme_ == "unix") {
+    socketparams_ = {AF_UNIX, SOCK_STREAM, 0};
+    isUnixDomain = true;
   }
-  if (options_.ipv6.length())
-  {
-    local_end_point_["ipv6"] = options_.ipv6;
+#endif
+  else {
+    throw new std::runtime_error("Invalid endpoint!");
   }
 
-  local_end_point_["port"] = options_.port;
+  addr_.reset(
+      new SocketTools::SocketAddr(options_.endpoint.c_str(), isUnixDomain));
+  // std::cout << "Connecting to " << addr_->toString().c_str() << std::endl;
+
+  socket_ = SocketTools::Socket(socketparams_);
+  bool isConnected = socket_.connect(*addr_);
+  if (!isConnected) {
+    std::string msg("Unable to connect to ");
+    msg += options_.endpoint;
+    throw new std::runtime_error(msg);
+  }
 }
 
 }  // namespace fluentd

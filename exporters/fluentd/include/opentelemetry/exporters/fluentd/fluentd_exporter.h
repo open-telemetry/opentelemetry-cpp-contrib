@@ -16,13 +16,12 @@
 
 #pragma once
 
+#include "opentelemetry/ext/net/common/socket_tools.h"
+
 #include "opentelemetry/exporters/fluentd/recordable.h"
-//#include "opentelemetry/ext/http/client/http_client_factory.h"
-//#include "opentelemetry/ext/http/common/url_parser.h"
+#include "opentelemetry/ext/net/common/url_parser.h"
 #include "opentelemetry/sdk/trace/exporter.h"
 #include "opentelemetry/sdk/trace/span_data.h"
-
-#include "nlohmann/json.hpp"
 
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter
@@ -30,46 +29,18 @@ namespace exporter
 namespace fluentd
 {
 
-constexpr const char *kfluentdEndpointDefault = "http://localhost:9411/api/v2/spans";
-
-static const std::string GetDefaultfluentdEndpoint()
-{
-  const char *otel_exporter_fluentd_endpoint_env = "OTEL_EXPORTER_fluentd_ENDPOINT";
-#if defined(_MSC_VER)
-  // avoid calling std::getenv which is deprecated in MSVC.
-  size_t required_size = 0;
-  getenv_s(&required_size, nullptr, 0, otel_exporter_fluentd_endpoint_env);
-  const char *endpoint_from_env = nullptr;
-  std::unique_ptr<char> endpoint_buffer;
-  if (required_size > 0)
-  {
-    endpoint_buffer = std::unique_ptr<char>{new char[required_size]};
-    getenv_s(&required_size, endpoint_buffer.get(), required_size,
-             otel_exporter_fluentd_endpoint_env);
-    endpoint_from_env = endpoint_buffer.get();
-  }
-#else
-  auto endpoint_from_env = std::getenv(otel_exporter_fluentd_endpoint_env);
-#endif
-  return std::string{endpoint_from_env ? endpoint_from_env : kfluentdEndpointDefault};
-}
-
 /**
  * Struct to hold fluentd  exporter options.
  */
 struct FluentdExporterOptions
 {
   // The endpoint to export to. By default the OpenTelemetry Collector's default endpoint.
-  std::string endpoint     = GetDefaultfluentdEndpoint();
-  TransportFormat format   = TransportFormat::kForward;
-  std::string service_name = "default-service";
-  std::string ipv4;
-  std::string ipv6;
-  int port;
+  TransportFormat format = TransportFormat::kForward;
+  std::string tag = "tag.service";
+  std::string endpoint;
 };
 
 namespace trace_sdk = opentelemetry::sdk::trace;
-// namespace http_client = opentelemetry::ext::http::client;
 
 /**
  * The fluentd exporter exports span data in JSON format as expected by fluentd
@@ -110,17 +81,19 @@ public:
     return true;
   }
 
-private:
-  void InitializeLocalEndpoint();
+protected:
 
-private:
-  // The configuration options associated with this exporter.
-  bool isShutdown_ = false;
+  void Initialize();
+
+  SocketTools::Socket socket_;
+  SocketTools::SocketParams socketparams_{AF_INET, SOCK_STREAM, 0};
+  nostd::unique_ptr<SocketTools::SocketAddr> addr_;
+
   FluentdExporterOptions options_;
-  // std::shared_ptr<http_client::HttpClientSync> http_client_;
-  // opentelemetry::ext::http::common::UrlParser url_parser_;
-  nlohmann::json local_end_point_;
+
+  bool isShutdown_ = false;
 };
+
 }  // namespace fluentd
 }  // namespace exporter
 OPENTELEMETRY_END_NAMESPACE

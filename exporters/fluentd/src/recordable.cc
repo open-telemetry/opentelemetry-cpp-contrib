@@ -19,11 +19,21 @@
 #include <map>
 #include <string>
 
+using namespace nlohmann;
+
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter
 {
 namespace fluentd
 {
+template<typename T>
+static inline json create_message(T ts, json body)
+{
+  auto arr = json::array();
+  arr.push_back(ts);
+  arr.push_back(body);
+  return arr;
+}
 
 // constexpr needs keys to be constexpr, const is next best to use.
 static const std::map<opentelemetry::trace::SpanKind, std::string> kSpanKindMap = {
@@ -47,9 +57,9 @@ void Recordable::SetIdentity(const opentelemetry::trace::SpanContext &span_conte
   span_context.span_id().ToLowerBase16(span_id_lower_base16);
   char parent_span_id_lower_base16[trace::SpanId::kSize * 2] = {0};
   parent_span_id.ToLowerBase16(parent_span_id_lower_base16);
-  span_["id"]       = std::string(span_id_lower_base16, 16);
-  span_["parentId"] = std::string(parent_span_id_lower_base16, 16);
-  span_["traceId"]  = std::string(trace_id_lower_base16, 32);
+  options_[FLUENT_FIELD_SPAN_ID] = std::string(span_id_lower_base16, 16);
+  options_[FLUENT_FIELD_SPAN_PARENTID] = std::string(parent_span_id_lower_base16, 16);
+  options_[FLUENT_FIELD_TRACE_ID] = std::string(trace_id_lower_base16, 32);
 }
 
 void PopulateAttribute(nlohmann::json &attribute,
@@ -88,8 +98,10 @@ void PopulateAttribute(nlohmann::json &attribute,
   }
   else if (nostd::holds_alternative<nostd::string_view>(value))
   {
-    attribute[key.data()] = nostd::string_view(nostd::get<nostd::string_view>(value).data(),
-                                               nostd::get<nostd::string_view>(value).size());
+    attribute[key.data()] =
+        std::string(nostd::get<nostd::string_view>(value).data());
+        // nostd::string_view(nostd::get<nostd::string_view>(value).data(),
+        // nostd::get<nostd::string_view>(value).size());
   }
   else if (nostd::holds_alternative<nostd::span<const uint8_t>>(value))
   {
@@ -160,11 +172,11 @@ void PopulateAttribute(nlohmann::json &attribute,
 void Recordable::SetAttribute(nostd::string_view key,
                               const opentelemetry::common::AttributeValue &value) noexcept
 {
-  if (!span_.contains("tags"))
+  if (!options_.contains(FLUENT_FIELD_PROPERTIES))
   {
-    span_["tags"] = nlohmann::json::object();
+    options_[FLUENT_FIELD_PROPERTIES] = nlohmann::json::object();
   }
-  PopulateAttribute(span_["tags"], key, value);
+  PopulateAttribute(options_[FLUENT_FIELD_PROPERTIES], key, value);
 }
 
 void Recordable::AddEvent(nostd::string_view name,
@@ -177,16 +189,10 @@ void Recordable::AddEvent(nostd::string_view name,
     return true;
   });
 
-  nlohmann::json annotation = {{"value", nlohmann::json::object({{name.data(), attrs}}).dump()},
-                               {"timestamp", std::chrono::duration_cast<std::chrono::milliseconds>(
-                                                 timestamp.time_since_epoch())
-                                                 .count()}};
-
-  if (!span_.contains("annotations"))
-  {
-    span_["annotations"] = nlohmann::json::array();
-  }
-  span_["annotations"].push_back(annotation);
+  // Event name
+  attrs[FLUENT_FIELD_NAME] = name;
+  auto ts       = get_msgpack_eventtimeext();  
+  events_.push_back(create_message(ts, attrs));
 }
 
 void Recordable::AddLink(const opentelemetry::trace::SpanContext &span_context,
@@ -200,28 +206,42 @@ void Recordable::SetStatus(trace::StatusCode code, nostd::string_view descriptio
 {
   if (code != trace::StatusCode::kUnset)
   {
-    span_["tags"]["otel.status_code"] = code;
+    options_["tags"]["otel.status_code"] = code;
     if (code == trace::StatusCode::kError)
     {
-      span_["tags"]["error"] = description;
+      options_["tags"]["error"] = description;
     }
   }
 }
 
 void Recordable::SetName(nostd::string_view name) noexcept
 {
-  span_["name"] = name.data();
+  // Span name.. Should this be tag name?
+  options_[FLUENT_FIELD_NAME] = name.data();
+}
+
+void Recordable::SetResource(const opentelemetry::sdk::resource::Resource &resource) noexcept
+{
+  // only tag attribute is supported by specs as of now.
+  auto attributes = resource.GetAttributes();
+  if (attributes.find("tag") != attributes.end())
+  {
+    tag_ = nostd::get<std::string>(attributes["tag"]);
+  }
 }
 
 void Recordable::SetStartTime(opentelemetry::common::SystemTimestamp start_time) noexcept
 {
-  span_["timestamp"] =
-      std::chrono::duration_cast<std::chrono::microseconds>(start_time.time_since_epoch()).count();
+  options_[FLUENT_FIELD_STARTTIME] =
+      get_msgpack_eventtimeext(
+        std::chrono::duration_cast<std::chrono::seconds>(start_time.time_since_epoch()).count(),
+        std::chrono::duration_cast<std::chrono::nanoseconds>(start_time.time_since_epoch()).count() % 1000000000);
 }
 
 void Recordable::SetDuration(std::chrono::nanoseconds duration) noexcept
 {
-  span_["duration"] = duration.count();
+  options_[FLUENT_FIELD_ENDTTIME] = get_msgpack_eventtimeext();
+  options_[FLUENT_FIELD_DURATION] = duration.count();
 }
 
 void Recordable::SetSpanKind(opentelemetry::trace::SpanKind span_kind) noexcept
@@ -229,7 +249,7 @@ void Recordable::SetSpanKind(opentelemetry::trace::SpanKind span_kind) noexcept
   auto span_iter = kSpanKindMap.find(span_kind);
   if (span_iter != kSpanKindMap.end())
   {
-    span_["kind"] = span_iter->second;
+    options_[FLUENT_FIELD_SPAN_KIND] = span_iter->second;
   }
 }
 
@@ -237,8 +257,8 @@ void Recordable::SetInstrumentationLibrary(
     const opentelemetry::sdk::instrumentationlibrary::InstrumentationLibrary
         &instrumentation_library) noexcept
 {
-  span_["tags"]["otel.library.name"]    = instrumentation_library.GetName();
-  span_["tags"]["otel.library.version"] = instrumentation_library.GetVersion();
+  options_["tags"]["otel.library.name"]    = instrumentation_library.GetName();
+  options_["tags"]["otel.library.version"] = instrumentation_library.GetVersion();
 }
 
 }  // namespace fluentd
