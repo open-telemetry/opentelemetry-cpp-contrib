@@ -1,0 +1,86 @@
+name: httpd instrumentation CI
+
+on:
+  push:
+    branches: "*"
+    paths:
+      - 'instrumentation/httpd/**'
+      - '.github/workflows/httpd.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'instrumentation/httpd/**'
+      - '.github/workflows/httpd.yml'
+
+jobs:
+  build:
+    name: Build module
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-16.04, ubuntu-18.04, ubuntu-20.04]
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+      - name: Setup buildtools
+        run: |
+          sudo ./instrumentation/httpd/setup-buildtools.sh
+          sudo ./instrumentation/httpd/setup-environment.sh
+      - name: Compile
+        run: |
+          cd instrumentation/httpd && ./build.sh
+          cp bazel-out/k8-opt/bin/otel.so /tmp/mod-otel.so
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.os }}_mod-otel.so
+          path: /tmp/mod-otel.so
+
+  clang_format:
+    name: Check code formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+      - name: Setup formatting tool (clang)
+        run: |
+          sudo ./instrumentation/httpd/tools/setup-tools.sh code
+      - name: Check formatting
+        run: ./instrumentation/httpd/tools/format-code.sh
+
+  build_format:
+    name: Check build formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+      - name: Setup formatting tool (buildifier)
+        run: |
+          sudo ./instrumentation/httpd/tools/setup-tools.sh buildifier
+      - name: Check formatting
+        run: ./instrumentation/httpd/tools/format-bazel.sh
+
+  e2e_tests:
+    name: Run end-to-end tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # ubuntu-16.04 tests are failing due to bug in apache2ctl script
+        os: [ubuntu-18.04, ubuntu-20.04]
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+      - name: Setup buildtools
+        run: |
+          sudo ./instrumentation/httpd/tests/setup-tools.sh
+          sudo ./instrumentation/httpd/setup-buildtools.sh
+          sudo ./instrumentation/httpd/setup-environment.sh
+      - name: Compile
+        run: cd instrumentation/httpd && ./build.sh
+      - name: Run tests
+        run: |
+          cd instrumentation/httpd && ./create-otel-load.sh
+          sudo ./httpd_install_otel.sh
+          cd tests && sudo ./run-all.sh

@@ -14,9 +14,9 @@ RUN /setup-ci/setup-buildtools.sh
 # now build plugin itself
 #########################
 
-ADD setup_environment.sh /setup/setup_environment.sh
+ADD setup-environment.sh /setup/setup-environment.sh
 
-RUN /setup/setup_environment.sh
+RUN /setup/setup-environment.sh
 
 COPY src /root/src
 COPY .clang-format /root
