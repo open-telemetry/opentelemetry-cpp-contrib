@@ -37,24 +37,27 @@ using namespace httpd_otel;
 const char kOpenTelemetryKeyNote[] = "OTEL";
 const char kOpenTelemetryKeyOutboundNote[] = "OTEL_PROXY";
 
-static nostd::string_view HttpdGetter(const apr_table_t &hdrs, nostd::string_view trace_type)
+class HttpdCarrier : public opentelemetry::context::propagation::TextMapCarrier
 {
-  auto fnd = apr_table_get(&hdrs, std::string(trace_type).c_str());
-  return fnd ? fnd : "";
-}
-
-static void HttpdSetter(apr_table_t &hdrs,
-                        nostd::string_view trace_type,
-                        nostd::string_view trace_description)
-{
-  apr_table_set(&hdrs, std::string(trace_type).c_str(),
-                std::string(trace_description).c_str());
-}
+public:
+  apr_table_t& hdrs;
+  HttpdCarrier(apr_table_t& headers):hdrs(headers){}
+  virtual nostd::string_view Get(nostd::string_view key) const noexcept override
+  {
+    auto fnd = apr_table_get(&hdrs, std::string(key).c_str());
+    return fnd ? fnd : "";
+  }
+  virtual void Set(nostd::string_view key, nostd::string_view value) noexcept override
+  {
+    apr_table_set(&hdrs, std::string(key).c_str(),
+              std::string(value).c_str());
+  }
+};
 
 // propagators
-opentelemetry::trace::propagation::HttpTraceContext<apr_table_t> PropagatorTraceContext;
-opentelemetry::trace::propagation::B3Propagator<apr_table_t> PropagatorB3SingleHeader;
-opentelemetry::trace::propagation::B3PropagatorMultiHeader<apr_table_t> PropagatorB3MultiHeader;
+opentelemetry::trace::propagation::HttpTraceContext PropagatorTraceContext;
+opentelemetry::trace::propagation::B3Propagator PropagatorB3SingleHeader;
+opentelemetry::trace::propagation::B3PropagatorMultiHeader PropagatorB3MultiHeader;
 
 // from:
 // https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/trace/semantic_conventions/http.md#http-server-semantic-conventions
@@ -123,16 +126,17 @@ static int opentel_handler(request_rec *r, int /* lookup_uri */ )
 
   if (!config.ignore_inbound && config.propagation != OtelPropagation::NONE)
   {
+    HttpdCarrier car(*req->headers_in);
     opentelemetry::v0::context::Context ctx_new,
         ctx_cur = opentelemetry::context::RuntimeContext::GetCurrent();
     switch (config.propagation)
     {
       default:
-        ctx_new = PropagatorTraceContext.Extract(HttpdGetter, *req->headers_in, ctx_cur);
+        ctx_new = PropagatorTraceContext.Extract(car, ctx_cur);
         break;
       case OtelPropagation::B3_SINGLE_HEADER:
       case OtelPropagation::B3_MULTI_HEADER:
-        ctx_new = PropagatorB3SingleHeader.Extract(HttpdGetter, *req->headers_in, ctx_cur);
+        ctx_new = PropagatorB3SingleHeader.Extract(car, ctx_cur);
     }
     req_data->token = opentelemetry::context::RuntimeContext::Attach(ctx_new);
   }
@@ -221,16 +225,17 @@ static int proxy_fixup_handler(request_rec *r)
 
   // mod_proxy simply copies request headers from client therefore inject is into headers_in
   // instead of headers_out
+  HttpdCarrier car(*req->headers_in);
   switch (config.propagation)
   {
     case OtelPropagation::TRACE_CONTEXT:
-      PropagatorTraceContext.Inject(HttpdSetter, *req->headers_in, opentelemetry::context::RuntimeContext::GetCurrent());
+      PropagatorTraceContext.Inject(car, opentelemetry::context::RuntimeContext::GetCurrent());
       break;
     case OtelPropagation::B3_SINGLE_HEADER:
-      PropagatorB3SingleHeader.Inject(HttpdSetter, *req->headers_in, opentelemetry::context::RuntimeContext::GetCurrent());
+      PropagatorB3SingleHeader.Inject(car, opentelemetry::context::RuntimeContext::GetCurrent());
       break;
     case OtelPropagation::B3_MULTI_HEADER:
-      PropagatorB3MultiHeader.Inject(HttpdSetter, *req->headers_in, opentelemetry::context::RuntimeContext::GetCurrent());
+      PropagatorB3MultiHeader.Inject(car, opentelemetry::context::RuntimeContext::GetCurrent());
       break;
     default:  // suppress warning
       break;
