@@ -3,10 +3,10 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # Load OpentTelemetry-CPP dependency
 http_archive(
     name = "io_opentelemetry_cpp",
-    sha256 = "2621cb0efd9bae78a1f06866cf8e96417446a6a70568ed6f804a6cb91d916db1",
-    strip_prefix = "opentelemetry-cpp-bd68a22ff5f2343de68f9d56a68bc53ecd69d567",
+    sha256 = "59e16eab4f534907144882fe70a1ca4514cf720f7b8b6e2a2d999a1b1a9265c8",
+    strip_prefix = "opentelemetry-cpp-b4584adeaae259df89b33af884c641e70a60a7cf",
     urls = [
-        "https://github.com/open-telemetry/opentelemetry-cpp/archive/bd68a22ff5f2343de68f9d56a68bc53ecd69d567.tar.gz"
+        "https://github.com/open-telemetry/opentelemetry-cpp/archive/b4584adeaae259df89b33af884c641e70a60a7cf.tar.gz"
     ],
 )
 
