@@ -73,16 +73,17 @@ void initTracer()
       break;
   }
 
-  std::shared_ptr<sdktrace::SpanProcessor> processor;
+  std::unique_ptr<sdktrace::SpanProcessor> processor;
 
   if (config.batch_opts.max_queue_size)
   {
-    processor = std::make_shared<sdktrace::BatchSpanProcessor>(
-        std::move(exporter), config.batch_opts);
+    processor = std::unique_ptr<sdktrace::SpanProcessor>(
+      new sdktrace::BatchSpanProcessor(std::move(exporter), config.batch_opts));
   }
   else
   {
-    processor = std::make_shared<sdktrace::SimpleSpanProcessor>(std::move(exporter));
+    processor = std::unique_ptr<sdktrace::SpanProcessor>(
+      new sdktrace::SimpleSpanProcessor(std::move(exporter)));
   }
 
   // add custom-configured resources
@@ -93,7 +94,7 @@ void initTracer()
   }
 
   auto provider = nostd::shared_ptr<opentelemetry::trace::TracerProvider>(
-    new sdktrace::TracerProvider(processor,
+    new sdktrace::TracerProvider(std::move(processor),
     opentelemetry::sdk::resource::Resource::Create(resAttrs))
   );
 
