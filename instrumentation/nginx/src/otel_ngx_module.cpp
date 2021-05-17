@@ -615,7 +615,7 @@ static std::unique_ptr<sdktrace::SpanExporter> CreateExporter(const OtelNgxAgent
   return exporter;
 }
 
-static std::shared_ptr<sdktrace::SpanProcessor>
+static std::unique_ptr<sdktrace::SpanProcessor>
 CreateProcessor(const OtelNgxAgentConfig* conf, std::unique_ptr<sdktrace::SpanExporter> exporter) {
   if (conf->processor.type == OtelProcessorBatch) {
     sdktrace::BatchSpanProcessorOptions opts;
@@ -624,11 +624,11 @@ CreateProcessor(const OtelNgxAgentConfig* conf, std::unique_ptr<sdktrace::SpanEx
       std::chrono::milliseconds(conf->processor.batch.scheduleDelayMillis);
     opts.max_export_batch_size = conf->processor.batch.maxExportBatchSize;
 
-    return std::shared_ptr<sdktrace::SpanProcessor>(
+    return std::unique_ptr<sdktrace::SpanProcessor>(
       new sdktrace::BatchSpanProcessor(std::move(exporter), opts));
   }
 
-  return std::shared_ptr<sdktrace::SpanProcessor>(
+  return std::unique_ptr<sdktrace::SpanProcessor>(
     new sdktrace::SimpleSpanProcessor(std::move(exporter)));
 }
 
@@ -646,12 +646,11 @@ static ngx_int_t OtelNgxStart(ngx_cycle_t* cycle) {
   }
 
   auto processor = CreateProcessor(agentConf, std::move(exporter));
-
-  auto provider = nostd::shared_ptr<trace::TracerProvider>(new sdktrace::TracerProvider(
-    processor,
+  auto provider = nostd::shared_ptr<opentelemetry::trace::TracerProvider>(new sdktrace::TracerProvider(
+    std::move(processor),
     opentelemetry::sdk::resource::Resource::Create({{"service.name", agentConf->service.name}})));
 
-  trace::Provider::SetTracerProvider(provider);
+  opentelemetry::trace::Provider::SetTracerProvider(provider);
 
   return NGX_OK;
 }
