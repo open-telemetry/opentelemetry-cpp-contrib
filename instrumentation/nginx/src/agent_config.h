@@ -12,8 +12,7 @@ enum OtelProcessorType { OtelProcessorSimple, OtelProcessorBatch };
 struct OtelNgxAgentConfig {
   struct {
     OtelExporterType type = OtelExporterOTLP;
-    std::string host;
-    uint32_t port;
+    std::string endpoint;
   } exporter;
 
   struct {
