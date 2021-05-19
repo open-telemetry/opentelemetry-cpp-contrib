@@ -17,6 +17,14 @@ static std::string FromStringDatum(toml_datum_t datum) {
 }
 
 static bool SetupOtlpExporter(toml_table_t* table, ngx_log_t* log, OtelNgxAgentConfig* config) {
+  const char *otel_exporter_otlp_endpoint_env = "OTEL_EXPORTER_OTLP_ENDPOINT";
+  auto endpoint_from_env = std::getenv(otel_exporter_otlp_endpoint_env);
+
+  if (endpoint_from_env) {
+    config->exporter.endpoint = endpoint_from_env;
+    return true;
+  }
+
   toml_datum_t hostVal = toml_string_in(table, "host");
   toml_datum_t portVal = toml_int_in(table, "port");
 
@@ -32,8 +40,7 @@ static bool SetupOtlpExporter(toml_table_t* table, ngx_log_t* log, OtelNgxAgentC
     return false;
   }
 
-  config->exporter.host = host;
-  config->exporter.port = portVal.u.i;
+  config->exporter.endpoint = host + ":" + std::to_string(portVal.u.i);;
 
   return true;
 }

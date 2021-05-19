@@ -84,6 +84,7 @@ exporter = "otlp"
 processor = "batch"
 
 [exporters.otlp]
+# Alternatively the OTEL_EXPORTER_OTLP_ENDPOINT environment variable can also be used.
 host = "localhost"
 port = 4317
 

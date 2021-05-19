@@ -603,7 +603,7 @@ static std::unique_ptr<sdktrace::SpanExporter> CreateExporter(const OtelNgxAgent
 
   switch (conf->exporter.type) {
     case OtelExporterOTLP: {
-      std::string endpoint = conf->exporter.host + ":" + std::to_string(conf->exporter.port);
+      std::string endpoint = conf->exporter.endpoint;
       otlp::OtlpExporterOptions opts{endpoint};
       exporter.reset(new otlp::OtlpExporter(opts));
       break;
