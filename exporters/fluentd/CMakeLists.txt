@@ -17,6 +17,9 @@ include_directories(include)
 add_library(opentelemetry_exporter_fluentd_trace src/fluentd_exporter.cc
                                                  src/recordable.cc)
 
+target_link_libraries(opentelemetry_exporter_fluentd_trace
+                      PUBLIC opentelemetry_common)
+
 install(
   TARGETS opentelemetry_exporter_fluentd_trace
   EXPORT "${PROJECT_NAME}-target"
