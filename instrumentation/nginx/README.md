@@ -160,15 +160,18 @@ Dependencies:
 * [Docker](https://docs.docker.com/engine/install/)
 * [Docker Compose](https://docs.docker.com/compose/install/)
 
-In case you don't have elixir locally installed, you can run the mix commands inside `docker run -it --rm -v $(pwd):/otel -w /otel elixir:1.11 bash`
+In case you don't have elixir locally installed, you can run the mix commands inside a container:
+
+```
+docker run -it --rm -v $(pwd):/otel -v /var/run/docker.sock:/var/run/docker.sock -e TEST_ROOT=$(pwd)/test -w /otel elixir:1.11-alpine sh
+apk --no-cache add docker-compose docker-cli
+```
 
 ```
 cd test/instrumentation
 mix dockerfiles .. ubuntu-20.04:mainline
-cd ../..
-docker build -t otel-nginx-test/nginx -f test/Dockerfile.ubuntu-20.04.mainline .
-docker build -t otel-nginx-test/express-backend -f test/backend/simple_express/Dockerfile test/backend/simple_express
-cd test/instrumentation
+docker build -t otel-nginx-test/nginx -f ../Dockerfile.ubuntu-20.04.mainline ../..
+docker build -t otel-nginx-test/express-backend -f ../backend/simple_express/Dockerfile ../backend/simple_express
 mix test
 ```
 
