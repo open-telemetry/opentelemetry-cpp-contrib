@@ -38,7 +38,7 @@ __OpenTelemetryPath__
 This option specifies file to which to export when `file` exporter is used. If no `OpenTelemetryPath` is specified then spans goes to standard error output which is apache error log.
 
 __OpenTelemetryEndpoint__
-OpenTelemetryEndpoint specifies where to export spans when OTLP is used. Put hostname and then port. Example value: `host.docker.internal:55680`
+OpenTelemetryEndpoint specifies where to export spans when OTLP is used. Put hostname and then port. Example value: `host.docker.internal:4317`
 
 __OpenTelemetryBatch__
 This directive takes 3 numerical arguments for batch processing:
