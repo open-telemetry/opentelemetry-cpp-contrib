@@ -8,6 +8,7 @@ extern "C" {
 
 enum OtelExporterType { OtelExporterOTLP, OtelExporterJaeger };
 enum OtelProcessorType { OtelProcessorSimple, OtelProcessorBatch };
+enum OtelSamplerType { OtelSamplerAlwaysOn, OtelSamplerAlwaysOff, OtelSamplerTraceIdRatioBased };
 
 struct OtelNgxAgentConfig {
   struct {
@@ -28,6 +29,12 @@ struct OtelNgxAgentConfig {
       uint32_t scheduleDelayMillis = 5000;
     } batch;
   } processor;
+
+  struct {
+    OtelSamplerType type = OtelSamplerAlwaysOn;
+    bool parentBased = false;
+    double ratio = 0;
+  } sampler;
 };
 
 bool OtelAgentConfigLoad(const std::string& path, ngx_log_t* log, OtelNgxAgentConfig* config);

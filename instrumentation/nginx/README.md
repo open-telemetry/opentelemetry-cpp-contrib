@@ -95,6 +95,11 @@ max_export_batch_size = 512
 
 [service]
 name = "nginx-proxy" # Opentelemetry resource name
+
+[sampler]
+name = "AlwaysOn" # Also: AlwaysOff, TraceIdRatioBasedSampler
+ratio = 0.1
+parent_based = false
 ```
 
 ## nginx directives

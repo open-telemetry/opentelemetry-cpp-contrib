@@ -21,8 +21,13 @@ extern ngx_module_t otel_ngx_module;
 #include <opentelemetry/exporters/otlp/otlp_exporter.h>
 #include <opentelemetry/nostd/shared_ptr.h>
 #include <opentelemetry/sdk/trace/batch_span_processor.h>
+#include <opentelemetry/sdk/trace/id_generator.h>
 #include <opentelemetry/sdk/trace/simple_processor.h>
 #include <opentelemetry/sdk/trace/tracer_provider.h>
+#include <opentelemetry/sdk/trace/samplers/always_off.h>
+#include <opentelemetry/sdk/trace/samplers/always_on.h>
+#include <opentelemetry/sdk/trace/samplers/parent.h>
+#include <opentelemetry/sdk/trace/samplers/trace_id_ratio.h>
 #include <opentelemetry/trace/provider.h>
 
 namespace trace = opentelemetry::trace;
@@ -632,6 +637,52 @@ CreateProcessor(const OtelNgxAgentConfig* conf, std::unique_ptr<sdktrace::SpanEx
     new sdktrace::SimpleSpanProcessor(std::move(exporter)));
 }
 
+static std::unique_ptr<sdktrace::Sampler>
+CreateSampler(const OtelNgxAgentConfig* conf) {
+  if (conf->sampler.parentBased) {
+    std::shared_ptr<sdktrace::Sampler> sampler;
+
+    switch (conf->sampler.type) {
+      case OtelSamplerAlwaysOn: {
+        sampler = std::make_shared<sdktrace::AlwaysOnSampler>();
+        break;
+      }
+      case OtelSamplerAlwaysOff: {
+        sampler = std::make_shared<sdktrace::AlwaysOffSampler>();
+        break;
+      }
+      case OtelSamplerTraceIdRatioBased: {
+        sampler = std::make_shared<sdktrace::TraceIdRatioBasedSampler>(conf->sampler.ratio);
+        break;
+      }
+      default:
+        break;
+    }
+
+    return std::unique_ptr<sdktrace::ParentBasedSampler>(new sdktrace::ParentBasedSampler(sampler));
+  }
+
+  std::unique_ptr<sdktrace::Sampler> sampler;
+
+  switch (conf->sampler.type) {
+    case OtelSamplerAlwaysOn: {
+      sampler.reset(new sdktrace::AlwaysOnSampler());
+      break;
+    }
+    case OtelSamplerAlwaysOff: {
+      sampler.reset(new sdktrace::AlwaysOffSampler());
+      break;
+    }
+    case OtelSamplerTraceIdRatioBased: {
+      sampler.reset(new sdktrace::TraceIdRatioBasedSampler(conf->sampler.ratio));
+      break;
+    }
+    default:
+      break;
+  }
+  return sampler;
+}
+
 static ngx_int_t OtelNgxStart(ngx_cycle_t* cycle) {
   OtelMainConf* otelMainConf =
     (OtelMainConf*)ngx_http_cycle_get_module_main_conf(cycle, otel_ngx_module);
@@ -645,12 +696,20 @@ static ngx_int_t OtelNgxStart(ngx_cycle_t* cycle) {
     return NGX_ERROR;
   }
 
+  auto sampler = CreateSampler(agentConf);
+
+  if (!sampler) {
+    ngx_log_error(NGX_LOG_ERR, cycle->log, 0, "Unable to create sampler - invalid type");
+    return NGX_ERROR;
+  }
+
   auto processor = CreateProcessor(agentConf, std::move(exporter));
   auto provider = nostd::shared_ptr<opentelemetry::trace::TracerProvider>(new sdktrace::TracerProvider(
     std::move(processor),
-    opentelemetry::sdk::resource::Resource::Create({{"service.name", agentConf->service.name}})));
+    opentelemetry::sdk::resource::Resource::Create({{"service.name", agentConf->service.name}}),
+    std::move(sampler)));
 
-  opentelemetry::trace::Provider::SetTracerProvider(provider);
+  opentelemetry::trace::Provider::SetTracerProvider(std::move(provider));
 
   return NGX_OK;
 }
