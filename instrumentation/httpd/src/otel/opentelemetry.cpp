@@ -30,17 +30,17 @@ namespace httpd_otel
 {
 
 // TODO: use semantic conventions  https://github.com/open-telemetry/opentelemetry-cpp/issues/566
-const nostd::string_view kAttrHTTPServerName         = "http.server_name";
-const nostd::string_view kAttrHTTPMethod             = "http.method";
-const nostd::string_view kAttrHTTPScheme             = "http.scheme";
-const nostd::string_view kAttrHTTPHost               = "http.host";
-const nostd::string_view kAttrHTTPTarget             = "http.target";
-const nostd::string_view kAttrHTTPUrl                = "http.url";
-const nostd::string_view kAttrHTTPFlavor             = "http.flavor";
-const nostd::string_view kAttrHTTPClientIP           = "http.client_ip";
-const nostd::string_view kAttrNETPeerIP              = "net.peer.ip";
-const nostd::string_view kAttrHTTPStatusCode         = "http.status_code";
-const nostd::string_view kAttrHTTPResponseContentLen = "http.response_content_length";
+const opentelemetry::v0::nostd::string_view kAttrHTTPServerName         = "http.server_name";
+const opentelemetry::v0::nostd::string_view kAttrHTTPMethod             = "http.method";
+const opentelemetry::v0::nostd::string_view kAttrHTTPScheme             = "http.scheme";
+const opentelemetry::v0::nostd::string_view kAttrHTTPHost               = "http.host";
+const opentelemetry::v0::nostd::string_view kAttrHTTPTarget             = "http.target";
+const opentelemetry::v0::nostd::string_view kAttrHTTPUrl                = "http.url";
+const opentelemetry::v0::nostd::string_view kAttrHTTPFlavor             = "http.flavor";
+const opentelemetry::v0::nostd::string_view kAttrHTTPClientIP           = "http.client_ip";
+const opentelemetry::v0::nostd::string_view kAttrNETPeerIP              = "net.peer.ip";
+const opentelemetry::v0::nostd::string_view kAttrHTTPStatusCode         = "http.status_code";
+const opentelemetry::v0::nostd::string_view kAttrHTTPResponseContentLen = "http.response_content_length";
 
 OtelConfig config;
 
@@ -93,7 +93,7 @@ void initTracer()
     resAttrs[it.first] = it.second;
   }
 
-  auto provider = nostd::shared_ptr<opentelemetry::trace::TracerProvider>(
+  auto provider = opentelemetry::v0::nostd::shared_ptr<opentelemetry::trace::TracerProvider>(
     new sdktrace::TracerProvider(std::move(processor),
     opentelemetry::sdk::resource::Resource::Create(resAttrs))
   );
@@ -102,7 +102,7 @@ void initTracer()
   opentelemetry::trace::Provider::SetTracerProvider(provider);
 }
 
-nostd::shared_ptr<opentelemetry::trace::Tracer> get_tracer()
+opentelemetry::v0::nostd::shared_ptr<opentelemetry::trace::Tracer> get_tracer()
 {
   auto provider = opentelemetry::trace::Provider::GetTracerProvider();
   return provider->GetTracer(KHTTPDOTelTracerName);

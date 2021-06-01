@@ -42,12 +42,12 @@ class HttpdCarrier : public opentelemetry::context::propagation::TextMapCarrier
 public:
   apr_table_t& hdrs;
   HttpdCarrier(apr_table_t& headers):hdrs(headers){}
-  virtual nostd::string_view Get(nostd::string_view key) const noexcept override
+  virtual opentelemetry::v0::nostd::string_view Get(opentelemetry::v0::nostd::string_view key) const noexcept override
   {
     auto fnd = apr_table_get(&hdrs, std::string(key).c_str());
     return fnd ? fnd : "";
   }
-  virtual void Set(nostd::string_view key, nostd::string_view value) noexcept override
+  virtual void Set(opentelemetry::v0::nostd::string_view key, opentelemetry::v0::nostd::string_view value) noexcept override
   {
     apr_table_set(&hdrs, std::string(key).c_str(),
               std::string(value).c_str());
