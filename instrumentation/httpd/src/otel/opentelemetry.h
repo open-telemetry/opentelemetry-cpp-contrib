@@ -20,10 +20,10 @@
 #include <fstream>
 #include <unordered_map>
 
+#include <opentelemetry/context/context.h>
+#include <opentelemetry/nostd/string_view.h>
 #include <opentelemetry/sdk/trace/batch_span_processor.h>
 #include "opentelemetry/trace/provider.h"
-#include <opentelemetry/nostd/string_view.h>
-#include <opentelemetry/context/context.h>
 
 namespace httpd_otel
 {

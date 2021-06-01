@@ -7,6 +7,7 @@ find_package(Threads REQUIRED)
 find_package(protobuf REQUIRED)
 find_package(gRPC REQUIRED)
 find_package(CURL REQUIRED)
+find_package(Thrift REQUIRED)
 
 add_library(otel_httpd_module SHARED
   src/otel/mod_otel.cpp
