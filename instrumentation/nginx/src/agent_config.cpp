@@ -17,6 +17,14 @@ static std::string FromStringDatum(toml_datum_t datum) {
 }
 
 static bool SetupOtlpExporter(toml_table_t* table, ngx_log_t* log, OtelNgxAgentConfig* config) {
+  const char *otel_exporter_otlp_endpoint_env = "OTEL_EXPORTER_OTLP_ENDPOINT";
+  auto endpoint_from_env = std::getenv(otel_exporter_otlp_endpoint_env);
+
+  if (endpoint_from_env) {
+    config->exporter.endpoint = endpoint_from_env;
+    return true;
+  }
+
   toml_datum_t hostVal = toml_string_in(table, "host");
   toml_datum_t portVal = toml_int_in(table, "port");
 
@@ -32,8 +40,7 @@ static bool SetupOtlpExporter(toml_table_t* table, ngx_log_t* log, OtelNgxAgentC
     return false;
   }
 
-  config->exporter.host = host;
-  config->exporter.port = portVal.u.i;
+  config->exporter.endpoint = host + ":" + std::to_string(portVal.u.i);;
 
   return true;
 }
@@ -141,6 +148,48 @@ static bool SetupProcessor(toml_table_t* root, ngx_log_t* log, OtelNgxAgentConfi
   return true;
 }
 
+static bool SetupSampler(toml_table_t* root, ngx_log_t* log, OtelNgxAgentConfig* config) {
+  toml_table_t* sampler = toml_table_in(root, "sampler");
+
+  if (!sampler) {
+    return true;
+  }
+
+  toml_datum_t samplerNameVal = toml_string_in(sampler, "name");
+
+  if (samplerNameVal.ok) {
+    std::string samplerName = FromStringDatum(samplerNameVal);
+
+    if (samplerName == "AlwaysOn") {
+      config->sampler.type = OtelSamplerAlwaysOn;
+    } else if (samplerName == "AlwaysOff") {
+      config->sampler.type = OtelSamplerAlwaysOff;
+    } else if (samplerName == "TraceIdRatioBased") {
+      config->sampler.type = OtelSamplerTraceIdRatioBased;
+
+      toml_datum_t ratio = toml_double_in(sampler, "ratio");
+
+      if (ratio.ok) {
+        config->sampler.ratio = ratio.u.d;
+      } else {
+        ngx_log_error(NGX_LOG_ERR, log, 0, "TraceIdRatioBased requires a ratio to be specified");
+        return false;
+      }
+    } else {
+      ngx_log_error(NGX_LOG_ERR, log, 0, "Unsupported sampler %s", samplerName.c_str());
+      return false;
+    }
+  }
+
+  toml_datum_t parentBased = toml_bool_in(sampler, "parent_based");
+
+  if (parentBased.ok) {
+    config->sampler.parentBased = parentBased.u.b;
+  }
+
+  return true;
+}
+
 bool OtelAgentConfigLoad(const std::string& path, ngx_log_t* log, OtelNgxAgentConfig* config) {
   FILE* confFile = fopen(path.c_str(), "r");
 
@@ -169,6 +218,10 @@ bool OtelAgentConfigLoad(const std::string& path, ngx_log_t* log, OtelNgxAgentCo
   }
 
   if (!SetupProcessor(root, log, config)) {
+    return false;
+  }
+
+  if (!SetupSampler(root, log, config)) {
     return false;
   }
 
