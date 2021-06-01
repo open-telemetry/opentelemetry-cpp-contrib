@@ -54,6 +54,7 @@ jobs:
       - name: Compile prerequisites
         run: |
           cd instrumentation/httpd && ./setup-cmake.sh
+      - name: Compile
         run: |
           cd instrumentation/httpd
           mkdir -p build
