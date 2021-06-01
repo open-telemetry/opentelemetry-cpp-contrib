@@ -10,9 +10,9 @@
 namespace trace = opentelemetry::trace;
 namespace nostd = opentelemetry::nostd;
 
-using OtelB3Propagator = trace::propagation::B3Propagator<OtelCarrier>;
-using OtelB3MultiPropagator = trace::propagation::B3PropagatorMultiHeader<OtelCarrier>;
-using OtelW3CPropagator = trace::propagation::HttpTraceContext<OtelCarrier>;
+using OtelB3Propagator = trace::propagation::B3Propagator;
+using OtelB3MultiPropagator = trace::propagation::B3PropagatorMultiHeader;
+using OtelW3CPropagator = trace::propagation::HttpTraceContext;
 
 static bool FindHeader(ngx_http_request_t* req, nostd::string_view key, nostd::string_view* value) {
   ngx_list_part_t* part = &req->headers_in.headers.part;
@@ -42,21 +42,29 @@ static bool FindHeader(ngx_http_request_t* req, nostd::string_view key, nostd::s
   return false;
 }
 
-static void OtelPopulateCarrier(
-  OtelCarrier& carrier, nostd::string_view traceType, nostd::string_view traceValue) {
-  TraceContextSetTraceHeader(carrier.traceContext, traceType, traceValue);
-}
-
-static nostd::string_view OtelGetReqHeader(const OtelCarrier& carrier, nostd::string_view key) {
-  nostd::string_view value;
-  FindHeader(carrier.req, key, &value);
-  return value;
-}
 
 static bool HasHeader(ngx_http_request_t* req, nostd::string_view header) {
   nostd::string_view value;
   return FindHeader(req, header, &value);
 }
+
+class TextMapCarrierNgx : public opentelemetry::context::propagation::TextMapCarrier
+{
+public:
+  TextMapCarrierNgx(OtelCarrier* carrier) : carrier_(carrier) {}
+  virtual nostd::string_view Get(nostd::string_view key) const noexcept override
+  {
+    nostd::string_view value;
+    FindHeader(carrier_->req, key, &value);
+    return value;
+  }
+  virtual void Set(nostd::string_view key, nostd::string_view value) noexcept override
+  {
+    TraceContextSetTraceHeader(carrier_->traceContext, key, value);
+  }
+
+  OtelCarrier* carrier_;
+};
 
 TracePropagationType GetPropagationType(ngx_http_request_t* req) {
   OtelNgxLocationConf* config = GetOtelLocationConf(req);
@@ -65,18 +73,19 @@ TracePropagationType GetPropagationType(ngx_http_request_t* req) {
 
 opentelemetry::context::Context ExtractContext(OtelCarrier* carrier) {
   TracePropagationType propagationType = GetPropagationType(carrier->req);
+  TextMapCarrierNgx textMapCarrier(carrier);
 
   opentelemetry::context::Context root;
   switch (propagationType) {
     case TracePropagationW3C: {
-      return OtelW3CPropagator().Extract(OtelGetReqHeader, *carrier, root);
+      return OtelW3CPropagator().Extract(textMapCarrier, root);
     }
     case TracePropagationB3: {
       if (HasHeader(carrier->req, "b3")) {
-        return OtelB3Propagator().Extract(OtelGetReqHeader, *carrier, root);
+        return OtelB3Propagator().Extract(textMapCarrier, root);
       }
 
-      return OtelB3MultiPropagator().Extract(OtelGetReqHeader, *carrier, root);
+      return OtelB3MultiPropagator().Extract(textMapCarrier, root);
     }
     default:
       return root;
@@ -85,13 +94,15 @@ opentelemetry::context::Context ExtractContext(OtelCarrier* carrier) {
 
 void InjectContext(OtelCarrier* carrier, opentelemetry::context::Context context) {
   TracePropagationType propagationType = GetPropagationType(carrier->req);
+  TextMapCarrierNgx textMapCarrier(carrier);
+
   switch (propagationType) {
     case TracePropagationW3C: {
-      OtelW3CPropagator().Inject(OtelPopulateCarrier, *carrier, context);
+      OtelW3CPropagator().Inject(textMapCarrier, context);
       break;
     }
     case TracePropagationB3: {
-      OtelB3Propagator().Inject(OtelPopulateCarrier, *carrier, context);
+      OtelB3Propagator().Inject(textMapCarrier, context);
       break;
     }
     default:

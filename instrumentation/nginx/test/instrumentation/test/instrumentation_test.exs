@@ -76,8 +76,12 @@ defmodule InstrumentationTest do
     read_traces(file, num_traces, timeout, [])
   end
 
+  def collect_resource_spans(trace) do
+    trace["resourceSpans"]
+  end
+
   def collect_spans(trace) do
-    [resource_spans] = trace["resourceSpans"]
+    [resource_spans] = collect_resource_spans(trace)
     [il_spans] = resource_spans["instrumentationLibrarySpans"]
     il_spans["spans"]
   end
@@ -127,6 +131,18 @@ defmodule InstrumentationTest do
   setup %{trace_file: trace_file} = ctx do
     read_until_eof(trace_file)
     ctx
+  end
+
+  test "HTTP upstream | resource attributes", %{trace_file: trace_file} do
+    %HTTPoison.Response{status_code: status} = HTTPoison.get!("#{@host}/?foo=bar&x=42")
+
+    [trace] = read_traces(trace_file, 1)
+    [resource_spans] = collect_resource_spans(trace)
+    resource = resource_spans["resource"]
+
+    assert status == 200
+
+    assert attrib(resource, "service.name") == "nginx-proxy"
   end
 
   test "HTTP upstream | span attributes", %{trace_file: trace_file} do
