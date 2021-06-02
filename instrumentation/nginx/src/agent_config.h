@@ -14,6 +14,8 @@ struct OtelNgxAgentConfig {
   struct {
     OtelExporterType type = OtelExporterOTLP;
     std::string endpoint;
+    bool use_ssl_credentials = false;
+    std::string ssl_credentials_cacert_path = "";
   } exporter;
 
   struct {

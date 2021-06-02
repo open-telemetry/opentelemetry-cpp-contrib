@@ -42,6 +42,16 @@ static bool SetupOtlpExporter(toml_table_t* table, ngx_log_t* log, OtelNgxAgentC
 
   config->exporter.endpoint = host + ":" + std::to_string(portVal.u.i);;
 
+  toml_datum_t useSSLVal = toml_bool_in(table, "use_ssl");
+  if (useSSLVal.ok) {
+    config->exporter.use_ssl_credentials = useSSLVal.u.b;
+
+    toml_datum_t certPathVal = toml_string_in(table, "ssl_cert_path");
+    if (certPathVal.ok) {
+      config->exporter.ssl_credentials_cacert_path = FromStringDatum(certPathVal);
+    }
+  }
+
   return true;
 }
 

@@ -610,6 +610,8 @@ static std::unique_ptr<sdktrace::SpanExporter> CreateExporter(const OtelNgxAgent
     case OtelExporterOTLP: {
       std::string endpoint = conf->exporter.endpoint;
       otlp::OtlpExporterOptions opts{endpoint};
+      opts.use_ssl_credentials = conf->exporter.use_ssl_credentials;
+      opts.ssl_credentials_cacert_path = conf->exporter.ssl_credentials_cacert_path;
       exporter.reset(new otlp::OtlpExporter(opts));
       break;
     }
