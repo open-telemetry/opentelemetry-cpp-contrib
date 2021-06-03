@@ -69,7 +69,7 @@ void PopulateAttribute(nlohmann::json &attribute,
   // Assert size of variant to ensure that this method gets updated if the variant
   // definition changes
   static_assert(
-      nostd::variant_size<opentelemetry::common::AttributeValue>::value == kAttributeValueSize,
+      nostd::variant_size<opentelemetry::common::AttributeValue>::value == kAttributeValueSize+1,
       "AttributeValue contains unknown type");
 
   if (nostd::holds_alternative<bool>(value))

@@ -19,7 +19,7 @@
 
 #include "nlohmann/json.hpp"
 
-using UrlParser = opentelemetry::ext::http::common::UrlParser;
+using UrlParser = opentelemetry::ext::net::common::UrlParser;
 
 using namespace nlohmann;
 

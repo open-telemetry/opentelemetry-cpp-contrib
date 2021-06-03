@@ -13,12 +13,15 @@
 # limitations under the License.
 
 include_directories(include)
+include_directories(
+  ${OPENTELEMETRY_SOURCE_DIR}/third_party/nlohmann-json/single_include)
 
 add_library(opentelemetry_exporter_fluentd_trace src/fluentd_exporter.cc
                                                  src/recordable.cc)
 
 target_link_libraries(opentelemetry_exporter_fluentd_trace
-                      PUBLIC opentelemetry_common)
+                      PUBLIC
+                      opentelemetry_common)
 
 install(
   TARGETS opentelemetry_exporter_fluentd_trace
