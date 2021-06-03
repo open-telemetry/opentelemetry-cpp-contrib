@@ -48,8 +48,8 @@ static inline nlohmann::byte_container_with_subtype<std::vector<std::uint8_t>> g
   {
     std::chrono::system_clock::time_point tp = std::chrono::system_clock::now();
     auto duration = tp.time_since_epoch();
-    seconds       = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
-    nanoseconds   = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count() % 1000000000;
+    seconds       = static_cast<int32_t>(std::chrono::duration_cast<std::chrono::seconds>(duration).count());
+    nanoseconds   = static_cast<int32_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count() % 1000000000);
   }
   nlohmann::byte_container_with_subtype<std::vector<std::uint8_t>> ts{
       std::vector<uint8_t>{0, 0, 0, 0, 0, 0, 0, 0}};
