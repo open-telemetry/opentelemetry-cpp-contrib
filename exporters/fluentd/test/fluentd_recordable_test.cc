@@ -16,9 +16,11 @@
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
+#ifndef NOMINMAX
 #define NOMINMAX
-#include <Windows.h>
+#endif
 #include <WinSock2.h>
+#include <Windows.h>
 #endif
 
 #include "opentelemetry/sdk/trace/recordable.h"
@@ -28,12 +30,12 @@
 #include "opentelemetry/trace/provider.h"
 
 #include "opentelemetry/sdk/trace/exporter.h"
-#include "opentelemetry/sdk/trace/tracer_provider.h"
 #include "opentelemetry/sdk/trace/random_id_generator.h"
+#include "opentelemetry/sdk/trace/tracer_provider.h"
 
 #include "opentelemetry/common/timestamp.h"
-#include "opentelemetry/exporters/fluentd/recordable.h"
 #include "opentelemetry/exporters/fluentd/fluentd_exporter.h"
+#include "opentelemetry/exporters/fluentd/recordable.h"
 
 #include <iostream>
 
@@ -42,12 +44,20 @@
 
 #include <gtest/gtest.h>
 
-namespace trace    = opentelemetry::trace;
-namespace nostd    = opentelemetry::nostd;
+#include <opentelemetry/ext/net/common/socket_server.h>
+
+using namespace SOCKET_SERVER_NS;
+
+using namespace opentelemetry::sdk::trace;
+using namespace opentelemetry::sdk::resource;
+
+namespace trace = opentelemetry::trace;
+namespace nostd = opentelemetry::nostd;
 namespace sdktrace = opentelemetry::sdk::trace;
-using json         = nlohmann::json;
+using json = nlohmann::json;
 
 #if 0
+
 // Testing Shutdown functionality of OStreamSpanExporter, should expect no data to be sent to Stream
 TEST(FluentdSpanRecordable, SetIdentity)
 {
@@ -290,14 +300,62 @@ TYPED_TEST(FluentdIntAttributeTest, SetIntArrayAttribute)
   nlohmann::json j_span = {{"tags", {{"int_arr_attr", {4, 5, 6}}}}};
   EXPECT_EQ(rec.span(), j_span);
 }
-#endif
 
-using namespace opentelemetry::sdk::trace;
-using namespace opentelemetry::sdk::resource;
+#endif
 
 using Properties = std::map<std::string, opentelemetry::common::AttributeValue>;
 
+struct TestServer {
+  SocketServer& server;
+  std::atomic<uint32_t> count{0};
+
+  TestServer(SocketServer& server) : server(server) {
+    server.onRequest = [&](SocketServer::Connection& conn) {
+
+      std::vector<uint8_t> msg(
+          conn.request_buffer.data(),
+          conn.request_buffer.data() + conn.request_buffer.size());
+
+      try {
+        auto j = nlohmann::json::from_msgpack(msg);
+        std::cout
+            << "[" << count.fetch_add(1)
+            << "] SocketServer received payload: " << std::endl
+            << j.dump(2) << std::endl;
+
+        conn.response_buffer = j.dump(2);
+        conn.state.insert(SocketServer::Connection::Responding);
+        conn.request_buffer.clear();
+      } catch (std::exception&) {
+        conn.state.insert(SocketServer::Connection::Receiving);
+        // skip invalid payload
+      }
+    };
+  }
+
+  void Start() { server.Start(); }
+
+  void Stop() { server.Stop(); }
+
+  void WaitForEvents(uint32_t expectedCount, uint32_t timeout) {
+    std::this_thread::sleep_for(std::chrono::seconds(timeout));
+    EXPECT_EQ(count.load(), expectedCount);
+  }
+};
+
 TEST(FluentdExporter, SendTraceEvents) {
+  bool isRunning = true;
+
+#if 0
+  // Start test server
+  SocketAddr destination("127.0.0.1:24222");
+  SocketParams params{AF_INET, SOCK_STREAM, 0};
+  SocketServer socketServer(destination, params);
+  TestServer testServer(socketServer);
+  testServer.Start();
+#endif
+
+  // Connect to local test server
   opentelemetry::exporter::fluentd::FluentdExporterOptions options;
   options.endpoint = "tcp://127.0.0.1:24222";
   options.tag = "tag.my_service";
@@ -308,57 +366,56 @@ TEST(FluentdExporter, SendTraceEvents) {
   auto processor = std::unique_ptr<SpanProcessor>(
       new sdktrace::SimpleSpanProcessor(std::move(exporter)));
 
-  auto provider = nostd::shared_ptr<trace::TracerProvider>(new TracerProvider(std::move(processor)));
+  auto provider = nostd::shared_ptr<trace::TracerProvider>(
+      new TracerProvider(std::move(processor)));
 
   // Set the global trace provider
   opentelemetry::trace::Provider::SetTracerProvider(provider);
 
   std::string providerName = "MyInstrumentationName";
-  auto tracer              = provider->GetTracer(providerName);
+  auto tracer = provider->GetTracer(providerName);
 
   // Span attributes
   Properties attribs = {{"attrib1", 1}, {"attrib2", 2}};
 
-  auto topSpan = tracer->StartSpan("MySpanTop");
-  // std::this_thread::sleep_for(std::chrono::seconds(1));
-
-  auto outerSpan = tracer->StartSpan("MySpanL2", attribs);
-
-  // Create nested span. Note how we share the attributes here.
-  // It is Okay to either reuse/share or have your own attributes.
-  auto innerSpan = tracer->StartSpan("MySpanL3", attribs);
-
-  // Add first event
-  std::string eventName1 = "MyEvent1";
-  Properties event1      = {
-      {"uint32Key", (uint32_t)1234}, {"uint64Key", (uint64_t)1234567890}, {"strKey", "someValue"}};
-  EXPECT_NO_THROW(outerSpan->AddEvent(eventName1, event1));
-  // std::this_thread::sleep_for(std::chrono::seconds(1));
-
-  // Add second event
-  std::string eventName2 = "MyEvent2";
-  Properties event2      = {{"uint32Key", (uint32_t)9876},
-                       {"uint64Key", (uint64_t)987654321},
-                       {"strKey", "anotherValue"}};
-
-  EXPECT_NO_THROW(outerSpan->AddEvent(eventName2, event2));
-  // std::this_thread::sleep_for(std::chrono::seconds(2));
-
-  std::string eventName3 = "MyEvent3";
-  Properties event3      =
+  auto span1 = tracer->StartSpan("MySpanL1");
   {
-      {"metadata", (const char *)"ai_event"}, // BROKEN!!!!
-      {"uint32Key", (uint32_t)9876},
-      {"uint64Key", (uint64_t)987654321}
-  };
+    // auto scope = tracer->WithActiveSpan(span1);
+    auto span2 = tracer->StartSpan("MySpanL2", attribs);
+    {
+      auto span3 = tracer->StartSpan("MySpanL3", attribs);
 
-  EXPECT_NO_THROW(innerSpan->AddEvent(eventName3, event3));
-  std::this_thread::sleep_for(std::chrono::seconds(1));
+      // Add first event
+      std::string eventName1 = "MyEvent1";
+      Properties event1 = {{"uint32Key", (uint32_t)1234},
+                           {"uint64Key", (uint64_t)1234567890},
+                           {"strKey", "someValue"}};
+      span2->AddEvent(eventName1, event1);
 
-  EXPECT_NO_THROW(innerSpan->End());  // end innerSpan
+      // Add second event
+      std::string eventName2 = "MyEvent2";
+      Properties event2 = {{"uint32Key", (uint32_t)9876},
+                           {"uint64Key", (uint64_t)987654321},
+                           {"strKey", "anotherValue"}};
+      span2->AddEvent(eventName2, event2);
 
-  EXPECT_NO_THROW(outerSpan->End());  // end outerSpan
-  EXPECT_NO_THROW(topSpan->End());    // end topSpan
+      // Add third event
+      std::string eventName3 = "MyEvent3";
+      Properties event3 = {{"metadata", "ai_event"},
+                           {"uint32Key", (uint32_t)9876},
+                           {"uint64Key", (uint64_t)987654321}};
+      span3->AddEvent(eventName3, event3);
 
-  EXPECT_NO_THROW(tracer->CloseWithMicroseconds(0));
+      span3->End();  // end span3
+    }
+    span2->End();  // end span2
+  }
+  span1->End();  // end span1
+
+  tracer->CloseWithMicroseconds(1000000);
+#if 0
+  testServer.WaitForEvents(5, 1);
+  testServer.Stop();
+#endif
 }
+
