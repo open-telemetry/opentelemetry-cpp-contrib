@@ -87,9 +87,9 @@ processor = "batch"
 # Alternatively the OTEL_EXPORTER_OTLP_ENDPOINT environment variable can also be used.
 host = "localhost"
 port = 4317
-# Optionally enable SSL, for endpoints that support it
+# Optional: enable SSL, for endpoints that support it
 # use_ssl = true
-# Optionally set a filesystem path to a pem file to be used for SSL encryption
+# Optional: set a filesystem path to a pem file to be used for SSL encryption
 # (when use_ssl = true)
 # ssl_cert_path = "/path/to/cert.pem"
 
