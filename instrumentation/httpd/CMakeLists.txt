@@ -15,7 +15,7 @@ add_library(otel_httpd_module SHARED
 )
 
 target_compile_options(otel_httpd_module
-  PRIVATE -Wall -Wextra -fpermissive
+  PRIVATE -Wall -Wextra
 )
 
 install(TARGETS otel_httpd_module DESTINATION ".")

@@ -94,7 +94,7 @@ HttpdStartSpanAttributes GetAttrsFromRequest(request_rec *r)
 
 // main function
 // TODO: fix this for scenarios where apache configuration is just updated (apachectl -k graceful)
-static void opentel_child_created(apr_pool_t *p, server_rec *s)
+static void opentel_child_created(apr_pool_t*, server_rec*)
 {
   initTracer();
 }
@@ -277,7 +277,7 @@ static int proxy_end_handler(int *status, request_rec *r)
 // PARSING CONFIGURATION OPTIONS
 /////////////////////////////////////////////////
 
-static const char *otel_set_exporter(cmd_parms *cmd, void *cfg, const char *arg)
+const char *otel_set_exporter(cmd_parms */* cmd */, void */* cfg */, const char *arg)
 {
   if (!strcasecmp(arg, "file"))
     config.type = OtelExporterType::OSTREAM;
@@ -289,7 +289,7 @@ static const char *otel_set_exporter(cmd_parms *cmd, void *cfg, const char *arg)
   return NULL;
 }
 
-const char *otel_set_propagator(cmd_parms *cmd, void *cfg, const char *arg)
+const char *otel_set_propagator(cmd_parms* /* cmd */, void* /* cfg */, const char *arg)
 {
   if (!strcasecmp(arg, "trace-context"))
     config.propagation = OtelPropagation::TRACE_CONTEXT;
@@ -303,31 +303,31 @@ const char *otel_set_propagator(cmd_parms *cmd, void *cfg, const char *arg)
   return NULL;
 }
 
-const char *otel_set_ignoreInbound(cmd_parms *cmd, void *cfg, int flag)
+const char *otel_set_ignoreInbound(cmd_parms* /* cmd */, void* /* cfg */, int flag)
 {
   config.ignore_inbound = flag;
   return NULL;
 }
 
-const char *otel_set_path(cmd_parms *cmd, void *cfg, const char *arg)
+const char *otel_set_path(cmd_parms* /* cmd */, void* /* cfg */, const char *arg)
 {
   config.fname = arg;
   return NULL;
 }
 
-const char *otel_set_endpoint(cmd_parms *cmd, void *cfg, const char *arg)
+const char *otel_set_endpoint(cmd_parms* /* cmd */, void* /* cfg */, const char *arg)
 {
   config.endpoint = arg;
   return NULL;
 }
 
-const char *otel_set_attribute(cmd_parms *cmd, void *cfg, const char *attrName, const char *attrValue)
+const char *otel_set_attribute(cmd_parms *cmd, void* /* cfg */, const char *attrName, const char *attrValue)
 {
   config.attributes[attrName] = attrValue;
   return NULL;
 }
 
-const char *otel_set_resource(cmd_parms *cmd, void *cfg, const char *attrName, const char *attrValue)
+const char *otel_set_resource(cmd_parms *cmd, void* /* cfg */, const char *attrName, const char *attrValue)
 {
   config.resources[attrName] = attrValue;
   return NULL;
@@ -364,38 +364,38 @@ static void opentel_register_hooks(apr_pool_t *p)
 
 static const command_rec opentel_directives[] = {
     AP_INIT_TAKE1("OpenTelemetryExporter",
-                  otel_set_exporter,
+                  reinterpret_cast<cmd_func>(otel_set_exporter),
                   NULL,
                   RSRC_CONF,
                   "Set specific exporter type"),
-    AP_INIT_TAKE1("OpenTelemetryPath", otel_set_path, NULL, RSRC_CONF, "Set path for exporter"),
+    AP_INIT_TAKE1("OpenTelemetryPath", reinterpret_cast<cmd_func>(otel_set_path), NULL, RSRC_CONF, "Set path for exporter"),
     AP_INIT_TAKE1("OpenTelemetryEndpoint",
-                  otel_set_endpoint,
+                  reinterpret_cast<cmd_func>(otel_set_endpoint),
                   NULL,
                   RSRC_CONF,
                   "Set endpoint for exporter"),
     AP_INIT_TAKE2("OpenTelemetrySetAttribute",
-                  otel_set_attribute,
+                  reinterpret_cast<cmd_func>(otel_set_attribute),
                   NULL,
                   RSRC_CONF,
                   "Set additional attribute for each span"),
     AP_INIT_TAKE2("OpenTelemetrySetResource",
-                  otel_set_resource,
+                  reinterpret_cast<cmd_func>(otel_set_resource),
                   NULL,
                   RSRC_CONF,
                   "Set resource"),
     AP_INIT_TAKE3("OpenTelemetryBatch",
-                  otel_cfg_batch,
+                  reinterpret_cast<cmd_func>(otel_cfg_batch),
                   NULL,
                   RSRC_CONF,
                   "Configure batch processing"),
     AP_INIT_FLAG("OpenTelemetryIgnoreInbound",
-                  otel_set_ignoreInbound,
+                  reinterpret_cast<cmd_func>(otel_set_ignoreInbound),
                   NULL,
                   RSRC_CONF,
                   "Enable or disable context propagation from incoming requests."),
     AP_INIT_TAKE1("OpenTelemetryPropagators",
-                  otel_set_propagator,
+                  reinterpret_cast<cmd_func>(otel_set_propagator),
                   NULL,
                   RSRC_CONF,
                   "Configure propagators"),

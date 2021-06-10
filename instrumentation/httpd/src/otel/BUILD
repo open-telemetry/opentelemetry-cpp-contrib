@@ -9,7 +9,6 @@ cc_library(
     copts = [
         "-I/usr/include/apache2",
         "-I/usr/include/apr-1.0",
-        "-fpermissive",
     ],
     deps = [
         "@io_opentelemetry_cpp//api",
