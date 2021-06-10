@@ -277,7 +277,7 @@ static int proxy_end_handler(int *status, request_rec *r)
 // PARSING CONFIGURATION OPTIONS
 /////////////////////////////////////////////////
 
-const char *otel_set_exporter(cmd_parms */* cmd */, void */* cfg */, const char *arg)
+const char *otel_set_exporter(cmd_parms* /* cmd */, void */* cfg */, const char *arg)
 {
   if (!strcasecmp(arg, "file"))
     config.type = OtelExporterType::OSTREAM;
@@ -321,20 +321,20 @@ const char *otel_set_endpoint(cmd_parms* /* cmd */, void* /* cfg */, const char 
   return NULL;
 }
 
-const char *otel_set_attribute(cmd_parms *cmd, void* /* cfg */, const char *attrName, const char *attrValue)
+const char *otel_set_attribute(cmd_parms* /* cmd */, void* /* cfg */, const char *attrName, const char *attrValue)
 {
   config.attributes[attrName] = attrValue;
   return NULL;
 }
 
-const char *otel_set_resource(cmd_parms *cmd, void* /* cfg */, const char *attrName, const char *attrValue)
+const char *otel_set_resource(cmd_parms* /* cmd */, void* /* cfg */, const char *attrName, const char *attrValue)
 {
   config.resources[attrName] = attrValue;
   return NULL;
 }
 
-const char *otel_cfg_batch(cmd_parms *cmd,
-                           void *cfg,
+const char *otel_cfg_batch(cmd_parms* /* cmd */,
+                           void* /* cfg */,
                            const char *max_queue_size,
                            const char *schedule_delay_millis,
                            const char *max_export_batch_size)
@@ -349,7 +349,7 @@ const char *otel_cfg_batch(cmd_parms *cmd,
 
 extern "C" {
 
-static void opentel_register_hooks(apr_pool_t *p)
+static void opentel_register_hooks(apr_pool_t* /* p */)
 {
   ap_hook_child_init(opentel_child_created, NULL, NULL, APR_HOOK_MIDDLE);
   ap_hook_quick_handler(opentel_handler, NULL, NULL, APR_HOOK_FIRST);

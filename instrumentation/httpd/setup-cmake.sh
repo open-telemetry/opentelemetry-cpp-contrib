@@ -59,7 +59,7 @@ git clone --shallow-submodules --depth 1 --recurse-submodules -b v0.14.0 \
    && make -j2 \
    && make install
 
-git clone --shallow-submodules --depth 1 --recurse-submodules \
+git clone --shallow-submodules --depth 1 --recurse-submodules -b "v1.0.0-rc1" \
    https://github.com/open-telemetry/opentelemetry-cpp.git \
    && cd opentelemetry-cpp \
    && mkdir build \
