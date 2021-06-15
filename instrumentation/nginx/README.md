@@ -184,3 +184,144 @@ mix test
 
 ### `otel_ngx_module.so is not binary compatible`
 - Make sure your nginx is compiled with `--with-compat` (`nginx -V`). On Ubuntu 18.04 the default nginx (`1.14.0`) from apt does not have compatibility enabled. nginx provides [repositories](https://docs.nginx.com/nginx/admin-guide/installing-nginx/installing-nginx-open-source/#prebuilt_ubuntu) to install more up to date versions.
+----
+## Nginx Instrument Build Step by Step(Note: in Linux instance)
+```
+$ mkdir -p ~/software && cd ~/software 
+$ mkdir cmake curl grpc nginx openssl opentelemetry-cpp opentelemetry-cpp-build otel-nginx pcre zlib
+```
+### OpenSSL Install
+```
+$ cd ~/software/openssl
+$ wget http://www.openssl.org/source/openssl-1.1.1g.tar.gz
+$ tar -zxf openssl-1.1.1g.tar.gz
+$ cd openssl-1.1.1g
+# query your arch support list
+$ [optional]./Configure LIST | grep -i linux
+$ ./Configure linux-x86_64 --prefix=/usr/local/openssl/
+$ make
+$ sudo make install
+
+$ sudo mv /usr/bin/openssl /usr/bin/openssl.old
+$ sudo ln -s /usr/local/openssl/bin/openssl /usr/bin/openssl
+
+# check openssl installation 
+$ openssl version -v
+```
+
+> Possible problem
+>> Problem1: openssl: error while loading shared libraries: libcrypto.so.1.1: cannot open shared object file: No such file or directory
+>>> Solution1: https://blog.csdn.net/tiven1/article/details/106592679
+
+
+### PCRE Install
+```
+$ cd ~/software/pcre
+$ wget https://sourceforge.net/projects/pcre/files/pcre/8.44/pcre-8.44.tar.gz
+$ tar -zxf pcre-8.44.tar.gz
+$ cd pcre-8.44
+$ ./configure
+$ make
+$ sudo make install
+```
+
+### zlib Install
+```
+$ cd ~/software/zlib
+$ wget http://zlib.net/zlib-1.2.11.tar.gz
+$ tar -zxf zlib-1.2.11.tar.gz
+$ cd zlib-1.2.11
+$ ./configure
+$ make
+$ sudo make install
+```
+
+
+### CMake Install
+```
+$ cd ~/software/cmake
+$ wget https://github.com/Kitware/CMake/archive/refs/tags/v3.19.6.tar.gz
+$ tar xf v3.19.6.tar.gz
+$ cd CMake-3.19.6
+
+$ sudo apt-get update
+$ sudo apt-get install -y libssl-dev
+$ ./configure
+$ make
+```
+
+### Nginx Install
+```
+$ cd ~/software/nginx
+$ wget https://nginx.org/download/nginx-1.18.0.tar.gz
+$ tar zxf nginx-1.18.0.tar.gz
+$ cd nginx-1.18.0
+$ ./configure --sbin-path=/usr/local/nginx/nginx --conf-path=/usr/local/nginx/nginx.conf --pid-path=/usr/local/nginx/nginx.pid --with-pcre=../../pcre/pcre-8.44 --with-zlib=../../zlib/zlib-1.2.11 --with-http_ssl_module --with-stream --with-openssl=../../openssl/openssl-1.1.1g --with-compat
+$ make
+$ sudo make install
+
+$ sudo ln -s /usr/local/nginx/nginx /usr/bin/nginx
+```
+
+### CURL Install
+```
+$ cd ~/software/curl
+$ wget https://curl.haxx.se/download/curl-7.65.3.tar.gz
+$ tar xvfz curl-7.65.3.tar.gz
+$ cd curl-7.65.3
+$ ./configure --prefix=/usr/local/curl/7_65_3
+$ make
+$ sudo make install
+
+# if /usr/bin/curl exist
+$ sudo mv /usr/bin/curl /usr/bin/curl.old
+$ sudo ln -s /usr/local/curl/7_65_3/bin/curl /usr/bin/curl
+```
+
+### grpc Install
+```
+$ cd ~/software/grpc
+$ git clone -b v1.36.4 https://github.com/grpc/grpc
+$ cd grpc
+$ git submodule update --init
+
+$ mkdir -p cmake/build
+$ cd cmake/build
+
+$ mkdir -p ../../third_party/abseil-cpp/cmake/build
+$ pushd "../../third_party/abseil-cpp/cmake/build"
+$ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE ../..
+$ sudo make -j4 install
+$ popd
+
+$ cmake ../.. -DgRPC_INSTALL=ON -DCMAKE_BUILD_TYPE=Release -DgRPC_BUILD_TESTS=OFF -DgRPC_ABSL_PROVIDER=package  -DgRPC_SSL_PROVIDER=package
+$ sudo make -j4 install
+```
+
+### opentelemetry-cpp Install
+```
+$ cd ~/software/opentelemetry-cpp
+$ git clone --recursive -b v0.7.0 https://github.com/open-telemetry/opentelemetry-cpp
+$ git submodule update --init
+
+$ mkdir build && cd build
+
+# if any problems occur, you can try this command first
+$ [optional]sudo chmod -R 755 /usr/local/
+
+$ cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../../opentelemetry-cpp-build -DCMAKE_PREFIX_PATH=../../../opentelemetry-cpp-build -DBUILD_TESTING=OFF -DWITH_EXAMPLES=OFF -DWITH_OTLP=ON -DCURL_LIBRARY=/usr/local/curl/7_65_3/lib/libcurl.so.4.5.0 -DCURL_INCLUDE_DIR=/usr/local/curl/7_65_3/include ..
+$ make -j2
+$ sudo make install
+
+# if any problems occur, you can try this command first
+$ [optional]sudo chmod -R 755 ~/software/
+```
+
+### otel-nginx Install
+```
+$ cd ~/software/otel-nginx
+$ git clone https://github.com/open-telemetry/opentelemetry-cpp-contrib.git
+$ mkdir -p opentelemetry-cpp-contrib/build && cd opentelemetry-cpp-contrib/build
+$ cmake .. -DCMAKE_PREFIX_PATH=../../../opentelemetry-cpp-build
+$ make
+```
