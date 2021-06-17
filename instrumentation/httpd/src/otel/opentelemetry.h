@@ -20,14 +20,15 @@
 #include <fstream>
 #include <unordered_map>
 
-#include "opentelemetry/exporters/ostream/span_exporter.h"
+#include "opentelemetry/context/context.h"
+#include "opentelemetry/nostd/string_view.h"
 #include "opentelemetry/sdk/trace/batch_span_processor.h"
 #include "opentelemetry/trace/provider.h"
 
 namespace httpd_otel
 {
 
-const nostd::string_view KHTTPDOTelTracerName = "httpd";
+const opentelemetry::nostd::string_view KHTTPDOTelTracerName = "httpd";
 
 enum class OtelExporterType
 {
@@ -85,8 +86,8 @@ struct HttpdEndSpanAttributes
 // to be called explictly inside Destruct method
 struct ExtraRequestData
 {  // context which we pass
-  nostd::unique_ptr<opentelemetry::context::Token> token;
-  nostd::shared_ptr<opentelemetry::v0::trace::Span> span;
+  opentelemetry::nostd::unique_ptr<opentelemetry::context::Token> token;
+  opentelemetry::nostd::shared_ptr<opentelemetry::v0::trace::Span> span;
   HttpdStartSpanAttributes startAttrs;
   HttpdEndSpanAttributes endAttrs;
   // Sets attributes for HTTP request.
@@ -113,7 +114,7 @@ struct ExtraRequestData
 // Initializes OpenTelemetry module.
 void initTracer();
 // Returns default (global) tracer.
-nostd::shared_ptr<opentelemetry::trace::Tracer> get_tracer();
+opentelemetry::nostd::shared_ptr<opentelemetry::trace::Tracer> get_tracer();
 
 }  // namespace httpd_otel
 

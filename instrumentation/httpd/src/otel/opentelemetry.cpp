@@ -93,7 +93,7 @@ void initTracer()
     resAttrs[it.first] = it.second;
   }
 
-  auto provider = nostd::shared_ptr<opentelemetry::trace::TracerProvider>(
+  auto provider = opentelemetry::v0::nostd::shared_ptr<opentelemetry::trace::TracerProvider>(
     new sdktrace::TracerProvider(std::move(processor),
     opentelemetry::sdk::resource::Resource::Create(resAttrs))
   );
@@ -102,7 +102,7 @@ void initTracer()
   opentelemetry::trace::Provider::SetTracerProvider(provider);
 }
 
-nostd::shared_ptr<opentelemetry::trace::Tracer> get_tracer()
+opentelemetry::v0::nostd::shared_ptr<opentelemetry::trace::Tracer> get_tracer()
 {
   auto provider = opentelemetry::trace::Provider::GetTracerProvider();
   return provider->GetTracer(KHTTPDOTelTracerName);
