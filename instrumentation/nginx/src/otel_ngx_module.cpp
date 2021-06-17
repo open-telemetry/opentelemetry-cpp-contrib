@@ -1,4 +1,3 @@
-#include <opentelemetry/nostd/mpark/variant.h>
 #include <opentelemetry/sdk/trace/processor.h>
 #include <opentelemetry/trace/span.h>
 #include <unordered_map>
