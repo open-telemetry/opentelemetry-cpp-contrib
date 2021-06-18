@@ -2,7 +2,6 @@
 #include "location_config.h"
 #include "nginx_utils.h"
 #include <opentelemetry/context/context_value.h>
-#include <opentelemetry/nostd/mpark/variant.h>
 #include <opentelemetry/trace/propagation/b3_propagator.h>
 #include <opentelemetry/trace/propagation/http_trace_context.h>
 #include <opentelemetry/trace/span.h>
