@@ -37,6 +37,32 @@ jobs:
           name: ${{ matrix.os }}_mod-otel.so
           path: /tmp/mod-otel.so
 
+  build_cmake:
+    name: Build module with CMake
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04]
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+      - name: Setup buildtools
+        run: |
+          sudo ./instrumentation/httpd/setup-buildtools.sh
+          sudo ./instrumentation/httpd/setup-environment.sh
+      - name: Compile prerequisites
+        run: |
+          cd instrumentation/httpd
+          sudo ./setup-cmake.sh
+      - name: Compile
+        run: |
+          cd instrumentation/httpd
+          mkdir -p build
+          cd build
+          cmake ..
+          make -j2
+
   clang_format:
     name: Check code formatting
     runs-on: ubuntu-latest

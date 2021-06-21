@@ -73,7 +73,7 @@ http {
       fastcgi_pass localhost:9000;
       include fastcgi.conf;
     }
-  } 
+  }
 }
 
 ```
@@ -84,8 +84,14 @@ exporter = "otlp"
 processor = "batch"
 
 [exporters.otlp]
+# Alternatively the OTEL_EXPORTER_OTLP_ENDPOINT environment variable can also be used.
 host = "localhost"
 port = 4317
+# Optional: enable SSL, for endpoints that support it
+# use_ssl = true
+# Optional: set a filesystem path to a pem file to be used for SSL encryption
+# (when use_ssl = true)
+# ssl_cert_path = "/path/to/cert.pem"
 
 [processors.batch]
 max_queue_size = 2048
@@ -94,6 +100,11 @@ max_export_batch_size = 512
 
 [service]
 name = "nginx-proxy" # Opentelemetry resource name
+
+[sampler]
+name = "AlwaysOn" # Also: AlwaysOff, TraceIdRatioBased
+ratio = 0.1
+parent_based = false
 ```
 
 ## nginx directives
@@ -159,13 +170,18 @@ Dependencies:
 * [Docker](https://docs.docker.com/engine/install/)
 * [Docker Compose](https://docs.docker.com/compose/install/)
 
+In case you don't have elixir locally installed, you can run the mix commands inside a container:
+
+```
+docker run -it --rm -v $(pwd):/otel -v /var/run/docker.sock:/var/run/docker.sock -e TEST_ROOT=$(pwd)/test -w /otel elixir:1.11-alpine sh
+apk --no-cache add docker-compose docker-cli
+```
+
 ```
 cd test/instrumentation
-mix .. dockerfiles ubuntu-20.04:mainline
-cd ../..
-docker build -t otel-nginx-test/nginx -f test/Dockerfile.ubuntu-20.04.mainline .
-docker build -t otel-nginx-test/express-backend -f test/backend/simple_express/Dockerfile test/backend/simple_express
-cd test/instrumentation
+mix dockerfiles .. ubuntu-20.04:mainline
+docker build -t otel-nginx-test/nginx -f ../Dockerfile.ubuntu-20.04.mainline ../..
+docker build -t otel-nginx-test/express-backend -f ../backend/simple_express/Dockerfile ../backend/simple_express
 mix test
 ```
 

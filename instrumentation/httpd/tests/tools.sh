@@ -45,6 +45,14 @@ count() {
     echo OK Found $TOTAL occurence\(s\) of "$1"
 }
 
+# returns one span attribute
+getSpanAttr() {
+  LINE=`grep "attributes    :" ${OUTPUT_SPANS} -A 20 | grep "	$1" `
+  VALUE=`echo $LINE | cut -d ':' -f 2-`
+  VALUE="${VALUE## }"
+  echo $VALUE
+}
+
 # returns one span field
 getSpanField() {
   WHICHONE=${2-1}
