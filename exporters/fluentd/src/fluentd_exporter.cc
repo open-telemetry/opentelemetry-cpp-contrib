@@ -15,11 +15,11 @@
  */
 #include "opentelemetry/exporters/fluentd/fluentd_exporter.h"
 #include "opentelemetry/exporters/fluentd/recordable.h"
-#include "opentelemetry/ext/net/common/url_parser.h"
+#include "opentelemetry/ext/http/common/url_parser.h"
 
 #include "nlohmann/json.hpp"
 
-using UrlParser = opentelemetry::ext::net::common::UrlParser;
+using UrlParser = opentelemetry::ext::http::common::UrlParser;
 
 using namespace nlohmann;
 

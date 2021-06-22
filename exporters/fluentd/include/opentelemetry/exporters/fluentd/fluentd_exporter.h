@@ -19,7 +19,7 @@
 #include "opentelemetry/ext/net/common/socket_tools.h"
 
 #include "opentelemetry/exporters/fluentd/recordable.h"
-#include "opentelemetry/ext/net/common/url_parser.h"
+#include "opentelemetry/ext/http/common/url_parser.h"
 #include "opentelemetry/sdk/trace/exporter.h"
 #include "opentelemetry/sdk/trace/span_data.h"
 
