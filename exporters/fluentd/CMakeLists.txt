@@ -21,7 +21,8 @@ add_library(opentelemetry_exporter_fluentd_trace src/fluentd_exporter.cc
 
 target_link_libraries(opentelemetry_exporter_fluentd_trace
                       PUBLIC
-                      opentelemetry_common)
+                      opentelemetry_common
+                      INTERFACE nlohmann_json::nlohmann_json)
 
 install(
   TARGETS opentelemetry_exporter_fluentd_trace
