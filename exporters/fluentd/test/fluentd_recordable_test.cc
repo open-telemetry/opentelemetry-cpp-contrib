@@ -346,14 +346,12 @@ struct TestServer {
 TEST(FluentdExporter, SendTraceEvents) {
   bool isRunning = true;
 
-#if 0
   // Start test server
   SocketAddr destination("127.0.0.1:24222");
   SocketParams params{AF_INET, SOCK_STREAM, 0};
   SocketServer socketServer(destination, params);
   TestServer testServer(socketServer);
   testServer.Start();
-#endif
 
   // Connect to local test server
   opentelemetry::exporter::fluentd::FluentdExporterOptions options;
@@ -413,9 +411,9 @@ TEST(FluentdExporter, SendTraceEvents) {
   span1->End();  // end span1
 
   tracer->CloseWithMicroseconds(1000000);
-#if 0
-  testServer.WaitForEvents(5, 1);
+
+  testServer.WaitForEvents(6, 1);
   testServer.Stop();
-#endif
+
 }
 
