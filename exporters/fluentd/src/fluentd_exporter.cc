@@ -231,10 +231,7 @@ bool FluentdExporter::Connect()
     connected_ = socket_.connect(*addr_);
     if (!connected_)
     {
-      std::string msg("Unable to connect to ");
-      msg += options_.endpoint;
-      std::cerr << msg << std::endl;
-      // Unable to connect
+      LOG_ERROR("Unable to connect to %s", options_.endpoint.c_str());
       return false;
     }
     seq_conn_++;
@@ -400,7 +397,6 @@ bool FluentdExporter::Disconnect()
   {
     connected_ = false;
     if (!socket_.invalid()) {
-      std::cout << "Disconnected." << std::endl;
       socket_.close();
       return true;
     }
