@@ -56,6 +56,23 @@ namespace nostd = opentelemetry::nostd;
 namespace sdktrace = opentelemetry::sdk::trace;
 using json = nlohmann::json;
 
+#include <iostream>
+#include <chrono>
+#include <thread>
+
+// "busy sleep" while suggesting that other threads run
+// for a small amount of time
+template<typename timeunit>
+void yield_for(timeunit duration)
+{
+  auto start = std::chrono::high_resolution_clock::now();
+  auto end   = start + duration;
+  do
+  {
+    std::this_thread::yield();
+  } while (std::chrono::high_resolution_clock::now() < end);
+}
+
 #if 0
 
 // Testing Shutdown functionality of OStreamSpanExporter, should expect no data to be sent to Stream
@@ -338,7 +355,10 @@ struct TestServer {
   void Stop() { server.Stop(); }
 
   void WaitForEvents(uint32_t expectedCount, uint32_t timeout) {
-    std::this_thread::sleep_for(std::chrono::seconds(timeout));
+    if (count.load() != expectedCount)
+    {
+      yield_for(std::chrono::milliseconds(timeout));
+    }
     EXPECT_EQ(count.load(), expectedCount);
   }
 };
@@ -352,6 +372,8 @@ TEST(FluentdExporter, SendTraceEvents) {
   SocketServer socketServer(destination, params);
   TestServer testServer(socketServer);
   testServer.Start();
+
+  yield_for(std::chrono::milliseconds(500));
 
   // Connect to local test server
   opentelemetry::exporter::fluentd::FluentdExporterOptions options;
@@ -404,16 +426,16 @@ TEST(FluentdExporter, SendTraceEvents) {
                            {"uint64Key", (uint64_t)987654321}};
       span3->AddEvent(eventName3, event3);
 
-      span3->End();  // end span3
+      span3->End();  // end MySpanL3
     }
-    span2->End();  // end span2
+    span2->End();  // end MySpanL2
   }
-  span1->End();  // end span1
+  span1->End();  // end MySpanL1
 
-  tracer->CloseWithMicroseconds(1000000);
+  tracer->ForceFlushWithMicroseconds(1000);
+  tracer->CloseWithMicroseconds(0);
 
-  testServer.WaitForEvents(6, 1);
+  testServer.WaitForEvents(6, 200); // 6 batches must arrive in 200ms
   testServer.Stop();
 
 }
-

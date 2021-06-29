@@ -1,102 +1,158 @@
-/*
- * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright The OpenTelemetry Authors
+// SPDX-License-Identifier: Apache-2.0
+
 #include "opentelemetry/exporters/fluentd/fluentd_exporter.h"
 #include "opentelemetry/exporters/fluentd/recordable.h"
 #include "opentelemetry/ext/http/common/url_parser.h"
 
+#include "opentelemetry/exporters/fluentd/fluentd_logging.h"
+
 #include "nlohmann/json.hpp"
+
+#include <cassert>
 
 using UrlParser = opentelemetry::ext::http::common::UrlParser;
 
 using namespace nlohmann;
 
 OPENTELEMETRY_BEGIN_NAMESPACE
-namespace exporter {
-namespace fluentd {
+namespace exporter
+{
+namespace fluentd
+{
 
-// -------------------------------- Constructors
-// --------------------------------
+/**
+ * @brief Scheme for tcp:// stream
+*/
+constexpr const char* kTCP = "tcp";
 
-FluentdExporter::FluentdExporter(const FluentdExporterOptions& options)
-    : options_(options) {
+/**
+ * @brief Scheme for udp:// datagram
+*/
+constexpr const char* kUDP = "udp";
+
+/**
+ * @brief Scheme for unix:// domain socket
+*/
+constexpr const char* kUNIX = "unix";
+
+/**
+ * @brief Idle-wait yielding to other threads.
+ * @tparam timeunit 
+ * @param duration 
+*/
+template <typename timeunit> static inline void yield_for(timeunit duration)
+{
+  auto start = std::chrono::high_resolution_clock::now();
+  auto end   = start + duration;
+  do
+  {
+    std::this_thread::yield();
+  } while (std::chrono::high_resolution_clock::now() < end);
+}
+
+/**
+ * @brief Create FluentD exporter with options
+ * @param options 
+*/
+FluentdExporter::FluentdExporter(const FluentdExporterOptions &options) : options_(options)
+{
   Initialize();
 }
 
-FluentdExporter::FluentdExporter() : options_(FluentdExporterOptions()) {
+/**
+ * @brief Create FluentD exporter with default options
+*/
+FluentdExporter::FluentdExporter() : options_(FluentdExporterOptions())
+{
   Initialize();
 }
 
-// ----------------------------- Exporter methods ------------------------------
-
-std::unique_ptr<sdk::trace::Recordable>
-FluentdExporter::MakeRecordable() noexcept {
+/**
+ * @brief Create new Recordable
+ * @return Recordable
+*/
+std::unique_ptr<sdk::trace::Recordable> FluentdExporter::MakeRecordable() noexcept
+{
   return std::unique_ptr<sdk::trace::Recordable>(new Recordable);
 }
 
+/**
+ * @brief Export spans.
+ * @param spans 
+ * @return Export result.
+*/
 sdk::common::ExportResult FluentdExporter::Export(
-    const nostd::span<std::unique_ptr<sdk::trace::Recordable>>&
-        spans) noexcept {
-  if (isShutdown_) {
-    return sdk::common::ExportResult::kFailure;
-  }
+    const nostd::span<std::unique_ptr<sdk::trace::Recordable>> &spans) noexcept
+{
+  // Calculate number of batches
+  seq_batch_++;
 
-  if (spans.size() == 0) {
+  // If no spans in Recordable, then return error.
+  if (spans.size() == 0)
+  {
     return sdk::common::ExportResult::kFailure;
   }
 
   json events = {};
-
-  { // Write all Spans
+  {
+    // Write all Spans first
     json obj = json::array();
     obj.push_back(FLUENT_VALUE_SPAN);
     json spanevents = json::array();
-    for (auto& recordable : spans) {
-      auto rec = std::unique_ptr<Recordable>(
-          static_cast<Recordable*>(recordable.release()));
-      if (rec != nullptr) {
+    for (auto &recordable : spans)
+    {
+      auto rec = std::unique_ptr<Recordable>(static_cast<Recordable *>(recordable.release()));
+      if (rec != nullptr)
+      {
         auto span = rec->span();
-        // Span event
+        // Emit "Span" as fluentd event
         json record = json::array();
         record.push_back(span["options"][FLUENT_FIELD_ENDTTIME]);
         json fields = {};
-        for (auto& kv : span["options"].items()) {
+        for (auto &kv : span["options"].items())
+        {
           fields[kv.key()] = kv.value();
         }
         record.push_back(fields);
         spanevents.push_back(record);
-
-        // Iterate over all events on this span
-        for (auto& v : span["events"]) {
-          auto& event = v[1];
+        // Gather Span event statistics
+        seq_span_++;
+        LOG_TRACE("exporting: batch #%d span #%d", seq_batch_, seq_span_);
+        // Iterate over all events added on this span
+        for (auto &v : span["events"])
+        {
+          auto &event      = v[1];
           std::string name = event[FLUENT_FIELD_NAME];
-          for (auto& kv : span["options"].items()) {
-            // TODO: capture only necessary fields, not all
-            event[kv.key()] = kv.value();
-          }
-          // group by event name
-          if (!events.contains(name)) {
+
+          event[FLUENT_FIELD_SPAN_ID]  = span["options"][FLUENT_FIELD_SPAN_ID];
+          event[FLUENT_FIELD_TRACE_ID] = span["options"][FLUENT_FIELD_TRACE_ID];
+
+          // Event Time flows as a separate field in fluentd.
+          // However, if we may need to consider addding
+          // span["options"][FLUENT_FIELD_TIME]
+          // 
+          // Complete list of all Span attributes :
+          // for (auto &kv : span["options"].items()) { ... }
+
+          // Group all events by matching event name in array.
+          // This array is translated into FluentD forward payload.
+          if (!events.contains(name))
+          {
             events[name] = json::array();
           }
           events[name].push_back(v);
+          // Gather event-on-Span statistics
+          seq_evt_++;
+          LOG_TRACE("exporting: batch #%d evt #%d", seq_batch_, seq_evt_);
         }
       }
     }
     obj.push_back(spanevents);
+    LOG_TRACE("sending %zu Span event(s)", obj[1].size());
     std::vector<uint8_t> msg = nlohmann::json::to_msgpack(obj);
-    socket_.writeall(msg);
+    // Schedule upload of Span event(s)
+    Enqueue(msg);
   }
 
   for (auto &kv : events.items())
@@ -109,43 +165,273 @@ sdk::common::ExportResult FluentdExporter::Export(
       otherevents.push_back(v);
     }
     obj.push_back(otherevents);
+    LOG_TRACE("sending %zu %s events", obj[1].size(), kv.key().c_str());
     std::vector<uint8_t> msg = nlohmann::json::to_msgpack(obj);
-    socket_.writeall(msg);
+    // Schedule upload of Events on span
+    Enqueue(msg);
   }
 
+  // At this point we always return success because there is no way
+  // to know if delivery is gonna succeed with multiple retries.
   return sdk::common::ExportResult::kSuccess;
 }
 
-void FluentdExporter::Initialize() {
+/**
+ * @brief Initialize FluentD exporter socket.
+ * @return true if end-point settings have been accepted.
+*/
+bool FluentdExporter::Initialize()
+{
   UrlParser url(options_.endpoint);
   bool isUnixDomain = false;
 
-  if (url.scheme_ == "tcp") {
+  if (url.scheme_ == kTCP)
+  {
     socketparams_ = {AF_INET, SOCK_STREAM, 0};
-  } else if (url.scheme_ == "udp") {
+  }
+  else if (url.scheme_ == kUDP)
+  {
     socketparams_ = {AF_INET, SOCK_DGRAM, 0};
   }
 #ifdef HAVE_UNIX_DOMAIN
-  else if (url.scheme_ == "unix") {
+  else if (url.scheme_ == kUDP)
+  {
     socketparams_ = {AF_UNIX, SOCK_STREAM, 0};
-    isUnixDomain = true;
+    isUnixDomain  = true;
   }
 #endif
-  else {
+  else
+  {
+#if defined(__EXCEPTIONS)
+    // Customers MUST specify valid end-point configuration
     throw new std::runtime_error("Invalid endpoint!");
+#endif
+    return false;
   }
 
-  addr_.reset(
-      new SocketTools::SocketAddr(options_.endpoint.c_str(), isUnixDomain));
-  // std::cout << "Connecting to " << addr_->toString().c_str() << std::endl;
+  addr_.reset(new SocketTools::SocketAddr(options_.endpoint.c_str(), isUnixDomain));
+  LOG_TRACE("connecting to %s", addr_->toString().c_str());
 
-  socket_ = SocketTools::Socket(socketparams_);
-  bool isConnected = socket_.connect(*addr_);
-  if (!isConnected) {
-    std::string msg("Unable to connect to ");
-    msg += options_.endpoint;
-    throw new std::runtime_error(msg);
+  // Start async uploader thread
+  const auto &uploader = GetUploaderThread();
+  LOG_TRACE("upload thread started with id=%zu", static_cast<unsigned>(uploader.get_id()));
+
+  return true;
+}
+
+/**
+ * @brief Establish connection to FluentD
+ * @return true if connected successfully.
+*/
+bool FluentdExporter::Connect()
+{
+  if (!connected_)
+  {
+    socket_ = SocketTools::Socket(socketparams_);
+    connected_ = socket_.connect(*addr_);
+    if (!connected_)
+    {
+      std::string msg("Unable to connect to ");
+      msg += options_.endpoint;
+      std::cerr << msg << std::endl;
+      // Unable to connect
+      return false;
+    }
+    seq_conn_++;
   }
+  // Connected or already connected
+  return true;
+}
+
+/**
+ * @brief Enqueue fluentd forward protocol packet for delivery.
+ * @param packet 
+ * @return true if packet accepted for delivery
+*/
+bool FluentdExporter::Enqueue(std::vector<uint8_t> &packet)
+{
+  LOCKGUARD(packets_mutex_);
+  if (packets_.size() < options_.maxQueueSize)
+  {
+    packets_.push(std::move(packet));
+    {
+      std::lock_guard<std::mutex> lk(has_more_mutex_);
+      has_more_ = (packets_.size() > 0);
+      has_more_cv_.notify_all();
+    }
+    return true;
+  }
+  // queue overflow!
+  return false;
+}
+
+/**
+ * @brief Try to upload fluentd forward protocol packet.
+ * This method respects the retry options for connects
+ * and upload retries.
+ * 
+ * @param packet
+ * @return true if packet got delivered.
+*/
+bool FluentdExporter::Send(std::vector<uint8_t> &packet)
+{
+  size_t retryCount = options_.retryCount;
+  while (retryCount--)
+  {
+    int error_code = 0;
+    // Check if socket is Okay
+    if (connected_)
+    {
+      socket_.getsockopt(SOL_SOCKET, SO_ERROR, error_code);
+      if (error_code!=0)
+      {
+        connected_ = false;
+      }
+    }
+    // Reconnect if not Okay
+    if (!connected_)
+    {
+      // Establishing socket connection may take time
+      if (!Connect())
+      {
+        continue;
+      }
+      LOG_DEBUG("socket connected");
+    }
+
+    // Try to write
+    size_t sentSize = socket_.writeall(packet);
+    if (packet.size() == sentSize)
+    {
+      LOG_DEBUG("send successful");
+      Disconnect();
+      LOG_DEBUG("socket disconnected");
+      return true;
+    }
+
+    LOG_WARN("send failed, retrying %u ...", retryCount)
+    // Retry to connect and/or send
+  }
+
+  LOG_ERROR("send failed!");
+  return false;
+}
+
+void FluentdExporter::UploadLoop()
+{
+  while (!isShutdown_.load())
+  {
+    // Wait on condition variable until got something to send
+    {
+      std::unique_lock<std::mutex> lk(has_more_mutex_);
+      has_more_cv_.wait(lk, [&] { return (has_more_) || (isShutdown_.load()); });
+    }
+    // Send all items
+    while (!packets_.empty())
+    {
+      std::vector<uint8_t> packet;
+      {
+        LOCKGUARD(packets_mutex_);
+        packets_.front().swap(packet);
+        packets_.pop();
+      }
+      // More packets may get added to queue while we send.
+      Send(packet);
+    }
+    // All items have been sent.
+    {
+      std::unique_lock<std::mutex> lk(has_more_mutex_);
+      LOCKGUARD(packets_mutex_);
+      has_more_ = (packets_.size() > 0);
+    }
+    // Optional: graceful pause between batches.
+    // This allows to throttle / shape traffic
+    // and CPU utilization, avoiding excessive
+    // usage by telemetry SDK.
+    if (options_.waitIntervalMs)
+    {
+      yield_for(std::chrono::milliseconds(options_.waitIntervalMs));
+    }
+  }
+  // Allow to trigger debug error in case if upload
+  // failed on shutdown.
+  assert(packets_.empty());
+}
+
+/**
+ * @brief Obtain a reference to uploader singleton.
+ * @return Uploader thread.
+*/
+std::thread& FluentdExporter::GetUploaderThread()
+{
+  // Thread-safe initialization of singleton uploader.
+  // Only one thread is performing data upload.
+  static std::thread uploader([&] { UploadLoop(); });
+  return uploader;
+}
+
+/**
+ * @brief Attempt to join uploader thread.
+*/
+void FluentdExporter::JoinUploaderThread()
+{
+  // Try to join uploader thread
+  auto &uploader = GetUploaderThread();
+  if (uploader.joinable())
+  {
+    try
+    {
+      uploader.join();
+    }
+    catch (...)
+    {
+      // thread has been already joined!
+    }
+  }
+}
+
+/**
+ * @brief Disconnect FluentD socket or datagram.
+ * @return 
+*/
+bool FluentdExporter::Disconnect()
+{
+  if (connected_)
+  {
+    connected_ = false;
+    if (!socket_.invalid()) {
+      std::cout << "Disconnected." << std::endl;
+      socket_.close();
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * @brief Shutdown FluentD exporter
+ * @param  
+ * @return 
+*/
+bool FluentdExporter::Shutdown(
+    std::chrono::microseconds) noexcept
+{
+  if (!isShutdown_.exchange(true)) {
+    {
+      std::lock_guard<std::mutex> lk(has_more_mutex_);
+      has_more_cv_.notify_all();
+    }
+    // Wait for upload to complete
+    JoinUploaderThread();
+    // Print debug statistics
+    LOG_DEBUG("fluentd exporter stats:");
+    LOG_DEBUG("batches = %zu", seq_batch_);
+    LOG_DEBUG("spans   = %zu", seq_span_);
+    LOG_DEBUG("events  = %zu", seq_evt_);
+    LOG_DEBUG("uploads = %zu", seq_conn_);
+    return true;
+  }
+  return false;
 }
 
 }  // namespace fluentd

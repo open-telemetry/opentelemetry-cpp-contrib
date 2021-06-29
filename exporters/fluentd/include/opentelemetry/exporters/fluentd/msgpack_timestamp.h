@@ -1,3 +1,6 @@
+// Copyright The OpenTelemetry Authors
+// SPDX-License-Identifier: Apache-2.0
+
 // Custom implementation of serializer that supports Timestamp Ext type:
 // https://github.com/msgpack/msgpack/blob/master/spec.md#timestamp-extension-type
 #include "nlohmann/json.hpp"

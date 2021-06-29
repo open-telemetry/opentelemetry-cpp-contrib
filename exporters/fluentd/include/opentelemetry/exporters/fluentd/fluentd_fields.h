@@ -1,5 +1,5 @@
-// Copyright 2021 (c) OpenTelemetry Authors.  All rights reserved.
-//
+// Copyright The OpenTelemetry Authors
+// SPDX-License-Identifier: Apache-2.0
 #pragma once
 
 /* clang-format off */
