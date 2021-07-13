@@ -17,7 +17,7 @@ extern ngx_module_t otel_ngx_module;
 #include "nginx_utils.h"
 #include "propagate.h"
 #include <opentelemetry/context/context.h>
-#include <opentelemetry/exporters/otlp/otlp_exporter.h>
+#include <opentelemetry/exporters/otlp/otlp_grpc_exporter.h>
 #include <opentelemetry/nostd/shared_ptr.h>
 #include <opentelemetry/sdk/trace/batch_span_processor.h>
 #include <opentelemetry/sdk/trace/id_generator.h>
@@ -608,10 +608,10 @@ static std::unique_ptr<sdktrace::SpanExporter> CreateExporter(const OtelNgxAgent
   switch (conf->exporter.type) {
     case OtelExporterOTLP: {
       std::string endpoint = conf->exporter.endpoint;
-      otlp::OtlpExporterOptions opts{endpoint};
+      otlp::OtlpGrpcExporterOptions opts{endpoint};
       opts.use_ssl_credentials = conf->exporter.use_ssl_credentials;
       opts.ssl_credentials_cacert_path = conf->exporter.ssl_credentials_cacert_path;
-      exporter.reset(new otlp::OtlpExporter(opts));
+      exporter.reset(new otlp::OtlpGrpcExporter(opts));
       break;
     }
     default:

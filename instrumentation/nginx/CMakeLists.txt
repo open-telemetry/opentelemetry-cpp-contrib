@@ -7,6 +7,7 @@ find_package(Threads REQUIRED)
 find_package(protobuf REQUIRED)
 find_package(gRPC REQUIRED)
 find_package(CURL REQUIRED)
+find_package(nlohmann_json REQUIRED)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/nginx.cmake)
 
@@ -24,7 +25,7 @@ add_library(otel_ngx_module SHARED
 target_compile_options(otel_ngx_module
   PRIVATE -Wall -Wextra
 )
-  
+
 install(TARGETS otel_ngx_module DESTINATION ".")
 
 # Omit the lib prefix to be more in line with nginx module naming
@@ -44,4 +45,5 @@ target_link_libraries(otel_ngx_module
   ${OPENTELEMETRY_CPP_LIBRARIES}
   gRPC::grpc++
   CURL::libcurl
+  nlohmann_json::nlohmann_json
 )
