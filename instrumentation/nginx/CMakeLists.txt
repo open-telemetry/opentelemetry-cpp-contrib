@@ -7,7 +7,6 @@ find_package(Threads REQUIRED)
 find_package(protobuf REQUIRED)
 find_package(gRPC REQUIRED)
 find_package(CURL REQUIRED)
-find_package(nlohmann_json REQUIRED)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/nginx.cmake)
 
@@ -45,5 +44,4 @@ target_link_libraries(otel_ngx_module
   ${OPENTELEMETRY_CPP_LIBRARIES}
   gRPC::grpc++
   CURL::libcurl
-  nlohmann_json::nlohmann_json
 )
