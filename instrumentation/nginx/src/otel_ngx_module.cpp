@@ -21,12 +21,12 @@ extern ngx_module_t otel_ngx_module;
 #include <opentelemetry/nostd/shared_ptr.h>
 #include <opentelemetry/sdk/trace/batch_span_processor.h>
 #include <opentelemetry/sdk/trace/id_generator.h>
-#include <opentelemetry/sdk/trace/simple_processor.h>
-#include <opentelemetry/sdk/trace/tracer_provider.h>
 #include <opentelemetry/sdk/trace/samplers/always_off.h>
 #include <opentelemetry/sdk/trace/samplers/always_on.h>
 #include <opentelemetry/sdk/trace/samplers/parent.h>
 #include <opentelemetry/sdk/trace/samplers/trace_id_ratio.h>
+#include <opentelemetry/sdk/trace/simple_processor.h>
+#include <opentelemetry/sdk/trace/tracer_provider.h>
 #include <opentelemetry/trace/provider.h>
 
 namespace trace = opentelemetry::trace;
@@ -34,7 +34,7 @@ namespace nostd = opentelemetry::nostd;
 namespace sdktrace = opentelemetry::sdk::trace;
 namespace otlp = opentelemetry::exporter::otlp;
 
-constexpr char kOtelCtxVarPrefix[] = "otel_ctxvar_";
+constexpr char kOtelCtxVarPrefix[] = "opentelemetry_context_";
 
 const ScriptAttributeDeclaration kDefaultScriptAttributes[] = {
   {"http.scheme", "$scheme"},
@@ -449,17 +449,17 @@ struct HeaderPropagation {
 
 std::vector<HeaderPropagation> B3PropagationVars() {
   return {
-    {"proxy_set_header", "b3", "$otel_ctxvar_b3"},
-    {"fastcgi_param", "HTTP_B3", "$otel_ctxvar_b3"},
+    {"proxy_set_header", "b3", "$opentelemetry_context_b3"},
+    {"fastcgi_param", "HTTP_B3", "$opentelemetry_context_b3"},
   };
 }
 
 std::vector<HeaderPropagation> OtelPropagationVars() {
   return {
-    {"proxy_set_header", "traceparent", "$otel_ctxvar_traceparent"},
-    {"proxy_set_header", "tracestate", "$otel_ctxvar_tracestate"},
-    {"fastcgi_param", "HTTP_TRACEPARENT", "$otel_ctxvar_traceparent"},
-    {"fastcgi_param", "HTTP_TRACESTATE", "$otel_ctxvar_tracestate"},
+    {"proxy_set_header", "traceparent", "$opentelemetry_context_traceparent"},
+    {"proxy_set_header", "tracestate", "$opentelemetry_context_tracestate"},
+    {"fastcgi_param", "HTTP_TRACEPARENT", "$opentelemetry_context_traceparent"},
+    {"fastcgi_param", "HTTP_TRACESTATE", "$opentelemetry_context_tracestate"},
   };
 }
 
@@ -638,8 +638,7 @@ CreateProcessor(const OtelNgxAgentConfig* conf, std::unique_ptr<sdktrace::SpanEx
     new sdktrace::SimpleSpanProcessor(std::move(exporter)));
 }
 
-static std::unique_ptr<sdktrace::Sampler>
-CreateSampler(const OtelNgxAgentConfig* conf) {
+static std::unique_ptr<sdktrace::Sampler> CreateSampler(const OtelNgxAgentConfig* conf) {
   if (conf->sampler.parentBased) {
     std::shared_ptr<sdktrace::Sampler> sampler;
 
@@ -705,10 +704,11 @@ static ngx_int_t OtelNgxStart(ngx_cycle_t* cycle) {
   }
 
   auto processor = CreateProcessor(agentConf, std::move(exporter));
-  auto provider = nostd::shared_ptr<opentelemetry::trace::TracerProvider>(new sdktrace::TracerProvider(
-    std::move(processor),
-    opentelemetry::sdk::resource::Resource::Create({{"service.name", agentConf->service.name}}),
-    std::move(sampler)));
+  auto provider =
+    nostd::shared_ptr<opentelemetry::trace::TracerProvider>(new sdktrace::TracerProvider(
+      std::move(processor),
+      opentelemetry::sdk::resource::Resource::Create({{"service.name", agentConf->service.name}}),
+      std::move(sampler)));
 
   opentelemetry::trace::Provider::SetTracerProvider(std::move(provider));
 

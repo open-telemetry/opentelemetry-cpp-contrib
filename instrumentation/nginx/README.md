@@ -163,6 +163,21 @@ List of exported attributes and their corresponding nginx variables if applicabl
 - `http.scheme` - `$scheme`
 - `http.server_name` - From the `server_name` directive
 
+## nginx variables
+
+The following nginx variables are set by the instrumentation:
+
+- `opentelemetry_context_traceparent` - [W3C trace
+  context](https://www.w3.org/TR/trace-context/#trace-context-http-headers-format), e.g.: `00-0af7651916cd43dd8448eb211c80319c-b9c7c989f97918e1-01`
+- `opentelemetry_context_b3` - Trace context in the [B3
+  format](https://github.com/openzipkin/b3-propagation#single-header). Only set when using `opentelemetry_propagate b3`.
+
+This can be used to add `Server-Timing` header:
+
+```
+add_header Server-Timing "traceparent;desc=\"$opentelemetry_context_traceparent\"";
+```
+
 ## Testing
 
 Dependencies:
