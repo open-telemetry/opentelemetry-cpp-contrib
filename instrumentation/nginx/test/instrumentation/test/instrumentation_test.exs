@@ -343,4 +343,20 @@ defmodule InstrumentationTest do
     assert attrib(span, "test.attrib.script") =~ ~r/\d+\.\d+/
     assert status == 200
   end
+
+  test "Accessing trace context", %{
+    trace_file: trace_file
+  } do
+    %HTTPoison.Response{status_code: status, headers: headers} =
+      HTTPoison.get!("#{@host}/context")
+
+    [trace] = read_traces(trace_file, 1)
+    [span] = collect_spans(trace)
+    {_, header_context} = Enum.find(headers, fn {k, _} -> k == "Context-TraceParent" end)
+    trace_id = span["traceId"]
+    span_id = span["spanId"]
+    context = "00-#{trace_id}-#{span_id}-01"
+    assert header_context == context
+    assert status == 200
+  end
 end
