@@ -32,10 +32,10 @@ defmodule Mix.Tasks.Dockerfiles do
      Enum.join(
        [
          header(job),
-         apt_install_base_pkgs(job),
+         install_base_pkgs(job),
          custom_cmake(job),
          custom_nginx(job),
-         apt_install_custom_pkgs(job),
+         install_custom_pkgs(job),
          build_steps(job)
        ],
        "\n"
@@ -49,7 +49,7 @@ defmodule Mix.Tasks.Dockerfiles do
     """
   end
 
-  defp default_packages() do
+  defp default_packages(%{os: "ubuntu"}) do
     [
       "build-essential",
       "autoconf",
@@ -70,28 +70,50 @@ defmodule Mix.Tasks.Dockerfiles do
     ]
   end
 
-  defp base_packages(%{nginx: "mainline"}), do: default_packages()
-  defp base_packages(%{nginx: "stable", version_major: ver_maj}) when ver_maj >= 20 do
-    ["nginx" | default_packages()]
+  defp default_packages(%{os: "alpine"}) do
+    [
+      "autoconf",
+      "cmake",
+      "curl",
+      "curl-dev",
+      "g++",
+      "git",
+      "gnupg",
+      "libtool",
+      "linux-headers",
+      "make",
+      "openssl",
+      "pcre-dev",
+      "zlib-dev"
+    ]
   end
-  defp base_packages(_), do: default_packages()
 
-  defp base_packages_for_version(%{version_major: major}) when major >= 20, do: ["cmake"]
+  defp base_packages(%{nginx: "mainline"} = job), do: default_packages(job)
+  defp base_packages(%{nginx: "stable", os: "ubuntu", version_major: ver_maj} = job) when ver_maj >= 20 do
+    ["nginx" | default_packages(job)]
+  end
+  defp base_packages(%{nginx: "stable", os: "alpine"} = job) do
+    ["nginx" | default_packages(job)]
+  end
+  defp base_packages(job), do: default_packages(job)
+
+  defp base_packages_for_version(%{os: "ubuntu", version_major: major}) when major >= 20, do: ["cmake"]
   defp base_packages_for_version(_), do: []
 
-  defp custom_cmake(%{version_major: major}) when major >= 20, do: ""
+  defp custom_cmake(%{os: "ubuntu", version_major: major}) when major >= 20, do: ""
 
-  defp custom_cmake(_) do
+  defp custom_cmake(%{os: "ubuntu"}) do
     """
     RUN curl -o /etc/apt/trusted.gpg.d/kitware.asc https://apt.kitware.com/keys/kitware-archive-latest.asc \\
         && apt-add-repository "deb https://apt.kitware.com/ubuntu/ `lsb_release -cs` main"
     """
   end
+  defp custom_cmake(%{os: "alpine"}), do: ""
 
   defp mainline_apt(), do: "http://nginx.org/packages/mainline/ubuntu"
   defp stable_apt(), do: "http://nginx.org/packages/ubuntu"
 
-  defp custom_nginx_step(apt_url) do
+  defp custom_nginx_step(%{os: "ubuntu"}, apt_url) do
     """
     RUN curl -o /etc/apt/trusted.gpg.d/nginx_signing.asc https://nginx.org/keys/nginx_signing.key \\
         && apt-add-repository "deb #{apt_url} `lsb_release -cs` nginx" \\
@@ -99,12 +121,25 @@ defmodule Mix.Tasks.Dockerfiles do
     """
   end
 
-  defp custom_nginx(%{nginx: "mainline"}) do
-    custom_nginx_step(mainline_apt())
+  defp custom_nginx_step(%{os: "alpine"}, _) do
+    """
+    RUN printf "%s%s%s\\n" \\
+        "http://nginx.org/packages/mainline/alpine/v" \\
+        `egrep -o '^[0-9]+\.[0-9]+' /etc/alpine-release` \\
+        "/main" | tee -a /etc/apk/repositories && \\
+
+      curl -o /tmp/nginx_signing.rsa.pub https://nginx.org/keys/nginx_signing.rsa.pub && \\
+      openssl rsa -pubin -in /tmp/nginx_signing.rsa.pub -text -noout && \\
+      mv /tmp/nginx_signing.rsa.pub /etc/apk/keys/
+    """
   end
 
-  defp custom_nginx(%{nginx: "stable", os: "ubuntu", version_major: 18}) do
-    custom_nginx_step(stable_apt())
+  defp custom_nginx(%{nginx: "mainline"} = job) do
+    custom_nginx_step(job, mainline_apt())
+  end
+
+  defp custom_nginx(%{nginx: "stable", os: "ubuntu", version_major: 18} = job) do
+    custom_nginx_step(job, stable_apt())
   end
 
   defp custom_nginx(_), do: ""
@@ -112,7 +147,7 @@ defmodule Mix.Tasks.Dockerfiles do
   defp custom_packages_for_version(%{os: "ubuntu", nginx: "stable", version_major: 18}) do
     ["cmake", "nginx"]
   end
-  defp custom_packages_for_version(%{version_major: ver_major}) when ver_major < 20, do: ["cmake"]
+  defp custom_packages_for_version(%{os: "ubuntu", version_major: ver_major}) when ver_major < 20, do: ["cmake"]
   defp custom_packages_for_version(_), do: []
 
   defp custom_packages(%{nginx: "mainline"} = job) do
@@ -121,23 +156,31 @@ defmodule Mix.Tasks.Dockerfiles do
 
   defp custom_packages(job), do: custom_packages_for_version(job)
 
-  defp apt_install_base_pkgs(job) do
+  defp install_base_pkgs(job) do
     packages = base_packages(job) ++ base_packages_for_version(job)
-    package_install(packages)
+    package_install(packages, job)
   end
 
-  defp apt_install_custom_pkgs(job) do
+  defp install_custom_pkgs(job) do
     custom_packages(job)
-    |> package_install()
+    |> package_install(job)
   end
 
-  defp package_install([]), do: ""
+  defp package_install([], _), do: ""
 
-  defp package_install(packages) do
+  defp package_install(packages, %{os: "ubuntu"}) do
     """
     RUN apt-get update \\
     && DEBIAN_FRONTEND=noninteractive TZ="Europe/London" \\
        apt-get install --no-install-recommends --no-install-suggests -y \\
+       #{combine(packages, " ")}
+    """
+  end
+
+  defp package_install(packages, %{os: "alpine"}) do
+    """
+    RUN apk update \\
+    && apk add \\
        #{combine(packages, " ")}
     """
   end
