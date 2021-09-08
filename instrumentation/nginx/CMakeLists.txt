@@ -4,7 +4,7 @@ project(opentelemetry-nginx)
 
 find_package(opentelemetry-cpp REQUIRED)
 find_package(Threads REQUIRED)
-find_package(protobuf REQUIRED)
+find_package(Protobuf REQUIRED)
 find_package(gRPC REQUIRED)
 find_package(CURL REQUIRED)
 
