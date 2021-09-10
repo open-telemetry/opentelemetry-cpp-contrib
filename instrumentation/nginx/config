@@ -1,0 +1,24 @@
+ngx_addon_name=opentelemetry_nginx
+ngx_module_type=HTTP
+ngx_module_name=$ngx_addon_name
+ngx_module_incs=
+ngx_module_deps=" \
+  $ngx_addon_dir/src/agent_config.h \
+  $ngx_addon_dir/src/location_config.h \
+  $ngx_addon_dir/src/nginx_config.h \
+  $ngx_addon_dir/src/nginx_utils.h \
+  $ngx_addon_dir/src/propagate.h \
+  $ngx_addon_dir/src/script.h \
+  $ngx_addon_dir/src/toml.h \
+  $ngx_addon_dir/src/trace_context.h \
+"
+ngx_module_srcs=" \
+  $ngx_addon_dir/src/agent_config.cpp \
+  $ngx_addon_dir/src/nginx_config.cpp \
+  $ngx_addon_dir/src/otel_ngx_module.cpp \
+  $ngx_addon_dir/src/propagate.cpp \
+  $ngx_addon_dir/src/script.cpp \
+  $ngx_addon_dir/src/trace_context.cpp \
+"
+
+. auto/module
