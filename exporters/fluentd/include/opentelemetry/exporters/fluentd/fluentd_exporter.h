@@ -24,6 +24,15 @@ namespace fluentd
 {
 
 /**
+ * Export mode - async and sync
+ */
+
+enum class ExportMode {
+  SYNC_MODE,
+  ASYNC_MODE
+};
+
+/**
  * Struct to hold fluentd  exporter options.
  */
 struct FluentdExporterOptions
@@ -32,9 +41,10 @@ struct FluentdExporterOptions
   TransportFormat format = TransportFormat::kForward;
   std::string tag = "tag.service";
   std::string endpoint;
-  size_t retryCount = 2;        // number of retries before drop
-  size_t maxQueueSize = 16384;  // max events buffer size
-  size_t waitIntervalMs = 0;    // default wait interval between batches
+  ExportMode export_mode = ExportMode::ASYNC_MODE;
+  size_t retry_count = 2;        // number of retries before drop
+  size_t max_queue_size = 16384;  // max events buffer size
+  size_t wait_interval_ms = 0;    // default wait interval between batches
 };
 
 namespace trace_sdk = opentelemetry::sdk::trace;

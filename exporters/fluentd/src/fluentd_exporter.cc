@@ -156,8 +156,17 @@ sdk::common::ExportResult FluentdExporter::Export(
     obj.push_back(spanevents);
     LOG_TRACE("sending %zu Span event(s)", obj[1].size());
     std::vector<uint8_t> msg = nlohmann::json::to_msgpack(obj);
-    // Schedule upload of Span event(s)
-    Enqueue(msg);
+    if (options_.export_mode == ExportMode::ASYNC_MODE)
+    {
+      // Schedule upload of Span event(s)
+      Enqueue(msg);
+    } else {
+      // Immediately send the Span event(s)
+      bool result = Send(msg);
+      if (!result) {
+        return sdk::common::ExportResult::kFailure;
+      }
+    }
   }
 
   for (auto &kv : events.items())
@@ -172,8 +181,19 @@ sdk::common::ExportResult FluentdExporter::Export(
     obj.push_back(otherevents);
     LOG_TRACE("sending %zu %s events", obj[1].size(), kv.key().c_str());
     std::vector<uint8_t> msg = nlohmann::json::to_msgpack(obj);
-    // Schedule upload of Events on span
-    Enqueue(msg);
+    if (options_.export_mode == ExportMode::ASYNC_MODE)
+    {
+      // Schedule upload of Span event(s)
+      Enqueue(msg);
+    } else 
+    {
+      // Immediately send the Span event(s)
+      bool result = Send(msg);
+      if (!result) {
+        return sdk::common::ExportResult::kFailure;
+      }
+    }
+
   }
 
   // At this point we always return success because there is no way
@@ -188,7 +208,7 @@ sdk::common::ExportResult FluentdExporter::Export(
 bool FluentdExporter::Initialize()
 {
   UrlParser url(options_.endpoint);
-  bool isUnixDomain = false;
+  bool is_unix_domain = false;
 
   if (url.scheme_ == kTCP)
   {
@@ -202,7 +222,7 @@ bool FluentdExporter::Initialize()
   else if (url.scheme_ == kUNIX)
   {
     socketparams_ = {AF_UNIX, SOCK_STREAM, 0};
-    isUnixDomain  = true;
+    is_unix_domain  = true;
   }
 #endif
   else
@@ -215,15 +235,18 @@ bool FluentdExporter::Initialize()
   }
 
   std::cout << "\nLevel1" << std::flush;
-  addr_.reset(new SocketTools::SocketAddr(options_.endpoint.c_str(), isUnixDomain));
+  addr_.reset(new SocketTools::SocketAddr(options_.endpoint.c_str(), is_unix_domain));
   LOG_TRACE("connecting to %s", addr_->toString().c_str());
   std::cout << "\nLevel2\n" << std::flush;
 
-  // Start async uploader thread
-  const auto &uploader = GetUploaderThread();
-  std::stringstream ss;
-  ss << std::this_thread::get_id();
-  LOG_TRACE("upload thread started with id=%ll", std::stoull(ss.str()));
+  if (options_.export_mode == ExportMode::ASYNC_MODE)
+  {
+    // Start async uploader thread
+    const auto &uploader = GetUploaderThread();
+    std::stringstream ss;
+    ss << std::this_thread::get_id();
+    LOG_TRACE("upload thread started with id=%ll", std::stoull(ss.str()));
+  }
 
   return true;
 }
@@ -257,7 +280,7 @@ bool FluentdExporter::Connect()
 bool FluentdExporter::Enqueue(std::vector<uint8_t> &packet)
 {
   LOCKGUARD(packets_mutex_);
-  if (packets_.size() < options_.maxQueueSize)
+  if (packets_.size() < options_.max_queue_size)
   {
     packets_.push(std::move(packet));
     {
@@ -281,7 +304,7 @@ bool FluentdExporter::Enqueue(std::vector<uint8_t> &packet)
 */
 bool FluentdExporter::Send(std::vector<uint8_t> &packet)
 {
-  size_t retryCount = options_.retryCount;
+  size_t retryCount = options_.retry_count;
   while (retryCount--)
   {
     int error_code = 0;
@@ -354,9 +377,9 @@ void FluentdExporter::UploadLoop()
     // This allows to throttle / shape traffic
     // and CPU utilization, avoiding excessive
     // usage by telemetry SDK.
-    if (options_.waitIntervalMs)
+    if (options_.wait_interval_ms)
     {
-      yield_for(std::chrono::milliseconds(options_.waitIntervalMs));
+      yield_for(std::chrono::milliseconds(options_.wait_interval_ms));
     }
   }
   // Allow to trigger debug error in case if upload
@@ -421,19 +444,24 @@ bool FluentdExporter::Disconnect()
 bool FluentdExporter::Shutdown(
     std::chrono::microseconds) noexcept
 {
-  if (!isShutdown_.exchange(true)) {
+
+  if (!isShutdown_.exchange(true))
+  {
     {
       std::lock_guard<std::mutex> lk(has_more_mutex_);
       has_more_cv_.notify_all();
     }
-    // Wait for upload to complete
-    JoinUploaderThread();
-    // Print debug statistics
-    LOG_DEBUG("fluentd exporter stats:");
-    LOG_DEBUG("batches = %zu", seq_batch_);
-    LOG_DEBUG("spans   = %zu", seq_span_);
-    LOG_DEBUG("events  = %zu", seq_evt_);
-    LOG_DEBUG("uploads = %zu", seq_conn_);
+    if (options_.export_mode == ExportMode::ASYNC_MODE)
+    {
+      // Wait for upload to complete
+      JoinUploaderThread();
+      // Print debug statistics
+      LOG_DEBUG("fluentd exporter stats:");
+      LOG_DEBUG("batches = %zu", seq_batch_);
+      LOG_DEBUG("spans   = %zu", seq_span_);
+      LOG_DEBUG("events  = %zu", seq_evt_);
+      LOG_DEBUG("uploads = %zu", seq_conn_);
+    }
     return true;
   }
   return false;
