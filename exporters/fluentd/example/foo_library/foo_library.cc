@@ -19,6 +19,8 @@ nostd::shared_ptr<trace::Tracer> get_tracer()
 void f1()
 {
   auto span  = get_tracer()->StartSpan("f1");
+  span->AddEvent("f1_even1", {{"k1", "v1"}})
+  span->SetAttribute("attribute_key", "attribute_value");
   auto scope = get_tracer()->WithActiveSpan(span);
     std::cout << "\nEnding span" << std::flush;
   span->End();

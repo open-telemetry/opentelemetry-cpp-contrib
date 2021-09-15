@@ -155,6 +155,7 @@ sdk::common::ExportResult FluentdExporter::Export(
     }
     obj.push_back(spanevents);
     LOG_TRACE("sending %zu Span event(s)", obj[1].size());
+    std::cout << "LALIT: SPAN EVENTS TO BE SENT: " << obj.dump();
     std::vector<uint8_t> msg = nlohmann::json::to_msgpack(obj);
     if (options_.export_mode == ExportMode::ASYNC_MODE)
     {
@@ -180,6 +181,8 @@ sdk::common::ExportResult FluentdExporter::Export(
     }
     obj.push_back(otherevents);
     LOG_TRACE("sending %zu %s events", obj[1].size(), kv.key().c_str());
+    std::cout << "LALIT: EVENTS TO BE SENT: " << obj.dump();
+
     std::vector<uint8_t> msg = nlohmann::json::to_msgpack(obj);
     if (options_.export_mode == ExportMode::ASYNC_MODE)
     {
