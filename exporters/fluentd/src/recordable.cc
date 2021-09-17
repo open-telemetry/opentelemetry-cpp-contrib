@@ -90,7 +90,7 @@ void PopulateAttribute(nlohmann::json &attribute,
   {
     LOG_DEBUG( " LALIT -> Setting const char attribute env_properties");
     attribute[key.data()] =
-        std::string(nostd::get<const char *>(value).data());
+        std::string(nostd::get<const char *>(value));
 
   }
   else if (nostd::holds_alternative<nostd::string_view>(value))
