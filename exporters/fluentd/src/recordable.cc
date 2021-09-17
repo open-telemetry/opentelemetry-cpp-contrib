@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "opentelemetry/exporters/fluentd/recordable.h"
+#include "opentelemetry/exporters/fluentd/fluentd_logging.h"
+
 
 #include <map>
 #include <string>
