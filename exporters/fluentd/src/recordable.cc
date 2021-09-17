@@ -86,6 +86,7 @@ void PopulateAttribute(nlohmann::json &attribute,
   }
   else if (nostd::holds_alternative<nostd::string_view>(value))
   {
+    LOG_DEBUG( " LALIT -> Setting string attribute env_properties");
     attribute[key.data()] =
         std::string(nostd::get<nostd::string_view>(value).data());
         // nostd::string_view(nostd::get<nostd::string_view>(value).data(),
@@ -160,10 +161,12 @@ void PopulateAttribute(nlohmann::json &attribute,
 void Recordable::SetAttribute(nostd::string_view key,
                               const opentelemetry::common::AttributeValue &value) noexcept
 {
+  LOG_DEBUG( " LALIT:Setting env_properties");
   if (!options_.contains(FLUENT_FIELD_PROPERTIES))
   {
     options_[FLUENT_FIELD_PROPERTIES] = nlohmann::json::object();
   }
+  
   PopulateAttribute(options_[FLUENT_FIELD_PROPERTIES], key, value);
 }
 
