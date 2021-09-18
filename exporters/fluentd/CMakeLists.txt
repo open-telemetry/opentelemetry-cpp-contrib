@@ -16,8 +16,7 @@ cmake_minimum_required(VERSION 3.12)
 
 project(opentelemetry-httpd)
 
-ADD_DEFINITIONS(HAVE_CONSOLE_LOG)
-ADD_DEFINITIONS(LOG_DEBUG)
+ADD_DEFINITIONS(-DHAVE_CONSOLE_LOG)
 find_package(opentelemetry-cpp REQUIRED)
 find_package(nlohmann_json REQUIRED)
 find_package(CURL REQUIRED)

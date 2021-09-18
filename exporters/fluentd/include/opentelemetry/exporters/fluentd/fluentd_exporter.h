@@ -45,6 +45,7 @@ struct FluentdExporterOptions
   size_t retry_count = 2;        // number of retries before drop
   size_t max_queue_size = 16384;  // max events buffer size
   size_t wait_interval_ms = 0;    // default wait interval between batches
+  bool convert_event_to_trace = false ; // convert events to trace
 };
 
 namespace trace_sdk = opentelemetry::sdk::trace;

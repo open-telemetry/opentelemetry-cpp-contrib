@@ -169,33 +169,36 @@ sdk::common::ExportResult FluentdExporter::Export(
       }
     }
   }
-
-  for (auto &kv : events.items())
+  if (options_.convert_event_to_trace)
   {
-    json obj = json::array();
-    obj.push_back(kv.key());
-    json otherevents = json::array();
-    for (auto &v : kv.value())
+    for (auto &kv : events.items())
     {
-      otherevents.push_back(v);
-    }
-    obj.push_back(otherevents);
-    LOG_TRACE("sending %zu %s events", obj[1].size(), kv.key().c_str());
-    std::cout << "LALIT: EVENTS TO BE SENT: " << obj.dump();
-
-    std::vector<uint8_t> msg = nlohmann::json::to_msgpack(obj);
-    if (options_.export_mode == ExportMode::ASYNC_MODE)
-    {
-      // Schedule upload of Span event(s)
-      Enqueue(msg);
-    } else 
-    {
-      // Immediately send the Span event(s)
-      bool result = Send(msg);
-      if (!result) {
-        return sdk::common::ExportResult::kFailure;
+      json obj = json::array();
+      obj.push_back(kv.key());
+      json otherevents = json::array();
+      for (auto &v : kv.value())
+      {
+        otherevents.push_back(v);
       }
-    }
+      obj.push_back(otherevents);
+      LOG_TRACE("sending %zu %s events", obj[1].size(), kv.key().c_str());
+      std::cout << "LALIT: EVENTS TO BE SENT: " << obj.dump();
+
+      std::vector<uint8_t> msg = nlohmann::json::to_msgpack(obj);
+      if (options_.export_mode == ExportMode::ASYNC_MODE)
+      {
+        // Schedule upload of Span event(s)
+        Enqueue(msg);
+      } 
+      else 
+      {
+        // Immediately send the Span event(s)
+        bool result = Send(msg);
+        if (!result) {
+          return sdk::common::ExportResult::kFailure;
+        }
+      }
+    } 
 
   }
 
