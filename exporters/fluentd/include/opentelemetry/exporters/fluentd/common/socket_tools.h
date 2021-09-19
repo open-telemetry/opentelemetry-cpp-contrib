@@ -104,7 +104,7 @@
 #  endif
 #endif
 
-#include "opentelemetry/exporters/fluentd/macros.h"
+#include "opentelemetry/exporters/fluentd/common/macros.h"
 
 namespace net
 {

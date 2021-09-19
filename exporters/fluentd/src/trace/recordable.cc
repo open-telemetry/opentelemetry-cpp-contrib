@@ -1,8 +1,8 @@
 /// Copyright The OpenTelemetry Authors
 // SPDX-License-Identifier: Apache-2.0
 
-#include "opentelemetry/exporters/fluentd/recordable.h"
-#include "opentelemetry/exporters/fluentd/fluentd_logging.h"
+#include "opentelemetry/exporters/fluentd/trace/recordable.h"
+#include "opentelemetry/exporters/fluentd/common/fluentd_logging.h"
 
 
 #include <map>

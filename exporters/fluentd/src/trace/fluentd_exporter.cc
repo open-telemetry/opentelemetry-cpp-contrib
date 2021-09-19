@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 #define HAVE_CONSOLE_LOG
 
-#include "opentelemetry/exporters/fluentd/fluentd_exporter.h"
-#include "opentelemetry/exporters/fluentd/recordable.h"
+#include "opentelemetry/exporters/fluentd/trace/fluentd_exporter.h"
+#include "opentelemetry/exporters/fluentd/trace/recordable.h"
 #include "opentelemetry/ext/http/common/url_parser.h"
 
-#include "opentelemetry/exporters/fluentd/fluentd_logging.h"
+#include "opentelemetry/exporters/fluentd/common/fluentd_logging.h"
 
 #include "nlohmann/json.hpp"
 

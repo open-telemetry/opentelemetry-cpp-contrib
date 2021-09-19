@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 #pragma once
 
-#include "opentelemetry/exporters/fluentd/socket_tools.h"
+#include "opentelemetry/exporters/fluentd/common/socket_tools.h"
 
-#include "opentelemetry/exporters/fluentd/recordable.h"
+#include "opentelemetry/exporters/fluentd/trace/recordable.h"
 #include "opentelemetry/ext/http/common/url_parser.h"
 #include "opentelemetry/sdk/trace/exporter.h"
 #include "opentelemetry/sdk/trace/span_data.h"

@@ -20,6 +20,7 @@ void initTracer()
 {
 opentelemetry::exporter::fluentd::FluentdExporterOptions options;
 options.endpoint = "tcp://localhost:24222";
+options.export_mode = opentelemetry::exporter::fluentd::ExportMode::SYNC_MODE;
 
   auto exporter = std::unique_ptr<sdktrace::SpanExporter>(
       new opentelemetry::exporter::fluentd::FluentdExporter(options));

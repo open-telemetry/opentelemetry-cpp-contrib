@@ -25,8 +25,8 @@ if(COMMAND cmake_policy)
 cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
-add_library(opentelemetry_exporter_fluentd_trace src/fluentd_exporter.cc
-                                                 src/recordable.cc)
+add_library(opentelemetry_exporter_fluentd_trace src/trace/fluentd_exporter.cc
+                                                 src/trace/recordable.cc)
 target_include_directories(opentelemetry_exporter_fluentd_trace
     PRIVATE
     ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
@@ -48,16 +48,16 @@ install(
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 install(
-  DIRECTORY include/opentelemetry/exporters/fluentd
+  DIRECTORY include/opentelemetry/exporters/fluentd/
   DESTINATION include/opentelemetry/exporters/
   FILES_MATCHING
   PATTERN "*.h")
 
 if(BUILD_TESTING)
-  add_executable(fluentd_recordable_test test/fluentd_recordable_test.cc test/fluentd_baseline_test.cc)
+  add_executable(fluentd_recordable_trace_test test/trace/fluentd_recordable_test.cc test/trace/fluentd_baseline_test.cc)
 
   target_link_libraries(
-    fluentd_recordable_test
+    fluentd_recordable_trace_test
     ${GTEST_BOTH_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     opentelemetry_common
@@ -67,7 +67,7 @@ if(BUILD_TESTING)
     opentelemetry_exporter_fluentd_trace)
 
   gtest_add_tests(
-    TARGET fluentd_recordable_test
+    TARGET fluentd_recordable_trace_test
     TEST_PREFIX exporter.
-    TEST_LIST fluentd_recordable_test)
+    TEST_LIST fluentd_recordable_trace_test)
 endif() # BUILD_TESTING

@@ -7,7 +7,7 @@
 #include "opentelemetry/sdk/trace/recordable.h"
 #include "opentelemetry/version.h"
 
-#include "opentelemetry/exporters/fluentd/fluentd_fields.h"
+#include "opentelemetry/exporters/fluentd/trace/fluentd_fields.h"
 
 #include <chrono>
 
