@@ -7,7 +7,7 @@
 
 // Using an exporter that simply dumps span data to stdout.
 #include "foo_library/foo_library.h"
-#include "opentelemetry/exporters/fluentd/fluentd_exporter.h"
+#include "opentelemetry/exporters/fluentd/trace/fluentd_exporter.h"
 
 namespace sdktrace = opentelemetry::sdk::trace;
 namespace nostd = opentelemetry::nostd;
