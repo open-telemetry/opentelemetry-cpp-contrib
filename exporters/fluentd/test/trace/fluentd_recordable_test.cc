@@ -44,7 +44,7 @@
 
 #include <gtest/gtest.h>
 
-#include <opentelemetry/ext/net/common/socket_server.h>
+#include "../common/socket_server.h>
 
 using namespace SOCKET_SERVER_NS;
 

@@ -24,7 +24,7 @@
 
 #include "nlohmann/json.hpp"
 #include <opentelemetry/exporters/fluentd/msgpack_timestamp.h>
-#include "socket_server.h"
+#include "../common/socket_server.h"
 
 using namespace SOCKET_SERVER_NS;
 
