@@ -18,12 +18,12 @@ namespace
 {
 void initTracer()
 {
-opentelemetry::exporter::fluentd::FluentdExporterOptions options;
+opentelemetry::exporter::trace::fluentd::FluentdExporterOptions options;
 options.endpoint = "tcp://localhost:24222";
-options.export_mode = opentelemetry::exporter::fluentd::ExportMode::SYNC_MODE;
+options.export_mode = opentelemetry::exporter::trace::fluentd::ExportMode::SYNC_MODE;
 
   auto exporter = std::unique_ptr<sdktrace::SpanExporter>(
-      new opentelemetry::exporter::fluentd::FluentdExporter(options));
+      new opentelemetry::exporter::trace::fluentd::FluentdExporter(options));
   auto processor = std::unique_ptr<sdktrace::SpanProcessor>(
       new sdktrace::SimpleSpanProcessor(std::move(exporter)));
   auto provider = nostd::shared_ptr<opentelemetry::trace::TracerProvider>(

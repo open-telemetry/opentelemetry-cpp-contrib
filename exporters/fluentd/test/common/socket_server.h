@@ -35,8 +35,8 @@
 #include <string>
 #include <thread>
 
-#include "opentelemetry/ext/net/common/macros.h"
-#include "opentelemetry/ext/net/common/socket_tools.h"
+#include "opentelemetry/exporters/fluentd/common/macros.h"
+#include "opentelemetry/exporters/fluentd/common/socket_tools.h"
 
 using namespace SocketTools;
 

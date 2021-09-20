@@ -34,8 +34,8 @@
 #include "opentelemetry/sdk/trace/tracer_provider.h"
 
 #include "opentelemetry/common/timestamp.h"
-#include "opentelemetry/exporters/fluentd/fluentd_exporter.h"
-#include "opentelemetry/exporters/fluentd/recordable.h"
+#include "opentelemetry/exporters/fluentd/trace/fluentd_exporter.h"
+#include "opentelemetry/exporters/fluentd/trace/recordable.h"
 
 #include <iostream>
 
@@ -44,7 +44,7 @@
 
 #include <gtest/gtest.h>
 
-#include "../common/socket_server.h>
+#include "../common/socket_server.h"
 
 using namespace SOCKET_SERVER_NS;
 

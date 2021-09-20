@@ -13,6 +13,8 @@ using namespace nlohmann;
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter
 {
+namespace trace
+{
 namespace fluentd
 {
 template<typename T>
@@ -41,11 +43,11 @@ void Recordable::SetIdentity(const opentelemetry::trace::SpanContext &span_conte
                              opentelemetry::trace::SpanId parent_span_id) noexcept
 {
   LOG_DEBUG("LALIT -> Set Identity");
-  char trace_id_lower_base16[trace::TraceId::kSize * 2] = {0};
+  char trace_id_lower_base16[opentelemetry::trace::TraceId::kSize * 2] = {0};
   span_context.trace_id().ToLowerBase16(trace_id_lower_base16);
-  char span_id_lower_base16[trace::SpanId::kSize * 2] = {0};
+  char span_id_lower_base16[opentelemetry::trace::SpanId::kSize * 2] = {0};
   span_context.span_id().ToLowerBase16(span_id_lower_base16);
-  char parent_span_id_lower_base16[trace::SpanId::kSize * 2] = {0};
+  char parent_span_id_lower_base16[opentelemetry::trace::SpanId::kSize * 2] = {0};
   parent_span_id.ToLowerBase16(parent_span_id_lower_base16);
   options_[FLUENT_FIELD_SPAN_ID] = std::string(span_id_lower_base16, 16);
   options_[FLUENT_FIELD_SPAN_PARENTID] = std::string(parent_span_id_lower_base16, 16);
@@ -203,13 +205,13 @@ void Recordable::AddLink(const opentelemetry::trace::SpanContext &span_context,
   // https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/trace/sdk_exporters/fluentd.md
 }
 
-void Recordable::SetStatus(trace::StatusCode code, nostd::string_view description) noexcept
+void Recordable::SetStatus(opentelemetry::trace::StatusCode code, nostd::string_view description) noexcept
 {
   LOG_DEBUG("LALIT -> SetStatus");
-  if (code != trace::StatusCode::kUnset)
+  if (code != opentelemetry::trace::StatusCode::kUnset)
   {
     options_["tags"]["otel.status_code"] = code;
-    if (code == trace::StatusCode::kError)
+    if (code == opentelemetry::trace::StatusCode::kError)
     {
       options_["tags"]["error"] = description;
     }
@@ -270,5 +272,6 @@ void Recordable::SetInstrumentationLibrary(
 }
 
 }  // namespace fluentd
+} // namespace trace
 }  // namespace exporter
 OPENTELEMETRY_END_NAMESPACE

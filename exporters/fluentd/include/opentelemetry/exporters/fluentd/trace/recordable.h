@@ -14,6 +14,8 @@
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter
 {
+namespace trace
+{
 namespace fluentd
 {
 using FluentdSpan = nlohmann::json;
@@ -86,7 +88,7 @@ public:
   void AddLink(const opentelemetry::trace::SpanContext &span_context,
                const common::KeyValueIterable &attributes) noexcept override;
 
-  void SetStatus(trace::StatusCode code, nostd::string_view description) noexcept override;
+  void SetStatus(opentelemetry::trace::StatusCode code, nostd::string_view description) noexcept override;
 
   void SetName(nostd::string_view name) noexcept override;
 
@@ -109,5 +111,6 @@ private:
 };
 
 }  // namespace fluentd
+}  // namespace trace
 }  // namespace exporter
 OPENTELEMETRY_END_NAMESPACE
