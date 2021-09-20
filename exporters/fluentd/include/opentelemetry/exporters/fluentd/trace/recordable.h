@@ -7,7 +7,7 @@
 #include "opentelemetry/sdk/trace/recordable.h"
 #include "opentelemetry/version.h"
 
-#include "opentelemetry/exporters/fluentd/trace/fluentd_fields.h"
+#include "opentelemetry/exporters/fluentd/common/fluentd_fields.h"
 
 #include <chrono>
 
@@ -19,15 +19,6 @@ namespace trace
 namespace fluentd
 {
 using FluentdSpan = nlohmann::json;
-
-// Ref. https://github.com/fluent/fluentd/wiki/Forward-Protocol-Specification-v1
-enum class TransportFormat
-{
-  kMessage,
-  kForward,
-  kPackedForward,
-  kCompressedPackedForward
-};
 
 static inline nlohmann::byte_container_with_subtype<std::vector<std::uint8_t>> get_msgpack_eventtimeext(
     int32_t seconds     = 0,

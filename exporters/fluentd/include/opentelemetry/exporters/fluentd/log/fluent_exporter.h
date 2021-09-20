@@ -2,12 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 #pragma once
 
+#define ENABLE_LOGS_PREVIEW 1
+
 #include "opentelemetry/exporters/fluentd/common/socket_tools.h"
 
 #include "opentelemetry/exporters/fluentd/trace/recordable.h"
 #include "opentelemetry/ext/http/common/url_parser.h"
-#include "opentelemetry/sdk/trace/exporter.h"
-#include "opentelemetry/sdk/trace/span_data.h"
+#  include "opentelemetry/sdk/logs/exporter.h"
+#  include "opentelemetry/sdk/logs/log_record.h"
 
 #include <queue>
 #include <vector>
@@ -20,7 +22,7 @@
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter
 {
-namespace trace
+namespace logs
 {
 namespace fluentd
 {
@@ -59,14 +61,18 @@ struct FluentdExporterOptions
   bool convert_event_to_trace = false ; // convert events to trace
 };
 
-namespace trace_sdk = opentelemetry::sdk::trace;
+
+
+namespace nostd   = opentelemetry::nostd;
+namespace logs_sdk = opentelemetry::sdk::logs;
 
 /**
  * The fluentd exporter exports span data in JSON format as expected by fluentd
  */
-class FluentdExporter final : public trace_sdk::SpanExporter
+class FluentdExporter final : public logs_sdk::LogExporter
 {
 public:
+
   /**
    * Create a FluentdExporter using all default options.
    */
@@ -81,28 +87,21 @@ public:
    * Create a span recordable.
    * @return a newly initialized Recordable object
    */
-  std::unique_ptr<trace_sdk::Recordable> MakeRecordable() noexcept override;
+  std::unique_ptr<logs_sdk::Recordable> MakeRecordable() noexcept override;
 
   /**
    * Export a batch of span recordables in JSON format.
    * @param spans a span of unique pointers to span recordables
    */
   sdk::common::ExportResult Export(
-      const nostd::span<std::unique_ptr<trace_sdk::Recordable>> &spans) noexcept override;
-
-  /**
-   * Shut down the exporter.
-   * @param timeout an optional timeout, default to max.
-   */
-  bool Shutdown(
-      std::chrono::microseconds timeout = std::chrono::microseconds::max()) noexcept override;
+      const nostd::span<std::unique_ptr<logs_sdk::Recordable>> &logs) noexcept override;
 
 protected:
-  
-  // State management
+
+// State management
   bool Initialize();
   FluentdExporterOptions options_;
-  std::atomic<bool> isShutdown_{false};
+  bool is_shutdown_{false};
 
   // Connectivity management. One end-point per exporter instance.
   bool Connect();
@@ -113,36 +112,9 @@ protected:
   SocketTools::SocketParams socketparams_{AF_INET, SOCK_STREAM, 0};
   nostd::unique_ptr<SocketTools::SocketAddr> addr_;
 
-  // Upload queue management
-  bool Enqueue(std::vector<uint8_t> &packet);
-  bool Send(std::vector<uint8_t> &packet);
-  void UploadLoop();
-  std::thread &GetUploaderThread();
-  void JoinUploaderThread();
-
-  bool has_more_{false};
-  std::recursive_mutex packets_mutex_;
-  std::mutex has_more_mutex_;
-  std::condition_variable has_more_cv_;
-  std::queue<std::vector<uint8_t>> packets_;
-
-private:
-
-  // Number of batches
-  size_t seq_batch_{0};
-
-  // Number of spans processed
-  size_t seq_span_{0};
-
-  // Number of events on span processed
-  size_t seq_evt_{0};
-
-  // Number of connections
-  size_t seq_conn_{0};
-
 };
 
 }  // namespace fluentd
-} // namespace trace
+} // namespace logs
 }  // namespace exporter
 OPENTELEMETRY_END_NAMESPACE

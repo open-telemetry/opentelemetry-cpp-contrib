@@ -46,6 +46,8 @@
 
 /* Value constants */
 #  define FLUENT_VALUE_SPAN            "Span"                  /* Event name for Span     */
+#  define FLUENT_VALUE_LOG             "Log"                  /* Event name for Log     */
+
 #  define FLUENT_VALUE_SPAN_START      "SpanStart"             /* Span Start              */
 #  define FLUENT_VALUE_SPAN_END        "SpanEnd"               /* Span Start              */
 
