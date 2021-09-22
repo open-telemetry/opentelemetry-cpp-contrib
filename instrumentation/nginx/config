@@ -1,4 +1,4 @@
-ngx_addon_name=opentelemetry_nginx
+ngx_addon_name=otel_ngx_module
 ngx_module_type=HTTP
 ngx_module_name=$ngx_addon_name
 ngx_module_incs=
