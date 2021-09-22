@@ -19,11 +19,14 @@ nostd::shared_ptr<logs::Logger> get_logger()
 
 void f1()
 {
+  std::cout << "f1\n";
   get_logger()->Log(opentelemetry::logs::Severity::kDebug, "f1");
 }
 
 void f2()
 {
+    std::cout << "f2\n";
+
  get_logger()->Log(opentelemetry::logs::Severity::kDebug, "f2");
 
   f1();
@@ -34,6 +37,8 @@ void f2()
 
 void foo_library()
 {
+    std::cout << "foo\n";
+
  get_logger()->Log(opentelemetry::logs::Severity::kDebug, "foo_library");
 
 }

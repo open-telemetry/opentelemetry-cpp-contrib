@@ -27,7 +27,6 @@ cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
 include_directories(include)
-
 #create fluentd trace exporter
 add_library(opentelemetry_exporter_fluentd_trace src/trace/fluentd_exporter.cc
                                                  src/trace/recordable.cc)

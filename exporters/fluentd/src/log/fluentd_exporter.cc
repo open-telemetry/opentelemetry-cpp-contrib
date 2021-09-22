@@ -78,7 +78,7 @@ sdk::common::ExportResult FluentdExporter::Export(
     const nostd::span<std::unique_ptr<logs_sdk::Recordable>> &logs) noexcept
 {
   LOG_ERROR("\nLALIT:Exporting...");
-
+  std::cout << "\n export\n";
   // Return failure if this exporter has been shutdown
   if (is_shutdown_)
   {

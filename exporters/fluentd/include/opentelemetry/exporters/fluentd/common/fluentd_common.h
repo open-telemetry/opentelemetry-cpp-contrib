@@ -19,56 +19,6 @@ namespace common
 {
 using FluentdLog = nlohmann::json;
 
-
-/**
- * @brief Scheme for tcp:// stream
-*/
-constexpr const char* kTCP = "tcp";
-
-/**
- * @brief Scheme for udp:// datagram
-*/
-constexpr const char* kUDP = "udp";
-
-/**
- * @brief Scheme for unix:// domain socket
-*/
-constexpr const char* kUNIX = "unix";
-
-/**
- * Export mode - async and sync
- */
-
-enum class ExportMode {
-  SYNC_MODE,
-  ASYNC_MODE
-};
-
-// Ref. https://github.com/fluent/fluentd/wiki/Forward-Protocol-Specification-v1
-enum class TransportFormat
-{
-  kMessage,
-  kForward,
-  kPackedForward,
-  kCompressedPackedForward
-};
-
-/**
- * Struct to hold fluentd  exporter options.
- */
-struct FluentdExporterOptions
-{
-  // The endpoint to export to. By default the OpenTelemetry Collector's default endpoint.
-  TransportFormat format = TransportFormat::kForward;
-  std::string tag = "tag.service";
-  std::string endpoint;
-  ExportMode export_mode = ExportMode::ASYNC_MODE;
-  size_t retry_count = 2;        // number of retries before drop
-  size_t max_queue_size = 16384;  // max events buffer size
-  size_t wait_interval_ms = 0;    // default wait interval between batches
-  bool convert_event_to_trace = false ; // convert events to trace
-};
-
 constexpr int kAttributeValueSize = 15;
 
 void inline PopulateAttribute(nlohmann::json &attribute,
