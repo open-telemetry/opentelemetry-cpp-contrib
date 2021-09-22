@@ -14,6 +14,9 @@ namespace
 nostd::shared_ptr<logs::Logger> get_logger()
 {
   auto provider = logs::Provider::GetLoggerProvider();
+  if (provider) {
+    std::cout << " Provider valid\n" << provider.get() << "\n";
+  }
   return provider->GetLogger("foo_library");
 }
 

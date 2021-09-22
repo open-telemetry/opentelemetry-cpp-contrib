@@ -28,18 +28,18 @@ std::cout << "1\n";
       new sdk_logs::SimpleLogProcessor(std::move(exporter)));
       std::cout << "2\n";
 
-  auto provider = nostd::shared_ptr<opentelemetry::logs::LoggerProvider>(new opentelemetry::sdk::logs::LoggerProvider());
+  auto provider = std::shared_ptr<opentelemetry::logs::LoggerProvider>(new opentelemetry::sdk::logs::LoggerProvider());
   std::cout << "3\n";
 
   auto pr = static_cast<opentelemetry::sdk::logs::LoggerProvider *>(provider.get());
-  std::cout << "4\n";
+  std::cout << "4 " << pr << "\n";
 
   pr->SetProcessor(processor);
   std::cout << "5\n";
 
 
   // Set the global trace provider
-  opentelemetry::logs::Provider::SetLoggerProvider(static_cast<nostd::shared_ptr<opentelemetry::logs::LoggerProvider >>(provider));
+  opentelemetry::logs::Provider::SetLoggerProvider(provider);
   std::cout << "6\n";
 
 }
