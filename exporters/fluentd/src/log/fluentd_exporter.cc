@@ -91,8 +91,9 @@ sdk::common::ExportResult FluentdExporter::Export(
     return sdk::common::ExportResult::kFailure;
   }
   {
+    json obj = json::array();
+    obj.push_back(FLUENT_VALUE_LOG);
     json logevents = json::array();
-    logevents.push_back(FLUENT_VALUE_LOG);
     for (auto &recordable : logs)
     {
       auto rec = std::unique_ptr<Recordable>(static_cast<Recordable *>(recordable.release()));
@@ -103,17 +104,19 @@ sdk::common::ExportResult FluentdExporter::Export(
         json record = json::array();
         record.push_back(log[FLUENT_FIELD_TIMESTAMP]);
         json fields = {};
-        for (auto &kv : log["options"].items())
+        for (auto &kv : log.items())
         {
           fields[kv.key()] = kv.value();
         }
         record.push_back(fields);
+        std::cout << " LALIT: Dump individul rcord" << record.dump();
         logevents.push_back(record);
       }
     }
-    LOG_TRACE("sending %zu Span event(s)", logevents[1].size());
-    std::cout << "LALIT: SPAN EVENTS TO BE SENT: " << logevents.dump();
-    std::vector<uint8_t> msg = nlohmann::json::to_msgpack(logevents);
+    obj.push_back(logevents);
+    LOG_TRACE("sending %zu Span event(s)", obj[1].size());
+    std::cout << "LALIT: SPAN EVENTS TO BE SENT: " << obj.dump();
+    std::vector<uint8_t> msg = nlohmann::json::to_msgpack(obj);
     // Immediately send the Span event(s)
     bool result = Send(msg);
     if (!result) {
