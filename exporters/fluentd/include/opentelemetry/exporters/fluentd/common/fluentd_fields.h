@@ -44,6 +44,9 @@
 #  define FLUENT_FIELD_STATUSMESSAGE   "statusMessage"         /* OT Span status message  */
 #  define FLUENT_FIELD_SUCCESS         "success"               /* OT Span success         */
 
+/*Log option constants */
+# define FLUENT_FIELD_TIMESTAMP       "Timestamp"              /* Log timestamp  */
+
 /* Value constants */
 #  define FLUENT_VALUE_SPAN            "Span"                  /* Event name for Span     */
 #  define FLUENT_VALUE_LOG             "Log"                  /* Event name for Log     */

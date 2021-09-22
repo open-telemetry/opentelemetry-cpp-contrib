@@ -8,7 +8,6 @@
 // Using an exporter that simply dumps span data to stdout.
 #include "foo_library/foo_library.h"
 #include "opentelemetry/exporters/fluentd/trace/fluentd_exporter.h"
-#include "opentelemetry/exporters/fluentd/log/fluent_exporter.h"
 
 namespace sdktrace = opentelemetry::sdk::trace;
 namespace nostd = opentelemetry::nostd;
@@ -19,12 +18,12 @@ namespace
 {
 void initTracer()
 {
-opentelemetry::exporter::trace::fluentd::FluentdExporterOptions options;
+opentelemetry::exporter::fluentd::trace::FluentdExporterOptions options;
 options.endpoint = "tcp://localhost:24222";
-options.export_mode = opentelemetry::exporter::trace::fluentd::ExportMode::SYNC_MODE;
+options.export_mode = opentelemetry::exporter::fluentd::trace::ExportMode::SYNC_MODE;
 
   auto exporter = std::unique_ptr<sdktrace::SpanExporter>(
-      new opentelemetry::exporter::trace::fluentd::FluentdExporter(options));
+      new opentelemetry::exporter::fluentd::trace::FluentdExporter(options));
   auto processor = std::unique_ptr<sdktrace::SpanProcessor>(
       new sdktrace::SimpleSpanProcessor(std::move(exporter)));
   auto provider = nostd::shared_ptr<opentelemetry::trace::TracerProvider>(

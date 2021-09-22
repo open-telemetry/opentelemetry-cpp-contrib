@@ -22,9 +22,9 @@
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter
 {
-namespace logs
-{
 namespace fluentd
+{
+namespace logs
 {
 
 /**
@@ -96,10 +96,17 @@ public:
   sdk::common::ExportResult Export(
       const nostd::span<std::unique_ptr<logs_sdk::Recordable>> &logs) noexcept override;
 
+  /**
+   * Shut down the exporter.
+   * @param timeout an optional timeout, default to max.
+   */
+  bool Shutdown(
+      std::chrono::microseconds timeout = std::chrono::microseconds::max()) noexcept override;
 protected:
 
 // State management
   bool Initialize();
+  bool Send(std::vector<uint8_t> &packet);
   FluentdExporterOptions options_;
   bool is_shutdown_{false};
 
@@ -114,7 +121,7 @@ protected:
 
 };
 
-}  // namespace fluentd
-} // namespace logs
+}  // namespace logs
+} // namespace fluentd
 }  // namespace exporter
 OPENTELEMETRY_END_NAMESPACE

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "opentelemetry/exporters/fluentd/trace/recordable.h"
+#include "opentelemetry/exporters/fluentd/common/fluentd_common.h"
 #include "opentelemetry/exporters/fluentd/common/fluentd_logging.h"
 
 
@@ -13,9 +14,9 @@ using namespace nlohmann;
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter
 {
-namespace trace
-{
 namespace fluentd
+{
+namespace trace
 {
 template<typename T>
 static inline json create_message(T ts, json body)
@@ -54,121 +55,6 @@ void Recordable::SetIdentity(const opentelemetry::trace::SpanContext &span_conte
   options_[FLUENT_FIELD_TRACE_ID] = std::string(trace_id_lower_base16, 32);
 }
 
-void PopulateAttribute(nlohmann::json &attribute,
-                       nostd::string_view key,
-                       const opentelemetry::common::AttributeValue &value)
-{
-  // Assert size of variant to ensure that this method gets updated if the variant
-  // definition changes
-  static_assert(
-      nostd::variant_size<opentelemetry::common::AttributeValue>::value == kAttributeValueSize+1,
-      "AttributeValue contains unknown type");
-
-  if (nostd::holds_alternative<bool>(value))
-  {
-    attribute[key.data()] = nostd::get<bool>(value);
-  }
-  else if (nostd::holds_alternative<int>(value))
-  {
-    attribute[key.data()] = nostd::get<int>(value);
-  }
-  else if (nostd::holds_alternative<int64_t>(value))
-  {
-    attribute[key.data()] = nostd::get<int64_t>(value);
-  }
-  else if (nostd::holds_alternative<unsigned int>(value))
-  {
-    attribute[key.data()] = nostd::get<unsigned int>(value);
-  }
-  else if (nostd::holds_alternative<uint64_t>(value))
-  {
-    attribute[key.data()] = nostd::get<uint64_t>(value);
-  }
-  else if (nostd::holds_alternative<double>(value))
-  {
-    attribute[key.data()] = nostd::get<double>(value);
-  }
-   else if (nostd::holds_alternative<const char *>(value))
-  {
-    LOG_DEBUG( " LALIT -> Setting const char attribute env_properties");
-    attribute[key.data()] =
-        std::string(nostd::get<const char *>(value));
-
-  }
-  else if (nostd::holds_alternative<nostd::string_view>(value))
-  {
-    LOG_DEBUG( " LALIT -> Setting string attribute env_properties");
-    attribute[key.data()] =
-        std::string(nostd::get<nostd::string_view>(value).data());
-        // nostd::string_view(nostd::get<nostd::string_view>(value).data(),
-        // nostd::get<nostd::string_view>(value).size());
-  }
-  else if (nostd::holds_alternative<nostd::span<const uint8_t>>(value))
-  {
-    attribute[key.data()] = {};
-    for (const auto &val : nostd::get<nostd::span<const uint8_t>>(value))
-    {
-      attribute[key.data()].push_back(val);
-    }
-  }
-  else if (nostd::holds_alternative<nostd::span<const bool>>(value))
-  {
-    attribute[key.data()] = {};
-    for (const auto &val : nostd::get<nostd::span<const bool>>(value))
-    {
-      attribute[key.data()].push_back(val);
-    }
-  }
-  else if (nostd::holds_alternative<nostd::span<const int>>(value))
-  {
-    attribute[key.data()] = {};
-    for (const auto &val : nostd::get<nostd::span<const int>>(value))
-    {
-      attribute[key.data()].push_back(val);
-    }
-  }
-  else if (nostd::holds_alternative<nostd::span<const int64_t>>(value))
-  {
-    attribute[key.data()] = {};
-    for (const auto &val : nostd::get<nostd::span<const int64_t>>(value))
-    {
-      attribute[key.data()].push_back(val);
-    }
-  }
-  else if (nostd::holds_alternative<nostd::span<const unsigned int>>(value))
-  {
-    attribute[key.data()] = {};
-    for (const auto &val : nostd::get<nostd::span<const unsigned int>>(value))
-    {
-      attribute[key.data()].push_back(val);
-    }
-  }
-  else if (nostd::holds_alternative<nostd::span<const uint64_t>>(value))
-  {
-    attribute[key.data()] = {};
-    for (const auto &val : nostd::get<nostd::span<const uint64_t>>(value))
-    {
-      attribute[key.data()].push_back(val);
-    }
-  }
-  else if (nostd::holds_alternative<nostd::span<const double>>(value))
-  {
-    attribute[key.data()] = {};
-    for (const auto &val : nostd::get<nostd::span<const double>>(value))
-    {
-      attribute[key.data()].push_back(val);
-    }
-  }
-  else if (nostd::holds_alternative<nostd::span<const nostd::string_view>>(value))
-  {
-    attribute[key.data()] = {};
-    for (const auto &val : nostd::get<nostd::span<const nostd::string_view>>(value))
-    {
-      attribute[key.data()].push_back(std::string(val.data(), val.size()));
-    }
-  }
-}
-
 void Recordable::SetAttribute(nostd::string_view key,
                               const opentelemetry::common::AttributeValue &value) noexcept
 {
@@ -178,17 +64,17 @@ void Recordable::SetAttribute(nostd::string_view key,
     options_[FLUENT_FIELD_PROPERTIES] = nlohmann::json::object();
   }
   
-  PopulateAttribute(options_[FLUENT_FIELD_PROPERTIES], key, value);
+  opentelemetry::exporter::fluentd::common::PopulateAttribute(options_[FLUENT_FIELD_PROPERTIES], key, value);
 }
 
 void Recordable::AddEvent(nostd::string_view name,
-                          common::SystemTimestamp timestamp,
-                          const common::KeyValueIterable &attributes) noexcept
+                          opentelemetry::common::SystemTimestamp timestamp,
+                          const opentelemetry::common::KeyValueIterable &attributes) noexcept
 {
   LOG_DEBUG("Add event : ");
   nlohmann::json attrs = nlohmann::json::object();  // empty object
-  attributes.ForEachKeyValue([&](nostd::string_view key, common::AttributeValue value) noexcept {
-    PopulateAttribute(attrs, key, value);
+  attributes.ForEachKeyValue([&](nostd::string_view key, opentelemetry::common::AttributeValue value) noexcept {
+    opentelemetry::exporter::fluentd::common::PopulateAttribute(attrs, key, value);
     return true;
   });
 
@@ -199,7 +85,7 @@ void Recordable::AddEvent(nostd::string_view name,
 }
 
 void Recordable::AddLink(const opentelemetry::trace::SpanContext &span_context,
-                         const common::KeyValueIterable &attributes) noexcept
+                         const opentelemetry::common::KeyValueIterable &attributes) noexcept
 {
   // TODO: Currently not supported by specs:
   // https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/trace/sdk_exporters/fluentd.md
@@ -271,7 +157,7 @@ void Recordable::SetInstrumentationLibrary(
   options_["tags"]["otel.library.version"] = instrumentation_library.GetVersion();
 }
 
-}  // namespace fluentd
-} // namespace trace
+}  // namespace trace
+} // namespace fluentd
 }  // namespace exporter
 OPENTELEMETRY_END_NAMESPACE

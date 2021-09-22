@@ -21,9 +21,9 @@ using namespace nlohmann;
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter
 {
-namespace trace
-{
 namespace fluentd
+{
+namespace trace
 {
 
 /**
@@ -475,7 +475,7 @@ bool FluentdExporter::Shutdown(
   return false;
 }
 
-}  // namespace fluentd
 }  // namespace trace
+}  // namespace fluentd
 }  // namespace exporter
 OPENTELEMETRY_END_NAMESPACE

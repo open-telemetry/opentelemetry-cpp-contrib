@@ -14,7 +14,7 @@
 
 cmake_minimum_required(VERSION 3.12)
 
-project(opentelemetry-httpd)
+project(opentelemetry-fluentd)
 
 ADD_DEFINITIONS(-DHAVE_CONSOLE_LOG)
 ADD_DEFINITIONS(-DENABLE_LOGS_PREVIEW)
@@ -26,15 +26,27 @@ if(COMMAND cmake_policy)
 cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
+include_directories(include)
+
+#create fluentd trace exporter
 add_library(opentelemetry_exporter_fluentd_trace src/trace/fluentd_exporter.cc
                                                  src/trace/recordable.cc)
 target_include_directories(opentelemetry_exporter_fluentd_trace
     PRIVATE
     ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
-
-include_directories(include)
-
 target_link_libraries(opentelemetry_exporter_fluentd_trace
+                      PUBLIC
+                      ${OPENTELEMETRY_CPP_LIBRARIES}
+                      INTERFACE nlohmann_json::nlohmann_json)
+
+#create fluentd logs exporter
+
+add_library(opentelemetry_exporter_fluentd_logs src/log/fluentd_exporter.cc
+                                                 src/log/recordable.cc)
+target_include_directories(opentelemetry_exporter_fluentd_logs
+    PRIVATE
+    ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
+target_link_libraries(opentelemetry_exporter_fluentd_logs
                       PUBLIC
                       ${OPENTELEMETRY_CPP_LIBRARIES}
                       INTERFACE nlohmann_json::nlohmann_json)

@@ -20,9 +20,9 @@
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter
 {
-namespace trace
-{
 namespace fluentd
+{
+namespace trace
 {
 
 /**
@@ -142,7 +142,7 @@ private:
 
 };
 
-}  // namespace fluentd
-} // namespace trace
+}  // namespace trace
+} // namespace fluentd
 }  // namespace exporter
 OPENTELEMETRY_END_NAMESPACE
