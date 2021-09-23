@@ -21,5 +21,13 @@ ngx_module_srcs=" \
   $ngx_addon_dir/src/toml.c \
   $ngx_addon_dir/src/trace_context.cpp \
 "
+ngx_module_libs=" \
+  -lstdc++ \
+  -lopentelemetry_common \
+  -lopentelemetry_resources \
+  -lopentelemetry_trace \
+  -lopentelemetry_exporter_otlp_grpc \
+  -lopentelemetry_otlp_recordable \
+"
 
 . auto/module
