@@ -15,13 +15,9 @@
 #include <iostream>
 
 OPENTELEMETRY_BEGIN_NAMESPACE
-namespace exporter
-{
-namespace fluentd
-{
-namespace logs
-{
-
+namespace exporter {
+namespace fluentd {
+namespace logs {
 
 using UrlParser = opentelemetry::ext::http::common::UrlParser;
 
@@ -29,83 +25,77 @@ using namespace nlohmann;
 
 /**
  * @brief Scheme for tcp:// stream
-*/
-constexpr const char* kTCP = "tcp";
+ */
+constexpr const char *kTCP = "tcp";
 
 /**
  * @brief Scheme for udp:// datagram
-*/
-constexpr const char* kUDP = "udp";
+ */
+constexpr const char *kUDP = "udp";
 
 /**
  * @brief Scheme for unix:// domain socket
-*/
-constexpr const char* kUNIX = "unix";
+ */
+constexpr const char *kUNIX = "unix";
 
 /**
  * @brief Create FluentD exporter with options
- * @param options 
-*/
-FluentdExporter::FluentdExporter(const FluentdExporterOptions &options) : options_(options)
-{
+ * @param options
+ */
+FluentdExporter::FluentdExporter(const FluentdExporterOptions &options)
+    : options_(options) {
   Initialize();
 }
 
 /**
  * @brief Create FluentD exporter with default options
-*/
-FluentdExporter::FluentdExporter() : options_(FluentdExporterOptions())
-{
+ */
+FluentdExporter::FluentdExporter() : options_(FluentdExporterOptions()) {
   Initialize();
 }
 
 /**
  * @brief Create new Recordable
  * @return Recordable
-*/
-std::unique_ptr<logs_sdk::Recordable> FluentdExporter::MakeRecordable() noexcept
-{
+ */
+std::unique_ptr<logs_sdk::Recordable>
+FluentdExporter::MakeRecordable() noexcept {
   LOG_TRACE("LALIT: Make recordable");
   return std::unique_ptr<sdk::logs::Recordable>(new Recordable);
 }
 
 /**
  * @brief Export spans.
- * @param spans 
+ * @param spans
  * @return Export result.
-*/
+ */
 sdk::common::ExportResult FluentdExporter::Export(
-    const nostd::span<std::unique_ptr<logs_sdk::Recordable>> &logs) noexcept
-{
+    const nostd::span<std::unique_ptr<logs_sdk::Recordable>> &logs) noexcept {
   LOG_ERROR("\nLALIT:Exporting...");
   std::cout << "\n export\n";
   // Return failure if this exporter has been shutdown
-  if (is_shutdown_)
-  {
+  if (is_shutdown_) {
     return sdk::common::ExportResult::kFailure;
   }
 
   // If no spans in Recordable, then return error.
-  if (logs.size() == 0)
-  {
+  if (logs.size() == 0) {
     return sdk::common::ExportResult::kFailure;
   }
   {
     json obj = json::array();
     obj.push_back(FLUENT_VALUE_LOG);
     json logevents = json::array();
-    for (auto &recordable : logs)
-    {
-      auto rec = std::unique_ptr<Recordable>(static_cast<Recordable *>(recordable.release()));
-      if (rec != nullptr)
-      {
+    for (auto &recordable : logs) {
+      auto rec = std::unique_ptr<Recordable>(
+          static_cast<Recordable *>(recordable.release()));
+      if (rec != nullptr) {
         auto log = rec->Log();
         // Emit "log" as fluentd event
         json record = json::array();
         record.push_back(log[FLUENT_FIELD_TIMESTAMP]);
         json fields = {};
-        for (auto &kv : log.items())
-        {
+        for (auto &kv : log.items()) {
           fields[kv.key()] = kv.value();
         }
         record.push_back(fields);
@@ -132,31 +122,25 @@ sdk::common::ExportResult FluentdExporter::Export(
  * @brief Try to upload fluentd forward protocol packet.
  * This method respects the retry options for connects
  * and upload retries.
- * 
+ *
  * @param packet
  * @return true if packet got delivered.
-*/
-bool FluentdExporter::Send(std::vector<uint8_t> &packet)
-{
+ */
+bool FluentdExporter::Send(std::vector<uint8_t> &packet) {
   size_t retryCount = options_.retry_count;
-  while (retryCount--)
-  {
+  while (retryCount--) {
     int error_code = 0;
     // Check if socket is Okay
-    if (connected_)
-    {
+    if (connected_) {
       socket_.getsockopt(SOL_SOCKET, SO_ERROR, error_code);
-      if (error_code!=0)
-      {
+      if (error_code != 0) {
         connected_ = false;
       }
     }
     // Reconnect if not Okay
-    if (!connected_)
-    {
+    if (!connected_) {
       // Establishing socket connection may take time
-      if (!Connect())
-      {
+      if (!Connect()) {
         continue;
       }
       LOG_DEBUG("socket connected");
@@ -164,8 +148,7 @@ bool FluentdExporter::Send(std::vector<uint8_t> &packet)
 
     // Try to write
     size_t sentSize = socket_.writeall(packet);
-    if (packet.size() == sentSize)
-    {
+    if (packet.size() == sentSize) {
       LOG_DEBUG("send successful");
       Disconnect();
       LOG_DEBUG("socket disconnected");
@@ -183,15 +166,12 @@ bool FluentdExporter::Send(std::vector<uint8_t> &packet)
 /**
  * @brief Establish connection to FluentD
  * @return true if connected successfully.
-*/
-bool FluentdExporter::Connect()
-{
-  if (!connected_)
-  {
+ */
+bool FluentdExporter::Connect() {
+  if (!connected_) {
     socket_ = SocketTools::Socket(socketparams_);
     connected_ = socket_.connect(*addr_);
-    if (!connected_)
-    {
+    if (!connected_) {
       LOG_ERROR("Unable to connect to %s", options_.endpoint.c_str());
       return false;
     }
@@ -202,12 +182,10 @@ bool FluentdExporter::Connect()
 
 /**
  * @brief Disconnect FluentD socket or datagram.
- * @return 
-*/
-bool FluentdExporter::Disconnect()
-{
-  if (connected_)
-  {
+ * @return
+ */
+bool FluentdExporter::Disconnect() {
+  if (connected_) {
     connected_ = false;
     if (!socket_.invalid()) {
       socket_.close();
@@ -217,33 +195,26 @@ bool FluentdExporter::Disconnect()
   return false;
 }
 
-
 /**
  * @brief Initialize FluentD exporter socket.
  * @return true if end-point settings have been accepted.
-*/
-bool FluentdExporter::Initialize()
-{
+ */
+bool FluentdExporter::Initialize() {
   UrlParser url(options_.endpoint);
   bool is_unix_domain = false;
 
-  if (url.scheme_ == kTCP)
-  {
+  if (url.scheme_ == kTCP) {
     socketparams_ = {AF_INET, SOCK_STREAM, 0};
-  }
-  else if (url.scheme_ == kUDP)
-  {
+  } else if (url.scheme_ == kUDP) {
     socketparams_ = {AF_INET, SOCK_DGRAM, 0};
   }
 #ifdef HAVE_UNIX_DOMAIN
-  else if (url.scheme_ == kUNIX)
-  {
+  else if (url.scheme_ == kUNIX) {
     socketparams_ = {AF_UNIX, SOCK_STREAM, 0};
-    is_unix_domain  = true;
+    is_unix_domain = true;
   }
 #endif
-  else
-  {
+  else {
 #if defined(__EXCEPTIONS)
     // Customers MUST specify valid end-point configuration
     throw new std::runtime_error("Invalid endpoint!");
@@ -252,29 +223,26 @@ bool FluentdExporter::Initialize()
   }
 
   std::cout << "\nLevel1" << std::flush;
-  addr_.reset(new SocketTools::SocketAddr(options_.endpoint.c_str(), is_unix_domain));
+  addr_.reset(
+      new SocketTools::SocketAddr(options_.endpoint.c_str(), is_unix_domain));
   LOG_TRACE("connecting to %s", addr_->toString().c_str());
   std::cout << "\nLevel2\n" << std::flush;
 
   return true;
 }
 
-
 /**
  * @brief Shutdown FluentD exporter
- * @param  
- * @return 
-*/
-bool FluentdExporter::Shutdown(
-    std::chrono::microseconds) noexcept
-{
+ * @param
+ * @return
+ */
+bool FluentdExporter::Shutdown(std::chrono::microseconds) noexcept {
 
   is_shutdown_ = true;
   return false;
 }
 
-}  // namespace logs
-}  // namespace fluentd
-}  // namespace exporter
+} // namespace logs
+} // namespace fluentd
+} // namespace exporter
 OPENTELEMETRY_END_NAMESPACE
-

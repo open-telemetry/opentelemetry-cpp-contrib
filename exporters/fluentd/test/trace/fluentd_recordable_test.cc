@@ -56,19 +56,16 @@ namespace nostd = opentelemetry::nostd;
 namespace sdktrace = opentelemetry::sdk::trace;
 using json = nlohmann::json;
 
-#include <iostream>
 #include <chrono>
+#include <iostream>
 #include <thread>
 
 // "busy sleep" while suggesting that other threads run
 // for a small amount of time
-template<typename timeunit>
-void yield_for(timeunit duration)
-{
+template <typename timeunit> void yield_for(timeunit duration) {
   auto start = std::chrono::high_resolution_clock::now();
-  auto end   = start + duration;
-  do
-  {
+  auto end = start + duration;
+  do {
     std::this_thread::yield();
   } while (std::chrono::high_resolution_clock::now() < end);
 }
@@ -323,27 +320,25 @@ TYPED_TEST(FluentdIntAttributeTest, SetIntArrayAttribute)
 using Properties = std::map<std::string, opentelemetry::common::AttributeValue>;
 
 struct TestServer {
-  SocketServer& server;
+  SocketServer &server;
   std::atomic<uint32_t> count{0};
 
-  TestServer(SocketServer& server) : server(server) {
-    server.onRequest = [&](SocketServer::Connection& conn) {
-
-      std::vector<uint8_t> msg(
-          conn.request_buffer.data(),
-          conn.request_buffer.data() + conn.request_buffer.size());
+  TestServer(SocketServer &server) : server(server) {
+    server.onRequest = [&](SocketServer::Connection &conn) {
+      std::vector<uint8_t> msg(conn.request_buffer.data(),
+                               conn.request_buffer.data() +
+                                   conn.request_buffer.size());
 
       try {
         auto j = nlohmann::json::from_msgpack(msg);
-        std::cout
-            << "[" << count.fetch_add(1)
-            << "] SocketServer received payload: " << std::endl
-            << j.dump(2) << std::endl;
+        std::cout << "[" << count.fetch_add(1)
+                  << "] SocketServer received payload: " << std::endl
+                  << j.dump(2) << std::endl;
 
         conn.response_buffer = j.dump(2);
         conn.state.insert(SocketServer::Connection::Responding);
         conn.request_buffer.clear();
-      } catch (std::exception&) {
+      } catch (std::exception &) {
         conn.state.insert(SocketServer::Connection::Receiving);
         // skip invalid payload
       }
@@ -355,8 +350,7 @@ struct TestServer {
   void Stop() { server.Stop(); }
 
   void WaitForEvents(uint32_t expectedCount, uint32_t timeout) {
-    if (count.load() != expectedCount)
-    {
+    if (count.load() != expectedCount) {
       yield_for(std::chrono::milliseconds(timeout));
     }
     EXPECT_EQ(count.load(), expectedCount);
@@ -426,16 +420,15 @@ TEST(FluentdExporter, SendTraceEvents) {
                            {"uint64Key", (uint64_t)987654321}};
       span3->AddEvent(eventName3, event3);
 
-      span3->End();  // end MySpanL3
+      span3->End(); // end MySpanL3
     }
-    span2->End();  // end MySpanL2
+    span2->End(); // end MySpanL2
   }
-  span1->End();  // end MySpanL1
+  span1->End(); // end MySpanL1
 
   tracer->ForceFlushWithMicroseconds(1000);
   tracer->CloseWithMicroseconds(0);
 
   testServer.WaitForEvents(6, 200); // 6 batches must arrive in 200ms
   testServer.Stop();
-
 }

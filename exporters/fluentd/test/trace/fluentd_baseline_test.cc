@@ -22,24 +22,22 @@
 
 #include <gtest/gtest.h>
 
+#include "../common/socket_server.h"
 #include "nlohmann/json.hpp"
 #include <opentelemetry/exporters/fluentd/common/msgpack_timestamp.h>
-#include "../common/socket_server.h"
 
 using namespace SOCKET_SERVER_NS;
 
 using namespace nlohmann;
 
-inline json create_message(int64_t ts, json body)
-{
+inline json create_message(int64_t ts, json body) {
   auto arr = json::array();
   arr.push_back(ts);
   arr.push_back(body);
   return arr;
 }
 
-TEST(FluentdBaseline, MsgPackCodec)
-{
+TEST(FluentdBaseline, MsgPackCodec) {
   json obj = json::array();
   obj.push_back("tag.name");
   json messages = json::array();
@@ -52,10 +50,10 @@ TEST(FluentdBaseline, MsgPackCodec)
   // Decode from MsgPack
   json obj2 = nlohmann::json::from_msgpack(msg);
   // Verify that the object is decoded as expected
-  EXPECT_EQ(
-      "[\"tag.name\",[[1441588984,{\"message\":\"foo1\"}],[1441588985,{\"message\":\"foo2\"}],["
-      "1441588986,{\"message\":\"foo3\"}]]]",
-      obj2.dump());
+  EXPECT_EQ("[\"tag.name\",[[1441588984,{\"message\":\"foo1\"}],[1441588985,{"
+            "\"message\":\"foo2\"}],["
+            "1441588986,{\"message\":\"foo3\"}]]]",
+            obj2.dump());
 }
 
 #if 0

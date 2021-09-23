@@ -12,7 +12,7 @@ target_link_libraries(fluentd_example_trace ${CMAKE_THREAD_LIBS_INIT} foo_librar
                       opentelemetry_trace)
 
 
-                      
+
 add_library(foo_library_logs log/foo_library/foo_library.cc)
 
 target_link_libraries(foo_library_logs opentelemetry_exporter_fluentd_logs

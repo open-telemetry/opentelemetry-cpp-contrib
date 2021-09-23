@@ -10,8 +10,7 @@ using namespace nlohmann;
 namespace nlohmann {
 namespace detail {
 
-template <typename X>
-static inline char to_char_type(X x) {
+template <typename X> static inline char to_char_type(X x) {
   return static_cast<char>(x);
 }
 
@@ -25,7 +24,7 @@ class binary_writer2 : public binary_writer<BasicJsonType, CharType> {
   /// whether we can assume little endianess
   const bool is_little_endian = little_endianess();
 
- public:
+public:
   /*
     @brief write a number to output input
     @param[in] n number of type @a NumberType
@@ -62,46 +61,46 @@ class binary_writer2 : public binary_writer<BasicJsonType, CharType> {
    *
    * @param j
    */
-  void write_msgpack(const BasicJsonType& j) {
+  void write_msgpack(const BasicJsonType &j) {
     switch (j.type()) {
-      case value_t::null:
-        // nobrk
-      case value_t::boolean:
-        // nobrk
-      case value_t::number_integer:
-        // nobrk
-      case value_t::number_unsigned:
-        // nobrk
-      case value_t::number_float:
-        // nobrk
-      case value_t::string:
-        // nobrk
-        binary_writer<BasicJsonType, CharType>::write_msgpack(j);
-        break;
+    case value_t::null:
+      // nobrk
+    case value_t::boolean:
+      // nobrk
+    case value_t::number_integer:
+      // nobrk
+    case value_t::number_unsigned:
+      // nobrk
+    case value_t::number_float:
+      // nobrk
+    case value_t::string:
+      // nobrk
+      binary_writer<BasicJsonType, CharType>::write_msgpack(j);
+      break;
 
-      case value_t::array: {
-        // step 1: write control byte and the array size
-        const auto N = j.size();
-        if (N <= 15) {
-          // fixarray
-          write_number(static_cast<std::uint8_t>(0x90 | N));
-        } else if (N <= (std::numeric_limits<std::uint16_t>::max)()) {
-          // array 16
-          oa->write_character(to_char_type(0xDC));
-          write_number(static_cast<std::uint16_t>(N));
-        } else if (N <= (std::numeric_limits<std::uint32_t>::max)()) {
-          // array 32
-          oa->write_character(to_char_type(0xDD));
-          write_number(static_cast<std::uint32_t>(N));
-        }
-        // step 2: write each element
-        for (auto& v : j) {
-          write_msgpack(v);
-        }
-        break;
+    case value_t::array: {
+      // step 1: write control byte and the array size
+      const auto N = j.size();
+      if (N <= 15) {
+        // fixarray
+        write_number(static_cast<std::uint8_t>(0x90 | N));
+      } else if (N <= (std::numeric_limits<std::uint16_t>::max)()) {
+        // array 16
+        oa->write_character(to_char_type(0xDC));
+        write_number(static_cast<std::uint16_t>(N));
+      } else if (N <= (std::numeric_limits<std::uint32_t>::max)()) {
+        // array 32
+        oa->write_character(to_char_type(0xDD));
+        write_number(static_cast<std::uint32_t>(N));
       }
+      // step 2: write each element
+      for (auto &v : j) {
+        write_msgpack(v);
+      }
+      break;
+    }
 
-# if 0
+#if 0
       case value_t::binary: {
         auto& bytes = j.get_binary();
         const auto N = bytes.size();
@@ -149,49 +148,49 @@ class binary_writer2 : public binary_writer<BasicJsonType, CharType> {
       }
 #endif
 
-      case value_t::object: {
-        // step 1: write control byte and the object size
-        const auto N = j.size();
-        if (N <= 15) {
-          // fixmap
-          write_number(static_cast<std::uint8_t>(0x80 | (N & 0xF)));
-        } else if (N <= (std::numeric_limits<std::uint16_t>::max)()) {
-          // map 16
-          oa->write_character(to_char_type(0xDE));
-          write_number(static_cast<std::uint16_t>(N));
-        } else if (N <= (std::numeric_limits<std::uint32_t>::max)()) {
-          // map 32
-          oa->write_character(to_char_type(0xDF));
-          write_number(static_cast<std::uint32_t>(N));
-        }
-        // step 2: write each element
-        for (auto& el : j.items()) {
-          write_msgpack(el.key());
-          write_msgpack(el.value());
-        }
-        break;
+    case value_t::object: {
+      // step 1: write control byte and the object size
+      const auto N = j.size();
+      if (N <= 15) {
+        // fixmap
+        write_number(static_cast<std::uint8_t>(0x80 | (N & 0xF)));
+      } else if (N <= (std::numeric_limits<std::uint16_t>::max)()) {
+        // map 16
+        oa->write_character(to_char_type(0xDE));
+        write_number(static_cast<std::uint16_t>(N));
+      } else if (N <= (std::numeric_limits<std::uint32_t>::max)()) {
+        // map 32
+        oa->write_character(to_char_type(0xDF));
+        write_number(static_cast<std::uint32_t>(N));
       }
+      // step 2: write each element
+      for (auto &el : j.items()) {
+        write_msgpack(el.key());
+        write_msgpack(el.value());
+      }
+      break;
+    }
     }
   }
 };
 
 template <typename basic_json>
-static void to_msgpack2(const basic_json& j, detail::output_adapter<char> o) {
+static void to_msgpack2(const basic_json &j, detail::output_adapter<char> o) {
   binary_writer2<basic_json, char>(o).write_msgpack(j);
 }
 
 template <typename basic_json>
-static void to_msgpack2(const basic_json& j,
+static void to_msgpack2(const basic_json &j,
                         detail::output_adapter<uint8_t> o) {
   binary_writer2<basic_json, uint8_t>(o).write_msgpack(j);
 }
 
 template <typename basic_json>
-static std::vector<uint8_t> to_msgpack2(const basic_json& j) {
+static std::vector<uint8_t> to_msgpack2(const basic_json &j) {
   std::vector<uint8_t> result;
   to_msgpack2(j, result);
   return result;
 }
 
-}  // namespace detail
-}  // namespace nlohmann
+} // namespace detail
+} // namespace nlohmann
