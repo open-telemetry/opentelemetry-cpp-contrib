@@ -182,7 +182,22 @@ OtelGetTraceId(ngx_http_request_t* req, ngx_http_variable_value_t* v, uintptr_t 
 
   if (spanContext.IsValid()) {
     constexpr int len = 2 * trace::TraceId::kSize;
-    char* data = (char*)ngx_palloc(traceContext->request->pool, len);
+    char* data = (char*)ngx_palloc(req->pool, len);
+
+    if(!data) {
+      ngx_log_error(
+        NGX_LOG_ERR, req->connection->log, 0,
+        "Unable to allocate memory for the trace id");
+
+      v->len = 0;
+      v->valid = 0;
+      v->no_cacheable = 1;
+      v->not_found = 0;
+      v->data = nullptr;
+
+      return NGX_OK;
+    }
+
     spanContext.trace_id().ToLowerBase16(nostd::span<char, len>{data, len});
 
     v->len = len;
@@ -216,7 +231,22 @@ OtelGetSpanId(ngx_http_request_t* req, ngx_http_variable_value_t* v, uintptr_t d
 
   if (spanContext.IsValid()) {
     constexpr int len = 2 * trace::SpanId::kSize;
-    char* data = (char*)ngx_palloc(traceContext->request->pool, len);
+    char* data = (char*)ngx_palloc(req->pool, len);
+
+    if(!data) {
+      ngx_log_error(
+        NGX_LOG_ERR, req->connection->log, 0,
+        "Unable to allocate memory for the span id");
+
+      v->len = 0;
+      v->valid = 0;
+      v->no_cacheable = 1;
+      v->not_found = 0;
+      v->data = nullptr;
+
+      return NGX_OK;
+    }
+
     spanContext.span_id().ToLowerBase16(nostd::span<char, len>{data, len});
 
     v->len = len;
