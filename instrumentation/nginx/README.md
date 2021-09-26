@@ -171,6 +171,8 @@ The following nginx variables are set by the instrumentation:
   context](https://www.w3.org/TR/trace-context/#trace-context-http-headers-format), e.g.: `00-0af7651916cd43dd8448eb211c80319c-b9c7c989f97918e1-01`
 - `opentelemetry_context_b3` - Trace context in the [B3
   format](https://github.com/openzipkin/b3-propagation#single-header). Only set when using `opentelemetry_propagate b3`.
+- `opentelemetry_trace_id` - Trace Id of the current span
+- `opentelemetry_span_id` - Span Id of the current span
 
 This can be used to add `Server-Timing` header:
 

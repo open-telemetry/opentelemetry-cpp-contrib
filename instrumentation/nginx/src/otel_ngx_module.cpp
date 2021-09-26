@@ -70,6 +70,12 @@ static ngx_int_t OtelGetContextVar(ngx_http_request_t*, ngx_http_variable_value_
 static ngx_int_t
 OtelGetTraceContextVar(ngx_http_request_t* req, ngx_http_variable_value_t* v, uintptr_t data);
 
+static ngx_int_t
+OtelGetTraceId(ngx_http_request_t* req, ngx_http_variable_value_t* v, uintptr_t data);
+
+static ngx_int_t
+OtelGetSpanId(ngx_http_request_t* req, ngx_http_variable_value_t* v, uintptr_t data);
+
 static ngx_http_variable_t otel_ngx_variables[] = {
   {
     ngx_string("otel_ctx"),
@@ -85,6 +91,22 @@ static ngx_http_variable_t otel_ngx_variables[] = {
     OtelGetTraceContextVar,
     0,
     NGX_HTTP_VAR_PREFIX | NGX_HTTP_VAR_NOHASH | NGX_HTTP_VAR_NOCACHEABLE,
+    0,
+  },
+  {
+    ngx_string("opentelemetry_trace_id"),
+    nullptr,
+    OtelGetTraceId,
+    0,
+    NGX_HTTP_VAR_NOCACHEABLE | NGX_HTTP_VAR_NOHASH,
+    0,
+  },
+  {
+    ngx_string("opentelemetry_span_id"),
+    nullptr,
+    OtelGetSpanId,
+    0,
+    NGX_HTTP_VAR_NOCACHEABLE | NGX_HTTP_VAR_NOHASH,
     0,
   },
   ngx_http_null_variable,
@@ -139,6 +161,104 @@ OtelGetTraceContextVar(ngx_http_request_t* req, ngx_http_variable_value_t* v, ui
     v->valid = 0;
     v->not_found = 1;
     v->no_cacheable = 1;
+    v->data = nullptr;
+  }
+
+  return NGX_OK;
+}
+
+static ngx_int_t
+OtelGetTraceId(ngx_http_request_t* req, ngx_http_variable_value_t* v, uintptr_t data) {
+  TraceContext* traceContext = GetTraceContext(req);
+
+  if (traceContext == nullptr || !traceContext->request_span) {
+    ngx_log_error(
+      NGX_LOG_ERR, req->connection->log, 0,
+      "Unable to get trace context when getting trace id");
+    return NGX_OK;
+  }
+
+  trace::SpanContext spanContext = traceContext->request_span->GetContext();
+
+  if (spanContext.IsValid()) {
+    constexpr int len = 2 * trace::TraceId::kSize;
+    char* data = (char*)ngx_palloc(req->pool, len);
+
+    if(!data) {
+      ngx_log_error(
+        NGX_LOG_ERR, req->connection->log, 0,
+        "Unable to allocate memory for the trace id");
+
+      v->len = 0;
+      v->valid = 0;
+      v->no_cacheable = 1;
+      v->not_found = 0;
+      v->data = nullptr;
+
+      return NGX_OK;
+    }
+
+    spanContext.trace_id().ToLowerBase16(nostd::span<char, len>{data, len});
+
+    v->len = len;
+    v->valid = 1;
+    v->no_cacheable = 1;
+    v->not_found = 0;
+    v->data = (u_char*)data;
+  } else {
+    v->len = 0;
+    v->valid = 0;
+    v->no_cacheable = 1;
+    v->not_found = 1;
+    v->data = nullptr;
+  }
+
+  return NGX_OK;
+}
+
+static ngx_int_t
+OtelGetSpanId(ngx_http_request_t* req, ngx_http_variable_value_t* v, uintptr_t data) {
+  TraceContext* traceContext = GetTraceContext(req);
+
+  if (traceContext == nullptr || !traceContext->request_span) {
+    ngx_log_error(
+      NGX_LOG_ERR, req->connection->log, 0,
+      "Unable to get trace context when getting span id");
+    return NGX_OK;
+  }
+
+  trace::SpanContext spanContext = traceContext->request_span->GetContext();
+
+  if (spanContext.IsValid()) {
+    constexpr int len = 2 * trace::SpanId::kSize;
+    char* data = (char*)ngx_palloc(req->pool, len);
+
+    if(!data) {
+      ngx_log_error(
+        NGX_LOG_ERR, req->connection->log, 0,
+        "Unable to allocate memory for the span id");
+
+      v->len = 0;
+      v->valid = 0;
+      v->no_cacheable = 1;
+      v->not_found = 0;
+      v->data = nullptr;
+
+      return NGX_OK;
+    }
+
+    spanContext.span_id().ToLowerBase16(nostd::span<char, len>{data, len});
+
+    v->len = len;
+    v->valid = 1;
+    v->no_cacheable = 1;
+    v->not_found = 0;
+    v->data = (u_char*)data;
+  } else {
+    v->len = 0;
+    v->valid = 0;
+    v->no_cacheable = 1;
+    v->not_found = 1;
     v->data = nullptr;
   }
 
