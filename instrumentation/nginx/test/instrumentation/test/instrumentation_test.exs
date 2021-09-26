@@ -359,4 +359,30 @@ defmodule InstrumentationTest do
     assert header_context == context
     assert status == 200
   end
+
+  test "Accessing trace id", %{
+    trace_file: trace_file
+  } do
+    %HTTPoison.Response{status_code: status, headers: headers} =
+      HTTPoison.get!("#{@host}/trace_id")
+
+    [trace] = read_traces(trace_file, 1)
+    [span] = collect_spans(trace)
+    {_, header_trace_id} = Enum.find(headers, fn {k, _} -> k == "Trace-Id" end)
+    assert header_trace_id == span["traceId"]
+    assert status == 200
+  end
+
+  test "Accessing span id", %{
+    trace_file: trace_file
+  } do
+    %HTTPoison.Response{status_code: status, headers: headers} =
+      HTTPoison.get!("#{@host}/span_id")
+
+    [trace] = read_traces(trace_file, 1)
+    [span] = collect_spans(trace)
+    {_, header_span_id} = Enum.find(headers, fn {k, _} -> k == "Span-Id" end)
+    assert header_span_id == span["spanId"]
+    assert status == 200
+  end
 end
