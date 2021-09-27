@@ -328,7 +328,11 @@ ngx_int_t StartNgxSpan(ngx_http_request_t* req) {
   val->len = sizeof(TraceContext);
 
   OtelCarrier carrier{req, context};
-  auto incomingContext = ExtractContext(&carrier);
+  opentelemetry::context::Context incomingContext;
+
+  if (GetOtelLocationConf(req)->trustIncomingSpans) {
+    incomingContext = ExtractContext(&carrier);
+  }
 
   trace::StartSpanOptions startOpts;
   startOpts.kind = trace::SpanKind::kServer;
@@ -475,6 +479,8 @@ static char* MergeLocConf(ngx_conf_t*, void* parent, void* child) {
   OtelNgxLocationConf* conf = (OtelNgxLocationConf*)child;
 
   ngx_conf_merge_value(conf->enabled, prev->enabled, 1);
+
+  ngx_conf_merge_value(conf->trustIncomingSpans, prev->trustIncomingSpans, 1);
 
   if (prev->customAttributes && !conf->customAttributes) {
     conf->customAttributes = prev->customAttributes;
@@ -717,6 +723,14 @@ static ngx_command_t kOtelNgxCommands[] = {
     ngx_conf_set_flag_slot,
     NGX_HTTP_LOC_CONF_OFFSET,
     offsetof(OtelNgxLocationConf, enabled),
+    nullptr,
+  },
+  {
+    ngx_string("opentelemetry_trust_incoming_spans"),
+    NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,
+    ngx_conf_set_flag_slot,
+    NGX_HTTP_LOC_CONF_OFFSET,
+    offsetof(OtelNgxLocationConf, trustIncomingSpans),
     nullptr,
   },
   ngx_null_command,

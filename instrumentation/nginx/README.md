@@ -117,6 +117,14 @@ Enable or disable OpenTelemetry (default: enabled).
 - **syntax**: `opentelemetry on|off`
 - **block**: `http`, `server`, `location`
 
+### `opentelemetry_trust_incoming_spans`
+
+Enables or disables using spans from incoming requests as parent for created ones. (default: enabled).
+
+- **required**: `false`
+- **syntax**: `opentelemetry_trust_incoming_spans on|off`
+- **block**: `http`, `server`, `location`
+
 ### `opentelemetry_attribute`
 
 Adds a custom attribute to the span. It is possible to access nginx variables, e.g.

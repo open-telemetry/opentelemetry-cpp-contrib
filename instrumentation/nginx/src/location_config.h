@@ -9,6 +9,7 @@ extern ngx_module_t otel_ngx_module;
 
 struct OtelNgxLocationConf {
   ngx_flag_t enabled = NGX_CONF_UNSET;
+  ngx_flag_t trustIncomingSpans = NGX_CONF_UNSET;
   TracePropagationType propagationType = TracePropagationW3C;
   NgxCompiledScript operationNameScript;
   ngx_array_t* customAttributes = nullptr;
