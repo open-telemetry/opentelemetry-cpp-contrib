@@ -332,6 +332,24 @@ defmodule InstrumentationTest do
     assert status == 200
   end
 
+  test "Accessing a route with disabled trustIncomingsSpans is not associated with a parent", %{
+    trace_file: trace_file
+  } do
+    input_trace_id = "aad85b4f655feed4d594a01cfa6a1d62"
+
+    %HTTPoison.Response{status_code: status} =
+      HTTPoison.get!("#{@host}/distrust_incoming_spans", [
+        {"traceparent", "00-#{input_trace_id}-2a9d49c3e3b7c461-00"}
+      ])
+
+    [trace] = read_traces(trace_file, 1)
+    [span] = collect_spans(trace)
+
+    assert status == 200
+    assert span["traceId"] != input_trace_id
+    assert span["parentSpanId"] == ""
+  end
+
   test "Spans with custom attributes are produced", %{
     trace_file: trace_file
   } do
