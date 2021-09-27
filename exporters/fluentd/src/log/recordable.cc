@@ -44,7 +44,6 @@ void Recordable::SetSpanId(opentelemetry::trace::SpanId span_id) noexcept {
 void Recordable::SetAttribute(
     nostd::string_view key,
     const opentelemetry::common::AttributeValue &value) noexcept {
-  LOG_DEBUG(" LALIT:Setting env_properties");
   if (!json_.contains(FLUENT_FIELD_PROPERTIES)) {
     json_[FLUENT_FIELD_PROPERTIES] = nlohmann::json::object();
   }

@@ -13,9 +13,7 @@ nostd::shared_ptr<logs::Logger> get_logger() {
   return provider->GetLogger("foo_library");
 }
 
-void f1() {
-  get_logger()->Log(opentelemetry::logs::Severity::kDebug, "f1");
-}
+void f1() { get_logger()->Log(opentelemetry::logs::Severity::kDebug, "f1"); }
 
 void f2() {
   get_logger()->Log(opentelemetry::logs::Severity::kDebug, "f2");

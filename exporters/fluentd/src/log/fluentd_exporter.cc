@@ -12,8 +12,6 @@
 
 #include <cassert>
 
-#include <iostream>
-
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter {
 namespace fluentd {

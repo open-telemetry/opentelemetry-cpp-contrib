@@ -18,7 +18,6 @@
 #include <cassert>
 #include <cstddef>
 #include <cstring>
-#include <iostream>
 #include <map>
 #include <sstream>
 #include <string>
@@ -239,7 +238,6 @@ struct SocketAddr {
   }
 
   SocketAddr(const char *addr, bool unixDomain = false) : SocketAddr() {
-    std::cout << "\nAddr: " << addr << std::flush;
     isUnixDomain = unixDomain;
     std::string ipAddress = addr;
     auto found = ipAddress.find("://");
@@ -247,7 +245,6 @@ struct SocketAddr {
       // always strip scheme
       ipAddress.erase(0, found + 3);
     }
-    std::cout << "\nAddr: " << ipAddress << std::flush;
 
 #ifdef HAVE_UNIX_DOMAIN
     if (isUnixDomain) {
@@ -258,37 +255,23 @@ struct SocketAddr {
       return;
     }
 #endif
-    std::cout << "Level 5\n" << std::flush;
 
     // Convert {IPv4|IPv6}:{port} string to Network address and Port.
     int port = 0;
-    std::cout << "Level 6\n" << std::flush;
 
     // If numColons is more than 2, then it is IPv6 address
     size_t numColons = std::count(ipAddress.begin(), ipAddress.end(), ':');
     // Find last colon, which should indicate the port number
     char const *lastColon = strrchr(ipAddress.data(), ':');
-    std::cout << "Level 7\n" << std::flush;
-
-    std::cout << "Last colon" << *lastColon << "\n";
     if (lastColon) {
-      std::cout << "\nlevel--1\n";
       port = atoi(lastColon + 1);
-      std::cout << "\nlevel--2 "
-                << " size: " << lastColon << " : " << ipAddress << "\n";
-      std::cout << " Erase from:" << lastColon - ipAddress.data() << "\n";
-      std::cout << "ipAddress is " << ipAddress << " address is : " << addr
-                << "\n";
       // Erase port number
       ipAddress.erase(lastColon - ipAddress.data());
-      std::cout << "\nlevel--3 IPADDRESS: " << ipAddress;
     }
-    std::cout << "Level 8" << std::flush;
 
     // If there are more than two colons, it means the input is IPv6, e.g
     // [fe80::c018:4a9b:3681:4e41]:3000
     if (numColons > 1) {
-      std::cout << "Level 7--numColons are there" << std::flush;
       sockaddr_in6 &inet6 = m_data_in6;
       inet6.sin6_family = AF_INET6;
       inet6.sin6_port = htons(port);

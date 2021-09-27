@@ -11,7 +11,6 @@
 
 namespace sdk_logs = opentelemetry::sdk::logs;
 namespace nostd = opentelemetry::nostd;
-#include <iostream>
 #define HAVE_CONSOLE_LOG
 
 namespace {
