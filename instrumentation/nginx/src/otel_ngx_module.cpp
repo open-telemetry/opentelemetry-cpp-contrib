@@ -482,6 +482,10 @@ static char* MergeLocConf(ngx_conf_t*, void* parent, void* child) {
 
   ngx_conf_merge_value(conf->trustIncomingSpans, prev->trustIncomingSpans, 1);
 
+  if (prev->operationNameScript.isValid() && !conf->operationNameScript.isValid()) {
+    conf->operationNameScript = prev->operationNameScript;
+  }
+
   if (prev->customAttributes && !conf->customAttributes) {
     conf->customAttributes = prev->customAttributes;
   } else if (prev->customAttributes && conf->customAttributes) {

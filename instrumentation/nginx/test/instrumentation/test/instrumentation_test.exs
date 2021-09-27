@@ -165,6 +165,16 @@ defmodule InstrumentationTest do
     assert span["name"] == "simple_backend"
   end
 
+   test "location without operation name should use operation name from server", %{trace_file: trace_file} do
+    %HTTPoison.Response{status_code: status} = HTTPoison.get!("#{@host}/no_operation_name")
+
+    [trace] = read_traces(trace_file, 1)
+    [span] = collect_spans(trace)
+
+    assert status == 200
+    assert span["name"] == "otel_test"
+  end
+
   def test_parent_span(url, %{trace_file: trace_file}) do
     parent_span_id = "2a9d49c3e3b7c461"
     input_trace_id = "aad85b4f655feed4d594a01cfa6a1d62"
