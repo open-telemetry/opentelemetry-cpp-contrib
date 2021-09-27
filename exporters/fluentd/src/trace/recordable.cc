@@ -38,7 +38,6 @@ const int kAttributeValueSize = 15;
 void Recordable::SetIdentity(
     const opentelemetry::trace::SpanContext &span_context,
     opentelemetry::trace::SpanId parent_span_id) noexcept {
-  LOG_DEBUG("LALIT -> Set Identity");
   char trace_id_lower_base16[opentelemetry::trace::TraceId::kSize * 2] = {0};
   span_context.trace_id().ToLowerBase16(trace_id_lower_base16);
   char span_id_lower_base16[opentelemetry::trace::SpanId::kSize * 2] = {0};
@@ -55,7 +54,6 @@ void Recordable::SetIdentity(
 void Recordable::SetAttribute(
     nostd::string_view key,
     const opentelemetry::common::AttributeValue &value) noexcept {
-  LOG_DEBUG(" LALIT:Setting env_properties");
   if (!options_.contains(FLUENT_FIELD_PROPERTIES)) {
     options_[FLUENT_FIELD_PROPERTIES] = nlohmann::json::object();
   }
@@ -67,7 +65,6 @@ void Recordable::SetAttribute(
 void Recordable::AddEvent(
     nostd::string_view name, opentelemetry::common::SystemTimestamp timestamp,
     const opentelemetry::common::KeyValueIterable &attributes) noexcept {
-  LOG_DEBUG("Add event : ");
   nlohmann::json attrs = nlohmann::json::object(); // empty object
   attributes.ForEachKeyValue(
       [&](nostd::string_view key,
@@ -92,7 +89,6 @@ void Recordable::AddLink(
 
 void Recordable::SetStatus(opentelemetry::trace::StatusCode code,
                            nostd::string_view description) noexcept {
-  LOG_DEBUG("LALIT -> SetStatus");
   if (code != opentelemetry::trace::StatusCode::kUnset) {
     options_["tags"]["otel.status_code"] = code;
     if (code == opentelemetry::trace::StatusCode::kError) {
@@ -103,13 +99,11 @@ void Recordable::SetStatus(opentelemetry::trace::StatusCode code,
 
 void Recordable::SetName(nostd::string_view name) noexcept {
   // Span name.. Should this be tag name?
-  LOG_DEBUG("LALIT - SetName");
   options_[FLUENT_FIELD_NAME] = name.data();
 }
 
 void Recordable::SetResource(
     const opentelemetry::sdk::resource::Resource &resource) noexcept {
-  LOG_DEBUG("LALIT -> SetResource");
   // only tag attribute is supported by specs as of now.
   auto attributes = resource.GetAttributes();
   if (attributes.find("tag") != attributes.end()) {
@@ -119,7 +113,6 @@ void Recordable::SetResource(
 
 void Recordable::SetStartTime(
     opentelemetry::common::SystemTimestamp start_time) noexcept {
-  LOG_DEBUG("LALIT -> SetStartTime");
   options_[FLUENT_FIELD_STARTTIME] = get_msgpack_eventtimeext(
       static_cast<int32_t>(std::chrono::duration_cast<std::chrono::seconds>(
                                start_time.time_since_epoch())
@@ -131,14 +124,12 @@ void Recordable::SetStartTime(
 }
 
 void Recordable::SetDuration(std::chrono::nanoseconds duration) noexcept {
-  LOG_DEBUG("SetDuration");
   options_[FLUENT_FIELD_ENDTTIME] = get_msgpack_eventtimeext();
   options_[FLUENT_FIELD_DURATION] = duration.count();
 }
 
 void Recordable::SetSpanKind(
     opentelemetry::trace::SpanKind span_kind) noexcept {
-  LOG_DEBUG("SetSpanKind");
   auto span_iter = kSpanKindMap.find(span_kind);
   if (span_iter != kSpanKindMap.end()) {
     options_[FLUENT_FIELD_SPAN_KIND] = span_iter->second;
@@ -148,7 +139,6 @@ void Recordable::SetSpanKind(
 void Recordable::SetInstrumentationLibrary(
     const opentelemetry::sdk::instrumentationlibrary::InstrumentationLibrary
         &instrumentation_library) noexcept {
-  LOG_DEBUG("SetInstrumentationLibrary");
   options_["tags"]["otel.library.name"] = instrumentation_library.GetName();
   options_["tags"]["otel.library.version"] =
       instrumentation_library.GetVersion();

@@ -46,12 +46,9 @@ struct FluentdExporterOptions {
   // endpoint.
   TransportFormat format = TransportFormat::kForward;
   std::string tag = "tag.service";
+  size_t retry_count = 2; // number of retries before drop
+
   std::string endpoint;
-  ExportMode export_mode = ExportMode::ASYNC_MODE;
-  size_t retry_count = 2;              // number of retries before drop
-  size_t max_queue_size = 16384;       // max events buffer size
-  size_t wait_interval_ms = 0;         // default wait interval between batches
-  bool convert_event_to_trace = false; // convert events to trace
 };
 
 namespace nostd = opentelemetry::nostd;

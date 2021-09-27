@@ -14,13 +14,12 @@ namespace nostd = opentelemetry::nostd;
 
 #define HAVE_CONSOLE_LOG
 
-namespace
-{
-void initTracer()
-{
-opentelemetry::exporter::fluentd::trace::FluentdExporterOptions options;
-options.endpoint = "tcp://localhost:24222";
-options.export_mode = opentelemetry::exporter::fluentd::trace::ExportMode::SYNC_MODE;
+namespace {
+void initTracer() {
+  opentelemetry::exporter::fluentd::trace::FluentdExporterOptions options;
+  options.endpoint = "tcp://localhost:24222";
+  options.export_mode =
+      opentelemetry::exporter::fluentd::trace::ExportMode::SYNC_MODE;
 
   auto exporter = std::unique_ptr<sdktrace::SpanExporter>(
       new opentelemetry::exporter::fluentd::trace::FluentdExporter(options));
@@ -32,10 +31,9 @@ options.export_mode = opentelemetry::exporter::fluentd::trace::ExportMode::SYNC_
   // Set the global trace provider
   opentelemetry::trace::Provider::SetTracerProvider(provider);
 }
-}  // namespace
+} // namespace
 
-int main()
-{
+int main() {
   // Removing this line will leave the default noop TracerProvider in place.
   initTracer();
 

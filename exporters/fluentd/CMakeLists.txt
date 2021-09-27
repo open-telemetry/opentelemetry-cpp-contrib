@@ -1,54 +1,52 @@
 # Copyright 2021, OpenTelemetry Authors
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not
+# use this file except in compliance with the License. You may obtain a copy of
+# the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations under
+# the License.
 
 cmake_minimum_required(VERSION 3.12)
 
 project(opentelemetry-fluentd)
 
-ADD_DEFINITIONS(-DHAVE_CONSOLE_LOG)
-ADD_DEFINITIONS(-DENABLE_LOGS_PREVIEW)
+add_definitions(-DHAVE_CONSOLE_LOG)
+add_definitions(-DENABLE_LOGS_PREVIEW)
 find_package(opentelemetry-cpp REQUIRED)
 find_package(nlohmann_json REQUIRED)
 find_package(CURL REQUIRED)
 
 if(COMMAND cmake_policy)
-cmake_policy(SET CMP0003 NEW)
+  cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
 include_directories(include)
-#create fluentd trace exporter
+# create fluentd trace exporter
 add_library(opentelemetry_exporter_fluentd_trace src/trace/fluentd_exporter.cc
                                                  src/trace/recordable.cc)
 target_include_directories(opentelemetry_exporter_fluentd_trace
-    PRIVATE
-    ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
-target_link_libraries(opentelemetry_exporter_fluentd_trace
-                      PUBLIC
-                      ${OPENTELEMETRY_CPP_LIBRARIES}
-                      INTERFACE nlohmann_json::nlohmann_json)
+                           PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
+target_link_libraries(
+  opentelemetry_exporter_fluentd_trace
+  PUBLIC ${OPENTELEMETRY_CPP_LIBRARIES}
+  INTERFACE nlohmann_json::nlohmann_json)
 
-#create fluentd logs exporter
+# create fluentd logs exporter
 
 add_library(opentelemetry_exporter_fluentd_logs src/log/fluentd_exporter.cc
-                                                 src/log/recordable.cc)
+                                                src/log/recordable.cc)
 target_include_directories(opentelemetry_exporter_fluentd_logs
-    PRIVATE
-    ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
-target_link_libraries(opentelemetry_exporter_fluentd_logs
-                      PUBLIC
-                      ${OPENTELEMETRY_CPP_LIBRARIES}
-                      INTERFACE nlohmann_json::nlohmann_json)
+                           PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
+target_link_libraries(
+  opentelemetry_exporter_fluentd_logs
+  PUBLIC ${OPENTELEMETRY_CPP_LIBRARIES}
+  INTERFACE nlohmann_json::nlohmann_json)
 
 add_subdirectory(example)
 
@@ -66,7 +64,9 @@ install(
   PATTERN "*.h")
 
 if(BUILD_TESTING)
-  add_executable(fluentd_recordable_trace_test test/trace/fluentd_recordable_test.cc test/trace/fluentd_baseline_test.cc)
+  add_executable(
+    fluentd_recordable_trace_test test/trace/fluentd_recordable_test.cc
+                                  test/trace/fluentd_baseline_test.cc)
 
   target_link_libraries(
     fluentd_recordable_trace_test

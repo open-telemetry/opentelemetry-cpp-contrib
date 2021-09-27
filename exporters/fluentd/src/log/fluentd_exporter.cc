@@ -60,7 +60,6 @@ FluentdExporter::FluentdExporter() : options_(FluentdExporterOptions()) {
  */
 std::unique_ptr<logs_sdk::Recordable>
 FluentdExporter::MakeRecordable() noexcept {
-  LOG_TRACE("LALIT: Make recordable");
   return std::unique_ptr<sdk::logs::Recordable>(new Recordable);
 }
 
@@ -71,8 +70,6 @@ FluentdExporter::MakeRecordable() noexcept {
  */
 sdk::common::ExportResult FluentdExporter::Export(
     const nostd::span<std::unique_ptr<logs_sdk::Recordable>> &logs) noexcept {
-  LOG_ERROR("\nLALIT:Exporting...");
-  std::cout << "\n export\n";
   // Return failure if this exporter has been shutdown
   if (is_shutdown_) {
     return sdk::common::ExportResult::kFailure;
@@ -99,13 +96,11 @@ sdk::common::ExportResult FluentdExporter::Export(
           fields[kv.key()] = kv.value();
         }
         record.push_back(fields);
-        std::cout << " LALIT: Dump individul rcord" << record.dump();
         logevents.push_back(record);
       }
     }
     obj.push_back(logevents);
     LOG_TRACE("sending %zu Span event(s)", obj[1].size());
-    std::cout << "LALIT: SPAN EVENTS TO BE SENT: " << obj.dump();
     std::vector<uint8_t> msg = nlohmann::json::to_msgpack(obj);
     // Immediately send the Span event(s)
     bool result = Send(msg);
@@ -221,12 +216,9 @@ bool FluentdExporter::Initialize() {
 #endif
     return false;
   }
-
-  std::cout << "\nLevel1" << std::flush;
   addr_.reset(
       new SocketTools::SocketAddr(options_.endpoint.c_str(), is_unix_domain));
   LOG_TRACE("connecting to %s", addr_->toString().c_str());
-  std::cout << "\nLevel2\n" << std::flush;
 
   return true;
 }

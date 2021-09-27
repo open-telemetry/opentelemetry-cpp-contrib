@@ -3,8 +3,6 @@
 
 #include "opentelemetry/trace/provider.h"
 
-#include <iostream>
-
 namespace trace = opentelemetry::trace;
 namespace nostd = opentelemetry::nostd;
 
@@ -29,7 +27,6 @@ void f2() {
 
   f1();
   f1();
-  std::cout << "\n Ending span..\n";
   span->End();
 }
 } // namespace

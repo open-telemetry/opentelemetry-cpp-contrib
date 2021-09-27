@@ -22,9 +22,9 @@
 
 #include <gtest/gtest.h>
 
+#include "../common/msgpack_timestamp.h"
 #include "../common/socket_server.h"
 #include "nlohmann/json.hpp"
-#include <opentelemetry/exporters/fluentd/common/msgpack_timestamp.h>
 
 using namespace SOCKET_SERVER_NS;
 

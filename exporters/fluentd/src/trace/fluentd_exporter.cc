@@ -12,8 +12,6 @@
 
 #include <cassert>
 
-#include <iostream>
-
 using UrlParser = opentelemetry::ext::http::common::UrlParser;
 
 using namespace nlohmann;
@@ -73,7 +71,6 @@ FluentdExporter::FluentdExporter() : options_(FluentdExporterOptions()) {
  */
 std::unique_ptr<sdk::trace::Recordable>
 FluentdExporter::MakeRecordable() noexcept {
-  LOG_TRACE("LALIT: Make recordable");
   return std::unique_ptr<sdk::trace::Recordable>(new Recordable);
 }
 
@@ -85,7 +82,6 @@ FluentdExporter::MakeRecordable() noexcept {
 sdk::common::ExportResult FluentdExporter::Export(
     const nostd::span<std::unique_ptr<sdk::trace::Recordable>>
         &spans) noexcept {
-  LOG_ERROR("\nLALIT:Exporting...");
   // Calculate number of batches
   seq_batch_++;
 
@@ -146,7 +142,6 @@ sdk::common::ExportResult FluentdExporter::Export(
     }
     obj.push_back(spanevents);
     LOG_TRACE("sending %zu Span event(s)", obj[1].size());
-    std::cout << "LALIT: SPAN EVENTS TO BE SENT: " << obj.dump();
     std::vector<uint8_t> msg = nlohmann::json::to_msgpack(obj);
     if (options_.export_mode == ExportMode::ASYNC_MODE) {
       // Schedule upload of Span event(s)
@@ -169,7 +164,6 @@ sdk::common::ExportResult FluentdExporter::Export(
       }
       obj.push_back(otherevents);
       LOG_TRACE("sending %zu %s events", obj[1].size(), kv.key().c_str());
-      std::cout << "LALIT: EVENTS TO BE SENT: " << obj.dump();
 
       std::vector<uint8_t> msg = nlohmann::json::to_msgpack(obj);
       if (options_.export_mode == ExportMode::ASYNC_MODE) {
@@ -217,11 +211,9 @@ bool FluentdExporter::Initialize() {
     return false;
   }
 
-  std::cout << "\nLevel1" << std::flush;
   addr_.reset(
       new SocketTools::SocketAddr(options_.endpoint.c_str(), is_unix_domain));
   LOG_TRACE("connecting to %s", addr_->toString().c_str());
-  std::cout << "\nLevel2\n" << std::flush;
 
   if (options_.export_mode == ExportMode::ASYNC_MODE) {
     // Start async uploader thread
