@@ -27,7 +27,7 @@ struct NgxCompiledScript {
     return true;
   }
 
-  bool isValid() {
+  bool IsEmpty() {
     return pattern.len > 0;
   }
 };
