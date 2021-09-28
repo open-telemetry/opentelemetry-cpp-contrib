@@ -26,6 +26,10 @@ struct NgxCompiledScript {
 
     return true;
   }
+
+  bool IsEmpty() {
+    return pattern.len == 0;
+  }
 };
 
 struct ScriptAttributeDeclaration {
