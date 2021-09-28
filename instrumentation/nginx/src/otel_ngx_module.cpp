@@ -482,7 +482,7 @@ static char* MergeLocConf(ngx_conf_t*, void* parent, void* child) {
 
   ngx_conf_merge_value(conf->trustIncomingSpans, prev->trustIncomingSpans, 1);
 
-  if (prev->operationNameScript.IsEmpty() && !conf->operationNameScript.IsEmpty()) {
+  if (!prev->operationNameScript.IsEmpty() && conf->operationNameScript.IsEmpty()) {
     conf->operationNameScript = prev->operationNameScript;
   }
 
