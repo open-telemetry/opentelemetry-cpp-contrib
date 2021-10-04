@@ -10,6 +10,7 @@
 #include "opentelemetry/sdk/logs/recordable.h"
 #include "opentelemetry/version.h"
 
+#include "opentelemetry/exporters/fluentd/common/fluentd_common.h"
 #include "opentelemetry/exporters/fluentd/common/fluentd_fields.h"
 
 #include <chrono>

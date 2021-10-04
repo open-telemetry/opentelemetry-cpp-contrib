@@ -10,6 +10,8 @@
 
 #include "nlohmann/json.hpp"
 
+#include <chrono>
+
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter {
 namespace fluentd {

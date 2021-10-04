@@ -11,12 +11,7 @@
 #include "opentelemetry/sdk/logs/exporter.h"
 #include "opentelemetry/sdk/logs/log_record.h"
 
-#include <atomic>
-#include <condition_variable>
 #include <cstdint>
-#include <mutex>
-#include <queue>
-#include <thread>
 #include <vector>
 
 OPENTELEMETRY_BEGIN_NAMESPACE
