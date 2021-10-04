@@ -40,7 +40,8 @@ constexpr const char *kUNIX = "unix";
  * @brief Create FluentD exporter with options
  * @param options
  */
-FluentdExporter::FluentdExporter(const FluentdExporterOptions &options)
+FluentdExporter::FluentdExporter(
+    const fluentd_common::FluentdExporterOptions &options)
     : options_(options) {
   Initialize();
 }
@@ -48,7 +49,8 @@ FluentdExporter::FluentdExporter(const FluentdExporterOptions &options)
 /**
  * @brief Create FluentD exporter with default options
  */
-FluentdExporter::FluentdExporter() : options_(FluentdExporterOptions()) {
+FluentdExporter::FluentdExporter()
+    : options_(fluentd_common::FluentdExporterOptions()) {
   Initialize();
 }
 

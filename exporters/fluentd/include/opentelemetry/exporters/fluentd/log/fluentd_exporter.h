@@ -24,35 +24,9 @@ namespace exporter {
 namespace fluentd {
 namespace logs {
 
-/**
- * Export mode - async and sync
- */
-
-enum class ExportMode { SYNC_MODE, ASYNC_MODE };
-
-// Ref. https://github.com/fluent/fluentd/wiki/Forward-Protocol-Specification-v1
-enum class TransportFormat {
-  kMessage,
-  kForward,
-  kPackedForward,
-  kCompressedPackedForward
-};
-
-/**
- * Struct to hold fluentd  exporter options.
- */
-struct FluentdExporterOptions {
-  // The endpoint to export to. By default the OpenTelemetry Collector's default
-  // endpoint.
-  TransportFormat format = TransportFormat::kForward;
-  std::string tag = "tag.service";
-  size_t retry_count = 2; // number of retries before drop
-
-  std::string endpoint;
-};
-
 namespace nostd = opentelemetry::nostd;
 namespace logs_sdk = opentelemetry::sdk::logs;
+namespace fluentd_common = opentelemetry::exporter::fluentd::common;
 
 /**
  * The fluentd exporter exports span data in JSON format as expected by fluentd
@@ -67,7 +41,8 @@ public:
   /**
    * Create a FluentdExporter using the given options.
    */
-  explicit FluentdExporter(const FluentdExporterOptions &options);
+  explicit FluentdExporter(
+      const fluentd_common::FluentdExporterOptions &options);
 
   /**
    * Create a span recordable.
@@ -94,7 +69,7 @@ protected:
   // State management
   bool Initialize();
   bool Send(std::vector<uint8_t> &packet);
-  FluentdExporterOptions options_;
+  fluentd_common::FluentdExporterOptions options_;
   bool is_shutdown_{false};
 
   // Connectivity management. One end-point per exporter instance.

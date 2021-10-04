@@ -9,6 +9,7 @@
 #include <string>
 
 using namespace nlohmann;
+namespace fluentd_common = opentelemetry::exporter::fluentd::common;
 
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter {
@@ -58,8 +59,8 @@ void Recordable::SetAttribute(
     options_[FLUENT_FIELD_PROPERTIES] = nlohmann::json::object();
   }
 
-  opentelemetry::exporter::fluentd::common::PopulateAttribute(
-      options_[FLUENT_FIELD_PROPERTIES], key, value);
+  fluentd_common::PopulateAttribute(options_[FLUENT_FIELD_PROPERTIES], key,
+                                    value);
 }
 
 void Recordable::AddEvent(
@@ -69,14 +70,13 @@ void Recordable::AddEvent(
   attributes.ForEachKeyValue(
       [&](nostd::string_view key,
           opentelemetry::common::AttributeValue value) noexcept {
-        opentelemetry::exporter::fluentd::common::PopulateAttribute(attrs, key,
-                                                                    value);
+        fluentd_common::PopulateAttribute(attrs, key, value);
         return true;
       });
 
   // Event name
   attrs[FLUENT_FIELD_NAME] = name;
-  auto ts = get_msgpack_eventtimeext();
+  auto ts = fluentd_common::get_msgpack_eventtimeext();
   events_.push_back(create_message(ts, attrs));
 }
 
@@ -113,7 +113,7 @@ void Recordable::SetResource(
 
 void Recordable::SetStartTime(
     opentelemetry::common::SystemTimestamp start_time) noexcept {
-  options_[FLUENT_FIELD_STARTTIME] = get_msgpack_eventtimeext(
+  options_[FLUENT_FIELD_STARTTIME] = fluentd_common::get_msgpack_eventtimeext(
       static_cast<int32_t>(std::chrono::duration_cast<std::chrono::seconds>(
                                start_time.time_since_epoch())
                                .count()),
@@ -124,7 +124,7 @@ void Recordable::SetStartTime(
 }
 
 void Recordable::SetDuration(std::chrono::nanoseconds duration) noexcept {
-  options_[FLUENT_FIELD_ENDTTIME] = get_msgpack_eventtimeext();
+  options_[FLUENT_FIELD_ENDTTIME] = fluentd_common::get_msgpack_eventtimeext();
   options_[FLUENT_FIELD_DURATION] = duration.count();
 }
 

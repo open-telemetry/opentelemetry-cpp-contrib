@@ -9,6 +9,7 @@
 #include <map>
 
 using namespace nlohmann;
+namespace fluentd_common = opentelemetry::exporter::fluentd::common;
 
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter {
@@ -48,13 +49,12 @@ void Recordable::SetAttribute(
     json_[FLUENT_FIELD_PROPERTIES] = nlohmann::json::object();
   }
 
-  opentelemetry::exporter::fluentd::common::PopulateAttribute(
-      json_[FLUENT_FIELD_PROPERTIES], key, value);
+  fluentd_common::PopulateAttribute(json_[FLUENT_FIELD_PROPERTIES], key, value);
 }
 
 void Recordable::SetTimestamp(
     opentelemetry::common::SystemTimestamp timestamp) noexcept {
-  json_["Timestamp"] = get_msgpack_eventtimeext(
+  json_["Timestamp"] = fluentd_common::get_msgpack_eventtimeext(
       static_cast<int32_t>(std::chrono::duration_cast<std::chrono::seconds>(
                                timestamp.time_since_epoch())
                                .count()),

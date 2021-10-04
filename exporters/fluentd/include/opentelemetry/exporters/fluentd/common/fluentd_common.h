@@ -93,6 +93,51 @@ void inline PopulateAttribute(
   }
 }
 
+// Ref. https://github.com/fluent/fluentd/wiki/Forward-Protocol-Specification-v1
+enum class TransportFormat {
+  kMessage,
+  kForward,
+  kPackedForward,
+  kCompressedPackedForward
+};
+
+/**
+ * Struct to hold fluentd  exporter options.
+ */
+struct FluentdExporterOptions {
+  // The endpoint to export to. By default the OpenTelemetry Collector's default
+  // endpoint.
+  TransportFormat format = TransportFormat::kForward;
+  std::string tag = "tag.service";
+  size_t retry_count = 2; // number of retries before drop
+  std::string endpoint;
+  bool convert_event_to_trace =
+      false; // convert events to trace. Not used for Logs.
+};
+
+static inline nlohmann::byte_container_with_subtype<std::vector<std::uint8_t>>
+get_msgpack_eventtimeext(int32_t seconds = 0, int32_t nanoseconds = 0) {
+  if ((seconds == 0) && (nanoseconds == 0)) {
+    std::chrono::system_clock::time_point tp = std::chrono::system_clock::now();
+    auto duration = tp.time_since_epoch();
+    seconds = static_cast<int32_t>(
+        std::chrono::duration_cast<std::chrono::seconds>(duration).count());
+    nanoseconds = static_cast<int32_t>(
+        std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count() %
+        1000000000);
+  }
+  nlohmann::byte_container_with_subtype<std::vector<std::uint8_t>> ts{
+      std::vector<uint8_t>{0, 0, 0, 0, 0, 0, 0, 0}};
+  for (int i = 3; i >= 0; i--) {
+    ts[i] = seconds & 0xff;
+    ts[i + 4] = nanoseconds & 0xff;
+    seconds >>= 8;
+    nanoseconds >>= 8;
+  }
+  ts.set_subtype(0x00);
+  return ts;
+}
+
 } // namespace common
 } // namespace fluentd
 } // namespace exporter

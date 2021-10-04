@@ -15,7 +15,7 @@ namespace nostd = opentelemetry::nostd;
 
 namespace {
 void initTracer() {
-  opentelemetry::exporter::fluentd::logs::FluentdExporterOptions options;
+  opentelemetry::exporter::fluentd::common::FluentdExporterOptions options;
   options.endpoint = "tcp://localhost:24222";
   auto exporter = std::unique_ptr<sdk_logs::LogExporter>(
       new opentelemetry::exporter::fluentd::logs::FluentdExporter(options));

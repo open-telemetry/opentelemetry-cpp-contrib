@@ -7,6 +7,7 @@
 #include "opentelemetry/sdk/trace/recordable.h"
 #include "opentelemetry/version.h"
 
+#include "opentelemetry/exporters/fluentd/common/fluentd_common.h"
 #include "opentelemetry/exporters/fluentd/common/fluentd_fields.h"
 
 #include <chrono>
@@ -16,29 +17,6 @@ namespace exporter {
 namespace fluentd {
 namespace trace {
 using FluentdSpan = nlohmann::json;
-
-static inline nlohmann::byte_container_with_subtype<std::vector<std::uint8_t>>
-get_msgpack_eventtimeext(int32_t seconds = 0, int32_t nanoseconds = 0) {
-  if ((seconds == 0) && (nanoseconds == 0)) {
-    std::chrono::system_clock::time_point tp = std::chrono::system_clock::now();
-    auto duration = tp.time_since_epoch();
-    seconds = static_cast<int32_t>(
-        std::chrono::duration_cast<std::chrono::seconds>(duration).count());
-    nanoseconds = static_cast<int32_t>(
-        std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count() %
-        1000000000);
-  }
-  nlohmann::byte_container_with_subtype<std::vector<std::uint8_t>> ts{
-      std::vector<uint8_t>{0, 0, 0, 0, 0, 0, 0, 0}};
-  for (int i = 3; i >= 0; i--) {
-    ts[i] = seconds & 0xff;
-    ts[i + 4] = nanoseconds & 0xff;
-    seconds >>= 8;
-    nanoseconds >>= 8;
-  }
-  ts.set_subtype(0x00);
-  return ts;
-}
 
 class Recordable final : public sdk::trace::Recordable {
 public:
