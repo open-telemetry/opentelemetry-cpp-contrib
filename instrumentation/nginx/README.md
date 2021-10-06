@@ -17,6 +17,7 @@ Supported propagation types:
 
 Additional platforms and/or versions coming soon.
 
+
 ## Dependencies (for building)
 
 1. [gRPC](https://github.com/grpc/grpc) - currently the only supported exporter is OTLP. This requirement will be lifted
@@ -38,7 +39,7 @@ make
 
 ## Usage
 
-Modify nginx.conf, or see the [example](test/conf/nginx.conf)
+Download the .so file from the latest [GitHub Action run](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/nginx.yml) or follow the instructions above to build. Then modify nginx.conf, or see the [example](test/conf/nginx.conf)
 
 ```
 load_module /path/to/otel_ngx_module.so;
