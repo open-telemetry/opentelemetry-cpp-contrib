@@ -64,22 +64,43 @@ install(
   PATTERN "*.h")
 
 if(BUILD_TESTING)
+  include(GoogleTest)
+  # build trace exporter tests
   add_executable(
     fluentd_recordable_trace_test test/trace/fluentd_recordable_test.cc
                                   test/trace/fluentd_baseline_test.cc)
 
   target_link_libraries(
     fluentd_recordable_trace_test
-    ${GTEST_BOTH_LIBRARIES}
+    gtest
+    gtest_main
     ${CMAKE_THREAD_LIBS_INIT}
     opentelemetry_common
     opentelemetry_trace
     opentelemetry_resources
-    opentelemetry_sdk
     opentelemetry_exporter_fluentd_trace)
 
   gtest_add_tests(
     TARGET fluentd_recordable_trace_test
     TEST_PREFIX exporter.
     TEST_LIST fluentd_recordable_trace_test)
+
+  # build log exporter tests
+  add_executable(fluentd_recordable_logs_test
+                 test/log/fluentd_recordable_test.cc)
+
+  target_link_libraries(
+    fluentd_recordable_logs_test
+    gtest
+    gtest_main
+    ${CMAKE_THREAD_LIBS_INIT}
+    opentelemetry_common
+    opentelemetry_logs
+    opentelemetry_resources
+    opentelemetry_exporter_fluentd_logs)
+
+  gtest_add_tests(
+    TARGET fluentd_recordable_logs_test
+    TEST_PREFIX exporter.
+    TEST_LIST fluentd_recordable_logs_test)
 endif() # BUILD_TESTING

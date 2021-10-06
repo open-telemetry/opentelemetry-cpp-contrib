@@ -71,14 +71,14 @@ template <typename timeunit> void yield_for(timeunit duration) {
 }
 
 #if 0
-
 // Testing Shutdown functionality of OStreamSpanExporter, should expect no data to be sent to Stream
 TEST(FluentdSpanRecordable, SetIdentity)
 {
-  json j_span = {{"id", "0000000000000002"},
+  json j_span = {{"options",{{"id", "0000000000000002"},
                  {"parentId", "0000000000000003"},
-                 {"traceId", "00000000000000000000000000000001"}};
-  opentelemetry::exporter::fluentd::Recordable rec;
+                 {"traceId", "00000000000000000000000000000001"}}},
+                 {"tags", "Span"}};
+  opentelemetry::exporter::fluentd::trace::Recordable rec;
   const trace::TraceId trace_id(std::array<const uint8_t, trace::TraceId::kSize>(
       {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}));
 
@@ -100,14 +100,14 @@ TEST(FluentdSpanRecordable, SetName)
 {
   nostd::string_view name = "Test Span";
   json j_span             = {{"name", name}};
-  opentelemetry::exporter::fluentd::Recordable rec;
+  opentelemetry::exporter::fluentd::trace::Recordable rec;
   rec.SetName(name);
   EXPECT_EQ(rec.span(), j_span);
 }
 
 TEST(FluentdSpanRecordable, SetStartTime)
 {
-  opentelemetry::exporter::fluentd::Recordable rec;
+  opentelemetry::exporter::fluentd::trace::Recordable rec;
   std::chrono::system_clock::time_point start_time = std::chrono::system_clock::now();
   opentelemetry::common::SystemTimestamp start_timestamp(start_time);
 
@@ -121,7 +121,7 @@ TEST(FluentdSpanRecordable, SetStartTime)
 TEST(FluentdSpanRecordable, SetDuration)
 {
   json j_span = {{"duration", 10}, {"timestamp", 0}};
-  opentelemetry::exporter::fluentd::Recordable rec;
+  opentelemetry::exporter::fluentd::trace::Recordable rec;
   // Start time is 0
   opentelemetry::common::SystemTimestamp start_timestamp;
 
@@ -141,9 +141,9 @@ TEST(FluentdSpanRecordable, SetInstrumentationLibrary)
   const char *library_version = "0.5.0";
   json j_span                 = {
       {"tags", {{"otel.library.name", library_name}, {"otel.library.version", library_version}}}};
-  opentelemetry::exporter::fluentd::Recordable rec;
+  opentelemetry::exporter::fluentd::trace::Recordable rec;
 
-  rec.SetInstrumentationLibrary(*InstrumentationLibrary::create(library_name, library_version));
+  rec.SetInstrumentationLibrary(*InstrumentationLibrary::Create(library_name, library_version));
 
   EXPECT_EQ(rec.span(), j_span);
 }
@@ -154,7 +154,7 @@ TEST(FluentdSpanRecordable, SetStatus)
   std::vector<trace::StatusCode> status_codes = {trace::StatusCode::kError, trace::StatusCode::kOk};
   for (auto &status_code : status_codes)
   {
-    opentelemetry::exporter::fluentd::Recordable rec;
+    opentelemetry::exporter::fluentd::trace::Recordable rec;
     trace::StatusCode code(status_code);
     json j_span;
     if (status_code == trace::StatusCode::kError)
@@ -170,14 +170,14 @@ TEST(FluentdSpanRecordable, SetStatus)
 TEST(FluentdSpanRecordable, SetSpanKind)
 {
   json j_json_client = {{"kind", "CLIENT"}};
-  opentelemetry::exporter::fluentd::Recordable rec;
+  opentelemetry::exporter::fluentd::trace::Recordable rec;
   rec.SetSpanKind(opentelemetry::trace::SpanKind::kClient);
   EXPECT_EQ(rec.span(), j_json_client);
 }
 
 TEST(FluentdSpanRecordable, AddEventDefault)
 {
-  opentelemetry::exporter::fluentd::Recordable rec;
+  opentelemetry::exporter::fluentd::trace::Recordable rec;
   nostd::string_view name = "Test Event";
 
   std::chrono::system_clock::time_point event_time = std::chrono::system_clock::now();
@@ -196,7 +196,7 @@ TEST(FluentdSpanRecordable, AddEventDefault)
 
 TEST(FluentdSpanRecordable, AddEventWithAttributes)
 {
-  opentelemetry::exporter::fluentd::Recordable rec;
+  opentelemetry::exporter::fluentd::trace::Recordable rec;
   nostd::string_view name = "Test Event";
 
   std::chrono::system_clock::time_point event_time = std::chrono::system_clock::now();
@@ -223,7 +223,7 @@ TEST(FluentdSpanRecordable, AddEventWithAttributes)
 // Test non-int single types. Int single types are tested using templates (see IntAttributeTest)
 TEST(FluentdSpanRecordable, SetSingleAtrribute)
 {
-  opentelemetry::exporter::fluentd::Recordable rec;
+  opentelemetry::exporter::fluentd::trace::Recordable rec;
   nostd::string_view bool_key = "bool_attr";
   opentelemetry::common::AttributeValue bool_val(true);
   rec.SetAttribute(bool_key, bool_val);
@@ -244,7 +244,7 @@ TEST(FluentdSpanRecordable, SetSingleAtrribute)
 // Test non-int array types. Int array types are tested using templates (see IntAttributeTest)
 TEST(FluentdSpanRecordable, SetArrayAtrribute)
 {
-  opentelemetry::exporter::fluentd::Recordable rec;
+  opentelemetry::exporter::fluentd::trace::Recordable rec;
   nlohmann::json j_span = {{"tags",
                             {{"bool_arr_attr", {true, false, true}},
                              {"double_arr_attr", {22.3, 33.4, 44.5}},
@@ -268,7 +268,7 @@ TEST(FluentdSpanRecordable, SetArrayAtrribute)
 
 TEST(FluentdSpanRecordable, SetResource)
 {
-  opentelemetry::exporter::fluentd::Recordable rec;
+  opentelemetry::exporter::fluentd::trace::Recordable rec;
   std::string service_name = "test";
   auto resource = opentelemetry::sdk::resource::Resource::Create({{"service.name", service_name}});
   rec.SetResource(resource);
@@ -295,7 +295,7 @@ TYPED_TEST(FluentdIntAttributeTest, SetIntSingleAttribute)
   IntType i     = 2;
   opentelemetry::common::AttributeValue int_val(i);
 
-  opentelemetry::exporter::fluentd::Recordable rec;
+  opentelemetry::exporter::fluentd::trace::Recordable rec;
   rec.SetAttribute("int_attr", int_val);
   nlohmann::json j_span = {{"tags", {{"int_attr", 2}}}};
   EXPECT_EQ(rec.span(), j_span);
@@ -309,14 +309,13 @@ TYPED_TEST(FluentdIntAttributeTest, SetIntArrayAttribute)
   IntType int_arr[kArraySize] = {4, 5, 6};
   nostd::span<const IntType> int_span(int_arr);
 
-  opentelemetry::exporter::fluentd::Recordable rec;
+  opentelemetry::exporter::fluentd::trace::Recordable rec;
   rec.SetAttribute("int_arr_attr", int_span);
   nlohmann::json j_span = {{"tags", {{"int_arr_attr", {4, 5, 6}}}}};
   EXPECT_EQ(rec.span(), j_span);
 }
 
 #endif
-
 using Properties = std::map<std::string, opentelemetry::common::AttributeValue>;
 
 struct TestServer {
@@ -370,12 +369,13 @@ TEST(FluentdExporter, SendTraceEvents) {
   yield_for(std::chrono::milliseconds(500));
 
   // Connect to local test server
-  opentelemetry::exporter::fluentd::FluentdExporterOptions options;
+  opentelemetry::exporter::fluentd::common::FluentdExporterOptions options;
   options.endpoint = "tcp://127.0.0.1:24222";
   options.tag = "tag.my_service";
+  options.convert_event_to_trace = true;
 
   auto exporter = std::unique_ptr<opentelemetry::sdk::trace::SpanExporter>(
-      new opentelemetry::exporter::fluentd::FluentdExporter(options));
+      new opentelemetry::exporter::fluentd::trace::FluentdExporter(options));
 
   auto processor = std::unique_ptr<SpanProcessor>(
       new sdktrace::SimpleSpanProcessor(std::move(exporter)));
