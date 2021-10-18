@@ -34,7 +34,6 @@ service name from the Resource. If no service name can be detected on the
 Resource, a fallback name of "unknown_service" will be used.
 
 ```cpp
-
 opentelemetry::exporter::fluentd::fluentdExporterOptions options;
 options.endpoint = "http://localhost:9411/api/v2/spans";
 options.service_name = "my_service";
