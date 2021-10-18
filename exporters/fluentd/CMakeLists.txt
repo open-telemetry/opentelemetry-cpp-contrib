@@ -22,10 +22,6 @@ find_package(opentelemetry-cpp REQUIRED)
 find_package(nlohmann_json REQUIRED)
 find_package(CURL REQUIRED)
 
-if(COMMAND cmake_policy)
-  cmake_policy(SET CMP0003 NEW)
-endif(COMMAND cmake_policy)
-
 include_directories(include)
 # create fluentd trace exporter
 add_library(opentelemetry_exporter_fluentd_trace src/trace/fluentd_exporter.cc

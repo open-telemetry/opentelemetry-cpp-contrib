@@ -64,17 +64,19 @@ protected:
   // State management
   bool Initialize();
   bool Send(std::vector<uint8_t> &packet);
-  fluentd_common::FluentdExporterOptions options_;
-  bool is_shutdown_{false};
 
   // Connectivity management. One end-point per exporter instance.
   bool Connect();
   bool Disconnect();
-  bool connected_{false};
+
   // Socket connection is re-established for every batch of events
   SocketTools::Socket socket_;
   SocketTools::SocketParams socketparams_{AF_INET, SOCK_STREAM, 0};
+
+  fluentd_common::FluentdExporterOptions options_;
+  bool is_shutdown_{false};
   nostd::unique_ptr<SocketTools::SocketAddr> addr_;
+  bool connected_{false};
 };
 
 } // namespace logs
