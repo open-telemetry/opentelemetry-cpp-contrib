@@ -30,7 +30,7 @@ void initTracer() {
 
   pr->SetProcessor(processor);
 
-  // Set the global trace provider
+  // Set the global logger provider
   opentelemetry::logs::Provider::SetLoggerProvider(provider);
 }
 } // namespace

@@ -46,7 +46,7 @@ auto provider = nostd::shared_ptr<opentelemetry::trace::TracerProvider>(
     new sdktrace::TracerProvider(processor, opentelemetry::sdk::resource::Resource::Create({}),
                 std::make_shared<opentelemetry::sdk::trace::AlwaysOnSampler>()));
 
-// Set the global trace provider
+// Set the global tracer provider
 opentelemetry::trace::Provider::SetTracerProvider(provider);
 ```
 
