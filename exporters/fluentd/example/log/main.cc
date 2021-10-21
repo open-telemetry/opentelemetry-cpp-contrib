@@ -14,7 +14,7 @@ namespace nostd = opentelemetry::nostd;
 #define HAVE_CONSOLE_LOG
 
 namespace {
-void initTracer() {
+void initLogger() {
   opentelemetry::exporter::fluentd::common::FluentdExporterOptions options;
   options.endpoint = "tcp://localhost:24222";
   auto exporter = std::unique_ptr<sdk_logs::LogExporter>(
@@ -37,7 +37,7 @@ void initTracer() {
 
 int main() {
   // Removing this line will leave the default noop TracerProvider in place.
-  initTracer();
+  initLogger();
 
   foo_library();
 }
