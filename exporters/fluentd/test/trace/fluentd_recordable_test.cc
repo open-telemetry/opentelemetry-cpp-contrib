@@ -272,7 +272,7 @@ TEST(FluentdSpanRecordable, SetResource)
   std::string service_name = "test";
   auto resource = opentelemetry::sdk::resource::Resource::Create({{"service.name", service_name}});
   rec.SetResource(resource);
-  // EXPECT_EQ(rec.GetServiceName(), service_name);
+  EXPECT_EQ(rec.GetServiceName(), service_name);
 }
 
 /**
