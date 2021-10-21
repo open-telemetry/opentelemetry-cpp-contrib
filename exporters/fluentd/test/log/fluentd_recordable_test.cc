@@ -146,43 +146,11 @@ TEST(FluentdExporter, SendLogEvents) {
   auto logger = provider->GetLogger(providerName);
 
   // Span attributes
-  // Properties attribs = {{"attrib1", 1}, {"attrib2", 2}};
+  Properties attribs = {{"attrib1", 1}, {"attrib2", 2}};
 
   logger->Log(logs::Severity::kDebug, "f2");
-  /*{
-    // auto scope = tracer->WithActiveSpan(span1);
-    auto span2 = tracer->StartSpan("MySpanL2", attribs);
-    {
-      auto span3 = tracer->StartSpan("MySpanL3", attribs);
+  logger->Log(logs::Severity::kDebug, "f3");
 
-      // Add first event
-      std::string eventName1 = "MyEvent1";
-      Properties event1 = {{"uint32Key", (uint32_t)1234},
-                           {"uint64Key", (uint64_t)1234567890},
-                           {"strKey", "someValue"}};
-      span2->AddEvent(eventName1, event1);
-
-      // Add second event
-      std::string eventName2 = "MyEvent2";
-      Properties event2 = {{"uint32Key", (uint32_t)9876},
-                           {"uint64Key", (uint64_t)987654321},
-                           {"strKey", "anotherValue"}};
-      span2->AddEvent(eventName2, event2);
-
-      // Add third event
-      std::string eventName3 = "MyEvent3";
-      Properties event3 = {{"metadata", "ai_event"},
-                           {"uint32Key", (uint32_t)9876},
-                           {"uint64Key", (uint64_t)987654321}};
-      span3->AddEvent(eventName3, event3);
-
-      span3->End(); // end MySpanL3
-    }
-    span2->End(); // end MySpanL2
-  }
-  span1->End(); // end MySpanL1
-*/
-
-  testServer.WaitForEvents(1, 200); // 6 batches must arrive in 200ms
+  testServer.WaitForEvents(2, 200); // 2 batches must arrive in 200ms
   testServer.Stop();
 }
