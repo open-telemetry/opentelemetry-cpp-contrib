@@ -11,7 +11,6 @@
 #include "opentelemetry/sdk/logs/exporter.h"
 #include "opentelemetry/sdk/logs/log_record.h"
 
-#include <cstdint>
 #include <vector>
 
 OPENTELEMETRY_BEGIN_NAMESPACE
