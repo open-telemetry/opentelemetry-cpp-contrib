@@ -13,10 +13,14 @@ nostd::shared_ptr<logs::Logger> get_logger() {
   return provider->GetLogger("foo_library");
 }
 
-void f1() { get_logger()->Log(opentelemetry::logs::Severity::kDebug, "f1"); }
+void f1() {
+  get_logger()->Log(opentelemetry::logs::Severity::kDebug, "logName2",
+                    {{"k1", "v1"}, {"k2", "v2"}});
+}
 
 void f2() {
-  get_logger()->Log(opentelemetry::logs::Severity::kDebug, "f2");
+  get_logger()->Log(opentelemetry::logs::Severity::kDebug, "logName3",
+                    "log body - 3");
 
   f1();
   f1();
@@ -24,5 +28,6 @@ void f2() {
 } // namespace
 
 void foo_library() {
-  get_logger()->Log(opentelemetry::logs::Severity::kDebug, "foo_library");
+  get_logger()->Log(opentelemetry::logs::Severity::kDebug, "logName1",
+                    "log body - 1");
 }
