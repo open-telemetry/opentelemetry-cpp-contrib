@@ -146,7 +146,7 @@ defmodule InstrumentationTest do
   end
 
   test "HTTP upstream | span attributes", %{trace_file: trace_file} do
-    %HTTPoison.Response{status_code: status} = HTTPoison.get!("#{@host}/?foo=bar&x=42")
+    %HTTPoison.Response{status_code: status} = HTTPoison.get!("#{@host}/?foo=bar&x=42", [{"User-Agent", "otel-test"}])
 
     [trace] = read_traces(trace_file, 1)
     [span] = collect_spans(trace)
@@ -160,6 +160,7 @@ defmodule InstrumentationTest do
     assert attrib(span, "http.server_name") == "otel_test"
     assert attrib(span, "http.scheme") == "http"
     assert attrib(span, "http.status_code") == "200"
+    assert attrib(span, "http.user_agent") == "otel-test"
 
     assert span["kind"] == "SPAN_KIND_SERVER"
     assert span["name"] == "simple_backend"
