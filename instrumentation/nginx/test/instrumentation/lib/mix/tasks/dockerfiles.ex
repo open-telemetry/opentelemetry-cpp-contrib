@@ -2,7 +2,7 @@ defmodule Mix.Tasks.Dockerfiles do
   use Mix.Task
 
   @grpc_version "v1.36.4"
-  @otel_cpp_version "v1.0.1"
+  @otel_cpp_version "v1.1.0"
 
   def run([out_dir | combos]) do
     out_dir_abs = Path.expand(out_dir)
@@ -177,6 +177,7 @@ defmodule Mix.Tasks.Dockerfiles do
         -DCMAKE_INSTALL_PREFIX=/install \\
         -DCMAKE_PREFIX_PATH=/install \\
         -DWITH_OTLP=ON \\
+        -DWITH_OTLP_GRPC=ON \\
         -DWITH_OTLP_HTTP=OFF \\
         -DBUILD_TESTING=OFF \\
         -DWITH_EXAMPLES=OFF \\
