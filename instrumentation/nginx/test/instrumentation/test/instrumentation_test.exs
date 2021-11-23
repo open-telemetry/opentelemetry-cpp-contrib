@@ -154,6 +154,8 @@ defmodule InstrumentationTest do
     assert status == 200
 
     assert attrib(span, "net.host.port") == "8000"
+    assert attrib(span, "net.peer.ip") != nil
+    assert attrib(span, "net.peer.port") != nil
 
     assert attrib(span, "http.method") == "GET"
     assert attrib(span, "http.flavor") == "1.1"
