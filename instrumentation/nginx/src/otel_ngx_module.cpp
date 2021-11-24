@@ -38,6 +38,7 @@ constexpr char kOtelCtxVarPrefix[] = "opentelemetry_context_";
 
 const ScriptAttributeDeclaration kDefaultScriptAttributes[] = {
   {"http.scheme", "$scheme"},
+  {"net.host.port", "$server_port"},
 };
 
 struct OtelMainConf {
