@@ -38,7 +38,6 @@ constexpr char kOtelCtxVarPrefix[] = "opentelemetry_context_";
 
 const ScriptAttributeDeclaration kDefaultScriptAttributes[] = {
   {"http.scheme", "$scheme"},
-  {"http.user_agent", "$http_user_agent"},
 };
 
 struct OtelMainConf {
@@ -352,6 +351,10 @@ ngx_int_t StartNgxSpan(ngx_http_request_t* req) {
   nostd::string_view serverName = GetNgxServerName(req);
   if (!serverName.empty()) {
     context->request_span->SetAttribute("http.server_name", serverName);
+  }
+
+  if (req->headers_in.user_agent) {
+    context->request_span->SetAttribute("http.user_agent", FromNgxString(req->headers_in.user_agent->value));
   }
 
   auto outgoingContext = incomingContext.SetValue(trace::kSpanKey, context->request_span);
