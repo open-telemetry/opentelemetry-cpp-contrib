@@ -353,6 +353,10 @@ ngx_int_t StartNgxSpan(ngx_http_request_t* req) {
     context->request_span->SetAttribute("http.server_name", serverName);
   }
 
+  if (req->headers_in.user_agent) {
+    context->request_span->SetAttribute("http.user_agent", FromNgxString(req->headers_in.user_agent->value));
+  }
+
   auto outgoingContext = incomingContext.SetValue(trace::kSpanKey, context->request_span);
 
   InjectContext(&carrier, outgoingContext);
