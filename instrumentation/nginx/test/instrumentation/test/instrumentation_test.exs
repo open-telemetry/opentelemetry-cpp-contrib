@@ -90,7 +90,17 @@ defmodule InstrumentationTest do
     case Enum.find(span["attributes"], fn %{"key" => k} -> k == key end) do
       %{"value" => val} ->
         [v] = Map.values(val)
-        v
+
+        case v do
+          %{"values" => vals} ->
+            Enum.map(vals, fn val -> 
+              [t] = Map.values(val)
+              t
+            end)
+
+          _ ->
+            v
+        end
 
       _ ->
         nil
@@ -146,7 +156,7 @@ defmodule InstrumentationTest do
   end
 
   test "HTTP upstream | span attributes", %{trace_file: trace_file} do
-    %HTTPoison.Response{status_code: status} = HTTPoison.get!("#{@host}/?foo=bar&x=42", [{"User-Agent", "otel-test"}])
+    %HTTPoison.Response{status_code: status} = HTTPoison.get!("#{@host}/?foo=bar&x=42", [{"User-Agent", "otel-test"}, {"My-Header", "My-Value"}])
 
     [trace] = read_traces(trace_file, 1)
     [span] = collect_spans(trace)
@@ -165,9 +175,54 @@ defmodule InstrumentationTest do
     assert attrib(span, "http.scheme") == "http"
     assert attrib(span, "http.status_code") == "200"
     assert attrib(span, "http.user_agent") == "otel-test"
+    assert attrib(span, "http.request.header.host") == nil
+    assert attrib(span, "http.request.header.user_agent") == nil
+    assert attrib(span, "http.request.header.my_header") == nil
 
     assert span["kind"] == "SPAN_KIND_SERVER"
     assert span["name"] == "simple_backend"
+  end
+
+  test "location with opentelemetry_capture_headers on should capture headers", %{trace_file: trace_file} do
+    %HTTPoison.Response{status_code: status} = HTTPoison.get!("#{@host}/capture_headers", [{"Request-Header", "Request-Value"}])
+
+    [trace] = read_traces(trace_file, 1)
+    [span] = collect_spans(trace)
+
+    assert status == 200
+
+    assert attrib(span, "http.request.header.host") == nil
+    assert attrib(span, "http.request.header.user_agent") == nil
+    assert attrib(span, "http.request.header.request_header") == ["Request-Value"]
+    assert attrib(span, "http.response.header.response_header") == ["Response-Value"]
+  end
+
+  test "location with opentelemetry_capture_headers and sensitive header name should redact header value", %{trace_file: trace_file} do
+    %HTTPoison.Response{status_code: status} = HTTPoison.get!("#{@host}/capture_headers_with_sensitive_header_name", [{"Request-Header", "Foo"}])
+
+    [trace] = read_traces(trace_file, 1)
+    [span] = collect_spans(trace)
+
+    assert status == 200
+
+    assert attrib(span, "http.request.header.host") == nil
+    assert attrib(span, "http.request.header.user_agent") == nil
+    assert attrib(span, "http.request.header.request_header") == ["[REDACTED]"]
+    assert attrib(span, "http.response.header.response_header") == ["[REDACTED]"]
+  end
+
+  test "location with opentelemetry_capture_headers and sensitive header value should redact header value", %{trace_file: trace_file} do
+    %HTTPoison.Response{status_code: status} = HTTPoison.get!("#{@host}/capture_headers_with_sensitive_header_value", [{"Bar", "Request-Value"}])
+
+    [trace] = read_traces(trace_file, 1)
+    [span] = collect_spans(trace)
+
+    assert status == 200
+
+    assert attrib(span, "http.request.header.host") == nil
+    assert attrib(span, "http.request.header.user_agent") == nil
+    assert attrib(span, "http.request.header.bar") == ["[REDACTED]"]
+    assert attrib(span, "http.response.header.bar") == ["[REDACTED]"]
   end
 
    test "location without operation name should use operation name from server", %{trace_file: trace_file} do

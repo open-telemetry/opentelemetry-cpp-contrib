@@ -159,6 +159,30 @@ be started. The default propagator is W3C.
 - **syntax**: `opentelemetry_propagate` or `opentelemetry_propagate b3`
 - **block**: `http`, `server`, `location`
 
+### `opentelemetry_capture_headers`
+
+Enables the capturing of request and response headers. (default: disabled).
+
+- **required**: `false`
+- **syntax**: `opentelemetry_capture_headers on|off`
+- **block**: `http`, `server`, `location`
+
+### `opentelemetry_sensitive_header_names`
+
+Sets the caputured header value to `[REDACTED]` for all headers where the name matches the given regex (case insensitive).
+
+- **required**: `false`
+- **syntax**: `opentelemetry_sensitive_header_names <regex>`
+- **block**: `http`, `server`, `location`
+
+### `opentelemetry_sensitive_header_values`
+
+Sets the caputured header value to `[REDACTED]` for all headers where the value matches the given regex (case insensitive).
+
+- **required**: `false`
+- **syntax**: `opentelemetry_sensitive_header_values <regex>`
+- **block**: `http`, `server`, `location`
+
 ## OpenTelemetry attributes
 
 List of exported attributes and their corresponding nginx variables if applicable:
@@ -171,6 +195,8 @@ List of exported attributes and their corresponding nginx variables if applicabl
 - `http.scheme` - `$scheme`
 - `http.server_name` - From the `server_name` directive
 - `http.user_agent` - `User-Agent` header value
+- `http.request.header.*` - The request headers (except `Host` and `User-Agent`)
+- `http.response.header.*` - The response headers
 - `net.host.port` - `$server_port`
 - `net.peer.ip` - `$remote_addr`
 - `net.peer.port` - `$remote_port`

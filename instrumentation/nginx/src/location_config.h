@@ -10,6 +10,11 @@ extern ngx_module_t otel_ngx_module;
 struct OtelNgxLocationConf {
   ngx_flag_t enabled = NGX_CONF_UNSET;
   ngx_flag_t trustIncomingSpans = NGX_CONF_UNSET;
+  ngx_flag_t captureHeaders = NGX_CONF_UNSET;
+#if (NGX_PCRE)
+  ngx_regex_t *sensitiveHeaderNames = (ngx_regex_t*)NGX_CONF_UNSET_PTR;
+  ngx_regex_t *sensitiveHeaderValues = (ngx_regex_t*)NGX_CONF_UNSET_PTR;
+#endif
   TracePropagationType propagationType = TracePropagationW3C;
   NgxCompiledScript operationNameScript;
   ngx_array_t* customAttributes = nullptr;
