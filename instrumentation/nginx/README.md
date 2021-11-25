@@ -170,6 +170,8 @@ List of exported attributes and their corresponding nginx variables if applicabl
 - `http.host` - `Host` header value
 - `http.scheme` - `$scheme`
 - `http.server_name` - From the `server_name` directive
+- `http.user_agent` - `User-Agent` header value
+- `net.host.port` - `$server_port`
 - `net.peer.ip` - `$remote_addr`
 - `net.peer.port` - `$remote_port`
 
