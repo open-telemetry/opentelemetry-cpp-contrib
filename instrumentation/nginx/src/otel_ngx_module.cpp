@@ -1,5 +1,6 @@
 #include <opentelemetry/sdk/trace/processor.h>
 #include <opentelemetry/trace/span.h>
+#include <algorithm>
 #include <unordered_map>
 #include <vector>
 
@@ -62,6 +63,60 @@ nostd::string_view NgxHttpFlavor(ngx_http_request_t* req) {
       return "1.0";
     default:
       return "";
+  }
+}
+
+static void NgxNormalizeAndCopyString(u_char* dst, ngx_str_t str) {
+  for (ngx_uint_t i = 0; i < str.len; ++i) {
+    u_char ch = str.data[i];
+    if (ch >= 'A' && ch <= 'Z') {
+      ch += 0x20;
+    } else if (ch == '-') {
+      ch = '_';
+    }
+
+    dst[i] = ch;
+  }
+}
+
+static void OtelCaptureHeaders(nostd::shared_ptr<opentelemetry::trace::Span> span, ngx_str_t keyPrefix, ngx_list_t *headers,
+                        ngx_regex_t *sensitiveHeaderNames, ngx_regex_t *sensitiveHeaderValues,
+                        nostd::span<ngx_table_elt_t*> excludedHeaders = {}) {
+  for (ngx_list_part_t *part = &headers->part; part != nullptr; part = part->next) {
+    ngx_table_elt_t *header = (ngx_table_elt_t*) part->elts;
+    for (ngx_uint_t i = 0; i < part->nelts; ++i) {
+      if (std::find(excludedHeaders.begin(), excludedHeaders.end(), &header[i]) != excludedHeaders.end()) {
+        continue;
+      }
+
+      u_char key[keyPrefix.len + header[i].key.len]; 
+      NgxNormalizeAndCopyString((u_char*)ngx_copy(key, keyPrefix.data, keyPrefix.len), header[i].key);
+
+      bool sensitiveHeader = false;
+#if (NGX_PCRE)
+      if (sensitiveHeaderNames) {
+        int ovector[3];
+        if (ngx_regex_exec(sensitiveHeaderNames, &header[i].key, ovector, 0) >= 0) {
+          sensitiveHeader = true;
+        }
+      }
+      if (sensitiveHeaderValues && !sensitiveHeader) {
+        int ovector[3];
+        if (ngx_regex_exec(sensitiveHeaderValues, &header[i].value, ovector, 0) >= 0) {
+          sensitiveHeader = true;
+        }
+      }
+#endif
+
+      nostd::string_view value;
+      if (sensitiveHeader) {
+        value = "[REDACTED]";
+      } else {
+        value = FromNgxString(header[i].value);
+      }
+
+      span->SetAttribute({(const char*)key, keyPrefix.len + header[i].key.len}, nostd::span<const nostd::string_view>(&value, 1));
+    }
   }
 }
 
@@ -333,7 +388,9 @@ ngx_int_t StartNgxSpan(ngx_http_request_t* req) {
   OtelCarrier carrier{req, context};
   opentelemetry::context::Context incomingContext;
 
-  if (GetOtelLocationConf(req)->trustIncomingSpans) {
+  OtelNgxLocationConf* locConf = GetOtelLocationConf(req);
+
+  if (locConf->trustIncomingSpans) {
     incomingContext = ExtractContext(&carrier);
   }
 
@@ -358,6 +415,13 @@ ngx_int_t StartNgxSpan(ngx_http_request_t* req) {
 
   if (req->headers_in.user_agent) {
     context->request_span->SetAttribute("http.user_agent", FromNgxString(req->headers_in.user_agent->value));
+  }
+
+  if (locConf->captureHeaders) {
+    ngx_table_elt_t* excludedHeaders[] = {req->headers_in.host, req->headers_in.user_agent};
+    OtelCaptureHeaders(context->request_span, ngx_string("http.request.header."), &req->headers_in.headers,
+                       locConf->sensitiveHeaderNames, locConf->sensitiveHeaderValues,
+                       {excludedHeaders, 2});
   }
 
   auto outgoingContext = incomingContext.SetValue(trace::kSpanKey, context->request_span);
@@ -400,8 +464,15 @@ ngx_int_t FinishNgxSpan(ngx_http_request_t* req) {
   auto span = context->request_span;
   span->SetAttribute("http.status_code", req->headers_out.status);
 
+  OtelNgxLocationConf* locConf = GetOtelLocationConf(req);
+
+  if (locConf->captureHeaders) {
+    OtelCaptureHeaders(span, ngx_string("http.response.header."), &req->headers_out.headers,
+                       locConf->sensitiveHeaderNames, locConf->sensitiveHeaderValues);
+  }
+
   AddScriptAttributes(span.get(), GetOtelMainConf(req)->scriptAttributes, req);
-  AddScriptAttributes(span.get(), GetOtelLocationConf(req)->customAttributes, req);
+  AddScriptAttributes(span.get(), locConf->customAttributes, req);
 
   span->UpdateName(GetOperationName(req));
 
@@ -488,6 +559,13 @@ static char* MergeLocConf(ngx_conf_t*, void* parent, void* child) {
   ngx_conf_merge_value(conf->enabled, prev->enabled, 1);
 
   ngx_conf_merge_value(conf->trustIncomingSpans, prev->trustIncomingSpans, 1);
+
+  ngx_conf_merge_value(conf->captureHeaders, prev->captureHeaders, 0);
+
+#if (NGX_PCRE)
+  ngx_conf_merge_ptr_value(conf->sensitiveHeaderNames, prev->sensitiveHeaderNames, nullptr);
+  ngx_conf_merge_ptr_value(conf->sensitiveHeaderValues, prev->sensitiveHeaderValues, nullptr);
+#endif
 
   if (!prev->operationNameScript.IsEmpty() && conf->operationNameScript.IsEmpty()) {
     conf->operationNameScript = prev->operationNameScript;
@@ -695,6 +773,52 @@ static char* OtelNgxSetCustomAttribute(ngx_conf_t* conf, ngx_command_t*, void* u
   return NGX_CONF_OK;
 }
 
+#if (NGX_PCRE)
+static ngx_regex_t* NgxCompileRegex(ngx_conf_t* conf, ngx_str_t pattern) {
+  u_char err[NGX_MAX_CONF_ERRSTR];
+
+  ngx_regex_compile_t rc;
+  ngx_memzero(&rc, sizeof(ngx_regex_compile_t));
+
+  rc.pool = conf->pool;
+  rc.pattern = pattern;
+  rc.options = NGX_REGEX_CASELESS;
+  rc.err.data = err;
+  rc.err.len = sizeof(err);
+
+  if (ngx_regex_compile(&rc) != NGX_OK) {
+    ngx_log_error(NGX_LOG_ERR, conf->log, 0, "illegal regex in %V: %V", (ngx_str_t*)conf->args->elts, &rc.err);
+    return nullptr;
+  }
+
+  return rc.regex;
+}
+
+static char* OtelNgxSetSensitiveHeaderNames(ngx_conf_t* conf, ngx_command_t*, void* userConf) {
+  OtelNgxLocationConf* locConf = (OtelNgxLocationConf*)userConf;
+  ngx_str_t* args = (ngx_str_t*)conf->args->elts;
+
+  locConf->sensitiveHeaderNames = NgxCompileRegex(conf, args[1]);
+  if (!locConf->sensitiveHeaderNames) {
+    return (char*)NGX_CONF_ERROR;
+  }
+
+  return NGX_CONF_OK;
+}
+
+static char* OtelNgxSetSensitiveHeaderValues(ngx_conf_t* conf, ngx_command_t*, void* userConf) {
+  OtelNgxLocationConf* locConf = (OtelNgxLocationConf*)userConf;
+  ngx_str_t* args = (ngx_str_t*)conf->args->elts;
+
+  locConf->sensitiveHeaderValues = NgxCompileRegex(conf, args[1]);
+  if (!locConf->sensitiveHeaderValues) {
+    return (char*)NGX_CONF_ERROR;
+  }
+
+  return NGX_CONF_OK;
+}
+#endif
+
 static ngx_command_t kOtelNgxCommands[] = {
   {
     ngx_string("opentelemetry_propagate"),
@@ -744,6 +868,32 @@ static ngx_command_t kOtelNgxCommands[] = {
     offsetof(OtelNgxLocationConf, trustIncomingSpans),
     nullptr,
   },
+  {
+    ngx_string("opentelemetry_capture_headers"),
+    NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,
+    ngx_conf_set_flag_slot,
+    NGX_HTTP_LOC_CONF_OFFSET,
+    offsetof(OtelNgxLocationConf, captureHeaders),
+    nullptr,
+  },
+#if (NGX_PCRE)
+  {
+    ngx_string("opentelemetry_sensitive_header_names"),
+    NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,
+    OtelNgxSetSensitiveHeaderNames,
+    NGX_HTTP_LOC_CONF_OFFSET,
+    0,
+    nullptr,
+  },
+  {
+    ngx_string("opentelemetry_sensitive_header_values"),
+    NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,
+    OtelNgxSetSensitiveHeaderValues,
+    NGX_HTTP_LOC_CONF_OFFSET,
+    0,
+    nullptr,
+  },
+#endif
   ngx_null_command,
 };
 
