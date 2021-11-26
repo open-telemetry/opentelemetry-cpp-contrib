@@ -169,7 +169,7 @@ Enables the capturing of request and response headers. (default: disabled).
 
 ### `opentelemetry_sensitive_header_names`
 
-Sets the caputured header value to `[REDACTED]` for all headers where the name matches the given regex (case insensitive).
+Sets the captured header value to `[REDACTED]` for all headers where the name matches the given regex (case insensitive).
 
 - **required**: `false`
 - **syntax**: `opentelemetry_sensitive_header_names <regex>`
@@ -177,7 +177,7 @@ Sets the caputured header value to `[REDACTED]` for all headers where the name m
 
 ### `opentelemetry_sensitive_header_values`
 
-Sets the caputured header value to `[REDACTED]` for all headers where the value matches the given regex (case insensitive).
+Sets the captured header value to `[REDACTED]` for all headers where the value matches the given regex (case insensitive).
 
 - **required**: `false`
 - **syntax**: `opentelemetry_sensitive_header_values <regex>`

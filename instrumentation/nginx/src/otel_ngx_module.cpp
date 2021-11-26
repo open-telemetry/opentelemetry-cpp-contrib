@@ -77,13 +77,11 @@ static void NgxNormalizeAndCopyString(u_char* dst, ngx_str_t str) {
 
     dst[i] = ch;
   }
-
-  dst[str.len] = '\0';
 }
 
 static void OtelCaptureHeaders(nostd::shared_ptr<opentelemetry::trace::Span> span, ngx_str_t keyPrefix, ngx_list_t *headers,
                         ngx_regex_t *sensitiveHeaderNames, ngx_regex_t *sensitiveHeaderValues,
-                        std::vector<ngx_table_elt_t*> excludedHeaders = {}) {
+                        nostd::span<ngx_table_elt_t*> excludedHeaders = {}) {
   for (ngx_list_part_t *part = &headers->part; part != nullptr; part = part->next) {
     ngx_table_elt_t *header = (ngx_table_elt_t*) part->elts;
     for (ngx_uint_t i = 0; i < part->nelts; ++i) {
@@ -91,7 +89,7 @@ static void OtelCaptureHeaders(nostd::shared_ptr<opentelemetry::trace::Span> spa
         continue;
       }
 
-      u_char key[keyPrefix.len + header[i].key.len + 1]; 
+      u_char key[keyPrefix.len + header[i].key.len]; 
       NgxNormalizeAndCopyString((u_char*)ngx_copy(key, keyPrefix.data, keyPrefix.len), header[i].key);
 
       bool sensitiveHeader = false;
@@ -117,7 +115,7 @@ static void OtelCaptureHeaders(nostd::shared_ptr<opentelemetry::trace::Span> spa
         value = FromNgxString(header[i].value);
       }
 
-      span->SetAttribute((const char*)key, nostd::span<const nostd::string_view>(&value, 1));
+      span->SetAttribute({(const char*)key, keyPrefix.len + header[i].key.len}, nostd::span<const nostd::string_view>(&value, 1));
     }
   }
 }
@@ -420,9 +418,10 @@ ngx_int_t StartNgxSpan(ngx_http_request_t* req) {
   }
 
   if (locConf->captureHeaders) {
+    ngx_table_elt_t* excludedHeaders[] = {req->headers_in.host, req->headers_in.user_agent};
     OtelCaptureHeaders(context->request_span, ngx_string("http.request.header."), &req->headers_in.headers,
                        locConf->sensitiveHeaderNames, locConf->sensitiveHeaderValues,
-                       {req->headers_in.host, req->headers_in.user_agent});
+                       {excludedHeaders, 2});
   }
 
   auto outgoingContext = incomingContext.SetValue(trace::kSpanKey, context->request_span);
