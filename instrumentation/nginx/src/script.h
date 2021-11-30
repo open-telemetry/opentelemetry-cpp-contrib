@@ -34,19 +34,21 @@ struct NgxCompiledScript {
 
 struct ScriptAttributeDeclaration {
   ScriptAttributeDeclaration(
-    opentelemetry::nostd::string_view attribute, opentelemetry::nostd::string_view script)
-    : attribute(ToNgxString(attribute)), script(ToNgxString(script)) {}
+    opentelemetry::nostd::string_view attribute, opentelemetry::nostd::string_view script, bool convertToInt = false)
+    : attribute(ToNgxString(attribute)), script(ToNgxString(script)), convertToInt(convertToInt) {}
 
   ScriptAttributeDeclaration(ngx_str_t attribute, ngx_str_t script)
-    : attribute(attribute), script(script) {}
+    : attribute(attribute), script(script), convertToInt(false) {}
 
   ngx_str_t attribute;
   ngx_str_t script;
+  bool convertToInt;
 };
 
 struct CompiledScriptAttribute {
   NgxCompiledScript key;
   NgxCompiledScript value;
+  bool convertToInt = false;
 };
 
 bool CompileScript(ngx_conf_t* conf, ngx_str_t pattern, NgxCompiledScript* script);
