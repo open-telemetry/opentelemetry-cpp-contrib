@@ -39,9 +39,9 @@ constexpr char kOtelCtxVarPrefix[] = "opentelemetry_context_";
 
 const ScriptAttributeDeclaration kDefaultScriptAttributes[] = {
   {"http.scheme", "$scheme"},
-  {"net.host.port", "$server_port"},
+  {"net.host.port", "$server_port", ScriptAttributeInt},
   {"net.peer.ip", "$remote_addr"},
-  {"net.peer.port", "$remote_port"},
+  {"net.peer.port", "$remote_port", ScriptAttributeInt},
 };
 
 struct OtelMainConf {
@@ -445,7 +445,13 @@ void AddScriptAttributes(
     ngx_str_t value = ngx_null_string;
 
     if (attribute->key.Run(req, &key) && attribute->value.Run(req, &value)) {
-      span->SetAttribute(FromNgxString(key), FromNgxString(value));
+      switch(attribute->type) {
+        case ScriptAttributeInt:
+          span->SetAttribute(FromNgxString(key), ngx_atoi(value.data, value.len));
+          break;
+        default:
+          span->SetAttribute(FromNgxString(key), FromNgxString(value));
+      }
     }
   }
 }
