@@ -27,7 +27,7 @@ bool CompileScript(ngx_conf_t* conf, ngx_str_t pattern, NgxCompiledScript* scrip
 bool CompileScriptAttribute(
   ngx_conf_t* conf, ScriptAttributeDeclaration declaration,
   CompiledScriptAttribute* compiledAttribute) {
-  compiledAttribute->convertToInt = declaration.convertToInt;
+  compiledAttribute->type = declaration.type;
 
   if (!CompileScript(conf, declaration.attribute, &compiledAttribute->key)) {
     return false;
