@@ -85,16 +85,28 @@ defmodule InstrumentationTest do
     [il_spans] = resource_spans["instrumentationLibrarySpans"]
     il_spans["spans"]
   end
+  
+  def values(map) do
+    Enum.map(map, fn {k, v} ->
+      case k do
+        "intValue" ->
+          String.to_integer(v)
+
+        _ ->
+          v
+      end
+    end)
+  end
 
   def attrib(span, key) do
     case Enum.find(span["attributes"], fn %{"key" => k} -> k == key end) do
       %{"value" => val} ->
-        [v] = Map.values(val)
+        [v] = values(val)
 
         case v do
           %{"values" => vals} ->
             Enum.map(vals, fn val -> 
-              [t] = Map.values(val)
+              [t] = values(val)
               t
             end)
 
@@ -163,9 +175,9 @@ defmodule InstrumentationTest do
 
     assert status == 200
 
-    assert attrib(span, "net.host.port") == "8000"
+    assert attrib(span, "net.host.port") == 8000
     assert attrib(span, "net.peer.ip") =~ ~r/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
-    assert attrib(span, "net.peer.port") =~ ~r/\d+/
+    assert attrib(span, "net.peer.port") > 0
 
     assert attrib(span, "http.method") == "GET"
     assert attrib(span, "http.flavor") == "1.1"
@@ -173,7 +185,7 @@ defmodule InstrumentationTest do
     assert attrib(span, "http.host") == @host
     assert attrib(span, "http.server_name") == "otel_test"
     assert attrib(span, "http.scheme") == "http"
-    assert attrib(span, "http.status_code") == "200"
+    assert attrib(span, "http.status_code") == 200
     assert attrib(span, "http.user_agent") == "otel-test"
     assert attrib(span, "http.request.header.host") == nil
     assert attrib(span, "http.request.header.user_agent") == nil
@@ -267,7 +279,7 @@ defmodule InstrumentationTest do
 
     assert status == 200
     assert span["parentSpanId"] == ""
-    assert attrib(span, "http.status_code") == "200"
+    assert attrib(span, "http.status_code") == 200
   end
 
   test "HTTP upstream | span is associated with parent", ctx do
@@ -287,7 +299,7 @@ defmodule InstrumentationTest do
     assert attrib(span, "http.host") == @host
     assert attrib(span, "http.server_name") == "otel_test"
     assert attrib(span, "http.scheme") == "http"
-    assert attrib(span, "http.status_code") == "200"
+    assert attrib(span, "http.status_code") == 200
 
     assert span["parentSpanId"] == ""
     assert span["kind"] == "SPAN_KIND_SERVER"
@@ -383,7 +395,7 @@ defmodule InstrumentationTest do
     assert attrib(span, "http.host") == @host
     assert attrib(span, "http.server_name") == "otel_test"
     assert attrib(span, "http.scheme") == "http"
-    assert attrib(span, "http.status_code") == "200"
+    assert attrib(span, "http.status_code") == 200
 
     assert span["parentSpanId"] == ""
     assert span["kind"] == "SPAN_KIND_SERVER"
