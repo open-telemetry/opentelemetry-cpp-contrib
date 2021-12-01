@@ -92,6 +92,10 @@ defmodule InstrumentationTest do
         "intValue" ->
           String.to_integer(v)
 
+        "arrayValue" ->
+          [t] = Enum.map(v["values"], fn v -> values(v) end)
+          t
+
         _ ->
           v
       end
@@ -102,17 +106,7 @@ defmodule InstrumentationTest do
     case Enum.find(span["attributes"], fn %{"key" => k} -> k == key end) do
       %{"value" => val} ->
         [v] = values(val)
-
-        case v do
-          %{"values" => vals} ->
-            Enum.map(vals, fn val -> 
-              [t] = values(val)
-              t
-            end)
-
-          _ ->
-            v
-        end
+        v
 
       _ ->
         nil
