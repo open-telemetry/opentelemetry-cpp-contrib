@@ -564,6 +564,14 @@ static char* MergeLocConf(ngx_conf_t*, void* parent, void* child) {
 
   ngx_conf_merge_value(conf->enabled, prev->enabled, 1);
 
+  if (conf->propagationType == TracePropagationUnset) {
+    if (prev->propagationType != TracePropagationUnset) {
+      conf->propagationType = prev->propagationType;
+    } else {
+      conf->propagationType = TracePropagationW3C;
+    }
+  }
+
   ngx_conf_merge_value(conf->trustIncomingSpans, prev->trustIncomingSpans, 1);
 
   ngx_conf_merge_value(conf->captureHeaders, prev->captureHeaders, 0);
@@ -701,6 +709,8 @@ char* OtelNgxSetPropagation(ngx_conf_t* conf, ngx_command_t*, void* locConf) {
       ngx_log_error(NGX_LOG_ERR, conf->log, 0, "Unsupported propagation type");
       return (char*)NGX_CONF_ERROR;
     }
+  } else {
+    locationConf->propagationType = TracePropagationW3C;
   }
 
   std::vector<HeaderPropagation> propagationVars;

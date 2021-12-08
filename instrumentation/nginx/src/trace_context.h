@@ -14,6 +14,7 @@ struct TraceHeader {
 };
 
 enum TracePropagationType {
+  TracePropagationUnset,
   TracePropagationW3C,
   TracePropagationB3,
 };
