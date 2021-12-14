@@ -81,15 +81,19 @@ defmodule Mix.Tasks.Dockerfiles do
 
   defp custom_cmake(%{version_major: major}) when major >= 20, do: ""
 
-  defp custom_cmake(_) do
+  defp custom_cmake(%{os: "debian"}), do: ""
+
+  defp custom_cmake(%{os: "ubuntu"}) do
     """
     RUN curl -o /etc/apt/trusted.gpg.d/kitware.asc https://apt.kitware.com/keys/kitware-archive-latest.asc \\
         && apt-add-repository "deb https://apt.kitware.com/ubuntu/ `lsb_release -cs` main"
     """
   end
 
-  defp mainline_apt(), do: "http://nginx.org/packages/mainline/ubuntu"
-  defp stable_apt(), do: "http://nginx.org/packages/ubuntu"
+  defp mainline_apt(%{os: "debian"}), do: "http://nginx.org/packages/mainline/debian"
+  defp mainline_apt(%{os: "ubuntu"}), do: "http://nginx.org/packages/mainline/ubuntu"
+  defp stable_apt(%{os: "debian"}), do: "http://nginx.org/packages/debian"
+  defp stable_apt(%{os: "ubuntu"}), do: "http://nginx.org/packages/ubuntu"
 
   defp custom_nginx_step(apt_url) do
     """
@@ -99,12 +103,19 @@ defmodule Mix.Tasks.Dockerfiles do
     """
   end
 
-  defp custom_nginx(%{nginx: "mainline"}) do
-    custom_nginx_step(mainline_apt())
+  defp custom_nginx(%{nginx: "stable", os: "debian"} = job) do
+    custom_nginx_step(stable_apt(job))
+  end
+  defp custom_nginx(%{nginx: "mainline", os: "debian"} = job) do
+    custom_nginx_step(mainline_apt(job))
   end
 
-  defp custom_nginx(%{nginx: "stable", os: "ubuntu", version_major: 18}) do
-    custom_nginx_step(stable_apt())
+  defp custom_nginx(%{nginx: "mainline"} = job) do
+    custom_nginx_step(mainline_apt(job))
+  end
+
+  defp custom_nginx(%{nginx: "stable", os: "ubuntu", version_major: 18} = job) do
+    custom_nginx_step(stable_apt(job))
   end
 
   defp custom_nginx(_), do: ""
@@ -115,6 +126,9 @@ defmodule Mix.Tasks.Dockerfiles do
   defp custom_packages_for_version(%{version_major: ver_major}) when ver_major < 20, do: ["cmake"]
   defp custom_packages_for_version(_), do: []
 
+  defp custom_packages(%{os: "debian"}) do
+    ["cmake", "nginx"]
+  end
   defp custom_packages(%{nginx: "mainline"} = job) do
     ["nginx" | custom_packages_for_version(job)]
   end
