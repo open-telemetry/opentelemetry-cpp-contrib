@@ -19,7 +19,14 @@ project(opentelemetry-fluentd)
 add_definitions(-DHAVE_CONSOLE_LOG)
 add_definitions(-DENABLE_LOGS_PREVIEW)
 find_package(opentelemetry-cpp REQUIRED)
-find_package(nlohmann_json REQUIRED)
+find_package(nlohmann_json QUIET)
+if(nlohmann_json_FOUND)
+  message("Using external nlohmann::json")
+else()
+  include(cmake/nlohmann-json.cmake)
+  message("\nnlohmann_json package was not found. Cloning from github")
+endif()
+
 find_package(CURL REQUIRED)
 
 include_directories(include)
@@ -54,8 +61,15 @@ install(
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 install(
+  TARGETS opentelemetry_exporter_fluentd_logs
+  EXPORT "${PROJECT_NAME}-target"
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+install(
   DIRECTORY include/opentelemetry/exporters/fluentd/
-  DESTINATION include/opentelemetry/exporters/
+  DESTINATION include/opentelemetry/exporters/fluentd
   FILES_MATCHING
   PATTERN "*.h")
 
