@@ -77,7 +77,7 @@ install(
 
 install(
   DIRECTORY include/opentelemetry/exporters/fluentd/
-  DESTINATION include/opentelemetry/exporters/fluentd
+  DESTINATION include/opentelemetry/exporters/fluentd/
   FILES_MATCHING
   PATTERN "*.h")
 
@@ -124,7 +124,7 @@ if(BUILD_TESTING)
   if(nlohmann_json_clone)
       add_dependencies(fluentd_recordable_logs_test nlohmann_json::nlohmann_json)
     endif()
-    
+
   gtest_add_tests(
     TARGET fluentd_recordable_logs_test
     TEST_PREFIX exporter.
