@@ -1,9 +1,8 @@
 if("${nlohmann-json}" STREQUAL "")
-    set(nlohmann-json "develop")
+    set(nlohmann-json "v3.9.1")
 endif()
 include(ExternalProject)
 ExternalProject_Add(nlohmann_json_download
-    PREFIX third_party
     GIT_REPOSITORY https://github.com/nlohmann/json.git
     GIT_TAG
         "${nlohmann-json}"
