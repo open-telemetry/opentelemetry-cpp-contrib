@@ -48,9 +48,9 @@ set(_OPENTELEMETRY_CPP_FLUENTD_LIBRARIES_TEST_TARGETS
         trace
         logs)
 
-foreach(_TEST_TARGET IN LISTS _OPENTELEMETRY_CPP_LIBRARIES_TEST_TARGETS)
+foreach(_TEST_TARGET IN LISTS _OPENTELEMETRY_CPP_FLUENTD_LIBRARIES_TEST_TARGETS)
         if(TARGET opentelemetry-fluentd-cpp::${_TEST_TARGET})
-                list(APPEND OPENTELEMETRY_CPP_LIBRARIES opentelemetry-cpp-fluentd::${_TEST_TARGET})
+                list(APPEND OPENTELEMETRY_CPP_FLUENTD_LIBRARIES opentelemetry-cpp-fluentd::${_TEST_TARGET})
         else()
                 message("Target not found: " ${_TEST_TARGET})
         endif()
