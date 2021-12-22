@@ -41,7 +41,6 @@ target_link_libraries(
   opentelemetry_exporter_fluentd_trace
   PUBLIC ${OPENTELEMETRY_CPP_LIBRARIES}
   INTERFACE nlohmann_json::nlohmann_json)
-
 set_target_properties(opentelemetry_exporter_fluentd_trace PROPERTIES EXPORT_NAME trace)
 
 # create fluentd logs exporter
@@ -54,9 +53,7 @@ target_link_libraries(
   opentelemetry_exporter_fluentd_logs
   PUBLIC ${OPENTELEMETRY_CPP_LIBRARIES}
   INTERFACE nlohmann_json::nlohmann_json)
-
 set_target_properties(opentelemetry_exporter_fluentd_logs PROPERTIES EXPORT_NAME logs)
-
 
 if(nlohmann_json_clone)
   add_dependencies(opentelemetry_exporter_fluentd_trace nlohmann_json::nlohmann_json)
