@@ -108,6 +108,18 @@ ratio = 0.1
 parent_based = false
 ```
 
+To use other environment variables defined in the [specification](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/exporter.md), must add the "env" directive.
+
+```
+env OTEL_EXPORTER_OTLP_HEADERS;
+
+http {
+  .
+  .
+  .
+}
+```
+
 ## nginx directives
 
 ### `opentelemetry`
