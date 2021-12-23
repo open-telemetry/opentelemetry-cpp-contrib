@@ -178,7 +178,8 @@ TraceContext* GetTraceContext(ngx_http_request_t* req) {
     return nullptr;
   }
 
-  return (TraceContext*)val->data;
+  std::unordered_map<ngx_http_request_t*, TraceContext*>* map = (std::unordered_map<ngx_http_request_t*, TraceContext*>*)val->data;
+  return map->at(req);
 }
 
 nostd::string_view WithoutOtelVarPrefix(ngx_str_t value) {
@@ -328,6 +329,11 @@ void TraceContextCleanup(void* data) {
   context->~TraceContext();
 }
 
+void RequestContextMapCleanup(void* data) {
+  std::unordered_map<ngx_http_request_t*, TraceContext*>* map = (std::unordered_map<ngx_http_request_t*, TraceContext*>*)data;
+  map->clear();
+}
+
 nostd::string_view GetOperationName(ngx_http_request_t* req) {
   OtelNgxLocationConf* locationConf = GetOtelLocationConf(req);
 
@@ -365,6 +371,28 @@ static bool IsOtelEnabled(ngx_http_request_t* req) {
   return locConf->enabled;
 }
 
+TraceContext* CreateTraceContext(ngx_http_request_t* req, ngx_http_variable_value_t* val) {
+  ngx_pool_cleanup_t* cleanup = ngx_pool_cleanup_add(req->pool, sizeof(TraceContext));
+  TraceContext* context = (TraceContext*)cleanup->data;
+  new (context) TraceContext(req);
+  cleanup->handler = TraceContextCleanup;
+
+  std::unordered_map<ngx_http_request_t*, TraceContext*>* map;
+  if (req->parent) {
+    // Subrequests will already have the map created so just retrieve it
+    map = (std::unordered_map<ngx_http_request_t*, TraceContext*>*)val->data;
+  } else {
+    ngx_pool_cleanup_t* cleanup = ngx_pool_cleanup_add(req->pool, sizeof(std::unordered_map<ngx_http_request_t*, TraceContext*>));
+    map = (std::unordered_map<ngx_http_request_t*, TraceContext*>*)cleanup->data;
+    new (map) std::unordered_map<ngx_http_request_t*, TraceContext*>();
+    cleanup->handler = RequestContextMapCleanup;
+    val->data = (unsigned char*)cleanup->data;
+    val->len = sizeof(std::unordered_map<ngx_http_request_t*, TraceContext*>);
+  }
+  map->insert({req, context});
+  return context;
+}
+
 ngx_int_t StartNgxSpan(ngx_http_request_t* req) {
   if (!IsOtelEnabled(req)) {
     return NGX_DECLINED;
@@ -377,13 +405,7 @@ ngx_int_t StartNgxSpan(ngx_http_request_t* req) {
     return NGX_DECLINED;
   }
 
-  ngx_pool_cleanup_t* cleanup = ngx_pool_cleanup_add(req->pool, sizeof(TraceContext));
-  TraceContext* context = (TraceContext*)cleanup->data;
-  new (context) TraceContext(req);
-  cleanup->handler = TraceContextCleanup;
-
-  val->data = (unsigned char*)cleanup->data;
-  val->len = sizeof(TraceContext);
+  TraceContext* context = CreateTraceContext(req, val);
 
   OtelCarrier carrier{req, context};
   opentelemetry::context::Context incomingContext;
