@@ -10,8 +10,9 @@ setup_test () {
 
 EXTRA_HTTPD_MODS="headers"
 
-# here we are setting apache mod_header to rewrite environment 
-# variables back to response header as an extra check
+# here we are setting apache log to record environment variables created by mod_otel
+# header set is just an extra debug information so it is also
+# visible on standard output when running test during CI/CD cycle
 cat << EOF > ${HTTPD_CONFIG}
 OpenTelemetryExporter   file
 OpenTelemetryPath ${OUTPUT_SPANS}
