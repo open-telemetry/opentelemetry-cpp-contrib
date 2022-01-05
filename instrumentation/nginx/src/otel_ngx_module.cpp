@@ -331,7 +331,7 @@ void TraceContextCleanup(void* data) {
 
 void RequestContextMapCleanup(void* data) {
   std::unordered_map<ngx_http_request_t*, TraceContext*>* map = (std::unordered_map<ngx_http_request_t*, TraceContext*>*)data;
-  map->clear();
+  map->~unordered_map();
 }
 
 nostd::string_view GetOperationName(ngx_http_request_t* req) {
