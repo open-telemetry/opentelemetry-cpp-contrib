@@ -404,13 +404,16 @@ ngx_int_t StartNgxSpan(ngx_http_request_t* req) {
       {"http.method", FromNgxString(req->method_name)},
       {"http.flavor", NgxHttpFlavor(req)},
       {"http.target", FromNgxString(req->unparsed_uri)},
-      {"http.host", FromNgxString(req->headers_in.host->value)},
     },
     startOpts);
 
   nostd::string_view serverName = GetNgxServerName(req);
   if (!serverName.empty()) {
     context->request_span->SetAttribute("http.server_name", serverName);
+  }
+
+  if (req->headers_in.host) {
+    context->request_span->SetAttribute("http.host", FromNgxString(req->headers_in.host->value));
   }
 
   if (req->headers_in.user_agent) {
@@ -564,6 +567,14 @@ static char* MergeLocConf(ngx_conf_t*, void* parent, void* child) {
 
   ngx_conf_merge_value(conf->enabled, prev->enabled, 1);
 
+  if (conf->propagationType == TracePropagationUnset) {
+    if (prev->propagationType != TracePropagationUnset) {
+      conf->propagationType = prev->propagationType;
+    } else {
+      conf->propagationType = TracePropagationW3C;
+    }
+  }
+
   ngx_conf_merge_value(conf->trustIncomingSpans, prev->trustIncomingSpans, 1);
 
   ngx_conf_merge_value(conf->captureHeaders, prev->captureHeaders, 0);
@@ -701,6 +712,8 @@ char* OtelNgxSetPropagation(ngx_conf_t* conf, ngx_command_t*, void* locConf) {
       ngx_log_error(NGX_LOG_ERR, conf->log, 0, "Unsupported propagation type");
       return (char*)NGX_CONF_ERROR;
     }
+  } else {
+    locationConf->propagationType = TracePropagationW3C;
   }
 
   std::vector<HeaderPropagation> propagationVars;

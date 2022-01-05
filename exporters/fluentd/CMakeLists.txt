@@ -19,7 +19,16 @@ project(opentelemetry-fluentd)
 add_definitions(-DHAVE_CONSOLE_LOG)
 add_definitions(-DENABLE_LOGS_PREVIEW)
 find_package(opentelemetry-cpp REQUIRED)
-find_package(nlohmann_json REQUIRED)
+find_package(nlohmann_json QUIET)
+set(nlohmann_json_clone FALSE)
+if(nlohmann_json_FOUND)
+  message("Using external nlohmann::json")
+else()
+  include(cmake/nlohmann-json.cmake)
+  set(nlohmann_json_clone TRUE)
+  message("\nnlohmann_json package was not found. Cloning from github")
+endif()
+
 find_package(CURL REQUIRED)
 
 include_directories(include)
@@ -44,6 +53,12 @@ target_link_libraries(
   PUBLIC ${OPENTELEMETRY_CPP_LIBRARIES}
   INTERFACE nlohmann_json::nlohmann_json)
 
+if(nlohmann_json_clone)
+  add_dependencies(opentelemetry_exporter_fluentd_trace nlohmann_json::nlohmann_json)
+  add_dependencies(opentelemetry_exporter_fluentd_logs nlohmann_json::nlohmann_json)
+  include_directories(${PROJECT_BINARY_DIR}/include)
+endif()
+  
 add_subdirectory(example)
 
 install(
@@ -54,8 +69,15 @@ install(
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 install(
+  TARGETS opentelemetry_exporter_fluentd_logs
+  EXPORT "${PROJECT_NAME}-target"
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+install(
   DIRECTORY include/opentelemetry/exporters/fluentd/
-  DESTINATION include/opentelemetry/exporters/
+  DESTINATION include/opentelemetry/exporters/fluentd/
   FILES_MATCHING
   PATTERN "*.h")
 
@@ -76,6 +98,10 @@ if(BUILD_TESTING)
     opentelemetry_resources
     opentelemetry_exporter_fluentd_trace)
 
+  if(nlohmann_json_clone)
+    add_dependencies(fluentd_recordable_trace_test nlohmann_json::nlohmann_json)
+  endif()
+
   gtest_add_tests(
     TARGET fluentd_recordable_trace_test
     TEST_PREFIX exporter.
@@ -94,6 +120,10 @@ if(BUILD_TESTING)
     opentelemetry_logs
     opentelemetry_resources
     opentelemetry_exporter_fluentd_logs)
+
+  if(nlohmann_json_clone)
+      add_dependencies(fluentd_recordable_logs_test nlohmann_json::nlohmann_json)
+    endif()
 
   gtest_add_tests(
     TARGET fluentd_recordable_logs_test

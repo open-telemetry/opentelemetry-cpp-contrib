@@ -249,8 +249,9 @@ struct SocketAddr {
 #ifdef HAVE_UNIX_DOMAIN
     if (isUnixDomain) {
       m_data_un.sun_family = AF_UNIX;
+      const char *unix_domain_path = ipAddress.data();
       // Max length of Unix domain filename is up to 108 chars
-      strncpy_s(m_data_un.sun_path, sizeof(m_data_un.sun_path), addr,
+      strncpy_s(m_data_un.sun_path, sizeof(m_data_un.sun_path), unix_domain_path,
                 sizeof(m_data_un.sun_path));
       return;
     }
