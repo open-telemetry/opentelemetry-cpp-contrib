@@ -179,15 +179,12 @@ TraceContext* GetTraceContext(ngx_http_request_t* req) {
   }
 
   std::unordered_map<ngx_http_request_t*, TraceContext*>* map = (std::unordered_map<ngx_http_request_t*, TraceContext*>*)val->data;
-  unsigned count = map->count(req);
-  if (count == 1) {
-    return map->at(req);
-  } else if (count > 1) {
-    ngx_log_error(NGX_LOG_ERR, req->connection->log, 0, "More than one TraceContext found for a request");
-    return nullptr;
-  }
-  ngx_log_error(NGX_LOG_ERR, req->connection->log, 0, "TraceContext not found");
-  return nullptr;
+auto it = map->find(req);
+if (it != map->end()) {
+  return it->second;
+}
+ngx_log_error(NGX_LOG_ERR, req->connection->log, 0, "TraceContext not found");
+return nullptr;
 }
 
 nostd::string_view WithoutOtelVarPrefix(ngx_str_t value) {
