@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-21.04]
+        os: [ubuntu-18.04, ubuntu-20.04]
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
@@ -43,7 +43,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-21.04]
+        os: [ubuntu-18.04, ubuntu-20.04]
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
@@ -93,7 +93,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-21.04]
+        os: [ubuntu-18.04, ubuntu-20.04]
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
