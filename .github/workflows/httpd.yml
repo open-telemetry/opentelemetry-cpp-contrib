@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-16.04, ubuntu-18.04, ubuntu-20.04]
+        os: [ubuntu-18.04, ubuntu-20.04]
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
@@ -93,7 +93,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # ubuntu-16.04 tests are failing due to bug in apache2ctl script
         os: [ubuntu-18.04, ubuntu-20.04]
     steps:
       - name: Checkout Repo

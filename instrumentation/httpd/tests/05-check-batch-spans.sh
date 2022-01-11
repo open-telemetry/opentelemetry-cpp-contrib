@@ -4,11 +4,6 @@ TEST_NAME="Check that 5 requests creates 5 spans (with batch)"
 
 . tools.sh
 
-fail () {
-    printf '%s\n' "$1" >&2  ## Send message to stderr. Exclude >&2 if you don't want it that way.
-    exit "${2-1}"  ## Return a code specified by $2 or 1 by default.
-}
-
 setup_test () {
 
 cat << EOF > ${HTTPD_CONFIG}
@@ -20,14 +15,12 @@ EOF
 }
 
 run_test() {
-  ${CURL_CMD} ${ENDPOINT_URL} || fail "Unable to download main page"
-  ${CURL_CMD} ${ENDPOINT_URL} || fail "Unable to download main page"
-  ${CURL_CMD} ${ENDPOINT_URL} || fail "Unable to download main page"
-  ${CURL_CMD} ${ENDPOINT_URL} || fail "Unable to download main page"
-  ${CURL_CMD} ${ENDPOINT_URL} || fail "Unable to download main page"
+  ${CURL_CMD} ${ENDPOINT_URL} || fail "Unable to download main page (1/5)"
+  ${CURL_CMD} ${ENDPOINT_URL} || fail "Unable to download main page (2/5)"
+  ${CURL_CMD} ${ENDPOINT_URL} || fail "Unable to download main page (3/5)"
+  ${CURL_CMD} ${ENDPOINT_URL} || fail "Unable to download main page (4/5)"
+  ${CURL_CMD} ${ENDPOINT_URL} || fail "Unable to download main page (5/5)"
 }
-
-
 
 check_results() {
    echo Checking that all ${TOTAL_SPANS} were created

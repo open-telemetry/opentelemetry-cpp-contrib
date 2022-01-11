@@ -150,7 +150,7 @@ run() {
 
    setup_test
 
-   # setup proxy if handler function was defined inside test script
+   # start proxy (netcat based) only when handler function was defined inside test script
    if type proxy &>/dev/null ; then
       rm -rf ${PROXY_PID_FILE}
       $0 start_proxy &
@@ -178,6 +178,7 @@ run() {
    # stop apache - this is important as this flushes span file
    apache2ctl -k stop -c "Include ${HTTPD_CONFIG}" || failHttpd "Apache stop failed"
 
+   # stop proxy if it was used by this test
    if type proxy &>/dev/null ; then
       echo "Waiting for proxy to stop (PID $!)"
       rm -rf ${PROXY_PID_FILE}

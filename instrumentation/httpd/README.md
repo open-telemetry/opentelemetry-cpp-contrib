@@ -14,6 +14,31 @@
 
 For manual build please check below. Otherwise please use one of the [released versions](/../releases).
 
+### From Docker Image
+
+To start using mod_otel you can add it following way:
+```Dockerfile
+FROM httpd
+ADD https://github.com/open-telemetry/opentelemetry-cpp-contrib/releases/download/httpd%2Fv0.1.0/ubuntu-20.04_mod-otel.so.zip /tmp
+ADD https://raw.githubusercontent.com/open-telemetry/opentelemetry-cpp-contrib/main/instrumentation/httpd/opentelemetry.conf /usr/local/apache2/conf/extra/
+
+RUN mv /tmp/ubuntu-20.04_mod-otel.so.zip /usr/local/apache2/modules/mod_otel.so.gz
+RUN gzip -d /usr/local/apache2/modules/mod_otel.so.gz
+
+RUN echo "LoadFile /usr/lib/x86_64-linux-gnu/libstdc++.so.6" >> /usr/local/apache2/conf/httpd.conf
+RUN echo "LoadModule otel_module modules/mod_otel.so" >> /usr/local/apache2/conf/httpd.conf
+RUN echo "Include conf/extra/opentelemetry.conf" >> /usr/local/apache2/conf/httpd.conf
+```
+
+### Logging traces
+
+Once module is enabled you have access to currently processed span via environment variables. Those can be accessed under:
+- `%{OTEL_SPANID}e` for SpanID
+- `%{OTEL_TRACEID}e` for TraceID
+- `%{OTEL_TRACEFLAGS}e` for TraceID
+- `%{OTEL_TRACESTATE}e` for TraceState
+when using [LogFormat directive](https://httpd.apache.org/docs/2.4/mod/mod_log_config.html#formats).
+
 ### Installation
 
 Mod_otel works as a module which is loaded when Apache starts. It is written in C++ therefore standard library has to be included as well. Below is an example of lines which should be added to your configuration file (usually `/etc/httpd/conf.d` or equivalent):
@@ -91,7 +116,7 @@ When local changes are made, you need to restart the `httpd` server to load new 
 
 ### Prerequisites (Ubuntu)
 
-On Ubuntu you need packages listed here: [setup_environment.sh](./setup_environment.sh) which are prerequisites to compile opentelemetry-cpp and here: [setup-buildtools.sh](./setup-buildtools.sh) for apache development stuff. Then just execute [bulid.sh](./build.sh).
+On Ubuntu you need packages listed here: [setup-environment.sh](./setup-environment.sh) which are prerequisites to compile opentelemetry-cpp and here: [setup-buildtools.sh](./setup-buildtools.sh) for apache development stuff. Then just execute [bulid.sh](./build.sh).
 
 ### Run formatting check
 
