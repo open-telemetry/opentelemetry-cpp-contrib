@@ -373,7 +373,12 @@ nostd::string_view GetNgxServerName(const ngx_http_request_t* req) {
 
 static bool IsOtelEnabled(ngx_http_request_t* req) {
   OtelNgxLocationConf* locConf = GetOtelLocationConf(req);
-  return locConf->enabled;
+  if (locConf->enabled) {
+    int ovector[3];
+    return locConf->ignore_paths == nullptr || ngx_regex_exec(locConf->ignore_paths, &req->unparsed_uri, ovector, 0) < 0;
+  } else {
+    return false;
+  }
 }
 
 TraceContext* CreateTraceContext(ngx_http_request_t* req, ngx_http_variable_value_t* val) {
@@ -609,6 +614,8 @@ static char* MergeLocConf(ngx_conf_t*, void* parent, void* child) {
 #if (NGX_PCRE)
   ngx_conf_merge_ptr_value(conf->sensitiveHeaderNames, prev->sensitiveHeaderNames, nullptr);
   ngx_conf_merge_ptr_value(conf->sensitiveHeaderValues, prev->sensitiveHeaderValues, nullptr);
+
+  ngx_conf_merge_ptr_value(conf->ignore_paths, prev->ignore_paths, nullptr);
 #endif
 
   if (!prev->operationNameScript.IsEmpty() && conf->operationNameScript.IsEmpty()) {
@@ -863,6 +870,18 @@ static char* OtelNgxSetSensitiveHeaderValues(ngx_conf_t* conf, ngx_command_t*, v
 
   return NGX_CONF_OK;
 }
+
+static char* OtelNgxSetIgnorePaths(ngx_conf_t* conf, ngx_command_t*, void* userConf) {
+  OtelNgxLocationConf* locConf = (OtelNgxLocationConf*)userConf;
+  ngx_str_t* args = (ngx_str_t*)conf->args->elts;
+
+  locConf->ignore_paths = NgxCompileRegex(conf, args[1]);
+  if (!locConf->ignore_paths) {
+    return (char*)NGX_CONF_ERROR;
+  }
+
+  return NGX_CONF_OK;
+}
 #endif
 
 static ngx_command_t kOtelNgxCommands[] = {
@@ -935,6 +954,14 @@ static ngx_command_t kOtelNgxCommands[] = {
     ngx_string("opentelemetry_sensitive_header_values"),
     NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,
     OtelNgxSetSensitiveHeaderValues,
+    NGX_HTTP_LOC_CONF_OFFSET,
+    0,
+    nullptr,
+  },
+  {
+    ngx_string("opentelemetry_ignore_paths"),
+    NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,
+    OtelNgxSetIgnorePaths,
     NGX_HTTP_LOC_CONF_OFFSET,
     0,
     nullptr,

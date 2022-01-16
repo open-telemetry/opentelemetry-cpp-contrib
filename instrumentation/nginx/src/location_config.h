@@ -14,6 +14,7 @@ struct OtelNgxLocationConf {
 #if (NGX_PCRE)
   ngx_regex_t *sensitiveHeaderNames = (ngx_regex_t*)NGX_CONF_UNSET_PTR;
   ngx_regex_t *sensitiveHeaderValues = (ngx_regex_t*)NGX_CONF_UNSET_PTR;
+  ngx_regex_t *ignore_paths = (ngx_regex_t*)NGX_CONF_UNSET_PTR;
 #endif
   TracePropagationType propagationType = TracePropagationUnset;
   NgxCompiledScript operationNameScript;
