@@ -196,6 +196,14 @@ Sets the captured header value to `[REDACTED]` for all headers where the value m
 - **syntax**: `opentelemetry_sensitive_header_values <regex>`
 - **block**: `http`, `server`, `location`
 
+### `opentelemetry_ignore_paths`
+
+No span will be created for URIs matching the given regex (case insensitive).
+
+- **required**: `false`
+- **syntax**: `opentelemetry_ignore_paths <regex>`
+- **block**: `http`, `server`, `location`
+
 ## OpenTelemetry attributes
 
 List of exported attributes and their corresponding nginx variables if applicable:
