@@ -1,5 +1,6 @@
 if("${opentelemetry-cpp-tag}" STREQUAL "")
     set(opentelemetry-cpp-tag "v1.1.1")
+endif()
 function(target_create _target _lib)
   add_library(${_target} STATIC IMPORTED)
   set_target_properties(
@@ -10,41 +11,42 @@ endfunction()
 function(build_opentelemetry)
   set(opentelemetry_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/opentelemetry-cpp")
   set(opentelemetry_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/opentelemetry-cpp")
-  set(opentelemetry_cpp_targets opentelemetry_trace opentelemetry_exporter_jaeger_trace)
+  set(opentelemetry_cpp_targets opentelemetry_trace opentelemetry_logs http_client_curl )
   set(opentelemetry_CMAKE_ARGS -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-                               -LOGS_PREVIEW=ON
+	 		       -DWITH_LOGS_PREVIEW=ON
                                -DBUILD_TESTING=OFF
                                -DWITH_EXAMPLES=OFF)
 
   set(opentelemetry_libs
     ${opentelemetry_BINARY_DIR}/sdk/src/trace/libopentelemetry_trace.a
+    ${opentelemetry_BINARY_DIR}/sdk/src/logs/libopentelemetry_logs.a
     ${opentelemetry_BINARY_DIR}/sdk/src/resource/libopentelemetry_resources.a
     ${opentelemetry_BINARY_DIR}/sdk/src/common/libopentelemetry_common.a
-    ${opentelemetry_BINARY_DIR}/exporters/jaeger/libopentelemetry_exporter_jaeger_trace.a
     ${opentelemetry_BINARY_DIR}/ext/src/http/client/curl/libhttp_client_curl.a
     ${CURL_LIBRARIES}
   )
 
   set(opentelemetry_include_dir ${opentelemetry_SOURCE_DIR}/api/include/
      ${opentelemetry_SOURCE_DIR}/ext/include/
-     ${opentelemetry_SOURCE_DIR}/sdk/include/)  
+     ${opentelemetry_SOURCE_DIR}/sdk/include/
   )
 
   include_directories(SYSTEM ${opentelemetry_include_dir})
 
-  set(opentelemetry_deps opentelemetry_trace opentelemetry_resources opentelemetry_common
+  set(opentelemetry_deps opentelemetry_trace opentelemetry_logs opentelemetry_resources opentelemetry_common
         http_client_curl
         ${CURL_LIBRARIES})
 
    set(make_cmd ${CMAKE_COMMAND} --build <BINARY_DIR> --target
      ${opentelemetry_cpp_targets})
-    
+
    include(ExternalProject)
    ExternalProject_Add(
     opentelemetry-cpp
-    GIT_REPOSITORY https://github.com/opentelemetry/opentelemetry-cpp.git
+    GIT_REPOSITORY https://github.com/open-telemetry/opentelemetry-cpp.git
     GIT_TAG  "${opentelemetry-cpp-tag}"
     GIT_SHALLOW 1
+    GIT_SUBMODULES "third_party/opentelemetry-proto"
     SOURCE_DIR ${opentelemetry_SOURCE_DIR}
     PREFIX "opentelemetry-cpp"
     CMAKE_ARGS ${opentelemetry_CMAKE_ARGS}
@@ -56,6 +58,7 @@ function(build_opentelemetry)
     LOG_BUILD ON)
 
     target_create("opentelemetry_trace" "sdk/src/trace/libopentelemetry_trace.a")
+    target_create("opentelemetry_logs" "sdk/src/logs/libopentelemetry_logs.a")
     target_create("opentelemetry_resources"
                   "sdk/src/resource/libopentelemetry_resources.a")
     target_create("opentelemetry_common"
@@ -68,10 +71,10 @@ function(build_opentelemetry)
         opentelemetry::libopentelemetry
         PROPERTIES
         INTERFACE_LINK_LIBRARIES "${opentelemetry_deps}")
-endfunction()    
-    
-
-            
+endfunction()
 
 
-   
+
+
+
+
