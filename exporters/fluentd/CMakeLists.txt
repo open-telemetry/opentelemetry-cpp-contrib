@@ -18,7 +18,20 @@ project(opentelemetry-fluentd)
 
 add_definitions(-DHAVE_CONSOLE_LOG)
 add_definitions(-DENABLE_LOGS_PREVIEW)
-find_package(opentelemetry-cpp REQUIRED)
+
+find_package(opentelemetry-cpp QUIET)
+set(opentelemetry_cpp_clone FALSE)
+if(opentelemetry_cpp_FOUND)
+  message("Using external opentelemetry-cpp")
+else()
+  include(cmake/opentelemetry-cpp.cmake)
+  build_opentelemetry
+  set(opentelemetry_cpp_clone TRUE)
+  set(OPENTELEMETRY_CPP_INCLUDE_DIRS "")
+  set(OPENTELEMETRY_CPP_LIBRARIES "opentelemetry::libopentelemetry")
+  message("\nopentelemetry-cpp package was not found. Cloning from github")
+endif()
+
 find_package(nlohmann_json QUIET)
 set(nlohmann_json_clone FALSE)
 if(nlohmann_json_FOUND)
