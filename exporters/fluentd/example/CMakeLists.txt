@@ -1,5 +1,3 @@
-find_package(opentelemetry-cpp REQUIRED)
-
 include_directories(${CMAKE_SOURCE_DIR}/exporters/fluentd/include)
 
 add_library(foo_library_trace trace/foo_library/foo_library.cc)
