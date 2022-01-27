@@ -29,7 +29,7 @@ else()
   set(opentelemetry_cpp_clone TRUE)
   set(OPENTELEMETRY_CPP_INCLUDE_DIRS "")
   set(OPENTELEMETRY_CPP_LIBRARIES "opentelemetry::libopentelemetry")
-  message("\nopentelemetry-cpp package was not found. Cloning from github")
+  message("\nopentelemetry-cpp package was not found. Cloned from github")
 endif()
 
 find_package(nlohmann_json QUIET)
