@@ -72,9 +72,3 @@ function(build_opentelemetry)
         PROPERTIES
         INTERFACE_LINK_LIBRARIES "${opentelemetry_deps}")
 endfunction()
-
-
-
-
-
-
