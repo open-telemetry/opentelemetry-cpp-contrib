@@ -37,6 +37,9 @@ if(nlohmann_json_FOUND)
 else()
   include(cmake/nlohmann-json.cmake)
   set(nlohmann_json_clone TRUE)
+  set(nlohmann_json_SOURCE_DIR
+      "${CMAKE_SOURCE_DIR}/nlohmann_json/single_include")
+  include_directories(${nlohmann_json_SOURCE_DIR})
   message("\nnlohmann_json package was not found. Cloning from github")
 endif()
 
