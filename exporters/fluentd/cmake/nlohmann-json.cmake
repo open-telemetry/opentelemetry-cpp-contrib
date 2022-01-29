@@ -4,6 +4,7 @@ endif()
 include(ExternalProject)
 ExternalProject_Add(nlohmann_json_download
     GIT_REPOSITORY https://github.com/nlohmann/json.git
+    SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/nlohmann_json"
     GIT_TAG
         "${nlohmann-json}"
     UPDATE_COMMAND ""
