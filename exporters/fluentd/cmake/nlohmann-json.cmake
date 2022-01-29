@@ -5,6 +5,7 @@ include(ExternalProject)
 ExternalProject_Add(nlohmann_json_download
     PREFIX nlohmann_json
     GIT_REPOSITORY https://github.com/nlohmann/json.git
+    SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/nlohmann_json"
     GIT_TAG
         "${nlohmann-json}"
     GIT_SHALLOW 1
