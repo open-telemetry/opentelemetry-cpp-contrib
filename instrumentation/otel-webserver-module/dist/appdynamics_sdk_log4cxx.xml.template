@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
+
+<appender name="main" class="org.apache.log4j.RollingFileAppender">
+ <param name="file" value="__agent_log_dir__/sdk.log"/>
+ <param name="HeaderOnlyInNewFile" value="true"/>
+ <param name="MaxFileSize" value="20MB"/>
+ <param name="MaxBackupIndex" value="5"/>
+ <layout class="org.apache.log4j.PatternLayout">
+  <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS z} %-5p %X{pid}[%t] [%c{2}] %m%n" />
+  <param name="HeaderPattern" value="AppDynamics Native SDK %X{version} %X{pid}%n" />
+ </layout>
+</appender>
+
+<appender name="api" class="org.apache.log4j.RollingFileAppender">
+ <param name="file" value="__agent_log_dir__/api.log"/>
+ <param name="HeaderOnlyInNewFile" value="true"/>
+ <param name="MaxFileSize" value="20MB"/>
+ <param name="MaxBackupIndex" value="5"/>
+ <layout class="org.apache.log4j.PatternLayout">
+  <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS z} %-5p %X{pid} [%t] [%c{2}] %m%n" />
+  <param name="HeaderPattern" value="AppDynamics Native SDK %X{version} %X{pid}%n" />
+ </layout>
+</appender>
+
+<appender name="api_user" class="org.apache.log4j.RollingFileAppender">
+ <param name="file" value="__agent_log_dir__/api_user.log"/>
+ <param name="HeaderOnlyInNewFile" value="true"/>
+ <param name="MaxFileSize" value="20MB"/>
+ <param name="MaxBackupIndex" value="5"/>
+ <layout class="org.apache.log4j.PatternLayout">
+  <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS z} %-5p %X{pid} [%t] [%c{2}] %m%n" />
+  <param name="HeaderPattern" value="AppDynamics Native SDK %X{version} %X{pid}%n" />
+ </layout>
+</appender>
+
+<logger name="api" additivity="false">
+    <level value="info"/>
+    <appender-ref ref="api"/>
+</logger>
+
+<logger name="api_user" additivity="false">
+    <level value="info"/>
+    <appender-ref ref="api_user"/>
+</logger>
+
+<root>
+  <priority value="info" />
+  <appender-ref ref="main"/>
+</root>
+
+</log4j:configuration>

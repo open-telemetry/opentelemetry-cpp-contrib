@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) AppDynamics, Inc., and its affiliates
+  ~ 2015
+  ~ All Rights Reserved
+  ~ THIS IS UNPUBLISHED PROPRIETARY CODE OF APPDYNAMICS, INC.
+  ~ The copyright notice above does not evidence any actual or intended publication of such source code
+  -->
+
+<suppressions xmlns="https://www.owasp.org/index.php/OWASP_Dependency_Check_Suppression">
+    <!-- This file is used to suppress vulnerabilities that do not have an impact on our production code. -->
+
+    <!-- Adobe Air.dll -->
+    <!-- We don't actually build or ship anything with this dll, but it is checked into thirdparty as part of
+         the flex SDK.  -->
+    <suppress>
+        <notes><![CDATA[
+      file name: Adobe AIR.dll
+      ]]></notes>
+        <sha1>057BBDC0B4472D1ACF5CDB7455F4E21A786F43DE</sha1>
+        <cpe>cpe:/a:adobe:adobe_air:-</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: Adobe AIR.dll
+   ]]></notes>
+        <sha1>057BBDC0B4472D1ACF5CDB7455F4E21A786F43DE</sha1>
+        <cpe>cpe:/a:adobe:air:-</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: WebKit.dll
+   ]]></notes>
+        <sha1>4F5D696041780C11B4AB897A0632E85BE4DE089D</sha1>
+        <cpe>cpe:/a:webkit:webkit:-</cpe>
+    </suppress>
+
+    <!-- Sonatype Nexus -->
+    <!-- CVE-2014-9389, CVE-2014-0792, CVE-2014-2034 -->
+    <!-- This is a false positive and comes from using the nexus flag to gather more evidence to improve the
+         CPE confidence.  Files uploaded by hand to Nexus that don't have a pom file get a generated pom file
+         from Nexus that includes this string.  -->
+    <suppress>
+        <notes><![CDATA[
+   file name: swagger-jaxrs-doclet-1.0.jar
+   ]]></notes>
+        <sha1>E274F02832A28646C3B4DB50361D4FEAFC56F420</sha1>
+        <cpe>cpe:/a:sonatype:nexus:1.0</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: singularity-xml.jar
+   ]]></notes>
+        <sha1>32BEAC9F09FB1626840A579815773F3D115B5BBD</sha1>
+        <cpe>cpe:/a:sonatype:nexus:1.0</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: typica.jar
+   ]]></notes>
+        <sha1>A5B6EF3535614EA6D5332123E2B5083CEF52A4EA</sha1>
+        <cpe>cpe:/a:sonatype:nexus:1.0</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: typescript-gradle-plugin-1.0.5.jar
+   ]]></notes>
+        <sha1>098EEAA489DFBF6C336157D03EF2737A84AFA408</sha1>
+        <cpe>cpe:/a:sonatype:nexus:1.0.5</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: singularity-log4j-1.2.15.jar
+   ]]></notes>
+        <sha1>C53F20F540FA651C1E25EF4B76EA4D18F21F8BB3</sha1>
+        <cpe>cpe:/a:sonatype:nexus:1.2.15</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: backport-util-concurrent-2.2.jar
+   ]]></notes>
+        <sha1>5C7B4B099CA2F9FDB6B6B9A370051D7510D2865B</sha1>
+        <cpe>cpe:/a:sonatype:nexus:2.2</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: concurrent.jar
+   ]]></notes>
+        <sha1>DD56441BC483FEE61FD3990BFAD8DB5A2FEF7F59</sha1>
+        <cpe>cpe:/a:sonatype:nexus:1.3.3</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: tools.jar
+   ]]></notes>
+        <sha1>59757E934E7F8D51A8E1B21E03476BA0C906EFF4</sha1>
+        <cpe>cpe:/a:sonatype:nexus:1.6.0.13</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: j2ee.jar
+   ]]></notes>
+        <sha1>AC846AFAD6E4543D8B89FEC531E461A953CEEE2F</sha1>
+        <cpe>cpe:/a:sonatype:nexus:2.0</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: jms.jar
+   ]]></notes>
+        <sha1>9DD990B47D794904DD0B3FD8159C8EB9D3DCF9C0</sha1>
+        <cpe>cpe:/a:sonatype:nexus:1.3</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: sigar.jar
+   ]]></notes>
+        <sha1>E91A355D337A0B1991F54181627D63C9973624C3</sha1>
+        <cpe>cpe:/a:sonatype:nexus:1.6.4</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: xalan.jar
+   ]]></notes>
+        <sha1>0EADCFDAA573CD5F163103DDFD46FF6457F35F54</sha1>
+        <cpe>cpe:/a:sonatype:nexus:2.7.1::~~open_source~~~</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: xercesImpl.jar
+   ]]></notes>
+        <sha1>868C0792233FC78D8C9BAC29AC79ADE988301318</sha1>
+        <cpe>cpe:/a:sonatype:nexus:2.7.1::~~open_source~~~</cpe>
+    </suppress>
+    <!-- Jersey Apache Client -->
+    <!--
+        The warning is actually about Apache HttpClient, which is a transitive dep of
+        com.sun.jersey.contribs:jersey-apache-client4. We work around this by also
+        including a newer HttpClient and letting gradle override the bad version.
+        If we forgot to do that in one case, we'd get a separate warning about
+        the HttpClient itself, so the warning on the parent lib isn't needed.
+    -->
+    <suppress>
+        <notes><![CDATA[
+   file name: jersey-apache-client4-1.18.1.jar
+   ]]></notes>
+        <sha1>9dbac6cb2e05715b5b55f92187e7dc52f8c718e1</sha1>
+        <cve>CVE-2014-3577</cve>
+    </suppress>
+
+    <!-- Dropwizard Metrics HttpClient -->
+    <!--
+        The warning is actually about Apache HttpClient, which is a transitive dep of
+        com.codahale.metrics:metrics-httpclient. We work around this by also
+        including a newer HttpClient and letting gradle override the bad version.
+        If we forgot to do that in one case, we'd get a separate warning about
+        the HttpClient itself, so the warning on the parent lib isn't needed.
+    -->
+    <suppress>
+        <notes><![CDATA[
+   file name: metrics-httpclient-3.1.2.jar
+   ]]></notes>
+        <sha1>4aa88b0c7facf3f2cd54d8575e9ddfeb6e73e428</sha1>
+        <cpe>cpe:/a:apache:httpclient:3.1.2</cpe>
+    </suppress>
+
+    <!-- Analytics Processor -->
+    <!-- Commons collections vulnerability only applies to Cisco products.
+    http://tools.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-20151209-java-deserialization
+    -->
+    <suppress>
+        <notes><![CDATA[
+   file name: commons-collections-3.2.1.jar
+   ]]></notes>
+        <sha1>761ea405b9b37ced573d2df0d1e3a4e0f9edc668</sha1>
+        <cve>CVE-2015-6420</cve>
+    </suppress>
+
+    <!-- Analytics Zookeeper -->
+    <!-- Apache Zookeeper logs cleartext admin passwords, which allows local users to obtain sensitive information
+    by reading the log.  From: https://bugzilla.redhat.com/show_bug.cgi?id=1067265
+
+    This flaw only affects Apache Zookeeper in conjunction with Fuse Fabric. Fuse Fabric was
+    storing cleartext passwords, which would appear as cleartext in Apache Zookeeper's log files. Fuse Fabric now
+    encrypts passwords by default.
+
+    We are not using Fuse Fabric so are not at risk to this vulnerability.
+    -->
+    <suppress>
+        <notes><![CDATA[
+    file name: zookeeper-3.4.6.jar
+    ]]></notes>
+        <sha1>01b2502e29da1ebaade2357cd1de35a855fa3755</sha1>
+        <cve>CVE-2014-0085</cve>
+    </suppress>
+
+    <!-- Glassfish implementation of Java Expression Language -->
+    <!--
+        This warning is a false positive. The warning is about the RC4 algorithm
+        used in SSL/TLS negotiation. The dep checker flags it because the GAV,
+        org.glassfish.web:javax.el:2.2.6, is part of the Glassfish CPE (aka
+        platform) cpe:/a:oracle:glassfish:2.2.6. But I manually audited the
+        source code and confirmed that it doesn't do any network stuff
+        whatsoever (it does Input/OutputStream I/O, but the stream would be
+        created by the caller).
+    -->
+    <suppress>
+        <notes><![CDATA[
+   file name: javax.el-2.2.6.jar
+   ]]></notes>
+        <sha1>0232abfe1f919127e9cfcd6e4e2c6324bb394535</sha1>
+        <cve>CVE-2015-2808</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: javax.el-2.2.6.jar
+   ]]></notes>
+        <sha1>0232abfe1f919127e9cfcd6e4e2c6324bb394535</sha1>
+        <cve>CVE-2013-2566</cve>
+    </suppress>
+    <!-- As with javax.el-2.2.6.jar, associated CVEs pertain to vulnerabilities in the glassfish platform,
+    not the javax.el-2.2.4.jar resource -->
+    <suppress>
+        <notes><![CDATA[
+   file name: javax.el-2.2.4.jar
+   ]]></notes>
+        <sha1>a50914ff519682e185bca4385b4313b8c8a81775</sha1>
+        <cve>CVE-2015-2808</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: javax.el-2.2.4.jar
+   ]]></notes>
+        <sha1>a50914ff519682e185bca4385b4313b8c8a81775</sha1>
+        <cve>CVE-2013-2566</cve>
+    </suppress>
+
+    <!-- .Net libraries -->
+    <!-- The following files are suppressed since they are not used to build the .Net agent, nor are they shipped
+         with the agent.  -->
+    <suppress>
+        <notes><![CDATA[
+   file name: Microsoft.Silverlight.Testing.dll
+   ]]></notes>
+        <sha1>E4A43DFF399B7164307C5B386656FD05DBC41C97</sha1>
+        <cpe>cpe:/a:microsoft:silverlight:-</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: Microsoft.Silverlight.Testing.dll
+   ]]></notes>
+        <sha1>108D7C8A4F753F55433E1C195BB9E8F548BD627D</sha1>
+        <cpe>cpe:/a:microsoft:silverlight:-</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: Microsoft.VisualStudio.QualityTools.UnitTesting.Silverlight.dll
+   ]]></notes>
+        <sha1>E89D5608B9FF88A3078B00FC642240B5DE3C352E</sha1>
+        <cpe>cpe:/a:microsoft:silverlight:-</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: Microsoft.VisualStudio.QualityTools.UnitTesting.Silverlight.dll
+   ]]></notes>
+        <sha1>E89D5608B9FF88A3078B00FC642240B5DE3C352E</sha1>
+        <cpe>cpe:/a:microsoft:visual_studio:-</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: Microsoft.VisualStudio.QualityTools.UnitTesting.Silverlight.dll
+   ]]></notes>
+        <sha1>E8D46980845D785615C7687FE51FB85D141F5297</sha1>
+        <cpe>cpe:/a:microsoft:silverlight:-</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: Microsoft.VisualStudio.QualityTools.UnitTesting.Silverlight.dll
+   ]]></notes>
+        <sha1>E8D46980845D785615C7687FE51FB85D141F5297</sha1>
+        <cpe>cpe:/a:microsoft:visual_studio:-</cpe>
+    </suppress>
+
+    <!-- Mono -->
+    <suppress>
+        <notes><![CDATA[
+   file name: Mono.Security.dll
+   ]]></notes>
+        <sha1>D07EAC49E1E8309021482E09C22915570A1AFE90</sha1>
+        <cpe>cpe:/a:mono:mono:-</cpe>
+    </suppress>
+
+    <!-- NLog -->
+    <suppress>
+        <notes><![CDATA[
+   file name: NLog.dll
+   ]]></notes>
+        <sha1>AD76F0EEB93B3C31DCCABBAADAA0D6407C052BA3</sha1>
+        <cpe>cpe:/a:nlog:nlog:-</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: NLog.dll
+   ]]></notes>
+        <sha1>14D4E4F12776C25AE2AC12501EC6B2CE69BD245B</sha1>
+        <cpe>cpe:/a:nlog:nlog:-</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: bzip2.dll
+   ]]></notes>
+        <sha1>F394D360B39FFB99F3B9B30D2F8FD92EC4966408</sha1>
+        <cpe>cpe:/a:bzip:bzip2:-</cpe>
+    </suppress>
+    <!-- Only used in development -->
+    <suppress>
+       <notes><![CDATA[
+   file name: docker-java-0.9.0.jar
+   ]]></notes>
+       <sha1>475D635C24F067E8B0282FB2467704A7140B1780</sha1>
+       <cpe>cpe:/a:docker:docker:0.9.0</cpe>
+    </suppress>
+    <!-- Associated high severity CVEs pertain to vulnerabilities in the server, not the driver -->
+    <suppress>
+        <notes><![CDATA[
+   file name: mysql-connector-java-commercial-5.1.13.jar
+   ]]></notes>
+        <sha1>CBA7E76DF24964A58A820D436B6057F7C0510C90</sha1>
+        <cpe>cpe:/a:mysql:mysql:5.1.13</cpe>
+    </suppress>
+    <!-- Associated CVEs pertain to vulnerabilities in the server, not the driver -->
+    <suppress>
+        <notes><![CDATA[
+   file name: db2jcc4-4.16.53.jar
+   ]]></notes>
+        <sha1>D9B2A7AF24A8C6E1A1DA8EC25602577BEF4FE32D</sha1>
+        <cpe>cpe:/a:ibm:db2:4.16.53</cpe>
+    </suppress>
+    <!--Only used in development -->
+    <suppress>
+       <notes><![CDATA[
+   file name: jruby-gradle-plugin-0.3.0.jar
+   ]]></notes>
+       <sha1>F05906F45C3D3949A418DE5FF26CC1756429B029</sha1>
+       <cpe>cpe:/a:jruby:jruby:0.3.0</cpe>
+    </suppress>
+</suppressions>
