@@ -1,0 +1,34 @@
+processors:
+  resource:
+    attributes:
+    - key: cloud.zone
+      value: "zone-1"
+      action: upsert
+    - key: host.name
+      value: "sample-container"                         
+      action: upsert
+    - key: service.namespace                                         
+      value: "sample_namespace"                                
+      action: upsert
+    - key: service.name                                             
+      value: "sample_service"                                         
+      action: upsert                                                
+receivers:
+    otlp:
+      protocols:
+        grpc:
+        http:
+    zipkin:
+exporters:
+    logging:
+        loglevel: debug
+    zipkin:
+        endpoint: "http://zipkin:9411/api/v2/spans"
+        format: proto
+
+service:
+    pipelines:
+        traces:
+            receivers: [otlp, zipkin]
+            exporters: [logging, zipkin]
+            processors: [resource]

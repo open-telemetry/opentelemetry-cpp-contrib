@@ -1,0 +1,145 @@
+import org.gradle.internal.os.OperatingSystem
+
+apply plugin: 'cpp'
+apply plugin: "visual-studio"
+
+defaultTasks 'build'
+
+ext {
+  ARCH = ''
+  switch (System.properties['os.arch'].toLowerCase()) {
+    case "amd64":
+    case "x86_64":
+      ARCH = "x64"
+      break
+    case "x86":
+    case "i386":
+    case "i586":
+    case "i686":
+      ARCH = "x86"
+      break
+    default:
+      println "ERROR: unknown architecture " + System.properties['os.arch'].toLowerCase()
+  }
+
+  OS = OperatingSystem.current().getFamilyName().replaceAll("\\s", "")
+  COMPILE = System.getProperty('libagent.vendor.compile') == 'true'
+
+  HEAD_SHA1 = "<dev>"
+  try {
+    def p = "git log -1 --pretty=%H".execute(null, new File("."))
+    p.waitFor()
+    HEAD_SHA1 = p.text.trim()
+  } catch (e) {
+  }
+
+  os = OperatingSystem.current()
+  osArch = System.properties['os.arch']
+
+  osName = 'linux'
+
+  if (osArch == 'i386' || osArch == 'i586' || osArch == 'i686') {
+    osArch = 'x86'
+  } else if (osArch == 'x86_64' || osArch == 'amd64') {
+    osArch = 'x64'
+  }
+
+  BUILD_SHA1 = System.getenv('BUILD_SHA')
+  SHA1 = (BUILD_SHA1 && BUILD_SHA1.length()) ? BUILD_SHA1 : HEAD_SHA1
+
+  TEAMCITY_BUILD_NUMBER = System.getenv('BUILD_NUMBER') ?: ''
+}
+
+model {
+  visualStudio {
+    projects.all {
+      projectFile.location = "${buildDir}/vs/${name}.vcxproj"
+      filtersFile.location = "${buildDir}/vs/${name}.vcxproj.filters"
+    }
+  }
+}
+
+if (!rootProject.ext.has('LINUX_TOOL_CHAIN')) {
+  rootProject.ext.TOOL_CHAIN_FROZEN = false
+  rootProject.ext.LINUX_TOOL_CHAIN = 'gcc'
+}
+
+if (OperatingSystem.current().isLinux() && !rootProject.ext.has('LINUX_LIBC')){
+  def stdout = new ByteArrayOutputStream()
+  def stderror = new ByteArrayOutputStream()
+  exec {
+    commandLine 'ldd', '--version'
+    standardOutput stdout
+    errorOutput stderror
+    ignoreExitValue true
+  }
+  def lddOutput = stdout.toString() + "|" + stderror.toString()
+  if (lddOutput.contains("musl")) {
+    rootProject.ext.LINUX_LIBC = "musl"
+  }
+  else {
+    rootProject.ext.LINUX_LIBC = "glibc"
+  }
+  println "Detected clib: ${rootProject.ext.LINUX_LIBC}"
+}
+
+ext.selectDefaulToolChain = {toolchain ->
+  if (rootProject.ext.TOOL_CHAIN_FROZEN) {
+    println "Toolchain ${rootProject.ext.LINUX_TOOL_CHAIN} already frozen. Skip selection for ${toolchain}"
+  }
+  
+  rootProject.ext.LINUX_TOOL_CHAIN = System.getProperty("toolchain")
+  if (!rootProject.ext.LINUX_TOOL_CHAIN) {
+    rootProject.ext.LINUX_TOOL_CHAIN = toolchain
+  }
+  if (!rootProject.ext.LINUX_TOOL_CHAIN) {
+    rootProject.ext.LINUX_TOOL_CHAIN = "gcc"
+  }
+  println "Selected toolchain: ${rootProject.ext.LINUX_TOOL_CHAIN}"
+}
+
+ext.freezeToolChain = { ->
+  if (!rootProject.ext.LINUX_TOOL_CHAIN) {
+    selectDefaulToolChain('')
+  }
+  rootProject.ext.TOOL_CHAIN_FROZEN = true
+}
+
+def callClagFormat(validate) {
+  def srcPaths = fileTree('include/') + fileTree('src/') + fileTree('test/');
+  def srcFiles = srcPaths.matching {
+    include '**/*.cc'
+    include '**/*.cpp'
+    include '**/*.h'
+    include '**/*.hpp'
+  }
+  srcFiles.each { srcFile ->
+    new ByteArrayOutputStream().withStream { os ->
+      exec {
+        commandLine 'clang-format'
+        args '-i', srcFile.absoluteFile
+        if (validate){
+          args '-output-replacements-xml'
+          standardOutput os
+        }
+      }
+      if (validate && os.toString().contains('replacement ')) {
+        throw new GradleException("Invalid formatting in ${srcFile.absoluteFile}. Please call format task.")
+      }
+    }
+  }
+}
+
+task format {
+  description = 'run clang-format on all source files'
+  doLast {
+    callClagFormat(false)
+  }
+}
+
+task validateFormat {
+  description = 'validate that clang-format was called on all source files'
+  doLast {
+    callClagFormat(true)
+  }
+}

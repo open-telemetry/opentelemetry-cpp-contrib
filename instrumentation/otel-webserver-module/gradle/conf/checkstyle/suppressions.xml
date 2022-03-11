@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE suppressions PUBLIC
+        "-//Puppy Crawl//DTD Suppressions 1.1//EN"
+        "http://www.puppycrawl.com/dtds/suppressions_1_1.dtd">
+
+<suppressions>
+    <suppress files="eum-cloud/component-tests/src/test/java/utility/Wait.java" checks="."/>
+    <suppress files="eum/synthetic/component-tests/src/test/java/com/appdynamics/util/Wait.java" checks="."/>
+    <suppress files="eum/platform/libs/redis/src/main/java/com/appdynamics/eum/redis/session/SessionProto.java" checks="."/>
+    <suppress
+            files=".*/analytics-framework-adql/src/main/java/com/appdynamics/analytics/framework/adql/parser/generated/.*"
+              checks="."/>
+	<suppress files=".*[\\/]generated-src[\\/].*" checks="."/>
+    <suppress files=".*[\\/]generated/main/java[\\/].*" checks="."/>
+    <suppress files=".*[\\/]generated-sources[\\/].*" checks="."/>
+    <suppress files=".*[\\/]generated-sources[\\/].*" checks="."/>
+    <suppress files=".*[\\/]thirdparty[\\/]dagger.*" checks="."/>
+</suppressions>

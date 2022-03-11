@@ -1,0 +1,10 @@
+def run(settings, groupProjects) {
+    settings.with {
+        include 'utils'
+        include 'dbmon:dbmon-api'
+        include 'analytics:analytics-shared-rest'
+        include 'controller:controller-api:agent'
+
+        // add all your includes...
+    }
+}

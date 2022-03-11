@@ -1,0 +1,509 @@
+apply plugin: 'cpp'
+apply from: 'common.gradle'
+
+def coverageEnabled = System.getProperty('enableCoverage')
+
+project.ext {
+    // To do a 32-bit build, pass "-Dos.arch=x86"
+    platBuildDir = "${buildDir}/${osName}-${osArch}"
+    modDepDir = "${platBuildDir}/module-dependencies"
+
+    debug = false
+    if (!Project.hasProperty('buildType')) {
+        buildType = 'release'
+    }
+
+    if (buildType != 'release') {
+        buildType = 'debug'
+        debug = true;
+    }
+
+    ansdkOsName = osName
+    ansdkArch = (osArch == 'x86' ? 'i686' : osArch)
+    gccArchFlag = (osArch == 'x86' ? '-m32' : '-m64')
+    headSHA1 = "<dev>"
+
+    try {
+        def p = "git log -1 --pretty=%H".execute(null, new File("."))
+        p.waitFor()
+        headSHA1 = p.text.trim()
+    } catch (e) {
+        // Ignore the exception
+        headSHA1 = System.getenv('HEAD_SHA')
+    }
+
+    def props = new Properties()
+    props.load(new FileInputStream(file("version.properties")))
+    moduleVersion = props.get("server-module-version")
+    moduleRelease = props.get("release")
+    moduleName = "WebServer Module"
+    buildType = "Release Build"
+    fullVersion = "${moduleName} ${moduleVersion} ${moduleRelease} ${headSHA1}: ${buildType}"
+
+    gypPath = "$projectDir/scripts/gyp/r1919/gyp"
+    gypType = 'make'
+
+    scriptExt = 'sh'
+    sharedLibraryExt = 'so'
+    
+    apache22Version = "2.2.31"
+    apache24Version = "2.4.23"
+
+    boostDir = "${modDepDir}/boost/1.55.0"
+    libraryStageDir = "${platBuildDir}/opentelemetry-webserver-sdk"
+    apacheStageDir = "${libraryStageDir}/WebServerModule/Apache"
+
+    coverageCompilerFlags = '-g -fprofile-arcs -ftest-coverage'
+    coverageLinkerFlags = '-lgcov --coverage'
+
+    COVERAGE_DIR = "${platBuildDir}/coverage"
+    LCOV_RAW_INFO = "${COVERAGE_DIR}/lcov-raw.info"
+    LCOV_INFO = "${COVERAGE_DIR}/lcov.info"
+}
+
+task extractANSDK(type: Copy) {
+    from "dependencies"
+    into modDepDir
+}
+
+task generateModuleVersionHeader(type: Copy) {
+    group = 'SDK Library'
+    description = 'Generate the module_version.h header'
+
+    def headerFile = file("src/sdk_lib/include/core/module_version.h")
+
+    from "src/module_version_template.h"
+    into "include/core"
+    rename { String f -> "module_version.h" }
+    expand(
+        headSHA1: headSHA1,
+        moduleVersion: moduleVersion,
+        moduleRelease: moduleRelease,
+        fullVersion: fullVersion)
+}
+
+task generateVersionFile(type: Copy) {
+    group = 'SDK Library'
+    description = 'Generate the VERSION.txt file'
+
+    from "dist/VERSION.txt"
+    into libraryStageDir
+    expand(
+        headSHA1: headSHA1,
+        moduleVersion: moduleVersion,
+        moduleRelease: moduleRelease,
+        fullVersion: fullVersion)
+}
+
+task generateSources {
+    group = 'SDK Library'
+    description = 'Generate all sources'
+
+    dependsOn generateVersionFile, generateModuleVersionHeader
+}
+
+// clean {
+    // Delete the platform-specific build dir
+    //delete platBuildDir
+
+    // Created by generateProtos
+    //delete 'src/sdk_lib/protos'
+
+    // Created by generateModuleVersionHeader
+    //delete 'src/sdk_lib/src/agent_version.h'
+
+    // Created by generateVersionFile
+    //delete 'scripts/VERSION.txt'
+// }
+
+task gypLibrary(type: Exec) {
+    group = 'SDK Library'
+    description = 'Run gyp to generate the platform-specific build scripts'
+
+    dependsOn extractANSDK, generateSources
+
+    inputs.file "src/build.gyp"
+
+    outputs.file "${platBuildDir}/Makefile"
+
+    ext.libraryBuildEnvironment = [
+        ARCH_FLAG: gccArchFlag,
+        ANSDK_DIR: modDepDir,
+        COMPILER_FLAGS: (coverageEnabled) ? coverageCompilerFlags : '',
+        LINKER_FLAGS: (coverageEnabled) ? coverageLinkerFlags : '',
+    ]
+
+    environment libraryBuildEnvironment
+    workingDir 'src'
+    commandLine gypPath, "--generator-output=${platBuildDir}", '--toplevel-dir=.', '--depth=./', '-f', gypType, 'build.gyp'
+}
+
+task buildLibrary(type: Exec) {
+    group = 'SDK Library'
+    description = 'Compile the SDK library'
+
+    dependsOn gypLibrary
+    inputs.property "buildType", buildType
+    inputs.dir 'src/util'
+
+    outputs.file "${platBuildDir}/out/Default/lib.target/libopentelemetry_webserver_sdk.so"
+
+    args = ['make', 'V=1', '-j', Runtime.runtime.availableProcessors()]
+
+    environment gypLibrary.libraryBuildEnvironment
+    workingDir "${platBuildDir}"
+    commandLine args
+}
+
+task stageLibrary(type: Copy) {
+    group = 'SDK Library'
+    description = 'Stage the SDK library distribution'
+
+    doLast {
+        def logDir = file("${libraryStageDir}/logs")
+        logDir.mkdirs()
+        logDir.setWritable(true)
+    }
+
+    from("dist/runSDKProxy.sh") { it.fileMode 0770 }
+
+    from("src/sdk_lib/src/api/include/appdynamics.h") { it.into "sdk_lib" }
+    from(buildLibrary) { it.into "sdk_lib/lib" }
+    from("${modDepDir}/opentelemetry/1.0.0-rc1/lib/libopentelemetry_common.so") { it.into "sdk_lib/lib" }
+    from("${modDepDir}/opentelemetry/1.0.0-rc1/lib/libopentelemetry_resources.so") { it.into "sdk_lib/lib" }
+    from("${modDepDir}/opentelemetry/1.0.0-rc1/lib/libopentelemetry_trace.so") { it.into "sdk_lib/lib" }
+    from("${modDepDir}/opentelemetry/1.0.0-rc1/lib/libopentelemetry_exporter_ostream_span.so") { it.into "sdk_lib/lib" }
+    from("${modDepDir}/opentelemetry/1.0.0-rc1/lib/libopentelemetry_exporter_otprotocol.so") { it.into "sdk_lib/lib" }
+    from("dist/appdynamics_sdk_log4cxx.xml.template") { it.into "conf" }
+    from("dist/install.${scriptExt}") { it.fileMode 0700 }
+
+    into libraryStageDir
+}
+
+task stripLibrary(type: Exec) {
+    group = 'SDK Library'
+    description = 'Strip the production library'
+
+    onlyIf { !debug }
+
+    inputs.dir stageLibrary
+    outputs.dir "${libraryStageDir}/sdk_lib/lib/libopentelemetry_webserver_sdk.${sharedLibraryExt}"
+
+    workingDir "${libraryStageDir}/sdk_lib/lib"
+    commandLine 'strip', '-x', "libopentelemetry_webserver_sdk.${sharedLibraryExt}"
+}
+
+task assembleLibrary(type: Tar) {
+    group = 'SDK Library'
+    description = 'Assemble the library (tgz)'
+
+    dependsOn stripLibrary
+
+    from stageLibrary
+    baseName 'opentelemetry-webserver-sdk'
+    into 'opentelemetry-webserver-sdk'
+    destinationDir buildDir
+    compression Compression.GZIP
+}
+
+// Apache
+
+task extractApache(type: Copy) {
+    from "build-dependencies" 
+    into buildDir
+}
+
+task bundleAprSources {
+    inputs.files extractApache
+    outputs.dir "${platBuildDir}/httpd-${apache22Version}"
+    outputs.dir "${platBuildDir}/httpd-${apache24Version}"
+
+    doLast {
+        copy {
+            from "${buildDir}/httpd-${apache22Version}"
+            into "${platBuildDir}/httpd-${apache22Version}"
+        }
+
+        copy {
+            from "${buildDir}/httpd-${apache24Version}"
+            into "${platBuildDir}/httpd-${apache24Version}"
+        }
+
+        copy {
+            from "${buildDir}/apr-1.5.2"
+            into "${platBuildDir}/httpd-${apache22Version}/srclib/apr"
+        }
+
+        copy {
+            from "${buildDir}/apr-1.5.2"
+            into "${platBuildDir}/httpd-${apache24Version}/srclib/apr"
+        }
+
+        copy {
+            from "${buildDir}/apr-util-1.5.4"
+            into "${platBuildDir}/httpd-${apache22Version}/srclib/apr-util"
+        }
+
+        copy {
+            from "${buildDir}/apr-util-1.5.4"
+            into "${platBuildDir}/httpd-${apache24Version}/srclib/apr-util"
+        }
+    }
+}
+
+task configureApache22(type: Exec) {
+    inputs.dir bundleAprSources
+
+    workingDir "${platBuildDir}/httpd-${apache22Version}"
+    commandLine './configure', '--with-included-apr'
+}
+
+task configureApache24(type: Exec) {
+    inputs.dir extractApache
+
+    workingDir "${platBuildDir}/httpd-${apache24Version}"
+    commandLine './configure', '--with-included-apr'
+}
+
+task gypApacheModule(type: Exec) {
+    group = 'Apache Web Server Module'
+    description = 'Run gyp to generate the build files for Apache Web Server Module'
+
+    dependsOn stageLibrary
+    dependsOn configureApache22
+    dependsOn configureApache24
+
+    inputs.file "src/apache/apache.gyp"
+    outputs.file "${platBuildDir}/apache/Makefile"
+
+    ext.apacheBuildEnvironment = [
+        ARCH_FLAG: gccArchFlag,
+        APACHE22_INCLUDE_DIR: "${platBuildDir}/httpd-${apache22Version}/include",
+        APACHE24_INCLUDE_DIR: "${platBuildDir}/httpd-${apache24Version}/include",
+        APPD_SDK_LIB_DIR: "${libraryStageDir}/sdk_lib",
+        ANSDK_DIR: modDepDir,
+        COMPILER_FLAGS: (coverageEnabled) ? coverageCompilerFlags : '',
+        LINKER_FLAGS: (coverageEnabled) ? coverageLinkerFlags : '',
+    ]
+
+    environment apacheBuildEnvironment
+    workingDir 'src/apache'
+    commandLine gypPath, "--generator-output=${platBuildDir}/apache", '--toplevel-dir=.', '--depth=./', '-f', gypType, 'apache.gyp'
+}
+
+task buildApacheModule(type: Exec) {
+    group = 'Apache Web Server Module'
+    description = 'Build the Apache Web Server Module'
+
+    dependsOn gypApacheModule
+    inputs.dir 'src/util'
+    inputs.dir 'src/apache'
+    inputs.dir 'src/core'
+
+    outputs.file "${platBuildDir}/apache/out/Default/lib.target/libmod_apache_otel.so"
+    outputs.file "${platBuildDir}/apache/out/Default/lib.target/libmod_apache_otel22.so"
+
+    args = ['make', 'V=1', '-j', Runtime.runtime.availableProcessors()]
+
+    environment gypApacheModule.apacheBuildEnvironment
+    workingDir "${platBuildDir}/apache"
+    commandLine args
+}
+
+task stageApacheModule(type: Copy) {
+    group = 'Apache Web Server Module'
+    description = 'Stage the Apache Web Server Module distribution directory'
+
+    dependsOn stageLibrary
+
+    from buildApacheModule
+    into apacheStageDir
+}
+
+stageApacheModule.mustRunAfter assembleLibrary
+
+task stripApacheModule(type: Exec) {
+    group = 'Apache Web Server Module'
+    description = 'Strip the production Apache Web Server Module'
+
+    dependsOn stageApacheModule
+
+    onlyIf { !debug }
+
+    inputs.dir stageApacheModule
+    outputs.dir "${apacheStageDir}/libopentelemetry_webserver_sdk.${sharedLibraryExt}"
+
+    workingDir apacheStageDir
+    commandLine 'strip', '-x', "libmod_apache_otel.${sharedLibraryExt}"
+    commandLine 'strip', '-x', "libmod_apache_otel22.${sharedLibraryExt}"
+}
+
+task assembleApacheModule(type: Tar) {
+    group = 'Apache Web Server Module'
+    description = 'Assemble the Apache Web Server module artifact (tgz)'
+
+    dependsOn stripApacheModule
+
+    from libraryStageDir
+    baseName "opentelemetry-webserver-sdk-${osArch}-${osName}"
+    into 'opentelemetry-webserver-sdk'
+    destinationDir file(buildDir)
+    compression Compression.GZIP
+}
+
+// Tests
+
+task gypUnitTest(type: Exec) {
+    dependsOn stageLibrary
+
+    inputs.file 'test/unit/unit_test.gyp'
+    outputs.file "${platBuildDir}/unit_test/Makefile"
+
+    ext.testBuildEnvironment = [
+        APPD_SDK_LIB_DIR: "${libraryStageDir}/sdk_lib",
+        ANSDK_DIR: modDepDir
+    ]
+
+    environment testBuildEnvironment
+    workingDir 'test/unit'
+    commandLine gypPath, "--generator-output=${platBuildDir}/unit_test", '--toplevel-dir=.', '--depth=./', '-f', gypType, 'unit_test.gyp'
+}
+
+task makeUnitTest(type: Exec) {
+    dependsOn gypUnitTest
+
+    inputs.dir 'test/unit'
+
+    outputs.file "${platBuildDir}/unit_test/out/Default/unit_test"
+
+    environment gypUnitTest.testBuildEnvironment
+    workingDir "${platBuildDir}/unit_test"
+    commandLine 'make', 'V=1'
+}
+
+task runUnitTest(type: Exec) {
+    dependsOn makeUnitTest
+    environment gypUnitTest.testBuildEnvironment
+
+    environment "LD_LIBRARY_PATH", "${libraryStageDir}/sdk_lib/lib/"
+
+    workingDir "${platBuildDir}/unit_test/out/Default"
+    commandLine './unit_test'
+}
+
+task runApacheServer(type: Exec) {
+    dependsOn assembleApacheModule
+
+    workingDir 'test'
+    commandLine './ApacheTesting.sh'
+}
+
+// Code Coverage
+
+task lcovCapture(type: Exec) {
+  group = 'Code Coverage'
+  description = 'capture coverage info'
+
+  dependsOn runApacheServer
+  dependsOn runUnitTest
+
+  ext.tracefile = file(LCOV_RAW_INFO)
+
+  outputs.file tracefile
+
+  executable 'lcov'
+  args '--output-file', tracefile,                          // resulting tracefile
+       '--capture',                                         // capture counts for a user space program
+       '--directory', "${platBuildDir}"                     // location where the program was compiled
+//       '--no-external'                                    // ignore data for external files
+}
+
+task lcov(type: Exec) {
+  group = 'Code Coverage'
+  description = 'remove noise from captured coverage info'
+
+  dependsOn lcovCapture
+
+  ext.tracefile = file(LCOV_INFO)
+
+  inputs.file lcovCapture.tracefile
+  outputs.file tracefile
+
+  executable 'lcov'
+  args '--quiet',                         // do not print progress messages
+        '--output-file', tracefile,       // resulting tracefile
+       '--remove', lcovCapture.tracefile, // remove files matching patterns from tracefile
+       '*/prebuilt/*', '*.pb.*'           // list of patterns
+}
+
+task coverageHtml(type: Exec) {
+  group = 'Code Coverage'
+  description = 'generate html coverage report'
+
+  dependsOn lcov
+
+  inputs.file lcov.tracefile
+  outputs.dir COVERAGE_DIR
+
+  executable 'genhtml'
+  args '--quiet',                           // do not print progress messages
+       '--output-directory', COVERAGE_DIR,  // write HTML to this directory
+       '--show-details',                    // generate detailed directory view
+       '--keep-descriptions',               // do not remove unused test descriptions
+       '--title', project.name,             // display the specified title in header of all pages
+       '--demangle-cpp',                    // show user-friendly function names
+       lcov.tracefile
+}
+
+model {
+    buildTypes {
+        debug
+        release
+    }
+    platforms {
+        x86 {
+            architecture "x86"
+        }
+        x64 {
+            architecture "x86_64"
+        }
+    }
+
+    binaries {
+        all {
+            tasks.withType(CppCompile) {
+                dependsOn ':vendor:boost:assemble'
+            }
+
+            if (toolChain in Clang) {
+                cppCompiler.args "-fcolor-diagnostics"
+            }
+
+            if (toolChain in Clang || toolChain in Gcc) {
+                cppCompiler.args "-Wall", "-std=c++11", "-g"
+
+                if (buildType == buildTypes.debug) {
+                    cppCompiler.args "-g"
+                }
+            }
+            else if (toolChain in VisualCpp) {
+                cppCompiler.args "/Wall"
+            }
+        }
+    }
+
+    repositories {
+        libs(PrebuiltLibraries) { libs ->
+            appd {
+                headers.srcDirs "${libraryStageDir}/sdk_lib"
+                // See FIXME on sources.cpp.lib library: 'appd' above
+                // binaries.withType(SharedLibraryBinary) {
+                //     sharedLibraryFile = file("${libraryStageDir}/sdk_lib/lib/libopentelemetry_webserver_sdk.so")
+                // }
+            }
+        }
+    }
+
+    tasks {
+    }
+}
