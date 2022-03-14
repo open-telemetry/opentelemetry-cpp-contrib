@@ -55,7 +55,7 @@ Monitoring individual modules is crucial to the instrumentation of Apache web se
 |*ApacheModuleServiceNamespace*                  |                 | REQUIRED: Logical name of the service |
 |*ApacheModuleServiceInstanceId*                 |                 | REQUIRED: The string ID of the service instance |
 |*ApacheModuleTraceAsError*                      |                 | OPTIONAL: Trace level for logging to Apache log|
-|*ApacheModuleWebserverContext*                  |                 | OPTIONAL: Takes 3 values(space-seperated) Application Name, Node Name, Tier Name|
+|*ApacheModuleWebserverContext*                  |                 | OPTIONAL: Takes 3 values(space-seperated) ServiceName, ServiceNamespace and ServiceInstanceId|
 |*ApacheModuleSegmentType*                       |                 | OPTIONAL: Specify the string (FIRST/LAST/CUSTOM) to be filtered for Span Name Creation|
 |*ApacheModuleSegmentParameter*                  |                 | OPTIONAL: Specify the segment count or segment numbers that you want to display for Span Creation|
 
