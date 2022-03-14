@@ -55,7 +55,7 @@ Monitoring individual modules is crucial to the instrumentation of Apache web se
 |*ApacheModuleServiceNamespace*                  |                 | REQUIRED: Logical name of the service |
 |*ApacheModuleServiceInstanceId*                 |                 | REQUIRED: The string ID of the service instance |
 |*ApacheModuleTraceAsError*                      |                 | OPTIONAL: Trace level for logging to Apache log|
-|*ApacheModuleWebserverContext*                  |                 | OPTIONAL: Virtual Host Configuration|
+|*ApacheModuleWebserverContext*                  |                 | OPTIONAL: Takes 3 values(space-seperated) Application Name, Node Name, Tier Name|
 |*ApacheModuleSegmentType*                       |                 | OPTIONAL: Specify the string (FIRST/LAST/CUSTOM) to be filtered for Span Name Creation|
 |*ApacheModuleSegmentParameter*                  |                 | OPTIONAL: Specify the segment count or segment numbers that you want to display for Span Creation|
 
@@ -95,5 +95,5 @@ The build file can be copied at a suitable location in User's system by running 
 ### Maintainers
 * [Kumar Pratyush](https://github.com/kpratyus), Cisco
 * [Lakshay Gaba](https://github.com/lakshay141), Cisco
-* [Debajit Das] (https://github.com/DebajitDas), Cisco
+* [Debajit Das](https://github.com/DebajitDas), Cisco
 
