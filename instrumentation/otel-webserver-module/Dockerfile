@@ -219,7 +219,8 @@ RUN mkdir build-dependencies \
     && mv -f httpd-2.4.23 build-dependencies
 
 # Build Webserver Module
-RUN git clone https://github.com/cisco-open/otel-webserver-module.git \
+RUN git clone https://github.com/open-telemetry/opentelemetry-cpp-contrib.git \
+    && cp -r /opentelemetry-cpp-contrib/instrumentation/otel-webserver-module . \
     && cp -r /dependencies /otel-webserver-module/ \
     && cp -r /build-dependencies /otel-webserver-module/ \
     && cd otel-webserver-module \
