@@ -95,5 +95,5 @@ The build file can be copied at a suitable location in User's system by running 
 ### Maintainers
 * [Kumar Pratyush](https://github.com/kpratyus), Cisco
 * [Lakshay Gaba](https://github.com/lakshay141), Cisco
-* [Debajit Das] (https://github.com/DebajitDas), Cisco
+* [Debajit Das](https://github.com/DebajitDas), Cisco
 
