@@ -169,11 +169,12 @@ task stageLibrary(type: Copy) {
 
     from("src/sdk_lib/src/api/include/appdynamics.h") { it.into "sdk_lib" }
     from(buildLibrary) { it.into "sdk_lib/lib" }
-    from("${modDepDir}/opentelemetry/1.0.0-rc1/lib/libopentelemetry_common.so") { it.into "sdk_lib/lib" }
-    from("${modDepDir}/opentelemetry/1.0.0-rc1/lib/libopentelemetry_resources.so") { it.into "sdk_lib/lib" }
-    from("${modDepDir}/opentelemetry/1.0.0-rc1/lib/libopentelemetry_trace.so") { it.into "sdk_lib/lib" }
-    from("${modDepDir}/opentelemetry/1.0.0-rc1/lib/libopentelemetry_exporter_ostream_span.so") { it.into "sdk_lib/lib" }
-    from("${modDepDir}/opentelemetry/1.0.0-rc1/lib/libopentelemetry_exporter_otprotocol.so") { it.into "sdk_lib/lib" }
+    from("${modDepDir}/opentelemetry/1.2.0/lib/libopentelemetry_common.so") { it.into "sdk_lib/lib" }
+    from("${modDepDir}/opentelemetry/1.2.0/lib/libopentelemetry_resources.so") { it.into "sdk_lib/lib" }
+    from("${modDepDir}/opentelemetry/1.2.0/lib/libopentelemetry_trace.so") { it.into "sdk_lib/lib" }
+    from("${modDepDir}/opentelemetry/1.2.0/lib/libopentelemetry_otlp_recordable.so") { it.into "sdk_lib/lib" }    
+    from("${modDepDir}/opentelemetry/1.2.0/lib/libopentelemetry_exporter_ostream_span.so") { it.into "sdk_lib/lib" }
+    from("${modDepDir}/opentelemetry/1.2.0/lib/libopentelemetry_exporter_otlp_grpc.so") { it.into "sdk_lib/lib" }
     from("dist/appdynamics_sdk_log4cxx.xml.template") { it.into "conf" }
     from("dist/install.${scriptExt}") { it.fileMode 0700 }
 

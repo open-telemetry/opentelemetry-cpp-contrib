@@ -51,8 +51,9 @@
           '$(ANSDK_DIR)/opentelemetry/1.0.0-rc1/lib/libopentelemetry_common.so',
           '$(ANSDK_DIR)/opentelemetry/1.0.0-rc1/lib/libopentelemetry_resources.so',
           '$(ANSDK_DIR)/opentelemetry/1.0.0-rc1/lib/libopentelemetry_trace.so',
+          '$(ANSDK_DIR)/opentelemetry/1.0.0-rc1/lib/libopentelemetry_otlp_recordable.so',
           '$(ANSDK_DIR)/opentelemetry/1.0.0-rc1/lib/libopentelemetry_exporter_ostream_span.so',
-          '$(ANSDK_DIR)/opentelemetry/1.0.0-rc1/lib/libopentelemetry_exporter_otprotocol.so',
+          '$(ANSDK_DIR)/opentelemetry/1.0.0-rc1/lib/libopentelemetry_exporter_otlp_grpc.so',
        ],
 
         'ldflags': [
