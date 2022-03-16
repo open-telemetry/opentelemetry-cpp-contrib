@@ -28,7 +28,7 @@ Monitoring individual modules is crucial to the instrumentation of Apache web se
 | Apr-util                                       | 1.6.1           |
 | Expat                                          | 2.3.0           |
 | Boost                                          | 1.75.0          |
-| Opentelemetry - C++ SDK                        | 1.0.0-rc1       |
+| Opentelemetry - C++ SDK                        | 1.2.0      |
 | Googletest                                     | 1.10.0          |
 
 *There are some libraries which are just used to generate Apache Header files
