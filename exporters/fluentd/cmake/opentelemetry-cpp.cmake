@@ -13,9 +13,11 @@ function(build_opentelemetry)
   set(opentelemetry_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/opentelemetry-cpp")
   set(opentelemetry_cpp_targets opentelemetry_trace opentelemetry_logs http_client_curl )
   set(opentelemetry_CMAKE_ARGS -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-	 		       -DWITH_LOGS_PREVIEW=ON
-                               -DBUILD_TESTING=OFF
-                               -DWITH_EXAMPLES=OFF)
+          -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+          -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
+	 		    -DWITH_LOGS_PREVIEW=ON
+          -DBUILD_TESTING=OFF
+          -DWITH_EXAMPLES=OFF)
 
   set(opentelemetry_libs
     ${opentelemetry_BINARY_DIR}/sdk/src/trace/libopentelemetry_trace.a
