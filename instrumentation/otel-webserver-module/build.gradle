@@ -1,7 +1,7 @@
 apply plugin: 'cpp'
 apply from: 'common.gradle'
 
-def coverageEnabled = System.getProperty('enableCoverage')
+def coverageEnabled = System.getenv('enableCoverage')
 
 project.ext {
     // To do a 32-bit build, pass "-Dos.arch=x86"
@@ -415,7 +415,7 @@ task lcovCapture(type: Exec) {
   args '--output-file', tracefile,                          // resulting tracefile
        '--capture',                                         // capture counts for a user space program
        '--directory', "${platBuildDir}"                     // location where the program was compiled
-//       '--no-external'                                    // ignore data for external files
+       '--no-external'                                      // ignore data for external files
 }
 
 task lcov(type: Exec) {
@@ -433,7 +433,7 @@ task lcov(type: Exec) {
   args '--quiet',                         // do not print progress messages
         '--output-file', tracefile,       // resulting tracefile
        '--remove', lcovCapture.tracefile, // remove files matching patterns from tracefile
-       '*/prebuilt/*', '*.pb.*'           // list of patterns
+       '*/prebuilt/*', '*.pb.*', '/opt/rh/*', '/usr/include/*', '*.h', '*.hpp'  // list of patterns
 }
 
 task coverageHtml(type: Exec) {
