@@ -25,7 +25,7 @@
 #include "opentelemetry/sdk/trace/samplers/parent.h"
 #include "opentelemetry/sdk/trace/samplers/trace_id_ratio.h"
 #include "opentelemetry/sdk/resource/resource.h"
-#include "opentelemetry/exporters/otlp/otlp_exporter.h"
+#include "opentelemetry/exporters/otlp/otlp_grpc_exporter.h"
 #include "opentelemetry/baggage/propagation/baggage_propagator.h"
 #include <module_version.h>
 #include <fstream>
@@ -124,7 +124,7 @@ OtelSpanExporter SdkHelperFactory::GetExporter(
           LOG4CXX_WARN(mLogger, "Received unknown exporter type: " << type << ". Will create default(otlp) exporter");
           type = OTLP_EXPORTER_TYPE;
         }
-        opentelemetry::exporter::otlp::OtlpExporterOptions opts;
+        opentelemetry::exporter::otlp::OtlpGrpcExporterOptions opts;
         opts.endpoint = config->getOtelExporterEndpoint();
         if (config->getOtelSslEnabled()) {
             opts.use_ssl_credentials = config->getOtelSslEnabled();
@@ -132,7 +132,7 @@ OtelSpanExporter SdkHelperFactory::GetExporter(
             LOG4CXX_TRACE(mLogger, "Ssl Credentials are enabled for exporter, path: "
                 << opts.ssl_credentials_cacert_path);
         }
-        exporter.reset(new opentelemetry::exporter::otlp::OtlpExporter(opts));
+        exporter.reset(new opentelemetry::exporter::otlp::OtlpGrpcExporter(opts));
     }
 
     LOG4CXX_INFO(mLogger, "Exporter created with ExporterType: "

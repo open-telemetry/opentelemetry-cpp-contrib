@@ -16,8 +16,9 @@ echo '
 LoadFile /opt/appdynamics-sdk-native/sdk_lib/lib/libopentelemetry_common.so
 LoadFile /opt/appdynamics-sdk-native/sdk_lib/lib/libopentelemetry_resources.so
 LoadFile /opt/appdynamics-sdk-native/sdk_lib/lib/libopentelemetry_trace.so
+LoadFile /opt/appdynamics-sdk-native/sdk_lib/lib/libopentelemetry_otlp_recordable.so
 LoadFile /opt/appdynamics-sdk-native/sdk_lib/lib/libopentelemetry_exporter_ostream_span.so
-LoadFile /opt/appdynamics-sdk-native/sdk_lib/lib/libopentelemetry_exporter_otprotocol.so
+LoadFile /opt/appdynamics-sdk-native/sdk_lib/lib/libopentelemetry_exporter_otlp_grpc.so
 
 #Load the AppDynamics SDK
 LoadFile /opt/appdynamics-sdk-native/sdk_lib/lib/libappdynamics_native_sdk.so

@@ -172,23 +172,23 @@ RUN mkdir -p dependencies/apache-log4cxx/0.11.0 \
     && cd .. && rm -rf apache-log4cxx-0.11.0.tar.gz && rm -rf apache-log4cxx-0.11.0
 
 # install opentelemetry
-RUN mkdir -p dependencies/opentelemetry/1.0.0-rc1/lib \
-    && mkdir -p dependencies/opentelemetry/1.0.0-rc1/include \
+RUN mkdir -p dependencies/opentelemetry/1.2.0/lib \
+    && mkdir -p dependencies/opentelemetry/1.2.0/include \
     && git clone https://github.com/open-telemetry/opentelemetry-cpp \
     && cd opentelemetry-cpp/ \
-    && git checkout tags/v1.0.0-rc1 -b v1.0.0-rc1 \
+    && git checkout tags/v1.2.0 -b v1.2.0 \
     && git submodule update --init --recursive \
     && mkdir build \
     && cd build \
-    && cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=ON -DWITH_OTLP=ON -DCMAKE_INSTALL_PREFIX=/dependencies/opentelemetry/1.0.0-rc1 \
+    && cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=ON -DWITH_OTLP=ON -DCMAKE_INSTALL_PREFIX=/dependencies/opentelemetry/1.2.0 \
     && cmake --build . --target all \
     && cd .. \
-    && find . -name "*.so" -type f -exec cp {} /dependencies/opentelemetry/1.0.0-rc1/lib/ \; \
-    && cp build/libopentelemetry_proto.a /dependencies/opentelemetry/1.0.0-rc1/lib \
-    && cp -r api/include/ /dependencies/opentelemetry/1.0.0-rc1/ \
-    && for dir in exporters/*; do if [ -d "$dir" ]; then cp -rf "$dir/include" /dependencies/opentelemetry/1.0.0-rc1/; fi; done \
-    && cp -r sdk/include/ /dependencies/opentelemetry/1.0.0-rc1/ \
-    && cp -r build/generated/third_party/opentelemetry-proto/opentelemetry/proto/ /dependencies/opentelemetry/1.0.0-rc1/include/opentelemetry/ \
+    && find . -name "*.so" -type f -exec cp {} /dependencies/opentelemetry/1.2.0/lib/ \; \
+    && cp build/libopentelemetry_proto.a /dependencies/opentelemetry/1.2.0/lib \
+    && cp -r api/include/ /dependencies/opentelemetry/1.2.0/ \
+    && for dir in exporters/*; do if [ -d "$dir" ]; then cp -rf "$dir/include" /dependencies/opentelemetry/1.2.0/; fi; done \
+    && cp -r sdk/include/ /dependencies/opentelemetry/1.2.0/ \
+    && cp -r build/generated/third_party/opentelemetry-proto/opentelemetry/proto/ /dependencies/opentelemetry/1.2.0/include/opentelemetry/ \
     && cd .. && rm -rf opentelemetry-cpp
 
 # install googletest
