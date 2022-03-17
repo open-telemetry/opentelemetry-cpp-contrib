@@ -29,6 +29,7 @@ std::shared_ptr<appd::core::TenantConfig> getConfig() {
   config->setServiceInstanceId("dummy_instance_id");
   config->setOtelExporterType("otlp");
   config->setOtelExporterEndpoint("otel-collector:4317");
+  config->setOtelLibraryName("opentelemetry-apache");
   return config;
 }
 

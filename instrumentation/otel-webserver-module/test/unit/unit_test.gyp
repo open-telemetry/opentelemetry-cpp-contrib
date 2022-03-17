@@ -8,7 +8,7 @@
           '../../include/util/',
           '$(ANSDK_DIR)/googletest/1.10.0/include',
           '$(ANSDK_DIR)/googletest/1.10.0/include',
-          '$(ANSDK_DIR)/opentelemetry/1.0.0-rc1/include/',
+          '$(ANSDK_DIR)/opentelemetry/1.2.0/include/',
 
           '$(ANSDK_DIR)/apache-log4cxx/0.11.0/include',
           '$(ANSDK_DIR)/apr/1.7.0/include',
@@ -48,11 +48,12 @@
           '$(ANSDK_DIR)/apr/1.7.0/lib/libapr-1.a',
           '$(ANSDK_DIR)/apr-util/1.6.1/lib/libaprutil-1.a',
           '$(ANSDK_DIR)/expat/2.3.0/lib/libexpat.a',
-          '$(ANSDK_DIR)/opentelemetry/1.0.0-rc1/lib/libopentelemetry_common.so',
-          '$(ANSDK_DIR)/opentelemetry/1.0.0-rc1/lib/libopentelemetry_resources.so',
-          '$(ANSDK_DIR)/opentelemetry/1.0.0-rc1/lib/libopentelemetry_trace.so',
-          '$(ANSDK_DIR)/opentelemetry/1.0.0-rc1/lib/libopentelemetry_exporter_ostream_span.so',
-          '$(ANSDK_DIR)/opentelemetry/1.0.0-rc1/lib/libopentelemetry_exporter_otprotocol.so',
+          '$(ANSDK_DIR)/opentelemetry/1.2.0/lib/libopentelemetry_common.so',
+          '$(ANSDK_DIR)/opentelemetry/1.2.0/lib/libopentelemetry_resources.so',
+          '$(ANSDK_DIR)/opentelemetry/1.2.0/lib/libopentelemetry_trace.so',
+          '$(ANSDK_DIR)/opentelemetry/1.2.0/lib/libopentelemetry_otlp_recordable.so',
+          '$(ANSDK_DIR)/opentelemetry/1.2.0/lib/libopentelemetry_exporter_ostream_span.so',
+          '$(ANSDK_DIR)/opentelemetry/1.2.0/lib/libopentelemetry_exporter_otlp_grpc.so',
        ],
 
         'ldflags': [
