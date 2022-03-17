@@ -3,67 +3,58 @@
 # Bash script for testing Apache Server
 
 # Extract the agent
-tar -xf ../build/appdynamics-webserver-sdk-x64-linux.tgz -C /opt
+tar -xf ../build/opentelemetry-webserver-sdk-x64-linux.tgz -C /opt
 
-cd /opt/appdynamics-sdk-native
+cd /opt/opentelemetry-webserver-sdk
 
-echo "Installing Apache Agent"
+echo "Installing webserver module"
 ./install.sh
 
 # Create a appdynamics_agent.conf file
 echo "Copying  agent config to appdynamics_agent file"
 echo '
-LoadFile /opt/appdynamics-sdk-native/sdk_lib/lib/libopentelemetry_common.so
-LoadFile /opt/appdynamics-sdk-native/sdk_lib/lib/libopentelemetry_resources.so
-LoadFile /opt/appdynamics-sdk-native/sdk_lib/lib/libopentelemetry_trace.so
-LoadFile /opt/appdynamics-sdk-native/sdk_lib/lib/libopentelemetry_otlp_recordable.so
-LoadFile /opt/appdynamics-sdk-native/sdk_lib/lib/libopentelemetry_exporter_ostream_span.so
-LoadFile /opt/appdynamics-sdk-native/sdk_lib/lib/libopentelemetry_exporter_otlp_grpc.so
+LoadFile /opt/opentelemetry-webserver-sdk/sdk_lib/lib/libopentelemetry_common.so
+LoadFile /opt/opentelemetry-webserver-sdk/sdk_lib/lib/libopentelemetry_resources.so
+LoadFile /opt/opentelemetry-webserver-sdk/sdk_lib/lib/libopentelemetry_trace.so
+LoadFile /opt/opentelemetry-webserver-sdk/sdk_lib/lib/libopentelemetry_otlp_recordable.so
+LoadFile /opt/opentelemetry-webserver-sdk/sdk_lib/lib/libopentelemetry_exporter_ostream_span.so
+LoadFile /opt/opentelemetry-webserver-sdk/sdk_lib/lib/libopentelemetry_exporter_otlp_grpc.so
 
-#Load the AppDynamics SDK
-LoadFile /opt/appdynamics-sdk-native/sdk_lib/lib/libappdynamics_native_sdk.so
+#Load the ApacheModule SDK
+LoadFile /opt/opentelemetry-webserver-sdk/sdk_lib/lib/libopentelemetry_webserver_sdk.so
+#Load the Apache Module. In this example for Apache 2.2
+LoadModule otel_apache_module /opt/opentelemetry-webserver-sdk/WebServerModule/Apache/libmod_apache_otel22.so
+ApacheModuleEnabled ON
 
-#Load the Apache Agent. In this example for Apache 2.2
-LoadModule appdynamics_module /opt/appdynamics-sdk-native/WebServerAgent/Apache/libmod_appdynamics22.so
+#ApacheModule Otel Exporter details
+ApacheModuleOtelSpanExporter otlp
+ApacheModuleOtelExporterEndpoint docker.for.mac.localhost:4317
 
-AppDynamicsEnabled ON
+# SSL Certificates
+#ApacheModuleOtelSslEnabled ON
+#ApacheModuleOtelSslCertificatePath
 
-#AppDynamics Otel Exporter details
-AppDynamicsOtelSpanExporter OTLP
-AppDynamicsOtelExporterEndpoint example.com:14250
+ApacheModuleOtelSpanProcessor Batch
+ApacheModuleOtelSampler AlwaysOn
+ApacheModuleOtelMaxQueueSize 2048
+ApacheModuleOtelScheduledDelayMillis 3000
+ApacheModuleOtelExportTimeoutMillis 50000
+ApacheModuleOtelMaxExportBatchSize 512
 
-AppDynamicsOtelSpanProcessor Batch
-AppDynamicsOtelSampler AlwaysOn
+ApacheModuleServiceName DemoService
+ApacheModuleServiceNamespace DemoServiceNamespace
+ApacheModuleServiceInstanceId DemoInstanceId
 
-AppDynamicsServiceName cart
-AppDynamicsServiceNamespace e-commerce
-AppDynamicsServiceInstanceId 71410b7dec09
+ApacheModuleResolveBackends ON
+ApacheModuleTraceAsError ON
+#ApacheModuleWebserverContext DemoService DemoServiceNamespace DemoInstanceId
 
-AppDynamicsOtelMaxQueueSize 1024
-AppDynamicsOtelScheduledDelayMillis 3000
-AppDynamicsOtelExportTimeoutMillis 30000
-AppDynamicsOtelMaxExportBatchSize 1024
-
-AppDynamicsResolveBackends ON
-
-AppDynamicsTraceAsError ON
-
-AppDynamicsReportAllInstrumentedModules OFF
-
-AppDynamicsWebserverContext electronics e-commerce 71410b7jan13
-
-AppDynamicsMaskCookie ON
-AppDynamicsCookieMatchPattern PHPSESSID
-AppDynamicsMaskSmUser ON
-
-AppDynamicsDelimiter /
-AppDynamicsSegment 2,3
-AppDynamicsMatchfilter CONTAINS
-AppDynamicsMatchpattern myapp
-' >> /opt/appdynamics_agent.conf
+ApacheModuleSegmentType first
+ApacheModuleSegmentParameter 2
+' > /opt/opentelemetry_module.conf
 
 #Include appdynamics_agent.conf file in httpd.conf
-echo 'Include /opt/appdynamics_agent.conf' >> /etc/httpd/conf/httpd.conf
+cp -f /opt/opentelemetry_module.conf /etc/httpd/conf.d/opentelemetry_module.conf
 
 echo "Starting Apache Server"
 apachectl restart # re-start the server
