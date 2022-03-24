@@ -24,7 +24,7 @@
       'SdkUtils_test.cpp',
       'WSAgent_test.cpp',
       'AgentCore_test.cpp',
-      #'RequestProcessingEngine_test.cpp',
+      'RequestProcessingEngine_test.cpp',
       'SpanNamer_test.cpp',
       'integration_test.cpp',
     ],
