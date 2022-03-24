@@ -422,7 +422,4 @@ TEST(ApiUtils, getSDKInstallPath)
 	appd::core::ApiUtils apiUtils;
 	auto path = apiUtils.getSDKInstallPath();
 	EXPECT_THAT(path.string(), testing::EndsWith("build/linux-x64/opentelemetry-webserver-sdk"));
-
-	auto status = apiUtils.init_boilerplate();
-	EXPECT_EQ(status, APPD_STATUS(no_log_config));
 }
