@@ -18,6 +18,7 @@
 
     'sources': [
       'unit_test.cpp',
+      'ApiUtils_test.cpp',
       'ScopedSpan_test.cpp',
       'ServerSpan_test.cpp',
       'SdkWrapper_test.cpp',

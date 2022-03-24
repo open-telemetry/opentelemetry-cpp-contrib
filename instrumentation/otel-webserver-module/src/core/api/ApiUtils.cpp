@@ -223,15 +223,11 @@ APPD_SDK_STATUS_CODE ApiUtils::ReadSettingsFromReader(
     if(APPD_ISFAIL(status))
         return status;
 
-    status = reader.ReadOptional(
+    reader.ReadOptional(
         std::string(APPD_SDK_ENV_OTEL_PROCESSOR_TYPE), otelProcessorType);
-    if(APPD_ISFAIL(status))
-        return status;
 
-    status = reader.ReadOptional(
+    reader.ReadOptional(
         std::string(APPD_SDK_ENV_OTEL_SAMPLER_TYPE), otelSamplerType);
-    if(APPD_ISFAIL(status))
-        return status;
 
     status = ReadOptionalFromReader(
         reader, std::string(APPD_SDK_ENV_MAX_QUEUE_SIZE), otelMaxQueueSize);
@@ -253,15 +249,12 @@ APPD_SDK_STATUS_CODE ApiUtils::ReadSettingsFromReader(
     if(APPD_ISFAIL(status))
         return status;*/
 
-    status = reader.ReadOptional(
+    reader.ReadOptional(
         std::string(APPD_SDK_ENV_SEGMENT_TYPE), segmentType);
-    if(APPD_ISFAIL(status))
-        return status;
 
-    status = reader.ReadOptional(
+    reader.ReadOptional(
         std::string(APPD_SDK_ENV_SEGMENT_PARAMETER), segmentParameter);
-    if(APPD_ISFAIL(status))
-        return status;
+
 
     tenantConfig.setServiceNamespace(serviceNamespace);
     tenantConfig.setServiceName(serviceName);
@@ -462,7 +455,7 @@ APPD_SDK_STATUS_CODE PassedEnvinronmentReader::ReadMandatory(
     if(value.empty())
     {
        LOG4CXX_ERROR(ApiUtils::apiLogger, boost::format("Environment variable %1% must be non-empty") % varName.c_str());
-       return APPD_STATUS(unspecified_environment_variable);
+       return APPD_STATUS(environment_variable_invalid_value);
     }
 
     result = value;
