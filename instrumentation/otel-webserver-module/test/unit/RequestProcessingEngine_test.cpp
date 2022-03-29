@@ -53,13 +53,14 @@ MATCHER_P(HasMapVal, value, "") {
 	using namespace opentelemetry;
 	appd::core::sdkwrapper::OtelKeyValueMap argkeyValueMap = arg;
 	bool valueMatches = true;
-	for(auto argKey:argkeyValueMap){
+	for(auto &argKey:argkeyValueMap){
 		
 		auto argkeyValue = argKey.second;
 		auto keyValue = argkeyValue;
+		auto itr = value.find(argKey.first);
 
-		if(value.find(argKey.first) != value.end()){
-			keyValue=value.find(argKey.first)->second;
+		if(itr != value.end()){
+			keyValue=itr->second;
 		}
 		else{
 			valueMatches=false;
@@ -70,26 +71,26 @@ MATCHER_P(HasMapVal, value, "") {
 			valueMatches=false;
 			break;
 		}
+
 /* Only for data types have been covered pertaining to this Test but if needed more if-else for other data
    types have to be added*/
-		if (nostd::holds_alternative<int64_t>(keyValue))
-    {	
+
+		if (nostd::holds_alternative<int64_t>(keyValue)){	
     		if(nostd::get<int64_t>(argkeyValue) != nostd::get<int64_t>(keyValue)){
     			valueMatches = false;
     		}
     }
-    if (nostd::holds_alternative<nostd::string_view>(keyValue)){
+    else if (nostd::holds_alternative<nostd::string_view>(keyValue)){
     		
     		if(nostd::get<nostd::string_view>(argkeyValue) != nostd::get<nostd::string_view>(keyValue)){
     			  valueMatches = false;	
     		}	
     }
-    if (nostd::holds_alternative<int32_t>(keyValue))
-    {
+    else if (nostd::holds_alternative<int32_t>(keyValue)){
     		if(nostd::get<int32_t>(argkeyValue) != nostd::get<int32_t>(keyValue))
     			valueMatches = false;
     }
-    if (nostd::holds_alternative<bool>(keyValue))
+    else if (nostd::holds_alternative<bool>(keyValue))
     {
     		if(nostd::get<bool>(argkeyValue) != nostd::get<bool>(keyValue))
     			valueMatches = false;
@@ -103,8 +104,8 @@ MATCHER_P(HasMapVal, value, "") {
 MATCHER_P(HasIntValue, value, "") {
   return opentelemetry::nostd::get<int>(arg) == value;
 }
-MATCHER_P(HasLongIntValue, value, "") 
-{
+
+MATCHER_P(HasLongIntValue, value, "") {
 	
 	return opentelemetry::nostd::get<int64_t>(arg) == value;
 }
@@ -134,7 +135,6 @@ TEST(TestRequestProcessingEngine, StartRequest)
   	span.reset(new MockScopedSpan);
 
 	// sdkwrapper's create span function should be called
-  //using testing::_;
 	EXPECT_CALL(*sdkWrapper, CreateSpan("dummy_span",
 		appd::core::sdkwrapper::SpanKind::SERVER,
 		HasMapVal(keyValueMap),
@@ -256,7 +256,7 @@ TEST(TestRequestProcessingEngine, StartInteraction)
 	using testing::_;
 	EXPECT_CALL(*sdkWrapper, CreateSpan("module_phase",
 		appd::core::sdkwrapper::SpanKind::CLIENT,
-		_, emptyHeaders)).
+		HasMapVal(keyValueMap), emptyHeaders)).
 	WillOnce(Return(span));
 
 	// call to populatePropagationHeader of sdkWrapper
