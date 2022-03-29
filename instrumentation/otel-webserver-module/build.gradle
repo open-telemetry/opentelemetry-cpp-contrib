@@ -49,7 +49,6 @@ project.ext {
     apache22Version = "2.2.31"
     apache24Version = "2.4.23"
 
-    boostDir = "${modDepDir}/boost/1.55.0"
     libraryStageDir = "${platBuildDir}/opentelemetry-webserver-sdk"
     apacheStageDir = "${libraryStageDir}/WebServerModule/Apache"
 
@@ -231,22 +230,22 @@ task bundleAprSources {
         }
 
         copy {
-            from "${buildDir}/apr-1.5.2"
+            from "${buildDir}/apr-1.7.0"
             into "${platBuildDir}/httpd-${apache22Version}/srclib/apr"
         }
 
         copy {
-            from "${buildDir}/apr-1.5.2"
+            from "${buildDir}/apr-1.7.0"
             into "${platBuildDir}/httpd-${apache24Version}/srclib/apr"
         }
 
         copy {
-            from "${buildDir}/apr-util-1.5.4"
+            from "${buildDir}/apr-util-1.6.1"
             into "${platBuildDir}/httpd-${apache22Version}/srclib/apr-util"
         }
 
         copy {
-            from "${buildDir}/apr-util-1.5.4"
+            from "${buildDir}/apr-util-1.6.1"
             into "${platBuildDir}/httpd-${apache24Version}/srclib/apr-util"
         }
     }
