@@ -48,9 +48,66 @@ MATCHER_P(HasStringVal, value, "") {
   return opentelemetry::nostd::get<opentelemetry::nostd::string_view>(arg) == value;
 }
 
+MATCHER_P(HasMapVal, value, "") {
+
+	using namespace opentelemetry;
+	appd::core::sdkwrapper::OtelKeyValueMap argkeyValueMap = arg;
+	bool valueMatches = true;
+	for(auto &argKey:argkeyValueMap){
+		
+		auto argkeyValue = argKey.second;
+		auto keyValue = argkeyValue;
+		auto itr = value.find(argKey.first);
+
+		if(itr != value.end()){
+			keyValue=itr->second;
+		}
+		else{
+			valueMatches=false;
+			break;
+		}
+
+		if(keyValue.index()!=argkeyValue.index()){
+			valueMatches=false;
+			break;
+		}
+
+/* Only for data types have been covered pertaining to this Test but if needed more if-else for other data
+   types have to be added*/
+
+		if (nostd::holds_alternative<int64_t>(keyValue)){	
+    		if(nostd::get<int64_t>(argkeyValue) != nostd::get<int64_t>(keyValue)){
+    			valueMatches = false;
+    		}
+    }
+    else if (nostd::holds_alternative<nostd::string_view>(keyValue)){
+    		
+    		if(nostd::get<nostd::string_view>(argkeyValue) != nostd::get<nostd::string_view>(keyValue)){
+    			  valueMatches = false;	
+    		}	
+    }
+    else if (nostd::holds_alternative<int32_t>(keyValue)){
+    		if(nostd::get<int32_t>(argkeyValue) != nostd::get<int32_t>(keyValue))
+    			valueMatches = false;
+    }
+    else if (nostd::holds_alternative<bool>(keyValue))
+    {
+    		if(nostd::get<bool>(argkeyValue) != nostd::get<bool>(keyValue))
+    			valueMatches = false;
+    }
+	}
+
+	return valueMatches;
+
+}
 
 MATCHER_P(HasIntValue, value, "") {
   return opentelemetry::nostd::get<int>(arg) == value;
+}
+
+MATCHER_P(HasLongIntValue, value, "") {
+	
+	return opentelemetry::nostd::get<int64_t>(arg) == value;
 }
 
 MATCHER_P(HasBoolValue, value, "") {
@@ -72,7 +129,7 @@ TEST(TestRequestProcessingEngine, StartRequest)
 	payload.set_request_protocol("GET");
 
 	appd::core::sdkwrapper::OtelKeyValueMap keyValueMap;
-  	keyValueMap["request_protocol"] = "GET";
+  keyValueMap["request_protocol"] = (opentelemetry::nostd::string_view)"GET";
 
   	std::shared_ptr<appd::core::sdkwrapper::IScopedSpan> span;
   	span.reset(new MockScopedSpan);
@@ -80,7 +137,7 @@ TEST(TestRequestProcessingEngine, StartRequest)
 	// sdkwrapper's create span function should be called
 	EXPECT_CALL(*sdkWrapper, CreateSpan("dummy_span",
 		appd::core::sdkwrapper::SpanKind::SERVER,
-		keyValueMap,
+		HasMapVal(keyValueMap),
 		payload.get_http_headers())).
 	WillOnce(Return(span));
 
@@ -151,9 +208,8 @@ TEST(TestRequestProcessingEngine, EndRequest)
 	EXPECT_CALL(*getMockSpan(interactionSpan1), End()).
 	Times(1);
 
-	EXPECT_CALL(*getMockSpan(rootSpan), AddAttribute("error", HasBoolValue(true))).Times(1);
-	EXPECT_CALL(*getMockSpan(rootSpan), AddAttribute("error_description", HasStringVal("error_msg"))).Times(1);
-
+	EXPECT_CALL(*getMockSpan(rootSpan), SetStatus(appd::core::sdkwrapper::StatusCode::Error, "error_msg")).Times(1);
+	
 	EXPECT_CALL(*getMockSpan(rootSpan), End()).
 	Times(1);
 
@@ -197,9 +253,10 @@ TEST(TestRequestProcessingEngine, StartInteraction)
 	std::unordered_map<std::string, std::string> emptyHeaders;
 
 	// sdkwrapper's create span function should be called
+	using testing::_;
 	EXPECT_CALL(*sdkWrapper, CreateSpan("module_phase",
 		appd::core::sdkwrapper::SpanKind::CLIENT,
-		keyValueMap, emptyHeaders)).
+		HasMapVal(keyValueMap), emptyHeaders)).
 	WillOnce(Return(span));
 
 	// call to populatePropagationHeader of sdkWrapper
@@ -267,21 +324,15 @@ TEST(TestRequestProcessingEngine, EndInteraction)
 	payload.backendType = "backend_type";
 
 	auto span = rContext->lastActiveInteraction();
-  EXPECT_CALL(*(MockScopedSpan*)(span.get()), AddAttribute("error", HasBoolValue(true))).
+  EXPECT_CALL(*(MockScopedSpan*)(span.get()), SetStatus(appd::core::sdkwrapper::StatusCode::Error, "error_msg")).
      Times(1);
-  EXPECT_CALL(*(MockScopedSpan*)(span.get()), AddAttribute("error_code", HasIntValue(403))).
+  EXPECT_CALL(*(MockScopedSpan*)(span.get()), AddAttribute("error_code", HasLongIntValue(403))).
      Times(1);
 
-
-	// attributes should be added
-	std::unordered_map<std::string, std::string> keyVals = {
-		{"error_msg", "error_msg"}, {"backend_name", "backend_one"}, {"backend_type", "backend_type"}
-	};
-
-	for (auto& keyVal : keyVals) {
-		EXPECT_CALL(*(MockScopedSpan*)(span.get()), AddAttribute(keyVal.first, HasStringValue(keyVal.second))).
-		  Times(1);
-	}
+  EXPECT_CALL(*(MockScopedSpan*)(span.get()), AddAttribute("backend_name", HasStringVal("backend_one"))).
+                  Times(1);
+  EXPECT_CALL(*(MockScopedSpan*)(span.get()), AddAttribute("backend_type", HasStringVal("backend_type"))).
+                  Times(1);
 
 	// interactionSpan's End should be called.
 	EXPECT_CALL(*(MockScopedSpan*)(span.get()), End()).
