@@ -1,4 +1,3 @@
-	&& gpg --keyserver ha.pool.sks-keyservers.net --recv-keys B42F6819007
 cd /otel-webserver-module
 ./gradlew assembleApacheModule -PbuildType=debug
 

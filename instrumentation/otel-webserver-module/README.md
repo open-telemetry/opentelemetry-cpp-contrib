@@ -36,8 +36,8 @@ Monitoring individual modules is crucial to the instrumentation of Apache web se
 | Library                                        | Present Version |
 | ---------------------------------------------- | -----------     |
 | Httpd                                          | 2.4.23, 2.2.31          |
-| Apr                                            | 1.5.2           |
-| Apr-util                                       | 1.5.4           |
+| Apr                                            | 1.7.0           |
+| Apr-util                                       | 1.6.1           |
 
 ### Configuration
 | Configuration Directives                       |  Default Values |  Remarks                                   |
