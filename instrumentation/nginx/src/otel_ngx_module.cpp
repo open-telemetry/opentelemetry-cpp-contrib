@@ -80,8 +80,10 @@ static void NgxNormalizeAndCopyString(u_char* dst, ngx_str_t str) {
 }
 
 static void OtelCaptureHeaders(nostd::shared_ptr<opentelemetry::trace::Span> span, ngx_str_t keyPrefix, ngx_list_t *headers,
+#if (NGX_PCRE)
                         ngx_regex_t *sensitiveHeaderNames, ngx_regex_t *sensitiveHeaderValues,
-                        nostd::span<ngx_table_elt_t*> excludedHeaders = {}) {
+#endif
+                        nostd::span<ngx_table_elt_t*> excludedHeaders) {
   for (ngx_list_part_t *part = &headers->part; part != nullptr; part = part->next) {
     ngx_table_elt_t *header = (ngx_table_elt_t*) part->elts;
     for (ngx_uint_t i = 0; i < part->nelts; ++i) {
@@ -374,8 +376,12 @@ nostd::string_view GetNgxServerName(const ngx_http_request_t* req) {
 static bool IsOtelEnabled(ngx_http_request_t* req) {
   OtelNgxLocationConf* locConf = GetOtelLocationConf(req);
   if (locConf->enabled) {
+#if (NGX_PCRE)
     int ovector[3];
     return locConf->ignore_paths == nullptr || ngx_regex_exec(locConf->ignore_paths, &req->unparsed_uri, ovector, 0) < 0;
+#else
+    return true;
+#endif
   } else {
     return false;
   }
@@ -455,7 +461,9 @@ ngx_int_t StartNgxSpan(ngx_http_request_t* req) {
   if (locConf->captureHeaders) {
     ngx_table_elt_t* excludedHeaders[] = {req->headers_in.host, req->headers_in.user_agent};
     OtelCaptureHeaders(context->request_span, ngx_string("http.request.header."), &req->headers_in.headers,
+#if (NGX_PCRE)
                        locConf->sensitiveHeaderNames, locConf->sensitiveHeaderValues,
+#endif
                        {excludedHeaders, 2});
   }
 
@@ -509,7 +517,10 @@ ngx_int_t FinishNgxSpan(ngx_http_request_t* req) {
 
   if (locConf->captureHeaders) {
     OtelCaptureHeaders(span, ngx_string("http.response.header."), &req->headers_out.headers,
-                       locConf->sensitiveHeaderNames, locConf->sensitiveHeaderValues);
+#if (NGX_PCRE)
+                       locConf->sensitiveHeaderNames, locConf->sensitiveHeaderValues,
+#endif
+                       {});
   }
 
   AddScriptAttributes(span.get(), GetOtelMainConf(req)->scriptAttributes, req);
