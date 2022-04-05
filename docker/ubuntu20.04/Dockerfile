@@ -155,6 +155,7 @@ RUN rm -rf apr-util-${APRUTIL_VERSION} && rm -rf apr-util-${APRUTIL_VERSION}.tar
     && rm -rf httpd-2.4.23.tar.gz && rm -rf httpd-2.2.31.tar.gz \
     && rm -rf grpc
 
+RUN apt-get install libpcre3 libpcre3-dev -y
 # Build Webserver Module
 RUN git clone https://github.com/open-telemetry/opentelemetry-cpp-contrib.git \
     && cp -r /opentelemetry-cpp-contrib/instrumentation/otel-webserver-module . \
