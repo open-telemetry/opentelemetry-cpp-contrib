@@ -64,7 +64,7 @@
           '../include/util',
           '../include/core',
           '$(ANSDK_DIR)/opentelemetry/1.2.0/include/',
-	        '$(BOOST_INCLUDE)'
+          '$(BOOST_INCLUDE)'
         ],
 
         'ldflags': [
