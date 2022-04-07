@@ -33,7 +33,6 @@
     'conditions': [
       ['OS=="linux"', {
         'cflags': [
-          #'-fvisibility=hidden -fvisibility-inlines-hidden -pthread -fPIC',
           '$(COMPILER_FLAGS)',
           '-pthread -fPIC',
           '-std=c++11',
@@ -43,39 +42,37 @@
 
         'library_dirs': [
         ],
-
         'libraries': [
           '$(ANSDK_DIR)/apr/1.7.0/lib/libapr-1.a',
           '$(ANSDK_DIR)/apr-util/1.6.1/lib/libaprutil-1.a',
           '$(ANSDK_DIR)/expat/2.3.0/lib/libexpat.a',
           '$(ANSDK_DIR)/apache-log4cxx/0.11.0/lib/liblog4cxx.a',
-          '$(ANSDK_DIR)/boost/1.75.0/lib/libboost_filesystem.a',
-          '$(ANSDK_DIR)/boost/1.75.0/lib/libboost_system.a',
           '$(ANSDK_DIR)/opentelemetry/1.2.0/lib/libopentelemetry_common.so',
           '$(ANSDK_DIR)/opentelemetry/1.2.0/lib/libopentelemetry_resources.so',
           '$(ANSDK_DIR)/opentelemetry/1.2.0/lib/libopentelemetry_trace.so',
           '$(ANSDK_DIR)/opentelemetry/1.2.0/lib/libopentelemetry_otlp_recordable.so',
           '$(ANSDK_DIR)/opentelemetry/1.2.0/lib/libopentelemetry_exporter_ostream_span.so',
-          '$(ANSDK_DIR)/opentelemetry/1.2.0/lib/libopentelemetry_exporter_otlp_grpc.so'
+          '$(ANSDK_DIR)/opentelemetry/1.2.0/lib/libopentelemetry_exporter_otlp_grpc.so',
+          '$(BOOST_LIB)',
+          '$(LINKER_FLAGS)',
+          '$(LIBRARY_FLAGS)',
         ],
 
         'include_dirs': [
           '../linux-fixed-headers',
           '$(ANSDK_DIR)/apache-log4cxx/0.11.0/include',
-          '$(ANSDK_DIR)/boost/1.75.0/include',
           '../include/util',
           '../include/core',
           '$(ANSDK_DIR)/opentelemetry/1.2.0/include/',
+          '$(BOOST_INCLUDE)'
         ],
 
         'ldflags': [
-          '$(LINKER_FLAGS)',
-          '-lrt -lpthread -ldl -lz -lcrypt',
           '-Wl,--exclude-libs=ALL',
           '-Wl,--gc-sections',
           '-Wl,-z,defs',
-        ],
-      }],
+        ]
+     }],
 
       ['OS=="win"', {
         'default_configuration': 'Debug_x64',

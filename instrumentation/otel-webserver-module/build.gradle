@@ -2,6 +2,7 @@ apply plugin: 'cpp'
 apply from: 'common.gradle'
 
 def coverageEnabled = System.getenv('enableCoverage')
+def target_system = System.getProperty('targetSystem') ?: 'centos6'
 
 project.ext {
     // To do a 32-bit build, pass "-Dos.arch=x86"
@@ -54,10 +55,18 @@ project.ext {
 
     coverageCompilerFlags = '-g -fprofile-arcs -ftest-coverage'
     coverageLinkerFlags = '-lgcov --coverage'
+    libraryFlags = '-lrt -lpthread -ldl -lz -lcrypt'
 
     COVERAGE_DIR = "${platBuildDir}/coverage"
     LCOV_RAW_INFO = "${COVERAGE_DIR}/lcov-raw.info"
     LCOV_INFO = "${COVERAGE_DIR}/lcov.info"
+
+    BOOST_INCLUDE = "${modDepDir}/boost/1.75.0/include"
+    BOOST_LIB = "${modDepDir}/boost/1.75.0/lib/libboost_filesystem.a ${modDepDir}/boost/1.75.0/lib/libboost_system.a"
+    if (target_system == "ubuntu") {
+	   BOOST_LIB = '-lboost_filesystem -lboost_system'
+	   BOOST_INCLUDE = ''
+   }
 }
 
 task extractANSDK(type: Copy) {
@@ -130,6 +139,9 @@ task gypLibrary(type: Exec) {
         ANSDK_DIR: modDepDir,
         COMPILER_FLAGS: (coverageEnabled) ? coverageCompilerFlags : '',
         LINKER_FLAGS: (coverageEnabled) ? coverageLinkerFlags : '',
+        BOOST_LIB: BOOST_LIB,
+        BOOST_INCLUDE: BOOST_INCLUDE,
+        LIBRARY_FLAGS: libraryFlags,
     ]
 
     environment libraryBuildEnvironment
@@ -284,6 +296,7 @@ task gypApacheModule(type: Exec) {
         ANSDK_DIR: modDepDir,
         COMPILER_FLAGS: (coverageEnabled) ? coverageCompilerFlags : '',
         LINKER_FLAGS: (coverageEnabled) ? coverageLinkerFlags : '',
+        LIBRARY_FLAGS: libraryFlags,
     ]
 
     environment apacheBuildEnvironment
@@ -361,7 +374,12 @@ task gypUnitTest(type: Exec) {
 
     ext.testBuildEnvironment = [
         APPD_SDK_LIB_DIR: "${libraryStageDir}/sdk_lib",
-        ANSDK_DIR: modDepDir
+        ANSDK_DIR: modDepDir,
+        BOOST_LIB: BOOST_LIB,
+        BOOST_INCLUDE: BOOST_INCLUDE,
+        GTEST_LIB_DIR: target_system == "ubuntu" ?
+            "${modDepDir}/googletest/1.10.0/lib" : "${modDepDir}/googletest/1.10.0/lib64",
+        LIBRARY_FLAGS: libraryFlags,
     ]
 
     environment testBuildEnvironment
