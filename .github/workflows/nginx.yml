@@ -84,7 +84,7 @@ jobs:
           --cache-from type=local,src=/tmp/.buildx-cache \
           --output type=local,dest=/tmp/otel_ngx .
       - name: upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: otel_ngx_module-${{ matrix.os }}-${{ matrix.nginx-rel }}.so
           path: /tmp/otel_ngx/otel_ngx_module.so
