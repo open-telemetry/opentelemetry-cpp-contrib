@@ -25,7 +25,7 @@
 
 const std::unordered_set<std::string> ExcludedModules::excludedAlways
 {
-    "mod_appdynamics.cpp" // filter out our own mod! else insertHook will infinite loop!
+    "mod_apache_otel.cpp" // filter out our own mod! else insertHook will infinite loop!
 };
 
 std::unordered_set<std::string> ExcludedModules::userSpecified;

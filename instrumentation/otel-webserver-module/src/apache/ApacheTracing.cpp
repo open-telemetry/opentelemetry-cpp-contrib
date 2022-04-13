@@ -29,7 +29,7 @@
 #include "ApacheTracing.h"
 
 #ifdef APLOG_USE_MODULE
-APLOG_USE_MODULE(appdynamics);
+APLOG_USE_MODULE(otel_apache);
 #endif
 
 ApacheTracing::ApacheTraceStates ApacheTracing::m_state = ApacheTracing::ApacheTraceStates::UNINITIALIZED;
