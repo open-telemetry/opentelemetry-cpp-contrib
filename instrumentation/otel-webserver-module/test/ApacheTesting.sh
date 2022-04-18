@@ -1,8 +1,16 @@
 #!/bin/bash
 
-# Bash script for testing Apache Server
+# Bash script for running Apache Server
 
 # Extract the agent
+
+targetSystem=$1
+
+OTelApacheModule="/opt/opentelemetry-webserver-sdk/WebServerModule/Apache/libmod_apache_otel22.so"
+if [ $targetSystem = "ubuntu" ]; then
+	OTelApacheModule="/opt/opentelemetry-webserver-sdk/WebServerModule/Apache/libmod_apache_otel.so"
+fi
+
 tar -xf ../build/opentelemetry-webserver-sdk-x64-linux.tgz -C /opt
 
 cd /opt/opentelemetry-webserver-sdk
@@ -10,8 +18,8 @@ cd /opt/opentelemetry-webserver-sdk
 echo "Installing webserver module"
 ./install.sh
 
-# Create a appdynamics_agent.conf file
-echo "Copying  agent config to appdynamics_agent file"
+# Create a opentelemetry_module.conf file
+echo "Copying  agent config to opentelemetry_module file"
 echo '
 LoadFile /opt/opentelemetry-webserver-sdk/sdk_lib/lib/libopentelemetry_common.so
 LoadFile /opt/opentelemetry-webserver-sdk/sdk_lib/lib/libopentelemetry_resources.so
@@ -23,7 +31,7 @@ LoadFile /opt/opentelemetry-webserver-sdk/sdk_lib/lib/libopentelemetry_exporter_
 #Load the ApacheModule SDK
 LoadFile /opt/opentelemetry-webserver-sdk/sdk_lib/lib/libopentelemetry_webserver_sdk.so
 #Load the Apache Module. In this example for Apache 2.2
-LoadModule otel_apache_module /opt/opentelemetry-webserver-sdk/WebServerModule/Apache/libmod_apache_otel22.so
+LoadModule otel_apache_module '$OTelApacheModule'
 ApacheModuleEnabled ON
 
 #ApacheModule Otel Exporter details
@@ -53,8 +61,19 @@ ApacheModuleSegmentType first
 ApacheModuleSegmentParameter 2
 ' > /opt/opentelemetry_module.conf
 
-#Include appdynamics_agent.conf file in httpd.conf
-cp -f /opt/opentelemetry_module.conf /etc/httpd/conf.d/opentelemetry_module.conf
+targetConfFile='/etc/httpd/conf.d/opentelemetry_module.conf'
+if [ $targetSystem = "ubuntu" ]; then
+	targetConfFile='/etc/apache2/opentelemetry_module.conf'
+fi
+
+rm -f $targetConfFile
+cp -f /opt/opentelemetry_module.conf $targetConfFile
+
+if [ $targetSystem = "ubuntu" ]; then
+	if ! grep -Fxq "Include opentelemetry_module.conf" /etc/apache2/apache2.conf; then
+		echo 'Include opentelemetry_module.conf' >> /etc/apache2/apache2.conf
+	fi
+fi
 
 echo "Starting Apache Server"
 apachectl restart # re-start the server

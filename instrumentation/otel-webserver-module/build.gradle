@@ -413,7 +413,7 @@ task runApacheServer(type: Exec) {
     dependsOn assembleApacheModule
 
     workingDir 'test'
-    commandLine './ApacheTesting.sh'
+    commandLine './ApacheTesting.sh', "${target_system}"
 }
 
 // Code Coverage

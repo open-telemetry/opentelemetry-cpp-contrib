@@ -29,7 +29,7 @@ RUN apt-get install -y \
     automake                                \
     libtool                                 \
     default-jre                             
-     
+
 # The following arguments would be passed from docker-compose.yml
 ARG GRPC_VERSION="1.36.4"
 ARG OPENTELEMETRY_VERSION="1.2.0"
@@ -156,10 +156,24 @@ RUN rm -rf apr-util-${APRUTIL_VERSION} && rm -rf apr-util-${APRUTIL_VERSION}.tar
     && rm -rf grpc
 
 RUN apt-get install libpcre3 libpcre3-dev -y
+RUN apt-get install apache2 -y && a2enmod proxy && a2enmod proxy_http \
+    && a2enmod proxy_balancer && a2enmod dav
+
 # Build Webserver Module
-RUN git clone https://github.com/open-telemetry/opentelemetry-cpp-contrib.git \
-    && cp -r /opentelemetry-cpp-contrib/instrumentation/otel-webserver-module . \
-    && cp -r /dependencies /otel-webserver-module/ \
+COPY . /otel-webserver-module
+
+RUN cp -r /dependencies /otel-webserver-module/ \
     && cp -r /build-dependencies /otel-webserver-module/ \
-    && cd otel-webserver-module 
-#    && ./gradlew assembleApacheModule
+    && cd otel-webserver-module \
+    && ./gradlew assembleApacheModule -DtargetSystem=ubuntu
+
+RUN cd /otel-webserver-module/build \
+    && tar -xf opentelemetry-webserver-sdk-x64-linux.tgz \
+    && mv -f opentelemetry-webserver-sdk /opt/ \
+    && cd ../ \
+    && cp opentelemetry_module.conf /etc/apache2/opentelemetry_module.conf \
+    && sed -i "s/libmod_apache_otel22.so/libmod_apache_otel.so/g" /etc/apache2/opentelemetry_module.conf \
+    && echo 'Include opentelemetry_module.conf' >> /etc/apache2/apache2.conf \
+    && cd /opt/opentelemetry-webserver-sdk \
+    && ./install.sh \
+    && cd /

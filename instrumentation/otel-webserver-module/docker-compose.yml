@@ -3,22 +3,40 @@ networks:
     default:
         name: webserver-network
 services:
-    webserver:
+    webserver_centos:
         build:
             context: .
             dockerfile: Dockerfile
-        image: apache
+        image: apache_centos
+        profiles:
+            - default
         hostname: webserver
-        container_name: webserver
+        container_name: webserver_centos
         command: bash -c " httpd -k start && tail -f /dev/null "
         ports:
             - "8000:80"
+    webserver_ubuntu:
+        build:
+            context: .
+            dockerfile: docker/ubuntu20.04/Dockerfile
+        image: apache_ubuntu
+        hostname: webserver
+        container_name: webserver_ubuntu
+        command: bash -c " tail -f /dev/null "
+        profiles:
+            - ubuntu20.04
+        ports:
+            - "9000:80"
         depends_on:
             - otel-collector
+
 # Collector
     otel-collector:
         image: otel/opentelemetry-collector:latest
         container_name: collector
+        profiles:
+            - default
+            - ubuntu20.04
         command: ["--config=/etc/otel-config.yml", "--log-level=DEBUG", "${OTELCOL_ARGS}"]
         volumes:
             - ./otel-config.yml:/etc/otel-config.yml
@@ -33,6 +51,9 @@ services:
     zipkin:
         image: openzipkin/zipkin:latest
         container_name: zipkin
+        profiles:
+            - default
+            - ubuntu20.04
         ports:
             - "9411:9411"
             - "9410:9410"
