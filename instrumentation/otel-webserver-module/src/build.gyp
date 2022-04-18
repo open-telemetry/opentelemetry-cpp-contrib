@@ -37,7 +37,7 @@
           '-pthread -fPIC',
           '-std=c++11',
           '-g',
-          '-O2 -D_FORTIFY_SOURCE=2',
+          '-O1 -D_FORTIFY_SOURCE=1',
         ],
 
         'library_dirs': [
