@@ -37,7 +37,7 @@
               'cflags': [
                 '$(COMPILER_FLAGS)',
                 '-fvisibility=hidden -fvisibility-inlines-hidden -fPIC',
-                '-pipe -Wall -Wp,-O2 -D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector',
+                '-pipe -Wall -Wp,-O1 -D_FORTIFY_SOURCE=1 -fexceptions -fstack-protector',
                 '--param=ssp-buffer-size=4 -mtune=generic -fno-strict-aliasing',
                 '-Wno-unused-local-typedefs',
                 '-std=c++0x $(ARCH_FLAG)',
@@ -69,7 +69,7 @@
         'cflags': [
           '$(COMPILER_FLAGS)',
           '-fvisibility=hidden -fvisibility-inlines-hidden -fPIC',
-          '-pipe -Wall -Wp,-O2 -D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector',
+          '-pipe -Wall -Wp,-O1 -D_FORTIFY_SOURCE=1 -fexceptions -fstack-protector',
           '--param=ssp-buffer-size=4 -mtune=generic -fno-strict-aliasing',
           '-Wno-unused-local-typedefs',
           '-std=c++0x',
