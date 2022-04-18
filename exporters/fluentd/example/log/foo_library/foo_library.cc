@@ -10,7 +10,7 @@ namespace nostd = opentelemetry::nostd;
 namespace {
 nostd::shared_ptr<logs::Logger> get_logger() {
   auto provider = logs::Provider::GetLoggerProvider();
-  return provider->GetLogger("foo_library");
+  return provider->GetLogger("foo_library", "", "foo_library");
 }
 
 void f1() {
