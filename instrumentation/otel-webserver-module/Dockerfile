@@ -219,19 +219,20 @@ RUN mkdir build-dependencies \
     && mv -f httpd-2.4.23 build-dependencies
 
 # Build Webserver Module
-RUN git clone https://github.com/open-telemetry/opentelemetry-cpp-contrib.git \
-    && cp -r /opentelemetry-cpp-contrib/instrumentation/otel-webserver-module . \
-    && cp -r /dependencies /otel-webserver-module/ \
+COPY . /otel-webserver-module
+
+RUN cp -r /dependencies /otel-webserver-module/ \
     && cp -r /build-dependencies /otel-webserver-module/ \
     && cd otel-webserver-module \
-    && ./gradlew assembleApacheModule
+    && ./gradlew assembleApacheModule -DtargetSystem=centos
 
 # install webserver module
 RUN cd /otel-webserver-module/build \
     && tar -xf opentelemetry-webserver-sdk-x64-linux.tgz \
     && mv -f opentelemetry-webserver-sdk /opt/ \
     && cd ../ \
-    && cp opentelemetry_module.conf /etc/httpd/conf.d/ \
+    && cp opentelemetry_module.conf /etc/httpd/conf/ \
+    && echo 'Include conf/opentelemetry_module.conf' >> /etc/httpd/conf/httpd.conf \
     && cd /opt/opentelemetry-webserver-sdk \
     && ./install.sh \
     && cd /
