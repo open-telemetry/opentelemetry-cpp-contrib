@@ -54,12 +54,9 @@ RUN wget http://www.python.org/ftp/python/2.7.8/Python-2.7.8.tar.xz \
 
 # install gosu for easy step-down from root (from https://github.com/tianon/gosu/blob/master/INSTALL.md#from-centos)
 ENV GOSU_VERSION=1.10
-#RUN gpg --keyserver pgp.mit.edu --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 \
-#    && curl -o /usr/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64" \
-#    && curl -o /usr/bin/gosu.asc -SL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64.asc" \
-#    && gpg --verify /usr/bin/gosu.asc \
-#    && rm /usr/bin/gosu.asc \
-#    && rm -r /root/.gnupg/ \
+download/${GOSU_VERSION}/gosu-amd64" \
+download/${GOSU_VERSION}/gosu-amd64.asc" \
+
 RUN curl -o /usr/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64" \
     && chmod +x /usr/bin/gosu \
     # Verify that the binary works
