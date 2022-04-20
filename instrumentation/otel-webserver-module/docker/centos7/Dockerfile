@@ -217,12 +217,12 @@ RUN mkdir -p dependencies/googletest/1.10.0/ \
 
 #Installing Apache and apr source code
 RUN mkdir build-dependencies \
-    && wget --no-check-certificate https://archive.apache.org/dist/apr/apr-1.5.2.tar.gz \
-    && tar -xf apr-1.5.2.tar.gz \
-    && mv -f apr-1.5.2 build-dependencies \
-    && wget --no-check-certificate https://archive.apache.org/dist/apr/apr-util-1.5.4.tar.gz \
-    && tar -xf apr-util-1.5.4.tar.gz \
-    && mv -f apr-util-1.5.4 build-dependencies \
+    && wget --no-check-certificate https://archive.apache.org/dist/apr/apr-1.7.0.tar.gz \
+    && tar -xf apr-1.7.0.tar.gz \
+    && mv -f apr-1.7.0 build-dependencies \
+    && wget --no-check-certificate https://archive.apache.org/dist/apr/apr-util-1.6.1.tar.gz \
+    && tar -xf apr-util-1.6.1.tar.gz \
+    && mv -f apr-util-1.6.1 build-dependencies \
     && wget --no-check-certificate http://archive.apache.org/dist/httpd/httpd-2.2.31.tar.gz \
     && tar -xf httpd-2.2.31.tar.gz \
     && mv -f httpd-2.2.31 build-dependencies \
@@ -251,7 +251,7 @@ RUN cd /otel-webserver-module/build \
 # Remove unwanted files
 RUN rm -rf grpc && rm -rf autoconf-2.68 && rm -rf automake-1.16.3 && rm -rf cmake-3.20.0-linux-x86_64 \
     && rm -rf libtool-2.4.6 && rm -rf Python-2.7.8 \
-    && rm -f apr-1.5.2.tar.gz && rm -f apr-util-1.5.4.tar.gz \
+    && rm -f apr-1.7.0.tar.gz && rm -f apr-util-1.6.1.tar.gz \
     && rm -f httpd-2.2.31.tar.gz && rm -f httpd-2.4.23.tar.gz
 
 COPY entrypoint.sh /usr/local/bin/
