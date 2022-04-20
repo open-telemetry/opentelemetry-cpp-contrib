@@ -54,8 +54,6 @@ RUN wget http://www.python.org/ftp/python/2.7.8/Python-2.7.8.tar.xz \
 
 # install gosu for easy step-down from root (from https://github.com/tianon/gosu/blob/master/INSTALL.md#from-centos)
 ENV GOSU_VERSION=1.10
-download/${GOSU_VERSION}/gosu-amd64" \
-download/${GOSU_VERSION}/gosu-amd64.asc" \
 
 RUN curl -o /usr/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64" \
     && chmod +x /usr/bin/gosu \
