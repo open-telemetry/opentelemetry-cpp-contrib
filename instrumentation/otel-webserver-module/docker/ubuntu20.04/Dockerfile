@@ -19,16 +19,12 @@ RUN apt-get install -qq -y --ignore-missing \
     cmake                                   
 
 RUN apt-get install -y \
-    libboost-system-dev                     \
-    libboost-filesystem-dev 
-
-RUN apt-get install -y \
     lcov    \
     m4                                      \
     autoconf                                \
     automake                                \
     libtool                                 \
-    default-jre                             
+    default-jre
 
 # The following arguments would be passed from docker-compose.yml
 ARG GRPC_VERSION="1.36.4"
@@ -74,7 +70,7 @@ RUN mkdir -p dependencies/opentelemetry/${OPENTELEMETRY_VERSION}/lib \
     && cd build \
     && cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=ON -DWITH_OTLP=ON -DCMAKE_INSTALL_PREFIX=/dependencies/opentelemetry/${OPENTELEMETRY_VERSION} \
     && cmake --build . --target all \
-    && cd .. \ 
+    && cd .. \
     && find . -name "*.so" -type f -exec cp {} /dependencies/opentelemetry/${OPENTELEMETRY_VERSION}/lib/ \; \
     && cp build/libopentelemetry_proto.a /dependencies/opentelemetry/${OPENTELEMETRY_VERSION}/lib \
     && cp -r api/include/ /dependencies/opentelemetry/${OPENTELEMETRY_VERSION}/ \
@@ -153,11 +149,20 @@ RUN mkdir build-dependencies \
 
 RUN rm -rf apr-util-${APRUTIL_VERSION} && rm -rf apr-util-${APRUTIL_VERSION}.tar.gz \
     && rm -rf httpd-2.4.23.tar.gz && rm -rf httpd-2.2.31.tar.gz \
-    && rm -rf grpc
+    && rm -rf grpc \
+    && rm -rf apr-${APR_VERSION} && rm -rf apr-${APR_VERSION}.tar.gz
 
 RUN apt-get install libpcre3 libpcre3-dev -y
 RUN apt-get install apache2 -y && a2enmod proxy && a2enmod proxy_http \
     && a2enmod proxy_balancer && a2enmod dav
+
+#Build and install boost
+RUN wget https://boostorg.jfrog.io/artifactory/main/release/${BOOST_VERSION}/source/${BOOST_FILENAME}_rc1.tar.gz \
+    && tar -xvf ${BOOST_FILENAME}_rc1.tar.gz \
+    && cd ${BOOST_FILENAME} \
+    && ./bootstrap.sh --with-libraries=filesystem,system --prefix=/dependencies/boost/${BOOST_VERSION}/ \
+    && ./b2 install define=BOOST_ERROR_CODE_HEADER_ONLY link=static threading=multi cxxflags="-fvisibility=hidden -fPIC" cflags="-fvisibility=hidden -fPIC" \
+    && cd .. && rm -rf ${BOOST_FILENAME} && rm ${BOOST_FILENAME}_rc1.tar.gz
 
 # Build Webserver Module
 COPY . /otel-webserver-module

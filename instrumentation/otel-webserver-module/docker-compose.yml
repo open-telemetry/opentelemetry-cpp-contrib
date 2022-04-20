@@ -22,7 +22,7 @@ services:
         image: apache_ubuntu
         hostname: webserver
         container_name: webserver_ubuntu
-        command: bash -c " tail -f /dev/null "
+        command: bash -c "apache2ctl -k start && tail -f /dev/null "
         profiles:
             - ubuntu20.04
         ports:

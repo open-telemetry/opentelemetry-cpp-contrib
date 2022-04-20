@@ -63,10 +63,6 @@ project.ext {
 
     BOOST_INCLUDE = "${modDepDir}/boost/1.75.0/include"
     BOOST_LIB = "${modDepDir}/boost/1.75.0/lib/libboost_filesystem.a ${modDepDir}/boost/1.75.0/lib/libboost_system.a"
-    if (target_system == "ubuntu") {
-	   BOOST_LIB = '-lboost_filesystem -lboost_system'
-	   BOOST_INCLUDE = ''
-   }
 }
 
 task extractANSDK(type: Copy) {
