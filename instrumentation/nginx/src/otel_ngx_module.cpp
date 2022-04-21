@@ -412,7 +412,7 @@ TraceContext* CreateTraceContext(ngx_http_request_t* req, ngx_http_variable_valu
   cleanup->handler = TraceContextCleanup;
 
   std::unordered_map<ngx_http_request_t*, TraceContext*>* map;
-  if (req->parent) {
+  if (req->parent && val->data) {
     // Subrequests will already have the map created so just retrieve it
     map = (std::unordered_map<ngx_http_request_t*, TraceContext*>*)val->data;
   } else {
