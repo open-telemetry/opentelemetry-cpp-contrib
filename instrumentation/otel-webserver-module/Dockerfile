@@ -106,13 +106,12 @@ RUN git clone https://github.com/grpc/grpc \
 RUN mkdir -p dependencies
 
 # install boost version 
-RUN mkdir -p dependencies/boost/${BOOST_VERSION}/ \
-    && git clone https://github.com/boostorg/boost \
-    && cd boost/ && git checkout tags/boost-${BOOST_VERSION} -b boost-${BOOST_VERSION} \
-    && git submodule update --init --recursive \
-    && ./bootstrap.sh --with-libraries=filesystem,system --prefix=/dependencies/boost/${BOOST_VERSION} \
-    && ./b2 install define=BOOST_ERROR_CODE_HEADER_ONLY link=static threading=multi cxxflags="-fvisibility=hidden -fPIC -D_GLIBCXX_USE_CXX11_ABI=0" cflags="-fvisibility=hidden -fPIC" \
-    && cd .. && rm -rf boost
+RUN wget https://boostorg.jfrog.io/artifactory/main/release/${BOOST_VERSION}/source/${BOOST_FILENAME}_rc1.tar.gz \
+    && tar -xvf ${BOOST_FILENAME}_rc1.tar.gz \
+    && cd ${BOOST_FILENAME} \
+    && ./bootstrap.sh --with-libraries=filesystem,system --prefix=/dependencies/boost/${BOOST_VERSION}/ \
+    && ./b2 install define=BOOST_ERROR_CODE_HEADER_ONLY link=static threading=multi cxxflags="-fvisibility=hidden -fPIC" cflags="-fvisibility=hidden -fPIC" \
+    && cd .. && rm -rf ${BOOST_FILENAME} && rm ${BOOST_FILENAME}_rc1.tar.gz
 
 #install Apr
 RUN mkdir -p dependencies/apr/${APR_VERSION} \
