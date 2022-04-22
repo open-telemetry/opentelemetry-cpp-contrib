@@ -65,9 +65,7 @@ ApacheModuleSegmentParameter 2
 targetConfFile='/etc/httpd/conf.d/opentelemetry_module.conf'
 if [ $targetSystem = "ubuntu" ]; then
 	targetConfFile='/etc/apache2/opentelemetry_module.conf'
-fi
-
-if [ $targetSystem = "centos7" ]; then
+elif [ $targetSystem = "centos7" ]; then
 	targetConfFile='/etc/httpd/conf/opentelemetry_module.conf'
 fi
 
