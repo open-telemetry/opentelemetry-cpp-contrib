@@ -15,6 +15,20 @@ services:
         command: bash -c " httpd -k start && tail -f /dev/null "
         ports:
             - "8000:80"
+    webserver_centos7:
+        build:
+            context: .
+            dockerfile: docker/centos7/Dockerfile
+        image: apache_centos7
+        hostname: webserver
+        container_name: webserver_centos7
+        command: bash -c " httpd -k start && tail -f /dev/null "
+        profiles:
+            - centos7
+        ports:
+            - "9004:80"
+        depends_on:
+            - otel-collector
     webserver_ubuntu:
         build:
             context: .
@@ -22,7 +36,7 @@ services:
         image: apache_ubuntu
         hostname: webserver
         container_name: webserver_ubuntu
-        command: bash -c " tail -f /dev/null "
+        command: bash -c "apache2ctl -k start && tail -f /dev/null "
         profiles:
             - ubuntu20.04
         ports:
@@ -37,6 +51,7 @@ services:
         profiles:
             - default
             - ubuntu20.04
+            - centos7
         command: ["--config=/etc/otel-config.yml", "--log-level=DEBUG", "${OTELCOL_ARGS}"]
         volumes:
             - ./otel-config.yml:/etc/otel-config.yml
@@ -54,6 +69,8 @@ services:
         profiles:
             - default
             - ubuntu20.04
+            - centos7
         ports:
             - "9411:9411"
             - "9410:9410"
+

@@ -7,6 +7,24 @@ LABEL NAME=apm/build-image-webserver-agent-centos6-x64 VERSION=$BUILD_NUMBER
 ENV GOSU_ARCH amd64
 ENV JDK_ARCH x64
 
+ARG PYTHON_VERSION="2.7.8"
+ARG CMAKE_VERSION="3.20"
+ARG CMAKE_0VERSION="3.20.0"
+ARG GRPC_VERSION="1.36.4"
+ARG OPENTELEMETRY_VERSION="1.2.0"
+ARG BOOST_VERSION="1.75.0"
+ARG BOOST_FILENAME="boost_1_75_0"
+ARG APR_VERSION="1.7.0"
+ARG EXPAT_VERSION="2.3.0"
+ARG EXPAT_RVERSION="R_2_3_0"
+ARG APRUTIL_VERSION="1.6.1"
+ARG AUTOCONF_VERSION="2.68"
+ARG LIBTOOL_VERSION="2.4.6"
+ARG LOG4CXX_VERSION="0.11.0"
+ARG GTEST_VERSION="1.10.0"
+ARG AUTOMAKE_VERSION="1.16.3"
+
+
 # create default non-root user
 RUN groupadd -r swuser && useradd -u 1000 -g swuser -m -s /sbin/nologin -c "default non-root user" swuser
 
@@ -44,22 +62,17 @@ RUN curl https://www.getpagespeed.com/files/centos6-eol.repo --output /etc/yum.r
   && yum clean all
 ENV PATH="/opt/rh/devtoolset-7/root/usr/bin:${PATH}"
 
-# install python 2.7.8
-RUN wget http://www.python.org/ftp/python/2.7.8/Python-2.7.8.tar.xz \
-	&& unxz Python-2.7.8.tar.xz \
-	&& tar -xf Python-2.7.8.tar \
-	&& cd Python-2.7.8 && ./configure --prefix=/usr/local && make && make install \
+# install python 
+RUN wget http://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tar.xz \
+	&& unxz Python-${PYTHON_VERSION}.tar.xz \
+	&& tar -xf Python-${PYTHON_VERSION}.tar \
+	&& cd Python-${PYTHON_VERSION} && ./configure --prefix=/usr/local && make && make install \
 	&& cd .. \
-	&& rm -rf Python-2.7.8.tar.xz && rm -rf Python-2.7.8.tar
+	&& rm -rf Python-${PYTHON_VERSION}.tar.xz && rm -rf Python-${PYTHON_VERSION}.tar
 
 # install gosu for easy step-down from root (from https://github.com/tianon/gosu/blob/master/INSTALL.md#from-centos)
 ENV GOSU_VERSION=1.10
-#RUN gpg --keyserver pgp.mit.edu --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 \
-#    && curl -o /usr/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64" \
-#    && curl -o /usr/bin/gosu.asc -SL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64.asc" \
-#    && gpg --verify /usr/bin/gosu.asc \
-#    && rm /usr/bin/gosu.asc \
-#    && rm -r /root/.gnupg/ \
+
 RUN curl -o /usr/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64" \
     && chmod +x /usr/bin/gosu \
     # Verify that the binary works
@@ -69,17 +82,17 @@ RUN curl -o /usr/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/
 RUN yum install git -y \
   && yum clean all
 
-# install cmake 3.20
-RUN wget https://cmake.org/files/v3.20/cmake-3.20.0-linux-x86_64.tar.gz \
-  && tar -xvf cmake-3.20.0-linux-x86_64.tar.gz \
-  && cd cmake-3.20.0-linux-x86_64 \
+# install cmake 
+RUN wget https://cmake.org/files/v${CMAKE_VERSION}/cmake-${CMAKE_0VERSION}-linux-x86_64.tar.gz \
+  && tar -xvf cmake-${CMAKE_0VERSION}-linux-x86_64.tar.gz \
+  && cd cmake-${CMAKE_0VERSION}-linux-x86_64 \
   && cp -rf * /usr/local/ \
-  && cd .. && rm -rf cmake-3.20.0-linux-x86_64.tar.gz
+  && cd .. && rm -rf cmake-${CMAKE_0VERSION}-linux-x86_64.tar.gz
 
 # install grpc. If planning to upgrade, make sure sed command works
 RUN git clone https://github.com/grpc/grpc \
   && cd grpc \
-  && git checkout tags/v1.36.4 -b v1.36.4 \
+  && git checkout tags/v${GRPC_VERSION} -b v${GRPC_VERSION} \
   && git submodule update --init \
   && sed -i "s/target_link_libraries(bssl ssl crypto)/target_link_libraries(bssl ssl crypto rt)/g" third_party/boringssl-with-bazel/CMakeLists.txt \
   && mkdir -p cmake/build \
@@ -92,125 +105,124 @@ RUN git clone https://github.com/grpc/grpc \
 # Create dependencies folder to store all dependencies.
 RUN mkdir -p dependencies
 
-# install boost version 1.75.0
-RUN mkdir -p dependencies/boost/1.75.0/ \
-    && git clone https://github.com/boostorg/boost \
-    && cd boost/ && git checkout tags/boost-1.75.0 -b boost-1.75.0 \
-    && git submodule update --init --recursive \
-    && ./bootstrap.sh --with-libraries=filesystem,system --prefix=/dependencies/boost/1.75.0 \
-    && ./b2 install define=BOOST_ERROR_CODE_HEADER_ONLY link=static threading=multi cxxflags="-fvisibility=hidden -fPIC -D_GLIBCXX_USE_CXX11_ABI=0" cflags="-fvisibility=hidden -fPIC" \
-    && cd .. && rm -rf boost
+# install boost version 
+RUN wget https://boostorg.jfrog.io/artifactory/main/release/${BOOST_VERSION}/source/${BOOST_FILENAME}_rc1.tar.gz \
+    && tar -xvf ${BOOST_FILENAME}_rc1.tar.gz \
+    && cd ${BOOST_FILENAME} \
+    && ./bootstrap.sh --with-libraries=filesystem,system --prefix=/dependencies/boost/${BOOST_VERSION}/ \
+    && ./b2 install define=BOOST_ERROR_CODE_HEADER_ONLY link=static threading=multi cxxflags="-fvisibility=hidden -fPIC" cflags="-fvisibility=hidden -fPIC" \
+    && cd .. && rm -rf ${BOOST_FILENAME} && rm ${BOOST_FILENAME}_rc1.tar.gz
 
 #install Apr
-RUN mkdir -p dependencies/apr/1.7.0 \
-    && wget https://dlcdn.apache.org//apr/apr-1.7.0.tar.gz --no-check-certificate \
-    && tar -xf apr-1.7.0.tar.gz \
-    && cd apr-1.7.0 \
-    && ./configure --prefix=/dependencies/apr/1.7.0 --enable-static=yes --enable-shared=no --with-pic && echo $? \
+RUN mkdir -p dependencies/apr/${APR_VERSION} \
+    && wget https://dlcdn.apache.org//apr/apr-${APR_VERSION}.tar.gz --no-check-certificate \
+    && tar -xf apr-${APR_VERSION}.tar.gz \
+    && cd apr-${APR_VERSION} \
+    && ./configure --prefix=/dependencies/apr/${APR_VERSION} --enable-static=yes --enable-shared=no --with-pic && echo $? \
     && make -j 6 \
     && make install \
-    && cd ../ && rm -rf apr-1.7.0 && rm -rf apr-1.7.0.tar.gz
+    && cd ../ && rm -rf apr-${APR_VERSION} && rm -rf apr-${APR_VERSION}.tar.gz
 
 # install libexpat
-RUN mkdir -p dependencies/expat/2.3.0 \
-    && wget https://github.com/libexpat/libexpat/releases/download/R_2_3_0/expat-2.3.0.tar.gz --no-check-certificate \
-    && tar -xf expat-2.3.0.tar.gz \
-    && cd expat-2.3.0 \
-    && ./configure --prefix=/dependencies/expat/2.3.0 --enable-static=yes --enable-shared=no --with-pic && echo $? \
+RUN mkdir -p dependencies/expat/${EXPAT_VERSION} \
+    && wget https://github.com/libexpat/libexpat/releases/download/${EXPAT_RVERSION}/expat-${EXPAT_VERSION}.tar.gz --no-check-certificate \
+    && tar -xf expat-${EXPAT_VERSION}.tar.gz \
+    && cd expat-${EXPAT_VERSION} \
+    && ./configure --prefix=/dependencies/expat/${EXPAT_VERSION} --enable-static=yes --enable-shared=no --with-pic && echo $? \
     && make -j 6 \
     && make install \
-    && cd ../ && rm -rf expat-2.3.0 && rm -rf expat-2.3.0.tar.gz
+    && cd ../ && rm -rf expat-${EXPAT_VERSION} && rm -rf expat-${EXPAT_VERSION}.tar.gz
 
 # install Apr-util
-RUN mkdir -p dependencies/apr-util/1.6.1 \
-    && wget https://dlcdn.apache.org//apr/apr-util-1.6.1.tar.gz --no-check-certificate \
-    && tar -xf apr-util-1.6.1.tar.gz \
-    && cd apr-util-1.6.1 \
-    && ./configure --prefix=/dependencies/apr-util/1.6.1 --enable-static=yes --enable-shared=no --with-pic --with-apr=/dependencies/apr/1.7.0 --with-expat=/dependencies/expat/2.3.0 && echo $? \
+RUN mkdir -p dependencies/apr-util/${APRUTIL_VERSION} \
+    && wget https://dlcdn.apache.org//apr/apr-util-${APRUTIL_VERSION}.tar.gz --no-check-certificate \
+    && tar -xf apr-util-${APRUTIL_VERSION}.tar.gz \
+    && cd apr-util-${APRUTIL_VERSION} \
+    && ./configure --prefix=/dependencies/apr-util/${APRUTIL_VERSION} --enable-static=yes --enable-shared=no --with-pic --with-apr=/dependencies/apr/${APR_VERSION} --with-expat=/dependencies/expat/${EXPAT_VERSION} && echo $? \
     && make -j 6 \
     && make install \
-    && cd ../ && rm -rf apr-util-1.6.1 && rm -rf apr-util-1.6.1.tar.gz
+    && cd ../ && rm -rf apr-util-${APRUTIL_VERSION} && rm -rf apr-util-${APRUTIL_VERSION}.tar.gz
 
 # install m4
 RUN yum install m4 -y
 
 # install autoconf
-RUN wget --no-check-certificate https://ftp.gnu.org/gnu/autoconf/autoconf-2.68.tar.gz \
-    && tar xzf autoconf-2.68.tar.gz  \
-    && cd autoconf-2.68 \
+RUN wget --no-check-certificate https://ftp.gnu.org/gnu/autoconf/autoconf-${AUTOCONF_VERSION}.tar.gz \
+    && tar xzf autoconf-${AUTOCONF_VERSION}.tar.gz  \
+    && cd autoconf-${AUTOCONF_VERSION} \
     && ./configure --prefix=/usr/ && make -j && make install && autoconf -V \
-    && cd .. && rm -rf autoconf-2.68.tar.gz
+    && cd .. && rm -rf autoconf-${AUTOCONF_VERSION}.tar.gz
 
 # install automake
-RUN wget --no-check-certificate https://ftp.gnu.org/gnu/automake/automake-1.16.3.tar.gz \
-    && tar xzf automake-1.16.3.tar.gz \
-    && cd automake-1.16.3 \
+RUN wget --no-check-certificate https://ftp.gnu.org/gnu/automake/automake-${AUTOMAKE_VERSION}.tar.gz \
+    && tar xzf automake-${AUTOMAKE_VERSION}.tar.gz \
+    && cd automake-${AUTOMAKE_VERSION} \
     && ./configure --prefix=/usr --libdir=/usr/lib64 \
     && make -j && make install \
     && automake --version \
-    && cd .. && rm -rf automake-1.16.3.tar.gz
+    && cd .. && rm -rf automake-${AUTOMAKE_VERSION}.tar.gz
 
 # install libtool
-RUN wget --no-check-certificate https://ftpmirror.gnu.org/libtool/libtool-2.4.6.tar.gz \
-    && tar xzf libtool-2.4.6.tar.gz \
-    && cd libtool-2.4.6 \
+RUN wget --no-check-certificate https://ftpmirror.gnu.org/libtool/libtool-${LIBTOOL_VERSION}.tar.gz \
+    && tar xzf libtool-${LIBTOOL_VERSION}.tar.gz \
+    && cd libtool-${LIBTOOL_VERSION} \
     && ./configure --prefix=/usr \
     && make -j 6 \
     && make install \
     && libtool --version \
-    && cd .. && rm -rf libtool-2.4.6.tar.gz
+    && cd .. && rm -rf libtool--${LIBTOOL_VERSION}.tar.gz
 
 #install log4cxx
-RUN mkdir -p dependencies/apache-log4cxx/0.11.0 \
-    && wget https://archive.apache.org/dist/logging/log4cxx/0.11.0/apache-log4cxx-0.11.0.tar.gz --no-check-certificate \
-    && tar -xf apache-log4cxx-0.11.0.tar.gz \
-    && cd apache-log4cxx-0.11.0 \
-    && ./configure --prefix=/dependencies/apache-log4cxx/0.11.0/ --enable-static=yes --enable-shared=no --with-pic --with-apr=/dependencies/apr/1.7.0/ --with-apr-util=/dependencies/apr-util/1.6.1/ && echo $? \
+RUN mkdir -p dependencies/apache-log4cxx/-${LOG4CXX_VERSION} \
+    && wget https://archive.apache.org/dist/logging/log4cxx/${LOG4CXX_VERSION}/apache-log4cxx-${LOG4CXX_VERSION}.tar.gz --no-check-certificate \
+    && tar -xf apache-log4cxx-${LOG4CXX_VERSION}.tar.gz \
+    && cd apache-log4cxx-${LOG4CXX_VERSION} \
+    && ./configure --prefix=/dependencies/apache-log4cxx/${LOG4CXX_VERSION}/ --enable-static=yes --enable-shared=no --with-pic --with-apr=/dependencies/apr/${APR_VERSION}/ --with-apr-util=/dependencies/apr-util/${APRUTIL_VERSION}/ && echo $? \
     && make -j 6 ; echo 0 \
     && automake --add-missing \
     && make install \
-    && cd .. && rm -rf apache-log4cxx-0.11.0.tar.gz && rm -rf apache-log4cxx-0.11.0
+    && cd .. && rm -rf apache-log4cxx-${LOG4CXX_VERSION}.tar.gz && rm -rf apache-log4cxx-${LOG4CXX_VERSION}
 
 # install opentelemetry
-RUN mkdir -p dependencies/opentelemetry/1.2.0/lib \
-    && mkdir -p dependencies/opentelemetry/1.2.0/include \
+RUN mkdir -p dependencies/opentelemetry/${OPENTELEMETRY_VERSION}/lib \
+    && mkdir -p dependencies/opentelemetry/${OPENTELEMETRY_VERSION}/include \
     && git clone https://github.com/open-telemetry/opentelemetry-cpp \
     && cd opentelemetry-cpp/ \
-    && git checkout tags/v1.2.0 -b v1.2.0 \
+    && git checkout tags/v${OPENTELEMETRY_VERSION} -b v${OPENTELEMETRY_VERSION} \
     && git submodule update --init --recursive \
     && mkdir build \
     && cd build \
-    && cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=ON -DWITH_OTLP=ON -DCMAKE_INSTALL_PREFIX=/dependencies/opentelemetry/1.2.0 \
+    && cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=ON -DWITH_OTLP=ON -DCMAKE_INSTALL_PREFIX=/dependencies/opentelemetry/${OPENTELEMETRY_VERSION} \
     && cmake --build . --target all \
     && cd .. \
-    && find . -name "*.so" -type f -exec cp {} /dependencies/opentelemetry/1.2.0/lib/ \; \
-    && cp build/libopentelemetry_proto.a /dependencies/opentelemetry/1.2.0/lib \
-    && cp -r api/include/ /dependencies/opentelemetry/1.2.0/ \
-    && for dir in exporters/*; do if [ -d "$dir" ]; then cp -rf "$dir/include" /dependencies/opentelemetry/1.2.0/; fi; done \
-    && cp -r sdk/include/ /dependencies/opentelemetry/1.2.0/ \
-    && cp -r build/generated/third_party/opentelemetry-proto/opentelemetry/proto/ /dependencies/opentelemetry/1.2.0/include/opentelemetry/ \
+    && find . -name "*.so" -type f -exec cp {} /dependencies/opentelemetry/${OPENTELEMETRY_VERSION}/lib/ \; \
+    && cp build/libopentelemetry_proto.a /dependencies/opentelemetry/${OPENTELEMETRY_VERSION}/lib \
+    && cp -r api/include/ /dependencies/opentelemetry/${OPENTELEMETRY_VERSION}/ \
+    && for dir in exporters/*; do if [ -d "$dir" ]; then cp -rf "$dir/include" /dependencies/opentelemetry/${OPENTELEMETRY_VERSION}/; fi; done \
+    && cp -r sdk/include/ /dependencies/opentelemetry/${OPENTELEMETRY_VERSION}/ \
+    && cp -r build/generated/third_party/opentelemetry-proto/opentelemetry/proto/ /dependencies/opentelemetry/${OPENTELEMETRY_VERSION}/include/opentelemetry/ \
     && cd .. && rm -rf opentelemetry-cpp
 
 # install googletest
-RUN mkdir -p dependencies/googletest/1.10.0/ \
-    && wget https://github.com/google/googletest/archive/refs/tags/release-1.10.0.tar.gz --no-check-certificate \
-    && tar -xf release-1.10.0.tar.gz \
-    && cd googletest-release-1.10.0/  \
+RUN mkdir -p dependencies/googletest/${GTEST_VERSION}/ \
+    && wget https://github.com/google/googletest/archive/refs/tags/release-${GTEST_VERSION}.tar.gz --no-check-certificate \
+    && tar -xf release-${GTEST_VERSION}.tar.gz \
+    && cd googletest-release-${GTEST_VERSION}/  \
     && mkdir build && cd build \
-    && cmake .. -DCMAKE_INSTALL_PREFIX=/dependencies/googletest/1.10.0/ \
+    && cmake .. -DCMAKE_INSTALL_PREFIX=/dependencies/googletest/${GTEST_VERSION}/ \
     && make \
     && make install \
-    && cd ../.. && rm -rf release-1.10.0.tar.gz && rm -rf googletest-release-1.10.0/
+    && cd ../.. && rm -rf release-${GTEST_VERSION}.tar.gz && rm -rf googletest-release-${GTEST_VERSION}/
 
 
 #Installing Apache and apr source code
 RUN mkdir build-dependencies \
-    && wget --no-check-certificate https://archive.apache.org/dist/apr/apr-1.7.0.tar.gz \
-    && tar -xf apr-1.7.0.tar.gz \
-    && mv -f apr-1.7.0 build-dependencies \
-    && wget --no-check-certificate https://archive.apache.org/dist/apr/apr-util-1.6.1.tar.gz \
-    && tar -xf apr-util-1.6.1.tar.gz \
-    && mv -f apr-util-1.6.1 build-dependencies \
+    && wget --no-check-certificate https://archive.apache.org/dist/apr/apr-${APR_VERSION}.tar.gz \
+    && tar -xf apr-${APR_VERSION}.tar.gz \
+    && mv -f apr-${APR_VERSION} build-dependencies \
+    && wget --no-check-certificate https://archive.apache.org/dist/apr/apr-util-${APRUTIL_VERSION}.tar.gz \
+    && tar -xf apr-util-${APRUTIL_VERSION}.tar.gz \
+    && mv -f apr-util-${APRUTIL_VERSION} build-dependencies \
     && wget --no-check-certificate http://archive.apache.org/dist/httpd/httpd-2.2.31.tar.gz \
     && tar -xf httpd-2.2.31.tar.gz \
     && mv -f httpd-2.2.31 build-dependencies \
@@ -219,27 +231,28 @@ RUN mkdir build-dependencies \
     && mv -f httpd-2.4.23 build-dependencies
 
 # Build Webserver Module
-RUN git clone https://github.com/open-telemetry/opentelemetry-cpp-contrib.git \
-    && cp -r /opentelemetry-cpp-contrib/instrumentation/otel-webserver-module . \
-    && cp -r /dependencies /otel-webserver-module/ \
+COPY . /otel-webserver-module
+
+RUN cp -r /dependencies /otel-webserver-module/ \
     && cp -r /build-dependencies /otel-webserver-module/ \
     && cd otel-webserver-module \
-    && ./gradlew assembleApacheModule
+    && ./gradlew assembleApacheModule 
 
 # install webserver module
 RUN cd /otel-webserver-module/build \
     && tar -xf opentelemetry-webserver-sdk-x64-linux.tgz \
     && mv -f opentelemetry-webserver-sdk /opt/ \
     && cd ../ \
-    && cp opentelemetry_module.conf /etc/httpd/conf.d/ \
+    && cp opentelemetry_module.conf /etc/httpd/conf/ \
+    && echo 'Include conf/opentelemetry_module.conf' >> /etc/httpd/conf/httpd.conf \
     && cd /opt/opentelemetry-webserver-sdk \
     && ./install.sh \
     && cd /
 
 # Remove unwanted files
-RUN rm -rf grpc && rm -rf autoconf-2.68 && rm -rf automake-1.16.3 && rm -rf cmake-3.20.0-linux-x86_64 \
-    && rm -rf libtool-2.4.6 && rm -rf Python-2.7.8 \
-    && rm -f apr-1.7.0.tar.gz && rm -f apr-util-1.6.1.tar.gz \
+RUN rm -rf grpc && rm -rf autoconf-${AUTOCONF_VERSION} && rm -rf automake-${AUTOMAKE_VERSION} && rm -rf cmake-${CMAKE_VERSION}-linux-x86_64 \
+    && rm -rf libtool-${LIBTOOL_VERSION} && rm -rf Python-${PYTHON_VERSION} \
+    && rm -f apr-${APR_VERSION}.tar.gz && rm -f apr-util-${APRUTIL_VERSION}.tar.gz \
     && rm -f httpd-2.2.31.tar.gz && rm -f httpd-2.4.23.tar.gz
 
 COPY entrypoint.sh /usr/local/bin/
