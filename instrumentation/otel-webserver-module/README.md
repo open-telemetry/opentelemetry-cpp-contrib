@@ -67,7 +67,7 @@ A sample configuration is mentioned in [opentelemetry_module.conf](https://githu
 
 #### Platform Supported
 - The build is supported for **x86-64** platforms.
-- Currently, it is built and tested on **CentOS6** by default
+- Currently, it is built and tested on **Centos6** by default
 - Other OS support: **Centos7, ubuntu20.04**.
 
 #### Automatic build and Installation
