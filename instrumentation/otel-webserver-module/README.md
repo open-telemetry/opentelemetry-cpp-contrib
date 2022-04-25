@@ -66,8 +66,9 @@ A sample configuration is mentioned in [opentelemetry_module.conf](https://githu
 - Docker Desktop should be installed on the system
 
 #### Platform Supported
-- Currently, it is built and tested on CentOS 6
-- Other platform support: TBD
+- The build is supported for **x86-64** platforms.
+- Currently, it is built and tested on **CentOS6** by default
+- Other OS support: **Centos7, ubuntu20.04**.
 
 #### Automatic build and Installation
 
@@ -77,6 +78,8 @@ Then execute the following commands -:
 docker-compose --profile default build
 docker-compose --profile default up
 ```
+Alternatively, replace the value of *profile* from **'default'** to **'centos7'** or **'ubuntu20.04'** to build in respective supported platforms.
+
 This would start the container alongwith the the Opentelemetry Collector and Zipkin. You can check the traces on Zipkin dashboard by checking the port number of Zipkin using ```docker ps``` command. Multiple requests can be sent using the browser.
 
 #### Manual build and Installation
