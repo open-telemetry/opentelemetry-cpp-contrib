@@ -43,13 +43,10 @@ public:
 
   /**
    * Set a resource for this log.
-   * @param name the name of the resource
-   * @param value the resource value
+   * @param Resource the resource to set
    */
-  void SetResource(
-      nostd::string_view key,
-      const opentelemetry::common::AttributeValue &value) noexcept override {
-  } // Not Supported
+  void SetResource(const opentelemetry::sdk::resource::Resource
+                       &resource) noexcept override {} // Not Supported
 
   /**
    * Set an attribute of a log.
@@ -87,6 +84,14 @@ public:
    */
   void SetTimestamp(
       opentelemetry::common::SystemTimestamp timestamp) noexcept override;
+
+  /**
+   * Set instrumentation_library for this log.
+   * @param instrumentation_library the instrumentation library to set
+   */
+  void SetInstrumentationLibrary(
+      const opentelemetry::sdk::instrumentationlibrary::InstrumentationLibrary
+          &instrumentation_library) noexcept override {} // Not Supported
 
   nlohmann::json &Log() { return json_; }
 

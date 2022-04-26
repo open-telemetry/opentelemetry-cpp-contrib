@@ -1,5 +1,5 @@
 if("${opentelemetry-cpp-tag}" STREQUAL "")
-    set(opentelemetry-cpp-tag "v1.1.1")
+    set(opentelemetry-cpp-tag "v1.3.0")
 endif()
 function(target_create _target _lib)
   add_library(${_target} STATIC IMPORTED)
@@ -11,7 +11,7 @@ endfunction()
 function(build_opentelemetry)
   set(opentelemetry_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/opentelemetry-cpp")
   set(opentelemetry_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/opentelemetry-cpp")
-  set(opentelemetry_cpp_targets opentelemetry_trace opentelemetry_logs http_client_curl )
+  set(opentelemetry_cpp_targets opentelemetry_trace opentelemetry_logs opentelemetry_http_client_curl )
   set(opentelemetry_CMAKE_ARGS -DCMAKE_POSITION_INDEPENDENT_CODE=ON
           -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
           -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
