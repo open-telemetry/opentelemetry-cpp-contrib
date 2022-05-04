@@ -398,7 +398,7 @@ defmodule InstrumentationTest do
 
   test "Accessing a excluded uri produces no span", %{trace_file: trace_file} do
     %HTTPoison.Response{status_code: status, body: body} =
-      HTTPoison.get!("#{@host}/files/file.js")
+      HTTPoison.get!("#{@host}/ignored.php")
 
     assert_raise RuntimeError, "timed out waiting for traces", fn ->
       read_traces(trace_file, 1)

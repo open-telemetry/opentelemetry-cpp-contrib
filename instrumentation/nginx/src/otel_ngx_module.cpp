@@ -172,6 +172,20 @@ static ngx_http_variable_t otel_ngx_variables[] = {
   ngx_http_null_variable,
 };
 
+static bool IsOtelEnabled(ngx_http_request_t* req) {
+  OtelNgxLocationConf* locConf = GetOtelLocationConf(req);
+  if (locConf->enabled) {
+#if (NGX_PCRE)
+    int ovector[3];
+    return locConf->ignore_paths == nullptr || ngx_regex_exec(locConf->ignore_paths, &req->unparsed_uri, ovector, 0) < 0;
+#else
+    return true;
+#endif
+  } else {
+    return false;
+  }
+}
+
 TraceContext* GetTraceContext(ngx_http_request_t* req) {
   ngx_http_variable_value_t* val = ngx_http_get_indexed_variable(req, otel_ngx_variables[0].index);
 
@@ -201,6 +215,12 @@ nostd::string_view WithoutOtelVarPrefix(ngx_str_t value) {
 
 static ngx_int_t
 OtelGetTraceContextVar(ngx_http_request_t* req, ngx_http_variable_value_t* v, uintptr_t data) {
+  if (!IsOtelEnabled(req)) {
+    v->valid = 0;
+    v->not_found = 1;
+    return NGX_OK;
+  }
+
   TraceContext* traceContext = GetTraceContext(req);
 
   if (traceContext == nullptr || !traceContext->request_span) {
@@ -235,6 +255,12 @@ OtelGetTraceContextVar(ngx_http_request_t* req, ngx_http_variable_value_t* v, ui
 
 static ngx_int_t
 OtelGetTraceId(ngx_http_request_t* req, ngx_http_variable_value_t* v, uintptr_t data) {
+  if (!IsOtelEnabled(req)) {
+    v->valid = 0;
+    v->not_found = 1;
+    return NGX_OK;
+  }
+
   TraceContext* traceContext = GetTraceContext(req);
 
   if (traceContext == nullptr || !traceContext->request_span) {
@@ -284,6 +310,12 @@ OtelGetTraceId(ngx_http_request_t* req, ngx_http_variable_value_t* v, uintptr_t 
 
 static ngx_int_t
 OtelGetSpanId(ngx_http_request_t* req, ngx_http_variable_value_t* v, uintptr_t data) {
+  if (!IsOtelEnabled(req)) {
+    v->valid = 0;
+    v->not_found = 1;
+    return NGX_OK;
+  }
+
   TraceContext* traceContext = GetTraceContext(req);
 
   if (traceContext == nullptr || !traceContext->request_span) {
@@ -373,20 +405,6 @@ nostd::string_view GetNgxServerName(const ngx_http_request_t* req) {
   return FromNgxString(cscf->server_name);
 }
 
-static bool IsOtelEnabled(ngx_http_request_t* req) {
-  OtelNgxLocationConf* locConf = GetOtelLocationConf(req);
-  if (locConf->enabled) {
-#if (NGX_PCRE)
-    int ovector[3];
-    return locConf->ignore_paths == nullptr || ngx_regex_exec(locConf->ignore_paths, &req->unparsed_uri, ovector, 0) < 0;
-#else
-    return true;
-#endif
-  } else {
-    return false;
-  }
-}
-
 TraceContext* CreateTraceContext(ngx_http_request_t* req, ngx_http_variable_value_t* val) {
   ngx_pool_cleanup_t* cleanup = ngx_pool_cleanup_add(req->pool, sizeof(TraceContext));
   TraceContext* context = (TraceContext*)cleanup->data;
@@ -394,7 +412,7 @@ TraceContext* CreateTraceContext(ngx_http_request_t* req, ngx_http_variable_valu
   cleanup->handler = TraceContextCleanup;
 
   std::unordered_map<ngx_http_request_t*, TraceContext*>* map;
-  if (req->parent) {
+  if (req->parent && val->data) {
     // Subrequests will already have the map created so just retrieve it
     map = (std::unordered_map<ngx_http_request_t*, TraceContext*>*)val->data;
   } else {
