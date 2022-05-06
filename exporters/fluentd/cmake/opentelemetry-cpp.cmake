@@ -1,5 +1,5 @@
 if("${opentelemetry-cpp-tag}" STREQUAL "")
-    set(opentelemetry-cpp-tag "75c2a8f7a6bf81d9799e76804473609cc236b7be")
+	set(opentelemetry-cpp-tag "75c2a8f7a6bf81d9799e76804473609cc236b7be") #to incorporate PR#1325
 endif()
 function(target_create _target _lib)
   add_library(${_target} STATIC IMPORTED)
