@@ -47,7 +47,6 @@ function(build_opentelemetry)
     opentelemetry-cpp
     GIT_REPOSITORY https://github.com/open-telemetry/opentelemetry-cpp.git
     GIT_TAG  "${opentelemetry-cpp-tag}"
-    GIT_SHALLOW 1
     GIT_SUBMODULES "third_party/opentelemetry-proto"
     SOURCE_DIR ${opentelemetry_SOURCE_DIR}
     PREFIX "opentelemetry-cpp"
