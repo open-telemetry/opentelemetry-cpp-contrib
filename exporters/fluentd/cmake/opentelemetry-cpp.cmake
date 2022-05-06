@@ -24,7 +24,7 @@ function(build_opentelemetry)
     ${opentelemetry_BINARY_DIR}/sdk/src/logs/libopentelemetry_logs.a
     ${opentelemetry_BINARY_DIR}/sdk/src/resource/libopentelemetry_resources.a
     ${opentelemetry_BINARY_DIR}/sdk/src/common/libopentelemetry_common.a
-    ${opentelemetry_BINARY_DIR}/ext/src/http/client/curl/libhttp_client_curl.a
+    ${opentelemetry_BINARY_DIR}/ext/src/http/client/curl/libopentelemetry_http_client_curl.a
     ${CURL_LIBRARIES}
   )
 
@@ -36,7 +36,7 @@ function(build_opentelemetry)
   include_directories(SYSTEM ${opentelemetry_include_dir})
 
   set(opentelemetry_deps opentelemetry_trace opentelemetry_logs opentelemetry_resources opentelemetry_common
-        http_client_curl
+        opentelemetry_http_client_curl
         ${CURL_LIBRARIES})
 
    set(make_cmd ${CMAKE_COMMAND} --build <BINARY_DIR> --target
@@ -64,8 +64,8 @@ function(build_opentelemetry)
                   "sdk/src/resource/libopentelemetry_resources.a")
     target_create("opentelemetry_common"
                   "sdk/src/common/libopentelemetry_common.a")
-    target_create("http_client_curl"
-                  "ext/src/http/client/curl/libhttp_client_curl.a")
+    target_create("opentelemetry_http_client_curl"
+                  "ext/src/http/client/curl/libopentelemetry_http_client_curl.a")
     add_library(opentelemetry::libopentelemetry INTERFACE IMPORTED)
     add_dependencies(opentelemetry::libopentelemetry opentelemetry-cpp)
     set_target_properties(
