@@ -9,3 +9,8 @@
   strncpy(dest, src, (destsz <= count) ? destsz : count)
 #endif
 
+#ifndef NO_OTEL_STATSD_DEBUG
+#define DEBUG_MSG(...) printf(__VA_ARGS__)
+#else
+#define DEBUG_MSG(...)
+#endif

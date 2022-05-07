@@ -46,7 +46,23 @@ bool Initialize()
     return true;
 }
 
-bool Send(const char* data, uint32_t size);
+bool Send(const char* data, uint32_t size)
+{
+    auto bytes_left = size;
+    sizt_t num_bytes_sent;
+    while ((bytes_left > 0) && ((num_bytes_sent = ::send(server_socket_fd, buf, bytes_left, MSG_NOSIGNAL)) > 0)) {
+        bytes_left -= num_bytes_sent;
+        buf += num_bytes_sent;
+    }
+    return (bytes_left == 0); // success if all bytes sent
+}
+
+~UnixDomainClient()
+{
+    if (server_socket_fd_) {
+        ::close(server_socket_fd_);
+    }
+}
 
 private:
 std::string socket_path_;
