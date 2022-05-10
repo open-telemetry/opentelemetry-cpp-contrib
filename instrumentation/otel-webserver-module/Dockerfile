@@ -23,6 +23,8 @@ ARG LIBTOOL_VERSION="2.4.6"
 ARG LOG4CXX_VERSION="0.11.0"
 ARG GTEST_VERSION="1.10.0"
 ARG AUTOMAKE_VERSION="1.16.3"
+ARG PCRE_VERSION="8.44"
+ARG NGINX_VERSION="1.18.0"
 
 
 # create default non-root user
@@ -213,6 +215,19 @@ RUN mkdir -p dependencies/googletest/${GTEST_VERSION}/ \
     && make \
     && make install \
     && cd ../.. && rm -rf release-${GTEST_VERSION}.tar.gz && rm -rf googletest-release-${GTEST_VERSION}/
+
+# install pcre
+RUN mkdir -p dependencies/pcre/${PCRE_VERSION}/ \
+    && wget https://ftp.exim.org/pub/pcre/pcre-${PCRE_VERSION}.tar.gz --no-check-certificate \
+    && tar -xvf pcre-${PCRE_VERSION}.tar.gz \
+    && cd pcre-${PCRE_VERSION} \
+    && ./configure --prefix=/dependencies/pcre/${PCRE_VERSION} --enable-jit \
+    && make && make install \
+    && cd .. && rm -rf ${PCRE_VERSION}.tar.gz && rm -rf pcre-${PCRE_VERSION}
+
+# install nginx
+RUN wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
+    && tar -xvf nginx-${NGINX_VERSION}.tar.gz -C /dependencies
 
 
 #Installing Apache and apr source code
