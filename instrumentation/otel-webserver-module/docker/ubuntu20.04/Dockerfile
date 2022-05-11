@@ -177,7 +177,8 @@ RUN mkdir -p dependencies/pcre/${PCRE_VERSION}/ \
 
 # install nginx
 RUN wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
-    && tar -xvf nginx-${NGINX_VERSION}.tar.gz -C /dependencies
+    && tar -xvf nginx-${NGINX_VERSION}.tar.gz -C /build-dependencies \
+    && rm -rf nginx-${NGINX_VERSION}.tar.gz
 
 # Build Webserver Module
 COPY . /otel-webserver-module
