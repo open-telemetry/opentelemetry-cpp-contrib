@@ -225,11 +225,6 @@ RUN mkdir -p dependencies/pcre/${PCRE_VERSION}/ \
     && make && make install \
     && cd .. && rm -rf ${PCRE_VERSION}.tar.gz && rm -rf pcre-${PCRE_VERSION}
 
-# install nginx
-RUN wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
-    && tar -xvf nginx-${NGINX_VERSION}.tar.gz -C /dependencies
-
-
 #Installing Apache and apr source code
 RUN mkdir build-dependencies \
     && wget --no-check-certificate https://archive.apache.org/dist/apr/apr-${APR_VERSION}.tar.gz \
@@ -244,6 +239,11 @@ RUN mkdir build-dependencies \
     && wget --no-check-certificate http://archive.apache.org/dist/httpd/httpd-2.4.23.tar.gz \
     && tar -xf httpd-2.4.23.tar.gz \
     && mv -f httpd-2.4.23 build-dependencies
+
+# install nginx
+RUN wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
+    && tar -xvf nginx-${NGINX_VERSION}.tar.gz -C /build-dependencies \
+    && rm -rf nginx-${NGINX_VERSION}.tar.gz
 
 # Build Webserver Module
 COPY . /otel-webserver-module
