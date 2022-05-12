@@ -25,6 +25,8 @@ ARG GTEST_VERSION="1.10.0"
 ARG AUTOMAKE_VERSION="1.16.3"
 ARG PERL_VERSION="5.20.2"
 ARG PERL_CPANVERSION="5.0"
+ARG PCRE_VERSION="8.44"
+ARG NGINX_VERSION="1.18.0"
 
 # create default non-root user
 RUN groupadd -r swuser && useradd -u 1000 -g swuser -m -s /sbin/nologin -c "default non-root user" swuser
@@ -232,6 +234,14 @@ RUN mkdir -p dependencies/googletest/${GTEST_VERSION}/ \
     && make install \
     && cd ../.. && rm -rf release-${GTEST_VERSION}.tar.gz && rm -rf googletest-release-${GTEST_VERSION}/
 
+# install pcre
+RUN mkdir -p dependencies/pcre/${PCRE_VERSION}/ \
+    && wget https://ftp.exim.org/pub/pcre/pcre-${PCRE_VERSION}.tar.gz --no-check-certificate \
+    && tar -xvf pcre-${PCRE_VERSION}.tar.gz \
+    && cd pcre-${PCRE_VERSION} \
+    && ./configure --prefix=/dependencies/pcre/${PCRE_VERSION} --enable-jit \
+    && make && make install \
+    && cd .. && rm -rf ${PCRE_VERSION}.tar.gz && rm -rf pcre-${PCRE_VERSION}
 
 #Installing Apache and apr source code
 RUN mkdir build-dependencies \
@@ -247,6 +257,11 @@ RUN mkdir build-dependencies \
     && wget --no-check-certificate http://archive.apache.org/dist/httpd/httpd-2.4.23.tar.gz \
     && tar -xf httpd-2.4.23.tar.gz \
     && mv -f httpd-2.4.23 build-dependencies
+
+# install nginx
+RUN wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
+    && tar -xvf nginx-${NGINX_VERSION}.tar.gz -C /build-dependencies \
+    && rm -rf nginx-${NGINX_VERSION}.tar.gz
 
 # Build Webserver Module
 
