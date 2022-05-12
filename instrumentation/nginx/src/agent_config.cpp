@@ -21,6 +21,7 @@ static bool SetupOtlpExporter(toml_table_t* table, ngx_log_t* log, OtelNgxAgentC
   auto endpoint_from_env = std::getenv(otel_exporter_otlp_endpoint_env);
 
   if (endpoint_from_env) {
+    config->exporter.use_ssl_credentials = std::string(endpoint_from_env).find("https://") != std::string::npos;
     config->exporter.endpoint = endpoint_from_env;
     return true;
   }
