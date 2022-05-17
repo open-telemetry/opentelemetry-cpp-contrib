@@ -15,7 +15,7 @@
 */
 
 
-#include "ngx_http_appdynamics_log.h"
+#include "ngx_http_opentelemetry_log.h"
 
 ngx_flag_t logState = false;
 
@@ -31,7 +31,7 @@ void ngx_writeTrace(ngx_log_t *log, const char* funcName, const char* format, ..
 
     if (logState && log)
     {
-        ngx_log_error(NGX_LOG_ERR, log, 0, "mod_appdynamics: %s: %s", funcName, note);
+        ngx_log_error(NGX_LOG_ERR, log, 0, "mod_Opentelemetry: %s: %s", funcName, note);
     }
 }
 
@@ -47,6 +47,6 @@ void ngx_writeError(ngx_log_t *log, const char* funcName, const char* format, ..
 
     if (log && funcName)
     {
-        ngx_log_error(NGX_LOG_ERR, log, 0, "mod_appdynamics: %s: %s", funcName, note);
+        ngx_log_error(NGX_LOG_ERR, log, 0, "mod_Opentelemetry: %s: %s", funcName, note);
     }
 }
