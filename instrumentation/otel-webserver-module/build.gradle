@@ -435,6 +435,19 @@ task stripNginxModule(type: Exec){
     commandLine 'strip', '-x', "ngx_http_opentelemetry_module.${sharedLibraryExt}"
 }
 
+task assembleNginxModule(type: Tar) {
+    group = 'Nginx Web Server Module'
+    description = 'Assemble the Nginx Web Server module artifact (tgz)'
+
+    dependsOn stripNginxModule
+
+    from libraryStageDir
+    baseName "opentelemetry-webserver-sdk-${osArch}-${osName}"
+    into 'opentelemetry-webserver-sdk'
+    destinationDir file(buildDir)
+    compression Compression.GZIP
+}
+
 // Packages the complete Web Server Agent
 task assembleWebServerModule(type: Tar) {
     group = 'Web Server Agent'
