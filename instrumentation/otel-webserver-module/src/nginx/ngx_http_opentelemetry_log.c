@@ -31,7 +31,7 @@ void ngx_writeTrace(ngx_log_t *log, const char* funcName, const char* format, ..
 
     if (logState && log)
     {
-        ngx_log_error(NGX_LOG_ERR, log, 0, "mod_Opentelemetry: %s: %s", funcName, note);
+        ngx_log_error(NGX_LOG_ERR, log, 0, "mod_opentelemetry: %s: %s", funcName, note);
     }
 }
 
@@ -47,6 +47,6 @@ void ngx_writeError(ngx_log_t *log, const char* funcName, const char* format, ..
 
     if (log && funcName)
     {
-        ngx_log_error(NGX_LOG_ERR, log, 0, "mod_Opentelemetry: %s: %s", funcName, note);
+        ngx_log_error(NGX_LOG_ERR, log, 0, "mod_opentelemetry: %s: %s", funcName, note);
     }
 }
