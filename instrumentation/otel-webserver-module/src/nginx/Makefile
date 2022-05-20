@@ -1196,40 +1196,40 @@ objs/src/http/modules/ngx_http_upstream_zone_module.o:	$(CORE_DEPS) $(HTTP_DEPS)
 		src/http/modules/ngx_http_upstream_zone_module.c
 
 
-modules:	objs/ngx_http_appdynamics_module.so
+modules:	objs/ngx_http_opentelemetry_module.so
 
-objs/ngx_http_appdynamics_module.so:	objs/addon/nginx/ngx_http_appdynamics_log.o \
-	objs/addon/nginx/ngx_http_appdynamics_module.o \
-	objs/ngx_http_appdynamics_module_modules.o
+objs/ngx_http_opentelemetry_module.so:	objs/addon/nginx/ngx_http_opentelemetry_log.o \
+	objs/addon/nginx/ngx_http_opentelemetry_module.o \
+	objs/ngx_http_opentelemetry_module_modules.o
 
-	$(LINK) -o objs/ngx_http_appdynamics_module.so \
-	objs/addon/nginx/ngx_http_appdynamics_log.o \
-	objs/addon/nginx/ngx_http_appdynamics_module.o \
-	objs/ngx_http_appdynamics_module_modules.o \
+	$(LINK) -o objs/ngx_http_opentelemetry_module.so \
+	objs/addon/nginx/ngx_http_opentelemetry_log.o \
+	objs/addon/nginx/ngx_http_opentelemetry_module.o \
+	objs/ngx_http_opentelemetry_module_modules.o \
 	-L../linux-x64/opentelemetry-webserver-sdk/sdk_lib/lib \
     -lopentelemetry_webserver_sdk \
 	-shared
 
 
-objs/ngx_http_appdynamics_module_modules.o:	$(CORE_DEPS) \
-	objs/ngx_http_appdynamics_module_modules.c
+objs/ngx_http_opentelemetry_module_modules.o:	$(CORE_DEPS) \
+	objs/ngx_http_opentelemetry_module_modules.c
 	$(CC) -c -fPIC $(CFLAGS) $(ALL_INCS) \
-		-o objs/ngx_http_appdynamics_module_modules.o \
-		objs/ngx_http_appdynamics_module_modules.c
+		-o objs/ngx_http_opentelemetry_module_modules.o \
+		objs/ngx_http_opentelemetry_module_modules.c
 
 
-objs/addon/nginx/ngx_http_appdynamics_log.o:	$(ADDON_DEPS) \
-	../../src/nginx/ngx_http_appdynamics_log.c
+objs/addon/nginx/ngx_http_opentelemetry_log.o:	$(ADDON_DEPS) \
+	../../src/nginx/ngx_http_opentelemetry_log.c
 	$(CC) -c -fPIC $(CFLAGS) $(ALL_INCS) \
-		-o objs/addon/nginx/ngx_http_appdynamics_log.o \
-		../../src/nginx/ngx_http_appdynamics_log.c
+		-o objs/addon/nginx/ngx_http_opentelemetry_log.o \
+		../../src/nginx/ngx_http_opentelemetry_log.c
 
 
-objs/addon/nginx/ngx_http_appdynamics_module.o:	$(ADDON_DEPS) \
-	../../src/nginx/ngx_http_appdynamics_module.c
+objs/addon/nginx/ngx_http_opentelemetry_module.o:	$(ADDON_DEPS) \
+	../../src/nginx/ngx_http_opentelemetry_module.c
 	$(CC) -c -fPIC $(CFLAGS) $(ALL_INCS) \
-		-o objs/addon/nginx/ngx_http_appdynamics_module.o \
-		../../src/nginx/ngx_http_appdynamics_module.c
+		-o objs/addon/nginx/ngx_http_opentelemetry_module.o \
+		../../src/nginx/ngx_http_opentelemetry_module.c
 
 
 manpage:	objs/nginx.8
@@ -1300,7 +1300,7 @@ install:	build
 	test -d '$(DESTDIR)/usr/local/nginx/modules' \
 		|| mkdir -p '$(DESTDIR)/usr/local/nginx/modules'
 
-	test ! -f '$(DESTDIR)/usr/local/nginx/modules/ngx_http_appdynamics_module.so' \
-		|| mv '$(DESTDIR)/usr/local/nginx/modules/ngx_http_appdynamics_module.so' \
-			'$(DESTDIR)/usr/local/nginx/modules/ngx_http_appdynamics_module.so.old'
-	cp objs/ngx_http_appdynamics_module.so '$(DESTDIR)/usr/local/nginx/modules/ngx_http_appdynamics_module.so'
+	test ! -f '$(DESTDIR)/usr/local/nginx/modules/ngx_http_opentelemetry_module.so' \
+		|| mv '$(DESTDIR)/usr/local/nginx/modules/ngx_http_opentelemetry_module.so' \
+			'$(DESTDIR)/usr/local/nginx/modules/ngx_http_opentelemetry_module.so.old'
+	cp objs/ngx_http_opentelemetry_module.so '$(DESTDIR)/usr/local/nginx/modules/ngx_http_opentelemetry_module.so'

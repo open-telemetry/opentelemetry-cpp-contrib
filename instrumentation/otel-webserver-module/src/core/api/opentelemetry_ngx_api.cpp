@@ -14,7 +14,7 @@
 * limitations under the License.
 */
 #include "api/AppdynamicsSdk.h"
-#include "api/appdynamics_ngx_api.h"
+#include "api/opentelemetry_ngx_api.h"
 #include "api/WSAgent.h"
 #include "api/Payload.h"
 
@@ -40,7 +40,7 @@ void initDependency()
     wsAgent.initDependency();
 }
 
-APPD_SDK_STATUS_CODE appdynamics_core_init(APPD_SDK_ENV_RECORD* env, unsigned numberOfRecords, struct cNode *rootCN)
+APPD_SDK_STATUS_CODE opentelemetry_core_init(APPD_SDK_ENV_RECORD* env, unsigned numberOfRecords, struct cNode *rootCN)
 {
     APPD_SDK_STATUS_CODE res = APPD_SUCCESS;
     struct cNode *curCN = rootCN;

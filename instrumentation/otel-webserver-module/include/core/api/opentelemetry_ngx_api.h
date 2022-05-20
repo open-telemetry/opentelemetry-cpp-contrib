@@ -14,8 +14,8 @@
 * limitations under the License.
 */
 
-#ifndef APPDYNAMICS_NGX_API_H
-#define APPDYNAMICS_NGX_API_H
+#ifndef OPENTELEMETRY_NGX_API_H
+#define OPENTELEMETRY_NGX_API_H
 
 #ifndef __cplusplus
 #include <stdbool.h>
@@ -60,7 +60,7 @@ struct cNode{
 
 void initDependency();
 void populatePayload(request_payload* req_payload, void* payload, int count);
-APPD_SDK_STATUS_CODE appdynamics_core_init(APPD_SDK_ENV_RECORD* env, unsigned numberOfRecords, struct cNode *rootCN);
+APPD_SDK_STATUS_CODE opentelemetry_core_init(APPD_SDK_ENV_RECORD* env, unsigned numberOfRecords, struct cNode *rootCN);
 APPD_SDK_STATUS_CODE startRequest(const char* wscontext, request_payload* req_payload, APPD_SDK_HANDLE_REQ* reqHandle, int count);
 APPD_SDK_STATUS_CODE startModuleInteraction(const char* req_handle_key, const char* module_name, const char* stage, bool resolveBackends, APPD_SDK_ENV_RECORD* propagationHeaders, int* ix);
 APPD_SDK_STATUS_CODE stopModuleInteraction(const char* req_handle_key, const char* backendName, const char* backendType, unsigned int err_code, const char* msg);
@@ -69,4 +69,4 @@ APPD_SDK_STATUS_CODE endRequest(APPD_SDK_HANDLE_REQ req_handle_key, const char* 
 #ifdef	__cplusplus
 }
 #endif
-#endif /* APPDYNAMICS_NGX_API_H ends */
+#endif /* OPENTELEMETRY_NGX_API_H ends */

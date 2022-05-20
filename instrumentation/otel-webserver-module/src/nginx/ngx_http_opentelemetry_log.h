@@ -22,8 +22,8 @@
 
 /* 
 	To log Agent logs into NGINX error logs, 
-	based on the flag "AppDynamicsTraceAsError" set by user 
+	based on the flag "NginxModuleTraceAsError" set by user
 */
-ngx_flag_t logState; // read the value of "AppDynamicsTraceAsError" flag
+ngx_flag_t logState; // read the value of "NginxModuleTraceAsError" flag
 void ngx_writeTrace(ngx_log_t *log, const char* funcName, const char* note, ...);
 void ngx_writeError(ngx_log_t *log, const char* funcName, const char* note, ...); 
