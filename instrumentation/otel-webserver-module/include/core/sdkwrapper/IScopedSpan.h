@@ -37,7 +37,7 @@ enum class StatusCode {
 };
 
 enum class SpanType {
-	INTERNAL,
+  INTERNAL,
   SERVER,
   CLIENT
 };
@@ -53,11 +53,11 @@ public:
         const OtelKeyValueMap& attributes) = 0;
 
 	virtual void AddAttribute(const std::string& key,
-		const SpanAttributeValue& value) = 0;
+	const SpanAttributeValue& value) = 0;
 
-  virtual void SetStatus(const StatusCode status, const std::string& desc = "") = 0;
+        virtual void SetStatus(const StatusCode status, const std::string& desc = "") = 0;
 
-  virtual SpanType GetSpanKind() = 0;
+        virtual SpanType GetSpanKind() = 0;
 };
 
 } //sdkwrapper
