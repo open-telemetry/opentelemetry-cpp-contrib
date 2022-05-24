@@ -21,6 +21,7 @@
 #include <unordered_map>
 #include <chrono>
 
+
 namespace appd {
 namespace core {
 namespace sdkwrapper {
@@ -31,7 +32,14 @@ using namespace opentelemetry;
 
 enum class StatusCode {
   Ok,
-  Error
+  Error,
+  Unset
+};
+
+enum class SpanType {
+	INTERNAL,
+  SERVER,
+  CLIENT
 };
 
 class IScopedSpan {
@@ -48,6 +56,8 @@ public:
 		const SpanAttributeValue& value) = 0;
 
   virtual void SetStatus(const StatusCode status, const std::string& desc = "") = 0;
+
+  virtual SpanType GetSpanKind() = 0;
 };
 
 } //sdkwrapper

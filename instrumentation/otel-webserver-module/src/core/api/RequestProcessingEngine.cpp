@@ -19,6 +19,7 @@
 #include "api/ApiUtils.h"
 #include "api/Payload.h"
 #include "sdkwrapper/SdkWrapper.h"
+#include "sdkwrapper/IScopedSpan.h"
 #include <sys/types.h>
 #include <unistd.h>
 #include <boost/filesystem.hpp>
@@ -99,8 +100,24 @@ APPD_SDK_STATUS_CODE RequestProcessingEngine::endRequest(
 
     // check for error and set attribute in the scopedSpan.
     if (error) {
-        rootSpan->SetStatus(sdkwrapper::StatusCode::Error, error);
         LOG4CXX_TRACE(mLogger, "Setting status as error[" << error <<"] on root Span");
+        if (error >= 100 &&   error < 400 )
+        {
+            rootSpan->SetStatus(sdkwrapper::StatusCode::Unset, error);
+        }
+        else if (error >= 400 &&   error < 500 )
+        {
+            if (rootSpan->GetSpanKind() == sdkwrapper::SpanType::SERVER)
+                rootSpan->SetStatus(sdkwrapper::StatusCode::Unset, error);
+            else
+                rootSpan->SetStatus(sdkwrapper::StatusCode::Error, error);
+
+        }
+        else
+        {
+            rootSpan->SetStatus(sdkwrapper::StatusCode::Error, error);
+        }
+
     } else {
         rootSpan->SetStatus(sdkwrapper::StatusCode::Ok);
     }
@@ -177,7 +194,22 @@ APPD_SDK_API APPD_SDK_STATUS_CODE RequestProcessingEngine::endInteraction(
     // If errorCode is 0 or errMsg is empty, there is no error.
     bool isError = payload->errorCode != 0 && !payload->errorMsg.empty();
     if (isError) {
-        interactionSpan->SetStatus(sdkwrapper::StatusCode::Error, payload->errorMsg);
+        if (payload->errorCode >= 100 &&   payload->errorCode < 400 )
+        {
+            interactionSpan->SetStatus(sdkwrapper::StatusCode::Unset, payload->errorMsg);
+        }
+        else if (payload->errorCode >= 400 &&   payload->errorCode < 500 )
+        {
+            if (interactionSpan->GetSpanKind() == sdkwrapper::SpanType::SERVER)
+                interactionSpan->SetStatus(sdkwrapper::StatusCode::Unset, payload->errorMsg);
+            else
+                interactionSpan->SetStatus(sdkwrapper::StatusCode::Error, payload->errorMsg);
+
+        }
+        else
+        {
+            interactionSpan->SetStatus(sdkwrapper::StatusCode::Error, payload->errorMsg);
+        }
         interactionSpan->AddAttribute("error_code", payload->errorCode);
         LOG4CXX_TRACE(mLogger, "Span updated with error Code: " << payload->errorCode);
     } else {

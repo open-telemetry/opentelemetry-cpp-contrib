@@ -46,12 +46,15 @@ public:
 	void AddAttribute(const std::string& key,
         const SpanAttributeValue& value) override;
 
-  void SetStatus(const StatusCode status, const std::string& desc) override;
+    void SetStatus(const StatusCode status, const std::string& desc) override;
+
+    SpanType GetSpanKind();
 
 private:
 	opentelemetry::nostd::shared_ptr<trace::Span> mSpan;
 	std::unique_ptr<trace::Scope> mScope;
-  const AgentLogger& mLogger;
+    const AgentLogger& mLogger;
+    trace::SpanKind mSpanKind;
 };
 
 } //sdkwrapper

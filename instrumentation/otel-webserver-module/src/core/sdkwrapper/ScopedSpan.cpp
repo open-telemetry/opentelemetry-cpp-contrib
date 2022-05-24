@@ -32,6 +32,7 @@ ScopedSpan::ScopedSpan(
 	options.kind = kind;
 	mSpan = sdkHelperFactory->GetTracer()->StartSpan(name, attributes, options);
 	mScope.reset(new trace::Scope(mSpan));
+	mSpanKind = kind;
 }
 
 void ScopedSpan::End()
@@ -66,6 +67,16 @@ void ScopedSpan::SetStatus(const StatusCode status, const std::string& desc)
   }
 
   mSpan->SetStatus(otelStatus, desc);
+}
+
+SpanType ScopedSpan::GetSpanKind()
+{
+	if (mSpanKind == trace::SpanKind::kServer)
+		 return SpanType::SERVER;
+	else if (mSpanKind == SpanKind::kClient)
+		 return SpanType::CLIENT;
+	else
+		 return SpanType::INTERNAL;
 }
 
 } //sdkwrapper
