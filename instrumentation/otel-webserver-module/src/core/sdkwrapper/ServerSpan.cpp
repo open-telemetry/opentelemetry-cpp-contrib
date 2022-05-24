@@ -70,7 +70,7 @@ void ServerSpan::SetStatus(const StatusCode status, const std::string& desc)
 
 SpanType ServerSpan::GetSpanKind()
 {
-	return SpanType::SERVER;
+  return SpanType::SERVER;
 }
 
 

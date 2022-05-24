@@ -72,11 +72,11 @@ void ScopedSpan::SetStatus(const StatusCode status, const std::string& desc)
 SpanType ScopedSpan::GetSpanKind()
 {
 	if (mSpanKind == trace::SpanKind::kServer)
-		 return SpanType::SERVER;
-	else if (mSpanKind == SpanKind::kClient)
-		 return SpanType::CLIENT;
+		return SpanType::SERVER;
+	else if (mSpanKind == trace::SpanKind::kClient)
+		return SpanType::CLIENT;
 	else
-		 return SpanType::INTERNAL;
+		return SpanType::INTERNAL;
 }
 
 } //sdkwrapper

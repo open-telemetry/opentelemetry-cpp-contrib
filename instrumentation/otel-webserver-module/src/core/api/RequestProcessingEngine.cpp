@@ -26,10 +26,15 @@
 #include <boost/thread/locks.hpp>
 #include <log4cxx/logger.h>
 #include <unordered_map>
+#include <sstream>
 
 
 namespace appd {
 namespace core {
+
+#define HTTP_ERROR_1XX 100
+#define HTTP_ERROR_4XX 400
+#define HTTP_ERROR_5XX 500
 
 RequestProcessingEngine::RequestProcessingEngine()
     : mLogger(getLogger(std::string(LogContext::AGENT) + ".RequestProcessingEngine"))
@@ -100,23 +105,26 @@ APPD_SDK_STATUS_CODE RequestProcessingEngine::endRequest(
 
     // check for error and set attribute in the scopedSpan.
     if (error) {
-        LOG4CXX_TRACE(mLogger, "Setting status as error[" << error <<"] on root Span");
-        if (error >= 100 &&   error < 400 )
-        {
-            rootSpan->SetStatus(sdkwrapper::StatusCode::Unset, error);
+        std::stringstream strValue;
+        strValue << error;
+
+        unsigned int errorValue;
+        strValue >> errorValue;
+
+        if (errorValue >= HTTP_ERROR_1XX &&   errorValue < HTTP_ERROR_4XX ) {
+            rootSpan->SetStatus(sdkwrapper::StatusCode::Unset);
         }
-        else if (error >= 400 &&   error < 500 )
-        {
+        else if (errorValue >= HTTP_ERROR_4XX &&   errorValue < HTTP_ERROR_5XX ) {
             if (rootSpan->GetSpanKind() == sdkwrapper::SpanType::SERVER)
-                rootSpan->SetStatus(sdkwrapper::StatusCode::Unset, error);
+                rootSpan->SetStatus(sdkwrapper::StatusCode::Unset);
             else
                 rootSpan->SetStatus(sdkwrapper::StatusCode::Error, error);
 
-        }
-        else
-        {
+        } else {
             rootSpan->SetStatus(sdkwrapper::StatusCode::Error, error);
         }
+
+        LOG4CXX_TRACE(mLogger, "Setting status as error[" << error <<"] on root Span");
 
     } else {
         rootSpan->SetStatus(sdkwrapper::StatusCode::Ok);
@@ -194,20 +202,16 @@ APPD_SDK_API APPD_SDK_STATUS_CODE RequestProcessingEngine::endInteraction(
     // If errorCode is 0 or errMsg is empty, there is no error.
     bool isError = payload->errorCode != 0 && !payload->errorMsg.empty();
     if (isError) {
-        if (payload->errorCode >= 100 &&   payload->errorCode < 400 )
-        {
-            interactionSpan->SetStatus(sdkwrapper::StatusCode::Unset, payload->errorMsg);
+        if (payload->errorCode >= HTTP_ERROR_1XX &&   payload->errorCode < HTTP_ERROR_4XX ) {
+            interactionSpan->SetStatus(sdkwrapper::StatusCode::Unset);
         }
-        else if (payload->errorCode >= 400 &&   payload->errorCode < 500 )
-        {
+        else if (payload->errorCode >= HTTP_ERROR_4XX &&   payload->errorCode < HTTP_ERROR_5XX ) {
             if (interactionSpan->GetSpanKind() == sdkwrapper::SpanType::SERVER)
-                interactionSpan->SetStatus(sdkwrapper::StatusCode::Unset, payload->errorMsg);
+                interactionSpan->SetStatus(sdkwrapper::StatusCode::Unset);
             else
                 interactionSpan->SetStatus(sdkwrapper::StatusCode::Error, payload->errorMsg);
 
-        }
-        else
-        {
+        } else {
             interactionSpan->SetStatus(sdkwrapper::StatusCode::Error, payload->errorMsg);
         }
         interactionSpan->AddAttribute("error_code", payload->errorCode);
