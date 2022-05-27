@@ -51,7 +51,7 @@ public:
 
   void SetStatus(const StatusCode status, const std::string& desc) override;
 
-  SpanType GetSpanKind();
+  SpanKind GetSpanKind();
 
 private:
 	std::unique_ptr<ScopedSpan> mScopedSpan;

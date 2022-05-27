@@ -48,7 +48,7 @@ public:
 
     void SetStatus(const StatusCode status, const std::string& desc) override;
 
-    SpanType GetSpanKind();
+    SpanKind GetSpanKind();
 
 private:
 	opentelemetry::nostd::shared_ptr<trace::Span> mSpan;

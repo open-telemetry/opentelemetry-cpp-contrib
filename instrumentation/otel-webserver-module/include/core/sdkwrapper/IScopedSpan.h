@@ -17,6 +17,7 @@
 #ifndef __ISCOPEDSPAN_H
 #define __ISCOPEDSPAN_H
 
+#include "sdkwrapper/SdkEnums.h"
 #include <opentelemetry/common/attribute_value.h>
 #include <unordered_map>
 #include <chrono>
@@ -29,18 +30,6 @@ namespace sdkwrapper {
 using SpanAttributeValue = opentelemetry::common::AttributeValue;
 using OtelKeyValueMap = std::unordered_map<std::string, SpanAttributeValue>;
 using namespace opentelemetry;
-
-enum class StatusCode {
-  Ok,
-  Error,
-  Unset
-};
-
-enum class SpanType {
-  INTERNAL,
-  SERVER,
-  CLIENT
-};
 
 class IScopedSpan {
 public:
@@ -57,7 +46,7 @@ public:
 
         virtual void SetStatus(const StatusCode status, const std::string& desc = "") = 0;
 
-        virtual SpanType GetSpanKind() = 0;
+        virtual SpanKind GetSpanKind() = 0;
 };
 
 } //sdkwrapper

@@ -69,14 +69,14 @@ void ScopedSpan::SetStatus(const StatusCode status, const std::string& desc)
   mSpan->SetStatus(otelStatus, desc);
 }
 
-SpanType ScopedSpan::GetSpanKind()
+SpanKind ScopedSpan::GetSpanKind()
 {
 	if (mSpanKind == trace::SpanKind::kServer)
-		return SpanType::SERVER;
+		return SpanKind::SERVER;
 	else if (mSpanKind == trace::SpanKind::kClient)
-		return SpanType::CLIENT;
+		return SpanKind::CLIENT;
 	else
-		return SpanType::INTERNAL;
+		return SpanKind::INTERNAL;
 }
 
 } //sdkwrapper
