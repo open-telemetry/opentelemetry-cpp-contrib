@@ -104,13 +104,15 @@ APPD_SDK_STATUS_CODE RequestProcessingEngine::endRequest(
 
     // check for error and set attribute in the scopedSpan.
     if (error) {
-        // Todo : Error is currently coming like eg HTTP Error code:403
-        // Please change it to only erro code
+        std::string errorStatus;
         std::stringstream strValue;
-        strValue << error;
-
         unsigned int errorValue;
+
+        strValue << error;
         strValue >> errorValue;
+
+        strValue << kHttpErrorCode + error; // This is status message eg: HTTP ERROR CODE:403
+        strValue >> errorStatus;
 
         if (errorValue >= HTTP_ERROR_1XX &&   errorValue < HTTP_ERROR_4XX ) {
             rootSpan->SetStatus(StatusCode::Unset);
@@ -119,13 +121,13 @@ APPD_SDK_STATUS_CODE RequestProcessingEngine::endRequest(
             if (rootSpan->GetSpanKind() == SpanKind::SERVER)
                 rootSpan->SetStatus(StatusCode::Unset);
             else
-                rootSpan->SetStatus(StatusCode::Error, error);
+                rootSpan->SetStatus(StatusCode::Error, errorStatus);
 
         } else {
-            rootSpan->SetStatus(StatusCode::Error, error);
+            rootSpan->SetStatus(StatusCode::Error, errorStatus);
         }
 
-        LOG4CXX_TRACE(mLogger, "Setting status as error[" << error <<"] on root Span");
+        LOG4CXX_TRACE(mLogger, "Setting status as error[" << errorStatus <<"] on root Span");
 
     } else {
         rootSpan->SetStatus(StatusCode::Ok);
