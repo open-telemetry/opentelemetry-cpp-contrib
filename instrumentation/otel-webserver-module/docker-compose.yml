@@ -64,7 +64,7 @@ services:
         image: nginx_centos7
         hostname: webserver
         container_name: nginx_centos7
-        command: bash -c "nginx"
+        command: bash -c "export LD_LIBRARY_PATH=/opt/opentelemetry-webserver-sdk/sdk_lib/lib && nginx && tail -f /dev/null"
         profiles:
             - centos7_nginx
         ports:
