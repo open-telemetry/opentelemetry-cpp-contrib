@@ -634,7 +634,7 @@ int ApacheHooks::appd_hook_log_transaction_end(request_rec* r)
     if (appd_requestHasErrors(r))
     {
         std::ostringstream oss;
-        oss << "HTTP ERROR CODE:" << r->status;
+        oss << r->status;
         res = wsAgent.endRequest(reqHandle, oss.str().c_str());
     }
     else
