@@ -181,16 +181,7 @@ This would start the container alongwith the the Opentelemetry Collector and Zip
 
 #### Manual build and Installation
 
-We will use Docker to run the Module. First, it is to be made sure that the Docker is up and running.
-Then execute the following commands -:
-```
-docker-compose --profile centos_nginx build
-docker-compose --profile centos_nginx up
-```
-Next, login into the Docker container.
-After going inside the container run the following commands ```cd \otel-webserver-module```. After making code changes the build and installation can be done by running ```./install.sh```.
-
-The build file can be copied at a suitable location in User's system by running the command ```docker cp <container_name>:/otel-webserver-module/build/opentelemetry-webserver-sdk-x64-linux.tgz  <desired_location>```. The installation steps can be inferred from Dockerfile.
+TBD
 
 
 ### Maintainers
