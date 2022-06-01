@@ -13,21 +13,24 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+
 #pragma once
 
 namespace appd {
 namespace core {
 namespace sdkwrapper {
 
-const std::string kServiceName = "service.name";
-const std::string kServiceNamespace = "service.namespace";
-const std::string kServiceInstanceId = "service.instance.id";
-const std::string kOtelLibraryName = "telemetry.sdk.language";
-const std::string kOtelLibraryVersion = "telemetry.sdk.version";
-const std::string kHttpErrorCode = "HTTP ERROR CODE:";
-constexpr int HTTP_ERROR_1XX = 100;
-constexpr int HTTP_ERROR_4XX = 400;
-constexpr int HTTP_ERROR_5XX = 500;
+enum class StatusCode {
+  Ok,
+  Error,
+  Unset
+};
+
+enum class SpanKind {
+  INTERNAL,
+  SERVER,
+  CLIENT
+};
 
 } // sdkwrapper
 } // core
