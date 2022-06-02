@@ -51,6 +51,8 @@ public:
 
   void SetStatus(const StatusCode status, const std::string& desc) override;
 
+  SpanKind GetSpanKind();
+
 private:
 	std::unique_ptr<ScopedSpan> mScopedSpan;
     nostd::unique_ptr<context::Token> mToken;
