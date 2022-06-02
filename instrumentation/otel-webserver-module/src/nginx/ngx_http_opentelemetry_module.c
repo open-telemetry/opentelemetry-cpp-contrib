@@ -990,17 +990,13 @@ static void stopMonitoringRequest(ngx_http_request_t* r)
 
     APPD_SDK_STATUS_CODE res;
     unsigned int errCode=0;
-    char* code = (char*)malloc(6);
-    const char* status = "HTTP Status Code: ";
     char* msg = NULL;
 
     if (otel_requestHasErrors(r))
     {
         errCode=(unsigned int)otel_getErrorCode(r);
-        msg = malloc(strlen(status) + 6);
-        sprintf(code, "%d", errCode);
-        strcpy(msg, status);
-        strcat(msg, code);
+        msg = (char*)malloc(6);
+        sprintf(msg, "%d", errCode);
         res = endRequest(reqHandle, msg);
     }
     else
