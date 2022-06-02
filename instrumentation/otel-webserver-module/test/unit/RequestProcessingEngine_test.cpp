@@ -208,12 +208,12 @@ TEST(TestRequestProcessingEngine, EndRequest)
 	EXPECT_CALL(*getMockSpan(interactionSpan1), End()).
 	Times(1);
 
-	EXPECT_CALL(*getMockSpan(rootSpan), SetStatus(appd::core::sdkwrapper::StatusCode::Error, "error_msg")).Times(1);
+	EXPECT_CALL(*getMockSpan(rootSpan), SetStatus(appd::core::sdkwrapper::StatusCode::Error, "HTTP ERROR CODE:403")).Times(1);
 	
 	EXPECT_CALL(*getMockSpan(rootSpan), End()).
 	Times(1);
 
-	auto res = engine.endRequest(rContext, "error_msg");
+	auto res = engine.endRequest(rContext, "403");
 	EXPECT_EQ(res, APPD_SUCCESS);
 }
 
@@ -225,7 +225,7 @@ TEST(TestRequestProcessingEngine, EndRequestInvalidParams)
 	engine.init(config,spanNamer);
 	auto* sdkWrapper = engine.getMockSdkWrapper();
 	ASSERT_TRUE(sdkWrapper);
-	auto res = engine.endRequest(nullptr, "error msg");
+	auto res = engine.endRequest(nullptr, "403");
 	EXPECT_EQ(res, APPD_STATUS(fail));
 }
 
