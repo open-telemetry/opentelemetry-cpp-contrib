@@ -104,15 +104,13 @@ APPD_SDK_STATUS_CODE RequestProcessingEngine::endRequest(
 
     // check for error and set attribute in the scopedSpan.
     if (error) {
-        std::string errorStatus;
         std::stringstream strValue;
         unsigned int errorValue;
 
         strValue << error;
         strValue >> errorValue;
 
-        strValue << kHttpErrorCode + error; // This is status message eg: HTTP ERROR CODE:403
-        strValue >> errorStatus;
+        std::string errorStatus (kHttpErrorCode + error); // This is status message eg: HTTP ERROR CODE:403
 
         if (errorValue >= HTTP_ERROR_1XX &&   errorValue < HTTP_ERROR_4XX ) {
             rootSpan->SetStatus(StatusCode::Unset);
