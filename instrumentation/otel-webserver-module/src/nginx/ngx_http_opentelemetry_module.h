@@ -27,7 +27,7 @@
 Function pointer struct for module specific hooks
 */
 typedef ngx_int_t (*mod_handler)(ngx_http_request_t*);
-mod_handler h[14];
+mod_handler h[16];
 
 /*
  Structure for storing module details for mapping module handlers with their respective module
@@ -136,6 +136,8 @@ static ngx_int_t ngx_http_otel_autoindex_handler(ngx_http_request_t *r);
 static ngx_int_t ngx_http_otel_index_handler(ngx_http_request_t *r);
 static ngx_int_t ngx_http_otel_random_index_handler(ngx_http_request_t *r);
 static ngx_int_t ngx_http_otel_log_handler(ngx_http_request_t *r);
+static ngx_int_t ngx_http_otel_try_files_handler(ngx_http_request_t *r);
+static ngx_int_t ngx_http_otel_mirror_handler(ngx_http_request_t *r);
 
 /*
     Utility fuction to check if the given module is monitored by Appd Agent

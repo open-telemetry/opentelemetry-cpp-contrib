@@ -141,6 +141,23 @@ otel_ngx_module otel_monitored_modules[] = {
         ngx_http_otel_log_handler,
         0,
         1
+    },
+    {
+        "ngx_http_try_files_module",
+        0,
+        {NGX_HTTP_PRECONTENT_PHASE},
+        ngx_http_otel_try_files_handler,
+        0,
+        1
+    },
+    {
+        "ngx_http_mirror_module",
+        0,
+        {NGX_HTTP_PRECONTENT_PHASE},
+        ngx_http_otel_mirror_handler,
+        0,
+        1
+
     }
 };
 
@@ -477,14 +494,14 @@ static char* ngx_http_opentelemetry_merge_loc_conf(ngx_conf_t *cf, void *parent,
 static ngx_int_t ngx_http_opentelemetry_init(ngx_conf_t *cf)
 {
     ngx_http_core_main_conf_t    *cmcf;
-    ngx_uint_t                   m, cp, ap, pap, srp, prp, rp, lp;
+    ngx_uint_t                   m, cp, ap, pap, srp, prp, rp, lp, pcp;
     ngx_http_phases              ph;
     ngx_uint_t                   phase_index;
     ngx_int_t                    res;
 
     ngx_writeError(cf->cycle->log, __func__, "Starting Opentelemetry Modlue init");
 
-    cp = ap = pap = srp = prp = rp = lp = 0;
+    cp = ap = pap = srp = prp = rp = lp = pcp = 0;
     res = -1;
 
     cmcf = ngx_http_conf_get_module_main_conf(cf, ngx_http_core_module);
@@ -555,11 +572,16 @@ static ngx_int_t ngx_http_opentelemetry_init(ngx_conf_t *cf)
                                 lp++;
                             }
                             break;
-
+                        case NGX_HTTP_PRECONTENT_PHASE:
+                            if(pcp < cmcf->phases[NGX_HTTP_PRECONTENT_PHASE].handlers.nelts){
+                                h[res] = ((ngx_http_handler_pt*)cmcf->phases[NGX_HTTP_PRECONTENT_PHASE].handlers.elts)[pcp];
+                                ((ngx_http_handler_pt*)cmcf->phases[NGX_HTTP_PRECONTENT_PHASE].handlers.elts)[pcp] = otel_monitored_modules[res].handler;
+                                pcp++;
+                            }
+                            break;
                         case NGX_HTTP_FIND_CONFIG_PHASE:
                         case NGX_HTTP_POST_REWRITE_PHASE:
                         case NGX_HTTP_POST_ACCESS_PHASE:
-                        case NGX_HTTP_PRECONTENT_PHASE:
                         break;
                     }
                     phase_index++;
@@ -740,14 +762,14 @@ static void otel_stopInteraction(ngx_http_request_t* r, const char* module_name)
     if(ctx && ctx->otel_req_handle_key)
     {
         // TODO: Work on backend naming and type
-        char* backendName = ngx_pcalloc(r->pool, 6);
+        char* backendName = (char *)malloc(6);
         *backendName = '\0';
         const char* backendType = "HTTP";
         unsigned int errCode=0;
-        char* code = ngx_pcalloc(r->pool, 6);
+        char* code = (char *)malloc(6);
 
         const char* status = "HTTP Status Code: ";
-        char* msg = ngx_pcalloc(r->pool, strlen(status) + 6);
+        char* msg = (char *)malloc(strlen(status) + 6);
         *msg = '\0';
         if(otel_requestHasErrors(r))
         {
@@ -762,6 +784,10 @@ static void otel_stopInteraction(ngx_http_request_t* r, const char* module_name)
         {
             ngx_writeError(r->connection->log, __func__, "Error: Stop Interaction failed, result code: %d", res);
         }
+
+        if (backendName) free(backendName);
+        if (code) free (code);
+        if (msg) free (msg);
     }
 }
 
@@ -967,10 +993,10 @@ static ngx_flag_t ngx_initialize_opentelemetry(ngx_http_request_t *r)
 
 static void stopMonitoringRequest(ngx_http_request_t* r)
 {
-    if(r->internal)
+    /*if(r->internal)
     {
         return;
-    }
+    }*/
 
     ngx_http_opentelemetry_loc_conf_t  *ngx_conf = ngx_http_get_module_loc_conf(r, ngx_http_opentelemetry_module);
     if(!ngx_conf->nginxModuleEnabled)
@@ -984,7 +1010,9 @@ static void stopMonitoringRequest(ngx_http_request_t* r)
         return;
     }
     APPD_SDK_HANDLE_REQ reqHandle = (APPD_SDK_HANDLE_REQ)ctx->otel_req_handle_key;
-    ngx_pfree(r->pool, ctx);
+    if (r->pool) {
+        ngx_pfree(r->pool, ctx);
+    }
 
     ngx_writeTrace(r->connection->log, __func__, "Stopping the Request Monitoring");
 
@@ -1107,6 +1135,7 @@ static void startMonitoringRequest(ngx_http_request_t* r){
 }
 
 static ngx_int_t ngx_http_otel_rewrite_handler(ngx_http_request_t *r){
+
     otel_startInteraction(r, "ngx_http_rewrite_module");
     ngx_int_t rvalue = h[0](r);
     otel_stopInteraction(r, "ngx_http_rewrite_module");
@@ -1203,17 +1232,77 @@ static ngx_int_t ngx_http_otel_autoindex_handler(ngx_http_request_t *r){
 }
 
 static ngx_int_t ngx_http_otel_index_handler(ngx_http_request_t *r){
+    bool old_internal = r->internal;
+    ngx_http_otel_handles_t* old_ctx;
+
     otel_startInteraction(r, "ngx_http_index_module");
+    old_ctx = ngx_http_get_module_ctx(r, ngx_http_opentelemetry_module);
     ngx_int_t rvalue = h[11](r);
-    otel_stopInteraction(r, "ngx_http_index_module");
+    bool new_internal = r->internal;
+    if (new_internal == true && new_internal != old_internal) {
+        ngx_http_set_ctx(r, old_ctx, ngx_http_opentelemetry_module);
+        r->internal = 0;
+        otel_stopInteraction(r, "ngx_http_index_module");
+        r->internal = 1;
+
+    } else {
+        otel_stopInteraction(r, "ngx_http_index_module");
+    }
 
     return rvalue;
 }
 
 static ngx_int_t ngx_http_otel_random_index_handler(ngx_http_request_t *r){
+    bool old_internal = r->internal;
+    ngx_http_otel_handles_t* old_ctx;
+
+    old_ctx = ngx_http_get_module_ctx(r, ngx_http_opentelemetry_module);
     otel_startInteraction(r, "ngx_http_random_index_module");
     ngx_int_t rvalue = h[12](r);
-    otel_stopInteraction(r, "ngx_http_random_index_module");
+    bool new_internal = r->internal;
+    if (new_internal == true && new_internal != old_internal) {
+        ngx_http_set_ctx(r, old_ctx, ngx_http_opentelemetry_module);
+        r->internal = 0;
+        otel_stopInteraction(r, "ngx_http_random_index_module");
+        r->internal = 1;
+
+    } else {
+        otel_stopInteraction(r, "ngx_http_random_index_module");
+    }
+
+    return rvalue;
+}
+
+static ngx_int_t ngx_http_otel_try_files_handler(ngx_http_request_t *r) {
+    bool old_internal = r->internal;
+    ngx_http_otel_handles_t* old_ctx;
+
+    old_ctx = ngx_http_get_module_ctx(r, ngx_http_opentelemetry_module);
+    otel_startInteraction(r, "ngx_http_otel_try_files_handler");
+    ngx_int_t rvalue = h[14](r);
+    bool new_internal = r->internal;
+    if (new_internal == true && new_internal != old_internal) {
+        ngx_http_set_ctx(r, old_ctx, ngx_http_opentelemetry_module);
+        r->internal = 0;
+        otel_stopInteraction(r, "ngx_http_otel_try_files_handler");
+        r->internal = 1;
+    } else {
+        otel_stopInteraction(r, "ngx_http_otel_try_files_handler");
+    }
+    /*otel_startInteraction(r, "ngx_http_otel_try_files_handler");
+    ngx_int_t rvalue = h[14](r);
+    otel_stopInteraction(r, "ngx_http_otel_try_files_handler");*/
+
+    if (!r->pool) {
+            stopMonitoringRequest(r);
+    }
+    return rvalue;
+}
+
+static ngx_int_t ngx_http_otel_mirror_handler(ngx_http_request_t *r) {
+    otel_startInteraction(r, "ngx_http_otel_mirror_handler");
+    ngx_int_t rvalue = h[15](r);
+    otel_stopInteraction(r, "ngx_http_otel_mirror_handler");
 
     return rvalue;
 }
@@ -1222,10 +1311,10 @@ static ngx_int_t ngx_http_otel_log_handler(ngx_http_request_t *r){
     //This will be last handler to be be encountered before a request ends and response is finally sent back to client
     // Here, End the main trace, span created by Webserver Agent and the collected data will be passed to the backend
     // It will work as ngx_http_opentelemetry_log_transaction_end
-    if(!r->internal)
-    {
+    //if(!r->internal)
+    //{
         stopMonitoringRequest(r);
-    }
+    //}
 
     ngx_int_t rvalue = h[13](r);
 
@@ -1234,7 +1323,7 @@ static ngx_int_t ngx_http_otel_log_handler(ngx_http_request_t *r){
 
 static ngx_int_t isOTelMonitored(const char* str){
     unsigned int i = 0;
-    for(i=0; i<14; i++){
+    for(i=0; i<16; i++){
         if(strcmp(str, otel_monitored_modules[i].name) == 0)
             return i;
         }
