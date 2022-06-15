@@ -34,6 +34,8 @@
 #include "ApacheTracing.h"
 #include "ApacheConfig.h"
 
+#include "sdkwrapper/SdkConstants.h"
+
 std::string ApacheHooks::m_aggregatorCommDir = "";
 bool ApacheHooks::m_reportAllStages = false;
 const std::initializer_list<const char*> ApacheHooks::httpHeaders = {
@@ -48,6 +50,8 @@ const char* ApacheHooks::APPD_REQ_HANDLE_KEY = "appd_req_handle_key";
 const char* APPD_OUTPUT_FILTER_NAME = "APPD_EUM_AUTOINJECT";
 
 appd::core::WSAgent wsAgent; // global variable for interface between Hooks and Core Logic
+
+using namespace appd::core::sdkwrapper;
 
 void ApacheHooks::registerHooks(apr_pool_t *p)
 {
@@ -184,7 +188,6 @@ apr_status_t ApacheHooks::appd_output_filter(ap_filter_t* f, apr_bucket_brigade*
     // Remove ourselves from the chain and pass everything down
     ap_remove_output_filter(f);
     return ap_pass_brigade(f->next, bb);
-}
 }
 
 // end the interaction
@@ -538,11 +541,11 @@ void fillRequestPayload(request_rec* request, appd::core::RequestPayload* payloa
 
     switch (request->proto_num)
     {  // TODO: consider using ap_get_protocol for other flavors
-      case 1000:
-        payload->set_flavor("1.0");
+      case HTTP_PROTO_1000:
+        payload->set_flavor(kHTTPFlavor1_0.c_str());
         break;
-      case 1001:
-        payload->set_flavor("1.1");
+      case HTTP_PROTO_1001:
+        payload->set_flavor(kHTTPFlavor1_1.c_str());
         break;
     }
 

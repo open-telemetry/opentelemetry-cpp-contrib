@@ -63,15 +63,15 @@ APPD_SDK_STATUS_CODE RequestProcessingEngine::startRequest(
 
     std::string spanName = m_spanNamer->getSpanName(payload->get_uri());
     appd::core::sdkwrapper::OtelKeyValueMap keyValueMap;
-    keyValueMap["request_protocol"] = payload->get_request_protocol();
-    keyValueMap["http.server_name"] = payload->get_server_name();
-    keyValueMap["http.method"] = payload->get_http_request_method();
-    keyValueMap["http.scheme"] = payload->get_scheme();
-    keyValueMap["http.host"] = payload->get_host();
-    keyValueMap["net.host.port"] = payload->get_port();
-    keyValueMap["http.target"] =payload->get_target();
-    keyValueMap["http.flavor"] = payload->get_flavor();
-    keyValueMap["http.status_code"] = payload->get_status_code();
+    keyValueMap[kAttrRequestProtocol] = payload->get_request_protocol();
+    keyValueMap[kAttrHTTPServerName] = payload->get_server_name();
+    keyValueMap[kAttrHTTPMethod] = payload->get_http_request_method();
+    keyValueMap[kAttrHTTPScheme] = payload->get_scheme();
+    keyValueMap[kAttrHTTPHost] = payload->get_host();
+    keyValueMap[kAttrNETHostPort] = payload->get_port();
+    keyValueMap[kAttrHTTPTarget] =payload->get_target();
+    keyValueMap[kAttrHTTPFlavor] = payload->get_flavor();
+    keyValueMap[kAttrHTTPStatusCode] = payload->get_status_code();
     auto span = m_sdkWrapper->CreateSpan(spanName, sdkwrapper::SpanKind::SERVER, keyValueMap, payload->get_http_headers());
 
     LOG4CXX_TRACE(mLogger, "Span started for context: [" << wscontext
