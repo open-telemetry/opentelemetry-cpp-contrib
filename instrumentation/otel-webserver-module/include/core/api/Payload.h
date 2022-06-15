@@ -39,6 +39,16 @@ class RequestPayload
 
 	std::unordered_map<std::string, std::string> http_headers; /* HTTP Request headers: Cookie, Referer, SM_USER*/
 
+	std::string server_name;
+    std::string scheme;
+    std::string host;
+    std::string target;
+    std::string flavor;
+    std::string client_ip;
+    std::string net_ip;
+    long port;
+    long status_code;
+
 public:
 	void set_http_headers(const std::string& key, const std::string& value)
     {
@@ -49,6 +59,16 @@ public:
     void set_http_get_parameter(const char* httpGetParameter) {http_get_parameter = httpGetParameter; }
     void set_http_post_parameter(const char* httpPostParameter) {http_post_parameter = httpPostParameter; }
     void set_http_request_method(const char* httpRequestMethod) {http_request_method = httpRequestMethod; }
+    void set_server_name(const char* serverName) {server_name = serverName; }
+    void set_scheme(const char* aScheme) {scheme = aScheme; }
+    void set_host(const char* aHost) {host = aHost; }
+    void set_target(const char* aTarget) {target = aTarget; }
+    void set_flavor(const char* aflavor) {flavor = aflavor; }
+    void set_client_ip(const char* clientIp) {client_ip = clientIp; }
+    void set_net_ip(const char* netIp) {net_ip = netIp; }
+    void set_port(long aPort) {port = aPort; }
+    void set_status_code(long statusCode) {status_code = statusCode; }
+
 
 	std::string get_uri() {	return uri; }
 	std::string get_request_protocol() { return request_protocol; }
@@ -56,6 +76,15 @@ public:
 	std::string get_http_post_parameter() { return http_post_parameter; }
 	std::string get_http_request_method() { return http_request_method; }
 	std::unordered_map<std::string, std::string> get_http_headers() { return http_headers; }
+	std::string get_server_name() { return server_name; }
+    std::string get_scheme() {return scheme; }
+    std::string get_host() {return host; }
+    std::string get_target() {return target; }
+    std::string get_flavor() {return flavor; }
+    std::string get_client_ip() {return client_ip; }
+    std::string get_net_ip() {return net_ip; }
+    long get_port() {return port; }
+    long get_status_code() {return status_code; }
 };
 
 struct InteractionPayload

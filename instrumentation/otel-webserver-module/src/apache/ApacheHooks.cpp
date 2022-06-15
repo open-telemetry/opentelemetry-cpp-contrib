@@ -185,6 +185,7 @@ apr_status_t ApacheHooks::appd_output_filter(ap_filter_t* f, apr_bucket_brigade*
     ap_remove_output_filter(f);
     return ap_pass_brigade(f->next, bb);
 }
+}
 
 // end the interaction
 void ApacheHooks::appd_stopInteraction(request_rec *r, bool isAlwaysRunStage, bool ignoreBackend)
@@ -516,6 +517,44 @@ void fillRequestPayload(request_rec* request, appd::core::RequestPayload* payloa
     val = request->method ? request->method: " ";
     payload->set_http_request_method(val);
 
+    // websrv-698 Setting server span attributes
+    payload->set_status_code(request->status);;
+
+    if (request->server)
+    {
+        payload->set_server_name(request->server->server_hostname);
+    }
+    payload->set_scheme(ap_run_http_scheme(request));
+
+    if (request->hostname)
+    {
+        payload->set_host(request->hostname);
+    }
+
+    if (request->unparsed_uri)
+    {
+        payload->set_target(request->unparsed_uri);
+    }
+
+    switch (request->proto_num)
+    {  // TODO: consider using ap_get_protocol for other flavors
+      case 1000:
+        payload->set_flavor("1.0");
+        break;
+      case 1001:
+        payload->set_flavor("1.1");
+        break;
+    }
+
+    // Todo : The below code is not working , need to find work around. Same code is used in other modules
+
+    /*payload->set_client_ip(request->useragent_ip);
+    if (r->connection)
+    {
+        payload->set_net_ip(r->connection->client_ip);
+    }*/
+
+    payload->set_port(ap_default_port(request));
 }
 // We have to use this hook if we want to use directory level configuration.
 // post_read_request is too early in the cycle to get the config parameters for a
