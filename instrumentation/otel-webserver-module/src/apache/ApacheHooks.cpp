@@ -521,7 +521,7 @@ void fillRequestPayload(request_rec* request, appd::core::RequestPayload* payloa
     payload->set_http_request_method(val);
 
     // websrv-698 Setting server span attributes
-    payload->set_status_code(request->status);;
+    payload->set_status_code(request->status);
 
     if (request->server)
     {
@@ -549,13 +549,21 @@ void fillRequestPayload(request_rec* request, appd::core::RequestPayload* payloa
         break;
     }
 
-    // Todo : The below code is not working , need to find work around. Same code is used in other modules
+#ifdef APLOG_USE_MODULE
 
-    /*payload->set_client_ip(request->useragent_ip);
-    if (r->connection)
+    payload->set_client_ip(request->useragent_ip);
+    if (request->connection)
     {
-        payload->set_net_ip(r->connection->client_ip);
-    }*/
+        payload->set_net_ip(request->connection->client_ip);
+    }
+
+#else
+    if (request->connection)
+    {
+        payload->set_net_ip(request->connection->remote_ip);
+    }
+
+#endif
 
     payload->set_port(ap_default_port(request));
 }
@@ -638,7 +646,7 @@ int ApacheHooks::appd_hook_log_transaction_end(request_rec* r)
     /*
         End the request and report the associated metrics.
     */
-
+[[]]
     if (!ap_is_initial_req(r))
     {
         return DECLINED;
