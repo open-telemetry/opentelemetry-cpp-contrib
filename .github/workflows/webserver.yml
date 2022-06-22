@@ -22,7 +22,8 @@ jobs:
       - name: setup
         run: |
           echo "Hello world"
-          docker -v
-          docker run hello-world
+          cd instrumentation/otel-webserver-module
+          docker-compose --profile ubuntu20.04 build
+
 
 
