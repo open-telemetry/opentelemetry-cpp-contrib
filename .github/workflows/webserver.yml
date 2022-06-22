@@ -1,0 +1,24 @@
+name: webserver instrumentation CI
+
+on:
+  push:
+    branches: "*"
+    paths:
+      - 'instrumentation/otel-webserver-module/**'
+      - '.github/workflows/webserver.yml'
+  pull_request:
+    branches: [ ci-test ]
+    paths:
+      - 'instrumentation/otel-webserver-module/**'
+      - '.github/workflows/webserver.yml'
+
+jobs:
+  webserver-build-test:
+    name: webserver
+    runs-on: macos-latest
+    steps:
+      - name: checkout otel webserver
+        uses: actions/checkout@v3
+      - name: setup
+        run: echo "Hello World"
+
