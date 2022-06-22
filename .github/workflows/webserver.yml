@@ -20,5 +20,5 @@ jobs:
       - name: checkout otel webserver
         uses: actions/checkout@v3
       - name: setup
-        run: echo "Hello World"
+        run: brew install docker
 
