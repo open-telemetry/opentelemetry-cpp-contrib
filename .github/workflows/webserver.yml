@@ -24,6 +24,9 @@ jobs:
           echo "Hello world"
           cd instrumentation/otel-webserver-module
           docker-compose --profile ubuntu20.04 build
-
+      - name: test
+        run: |
+          docker run -idt --name apache_ubuntu_container apache_ubuntu /bin/bash
+          docker exec apache_ubuntu_container bash -c 'cd /otel-webserver-module; ./gradlew runUnitTest -PtargetSystem=ubuntu'
 
 
