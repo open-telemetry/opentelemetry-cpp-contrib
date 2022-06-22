@@ -15,13 +15,13 @@ on:
 jobs:
   webserver-build-test:
     name: webserver
-    runs-on: macos-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: checkout otel webserver
         uses: actions/checkout@v3
       - name: setup
         run: |
-          brew install docker
+          echo "Hello world"
           docker -v
-          open -a docker
+
 
