@@ -44,8 +44,7 @@ jobs:
           cd instrumentation/otel-webserver-module
           docker exec apache_ubuntu_container bash -c \
             'cd /otel-webserver-module; rm -rf *;'
-
-          docker cp . ${{ docker inspect --format="{{.Id}}" apache_ubuntu_container }}:/otel-webserver-module/
+          docker cp . ${{ docker inspect --format={{.Id}} apache_ubuntu_container }}:/otel-webserver-module/
           docker exec apache_ubuntu_container bash -c \
             'cd /otel-webserver-module; rm -rf build; ./gradlew assembleApacheModule -DtargetSystem=ubuntu'
       - name: unit test
