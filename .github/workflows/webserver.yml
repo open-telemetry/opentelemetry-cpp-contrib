@@ -35,12 +35,20 @@ jobs:
         run: |
           echo "Hello world"
           cd instrumentation/otel-webserver-module
-          docker buildx build -t apache_ubuntu -f docker/ubuntu20.04/Dockerfile .
+          docker buildx build -t apache_ubuntu -f docker/ubuntu20.04/Dockerfile \
+            --cache-from type=local,src=/tmp/buildx-cache/apache_ubuntu \
+            --cache-to type=local,dest=/tmp/buildx-cache/apache_ubuntu-new \
+            --load .
           #docker-compose --profile ubuntu20.04 build
       - name: test
         run: |
           docker run -idt --name apache_ubuntu_container apache_ubuntu /bin/bash
-          docker exec apache_ubuntu_container bash -c 'cd /otel-webserver-module; ./gradlew runUnitTest -DtargetSystem=ubuntu'
+          docker exec apache_ubuntu_container bash -c \
+            'cd /otel-webserver-module; ./gradlew runUnitTest -DtargetSystem=ubuntu'
+      - name: update cache
+        run: |
+          rm -rf /tmp/buildx-cache/apache_ubuntu
+          mv /tmp/buildx-cache/apache_ubuntu-new /tmp/buildx-cache/apache_ubuntu
 #  webserver-build-test-centos7:
 #    name: apache-centos7
 #    runs-on: ubuntu-20.04
