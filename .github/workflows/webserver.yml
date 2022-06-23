@@ -45,8 +45,11 @@ jobs:
           docker exec apache_ubuntu_container bash -c \
             'cd /otel-webserver-module; rm -rf *;'
           docker cp . $(docker inspect --format="{{.Id}}" apache_ubuntu_container):/otel-webserver-module/
-          docker exec apache_ubuntu_container bash -c \
-            'cd /otel-webserver-module; rm -rf build; ./gradlew assembleApacheModule -DtargetSystem=ubuntu'
+          docker exec apache_ubuntu_container bash -c              \
+            'cd /otel-webserver-module; rm -rf build;              \
+            cp -r /dependencies /otel-webserver-module/;           \
+            cp -r /build-dependencies /otel-webserver-module/;     \
+            ./gradlew assembleApacheModule -DtargetSystem=ubuntu'
       - name: unit test
         run: |
           docker run -idt --name apache_ubuntu_container apache_ubuntu /bin/bash
