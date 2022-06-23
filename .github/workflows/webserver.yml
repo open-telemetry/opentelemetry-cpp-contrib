@@ -42,6 +42,8 @@ jobs:
         run: |
           docker run -idt --name apache_ubuntu_container apache_ubuntu /bin/bash
           cd instrumentation/otel-webserver-module
+          docker exec apache_ubuntu_container bash -c \
+            'cd /otel-webserver-module; rm -rf *;'
           docker cp /. apache_ubuntu_container:/otel-webserver-module/
           docker exec apache_ubuntu_container bash -c \
             'cd /otel-webserver-module; rm -rf build; ./gradlew assembleApacheModule -DtargetSystem=ubuntu'
@@ -84,6 +86,8 @@ jobs:
         run: |
           docker run -idt --name apache_centos7_container apache_centos7 /bin/bash
           cd instrumentation/otel-webserver-module
+          docker exec apache_centos7_container bash -c \
+            'cd /otel-webserver-module; rm -rf *;'
           docker cp /. apache_centos7_container:/otel-webserver-module/
           docker exec apache_centos7_container bash -c \
             'cd /otel-webserver-module; rm -rf build; ./gradlew assembleApacheModule'
