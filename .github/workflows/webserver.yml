@@ -81,7 +81,7 @@ jobs:
         run: |
           cd instrumentation/otel-webserver-module
           docker buildx build -t apache_centos7 -f docker/centos7/Dockerfile \
-            --cache-from type=local,src=/tmp/buildx-cache/apache_centos7 \
+            --cache-from type=local,src=/tmp/buildx-cache/apache_centos7-new \
             --cache-to type=local,dest=/tmp/buildx-cache/apache_centos7-new \
             --load .
       - name: build
@@ -90,7 +90,7 @@ jobs:
           cd instrumentation/otel-webserver-module
           docker exec apache_centos7_container bash -c \
             'cd /otel-webserver-module; rm -rf *;'
-          docker cp . $(docker inspect --format="{{.Id}}" apache_ubuntu_container):/otel-webserver-module/
+          docker cp . $(docker inspect --format="{{.Id}}" apache_centos7_container):/otel-webserver-module/
           docker exec apache_centos7_container bash -c \
             'cd /otel-webserver-module; rm -rf build; \
             cp -r /dependencies /otel-webserver-module/;           \
