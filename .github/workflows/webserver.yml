@@ -7,7 +7,7 @@ on:
       - 'instrumentation/otel-webserver-module/**'
       - '.github/workflows/webserver.yml'
   pull_request:
-    branches: [ ci-test ]
+    branches: [ main ]
     paths:
       - 'instrumentation/otel-webserver-module/**'
       - '.github/workflows/webserver.yml'
