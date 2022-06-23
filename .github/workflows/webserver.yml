@@ -59,7 +59,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: opentelemetry-webserver-sdk-x64-linux.tgz
-          path: /tmp/apache_ubuntu/otel_ngx/opentelemetry-webserver-sdk-x64-linux.tgz
+          path: /tmp/apache_ubuntu/opentelemetry-webserver-sdk-x64-linux.tgz
 #  webserver-build-test-centos7:
 #    name: apache-centos7
 #    runs-on: ubuntu-20.04
