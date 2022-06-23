@@ -52,7 +52,6 @@ jobs:
             ./gradlew assembleApacheModule -DtargetSystem=ubuntu'
       - name: unit test
         run: |
-          docker run -idt --name apache_ubuntu_container apache_ubuntu /bin/bash
           docker exec apache_ubuntu_container bash -c \
             'cd /otel-webserver-module; ./gradlew runUnitTest -DtargetSystem=ubuntu'
       - name: update cache
