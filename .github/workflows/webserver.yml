@@ -19,26 +19,39 @@ jobs:
     steps:
       - name: checkout otel webserver
         uses: actions/checkout@v3
+      - name: setup buildx
+        id: buildx
+        uses: docker/setup-buildx-action@master
+        with:
+          install: true
+      - name: cache docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/buildx-cache/
+          key: apache-ubuntu-20.04-${{ github.sha }}
+          restore-keys: |
+            apache-ubuntu-20.04
       - name: build
         run: |
           echo "Hello world"
           cd instrumentation/otel-webserver-module
-          docker-compose --profile ubuntu20.04 build
+          docker buildx build -t apache_ubuntu -f docker/ubuntu20.04/Dockerfile .
+          #docker-compose --profile ubuntu20.04 build
       - name: test
         run: |
           docker run -idt --name apache_ubuntu_container apache_ubuntu /bin/bash
           docker exec apache_ubuntu_container bash -c 'cd /otel-webserver-module; ./gradlew runUnitTest -DtargetSystem=ubuntu'
-  webserver-build-test-centos7:
-    name: apache-centos7
-    runs-on: ubuntu-20.04
-    steps:
-      - name: checkout otel webserver
-        uses: actions/checkout@v3
-      - name: build
-        run: |
-          cd instrumentation/otel-webserver-module
-          docker-compose --profile centos7 build
-      - name: test
-        run: |
-          docker run -idt --name apache_centos7_container apache_centos7 /bin/bash
-          docker exec apache_centos7_container bash -c 'cd /otel-webserver-module; ./gradlew runUnitTest'
+#  webserver-build-test-centos7:
+#    name: apache-centos7
+#    runs-on: ubuntu-20.04
+#    steps:
+#      - name: checkout otel webserver
+#        uses: actions/checkout@v3
+#      - name: build
+#        run: |
+#          cd instrumentation/otel-webserver-module
+#          docker-compose --profile centos7 build
+#      - name: test
+#        run: |
+#          docker run -idt --name apache_centos7_container apache_centos7 /bin/bash
+#          docker exec apache_centos7_container bash -c 'cd /otel-webserver-module; ./gradlew runUnitTest'
