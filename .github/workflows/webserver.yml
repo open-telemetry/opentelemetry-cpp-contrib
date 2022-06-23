@@ -31,15 +31,21 @@ jobs:
           key: apache-ubuntu-20.04-${{ github.sha }}
           restore-keys: |
             apache-ubuntu-20.04
-      - name: build
+      - name: setup docker image
         run: |
-          echo "Hello world"
           cd instrumentation/otel-webserver-module
           docker buildx build -t apache_ubuntu -f docker/ubuntu20.04/Dockerfile \
             --cache-from type=local,src=/tmp/buildx-cache/apache_ubuntu \
             --cache-to type=local,dest=/tmp/buildx-cache/apache_ubuntu-new \
             --load .
-      - name: test
+      - name: build
+        run: |
+          docker run -idt --name apache_ubuntu_container apache_ubuntu /bin/bash
+          cd instrumentation/otel-webserver-module
+          docker cp /. apache_ubuntu_container:/otel-webserver-module/
+          docker exec apache_ubuntu_container bash -c \
+            'cd /otel-webserver-module; rm -rf build; ./gradlew assembleApacheModule -DtargetSystem=ubuntu'
+      - name: unit test
         run: |
           docker run -idt --name apache_ubuntu_container apache_ubuntu /bin/bash
           docker exec apache_ubuntu_container bash -c \
@@ -48,29 +54,56 @@ jobs:
         run: |
           rm -rf /tmp/buildx-cache/apache_ubuntu
           mv /tmp/buildx-cache/apache_ubuntu-new /tmp/buildx-cache/apache_ubuntu
+
+  webserver-build-test-centos7:
+    name: apache-centos7
+    runs-on: ubuntu-20.04
+    steps:
+      - name: checkout otel webserver
+        uses: actions/checkout@v3
+      - name: setup buildx
+        id: buildx
+        uses: docker/setup-buildx-action@master
+        with:
+          install: true
+      - name: cache docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/buildx-cache/
+          key: apache-centos7-${{ github.sha }}
+          restore-keys: |
+            apache-centos7
+      - name: setup docker image
+        run: |
+          cd instrumentation/otel-webserver-module
+          docker buildx build -t apache_centos7 -f docker/centos7/Dockerfile \
+            --cache-from type=local,src=/tmp/buildx-cache/apache_centos7 \
+            --cache-to type=local,dest=/tmp/buildx-cache/apache_centos7-new \
+            --load .
+      - name: build
+        run: |
+          docker run -idt --name apache_centos7_container apache_centos7 /bin/bash
+          cd instrumentation/otel-webserver-module
+          docker cp /. apache_centos7_container:/otel-webserver-module/
+          docker exec apache_centos7_container bash -c \
+            'cd /otel-webserver-module; rm -rf build; ./gradlew assembleApacheModule'
+      - name: unit test
+        run: |
+          docker exec apache_centos7_container bash -c \
+            'cd /otel-webserver-module; ./gradlew runUnitTest'
+      - name: update cache
+        run: |
+          rm -rf /tmp/buildx-cache/apache_centos7
+          mv /tmp/buildx-cache/apache_centos7-new /tmp/buildx-cache/apache_centos7
       - name: copy artifacts
         id: artifacts
         run: |
           cd instrumentation/otel-webserver-module
-          mkdir -p /tmp/apache_ubuntu/
-          docker cp apache_ubuntu_container:/otel-webserver-module/build/opentelemetry-webserver-sdk-x64-linux.tgz \
-            /tmp/apache_ubuntu/
+          mkdir -p /tmp/apache_centos7/
+          docker cp apache_centos7_container:/otel-webserver-module/build/opentelemetry-webserver-sdk-x64-linux.tgz \
+            /tmp/apache_centos7/
       - name: upload artifacts
         uses: actions/upload-artifact@v3
         with:
           name: opentelemetry-webserver-sdk-x64-linux.tgz
-          path: /tmp/apache_ubuntu/opentelemetry-webserver-sdk-x64-linux.tgz
-#  webserver-build-test-centos7:
-#    name: apache-centos7
-#    runs-on: ubuntu-20.04
-#    steps:
-#      - name: checkout otel webserver
-#        uses: actions/checkout@v3
-#      - name: build
-#        run: |
-#          cd instrumentation/otel-webserver-module
-#          docker-compose --profile centos7 build
-#      - name: test
-#        run: |
-#          docker run -idt --name apache_centos7_container apache_centos7 /bin/bash
-#          docker exec apache_centos7_container bash -c 'cd /otel-webserver-module; ./gradlew runUnitTest'
+          path: /tmp/apache_centos7/opentelemetry-webserver-sdk-x64-linux.tgz
