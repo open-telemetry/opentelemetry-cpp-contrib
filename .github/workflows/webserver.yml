@@ -81,7 +81,7 @@ jobs:
         run: |
           cd instrumentation/otel-webserver-module
           docker buildx build -t apache_centos7 -f docker/centos7/Dockerfile \
-            --cache-from type=local,src=/tmp/buildx-cache/apache_centos7-new \
+            --cache-from type=local,src=/tmp/buildx-cache/apache_centos7 \
             --cache-to type=local,dest=/tmp/buildx-cache/apache_centos7-new \
             --load .
       - name: build
