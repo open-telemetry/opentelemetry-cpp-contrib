@@ -164,7 +164,7 @@ if (MAIN_PROJECT)
   include(GNUInstallDirs)
   include(CMakePackageConfigHelpers)
 
-  set(OPENTELEMETRY_CPP_FLUENTD_VERSION "1.1.1")
+  set(OPENTELEMETRY_CPP_FLUENTD_VERSION "1.1.2")
   set(INCLUDE_INSTALL_DIR "${CMAKE_INSTALL_INCLUDEDIR}")
   configure_package_config_file(
     "${CMAKE_CURRENT_LIST_DIR}/cmake/opentelemetry-cpp-fluentd-config.cmake.in"
