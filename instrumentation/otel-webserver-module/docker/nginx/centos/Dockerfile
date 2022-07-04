@@ -1,4 +1,4 @@
-FROM centos:7
+FROM centos:6.9
 
 ARG BUILD_NUMBER
 
@@ -23,17 +23,16 @@ ARG LIBTOOL_VERSION="2.4.6"
 ARG LOG4CXX_VERSION="0.11.0"
 ARG GTEST_VERSION="1.10.0"
 ARG AUTOMAKE_VERSION="1.16.3"
-ARG PERL_VERSION="5.20.2"
-ARG PERL_CPANVERSION="5.0"
 ARG PCRE_VERSION="8.44"
 ARG NGINX_VERSION="1.18.0"
+
 
 # create default non-root user
 RUN groupadd -r swuser && useradd -u 1000 -g swuser -m -s /sbin/nologin -c "default non-root user" swuser
 
 RUN chmod -R 777 /opt
 
-# RUN curl https://www.getpagespeed.com/files/centos6-eol.repo --output /etc/yum.repos.d/CentOS-Base.repo
+RUN curl https://www.getpagespeed.com/files/centos6-eol.repo --output /etc/yum.repos.d/CentOS-Base.repo
 
 # install required packages
 RUN yum update -y \
@@ -54,33 +53,28 @@ RUN wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm 
 	&& yum clean all
 
 # install devtoolset toolchain
-# RUN curl https://www.getpagespeed.com/files/centos6-eol.repo --output /etc/yum.repos.d/CentOS-Base.repo \
-#  && curl https://www.getpagespeed.com/files/centos6-epel-eol.repo --output /etc/yum.repos.d/epel.repo \
-  RUN yum -y install centos-release-scl \
-#  && curl https://www.getpagespeed.com/files/centos6-scl-eol.repo --output /etc/yum.repos.d/CentOS-SCLo-scl.repo \
-#  && curl https://www.getpagespeed.com/files/centos6-scl-rh-eol.repo --output /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo \
+RUN curl https://www.getpagespeed.com/files/centos6-eol.repo --output /etc/yum.repos.d/CentOS-Base.repo \
+  && curl https://www.getpagespeed.com/files/centos6-epel-eol.repo --output /etc/yum.repos.d/epel.repo \
+  && yum -y install centos-release-scl \
+  && curl https://www.getpagespeed.com/files/centos6-scl-eol.repo --output /etc/yum.repos.d/CentOS-SCLo-scl.repo \
+  && curl https://www.getpagespeed.com/files/centos6-scl-rh-eol.repo --output /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo \
   && yum install yum-utils -y \
   && yum-config-manager --enable rhel-server-rhscl-7-rpms -y \
   && yum install devtoolset-7 -y \
   && yum clean all
 ENV PATH="/opt/rh/devtoolset-7/root/usr/bin:${PATH}"
 
-# install python 2.7.8
+# install python 
 RUN wget http://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tar.xz \
-    && unxz Python-${PYTHON_VERSION}.tar.xz \
-    && tar -xf Python-${PYTHON_VERSION}.tar \
-    && cd Python-${PYTHON_VERSION} && ./configure --prefix=/usr/local && make && make install \
-    && cd .. \
-    && rm -rf Python-${PYTHON_VERSION}.tar.xz && rm -rf Python-${PYTHON_VERSION}.tar
+	&& unxz Python-${PYTHON_VERSION}.tar.xz \
+	&& tar -xf Python-${PYTHON_VERSION}.tar \
+	&& cd Python-${PYTHON_VERSION} && ./configure --prefix=/usr/local && make && make install \
+	&& cd .. \
+	&& rm -rf Python-${PYTHON_VERSION}.tar.xz && rm -rf Python-${PYTHON_VERSION}.tar
 
 # install gosu for easy step-down from root (from https://github.com/tianon/gosu/blob/master/INSTALL.md#from-centos)
 ENV GOSU_VERSION=1.10
-#RUN gpg --keyserver pgp.mit.edu --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 \
-#    && curl -o /usr/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64" \
-#    && curl -o /usr/bin/gosu.asc -SL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64.asc" \
-#    && gpg --verify /usr/bin/gosu.asc \
-#    && rm /usr/bin/gosu.asc \
-#    && rm -r /root/.gnupg/ \
+
 RUN curl -o /usr/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64" \
     && chmod +x /usr/bin/gosu \
     # Verify that the binary works
@@ -90,7 +84,7 @@ RUN curl -o /usr/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/
 RUN yum install git -y \
   && yum clean all
 
-# install cmake 3.20
+# install cmake 
 RUN wget https://cmake.org/files/v${CMAKE_VERSION}/cmake-${CMAKE_0VERSION}-linux-x86_64.tar.gz \
   && tar -xvf cmake-${CMAKE_0VERSION}-linux-x86_64.tar.gz \
   && cd cmake-${CMAKE_0VERSION}-linux-x86_64 \
@@ -113,7 +107,7 @@ RUN git clone https://github.com/grpc/grpc \
 # Create dependencies folder to store all dependencies.
 RUN mkdir -p dependencies
 
-# install boost version 1.75.0
+# install boost version 
 RUN wget https://boostorg.jfrog.io/artifactory/main/release/${BOOST_VERSION}/source/${BOOST_FILENAME}_rc1.tar.gz \
     && tar -xvf ${BOOST_FILENAME}_rc1.tar.gz \
     && cd ${BOOST_FILENAME} \
@@ -152,19 +146,7 @@ RUN mkdir -p dependencies/apr-util/${APRUTIL_VERSION} \
     && cd ../ && rm -rf apr-util-${APRUTIL_VERSION} && rm -rf apr-util-${APRUTIL_VERSION}.tar.gz
 
 # install m4
-RUN yum install m4 -y \
-    && yum install perl-Data-Dumper -y
-
-# Update perl version
-RUN yum install perl-Thread-Queue.noarch -y \
-    && wget http://www.cpan.org/src/${PERL_CPANVERSION}/perl-${PERL_VERSION}.tar.gz \
-    && tar -xzf perl-${PERL_VERSION}.tar.gz \
-    && cd perl-${PERL_VERSION} \
-    && ./Configure -des -Dprefix=$HOME/localperl \
-    && make \
-    && make test; echo 0 \
-    && make install 
-ENV PATH=$HOME/localperl/bin:$PATH
+RUN yum install m4 -y
 
 # install autoconf
 RUN wget --no-check-certificate https://ftp.gnu.org/gnu/autoconf/autoconf-${AUTOCONF_VERSION}.tar.gz \
@@ -264,25 +246,32 @@ RUN wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
     && rm -rf nginx-${NGINX_VERSION}.tar.gz
 
 # Build Webserver Module
-
 COPY . /otel-webserver-module
 
 RUN cp -r /dependencies /otel-webserver-module/ \
     && cp -r /build-dependencies /otel-webserver-module/ \
     && cd otel-webserver-module \
-    && ./gradlew assembleApacheModule -DtargetSystem=centos7
+    && ./gradlew assembleWebServerModule 
 
-# install webserver module
+RUN echo '[nginx]' >> /etc/yum.repos.d/nginx.repo \
+    && echo 'name=nginx repo' >> /etc/yum.repos.d/nginx.repo \
+    && echo 'baseurl=https://nginx.org/packages/centos/6/x86_64' >> /etc/yum.repos.d/nginx.repo \
+    && echo 'gpgcheck=0' >> /etc/yum.repos.d/nginx.repo \ 
+    && echo 'enabled=1' >> /etc/yum.repos.d/nginx.repo \
+    && yum install nginx -y 
+
 RUN cd /otel-webserver-module/build \
     && tar -xf opentelemetry-webserver-sdk-x64-linux.tgz \
     && mv -f opentelemetry-webserver-sdk /opt/ \
     && cd ../ \
-    && cp opentelemetry_module.conf /etc/httpd/conf/ \
-    && sed -i "s/libmod_apache_otel22.so/libmod_apache_otel.so/g" /etc/httpd/conf/opentelemetry_module.conf \
-    && echo 'Include conf/opentelemetry_module.conf' >> /etc/httpd/conf/httpd.conf \
+    && cp conf/nginx/opentelemetry_module.conf /opt/ \
+    && sed -i '8i load_module /opt/opentelemetry-webserver-sdk/WebServerModule/Nginx/ngx_http_opentelemetry_module.so;' /etc/nginx/nginx.conf \
+    && sed -i '33i include /opt/opentelemetry_module.conf;' /etc/nginx/nginx.conf \ 
     && cd /opt/opentelemetry-webserver-sdk \
     && ./install.sh \
     && cd /
+
+
 
 # Remove unwanted files
 RUN rm -rf grpc && rm -rf autoconf-${AUTOCONF_VERSION} && rm -rf automake-${AUTOMAKE_VERSION} && rm -rf cmake-${CMAKE_VERSION}-linux-x86_64 \
