@@ -17,6 +17,7 @@
 #include "api/opentelemetry_ngx_api.h"
 #include "api/WSAgent.h"
 #include "api/Payload.h"
+#include <cstring>
 
 
 appd::core::WSAgent wsAgent; // global variable for interface between Hooks and Core Logic
@@ -94,8 +95,12 @@ APPD_SDK_STATUS_CODE startModuleInteraction(const char* req_handle_key, const ch
         {
             for (auto itr = pHeaders.begin(); itr != pHeaders.end(); itr++)
             {
-                propagationHeaders[*ix].name = itr->first.c_str();
-                propagationHeaders[*ix].value = itr->second.c_str();
+                char *temp_key = (char*)malloc(itr->first.size() + 1); 
+                std::strcpy(temp_key, itr->first.c_str());
+                propagationHeaders[*ix].name = temp_key;
+                char *temp_value= (char*)malloc(itr->second.size() + 1); 
+                std::strcpy(temp_value, itr->second.c_str());
+                 propagationHeaders[*ix].value = temp_value;
                 ++(*ix);
             }
         }
