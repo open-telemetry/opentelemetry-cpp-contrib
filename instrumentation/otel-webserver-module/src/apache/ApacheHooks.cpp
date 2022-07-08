@@ -252,7 +252,7 @@ APPD_SDK_STATUS_CODE ApacheHooks::appd_startInteraction(
         }
 
         std::unique_ptr<appd::core::InteractionPayload> payload(new
-            appd::core::InteractionPayload(module, stage, resolveBackends));
+            appd::core::InteractionPayload(module, stage, resolveBackends, r->server->server_hostname, r->unparsed_uri, ap_default_port(r)));
 
         // Create propagationHeaders to be populated in startInteraction.
         std::unordered_map<std::string, std::string> propagationHeaders;
