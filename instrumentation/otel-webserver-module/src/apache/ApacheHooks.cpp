@@ -646,7 +646,7 @@ int ApacheHooks::appd_hook_log_transaction_end(request_rec* r)
     /*
         End the request and report the associated metrics.
     */
-[[]]
+
     if (!ap_is_initial_req(r))
     {
         return DECLINED;
