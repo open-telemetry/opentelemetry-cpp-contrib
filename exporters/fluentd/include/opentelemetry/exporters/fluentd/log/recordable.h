@@ -33,7 +33,7 @@ public:
    * Set name for this log
    * @param name the name to set
    */
-  void SetName(nostd::string_view name) noexcept override;
+  void SetName(nostd::string_view name) noexcept;
 
   /**
    * Set body field for this log.

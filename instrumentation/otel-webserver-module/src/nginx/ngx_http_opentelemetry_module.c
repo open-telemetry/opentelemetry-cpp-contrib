@@ -157,7 +157,6 @@ otel_ngx_module otel_monitored_modules[] = {
         ngx_http_otel_mirror_handler,
         0,
         1
-
     }
 };
 
@@ -502,6 +501,7 @@ static ngx_int_t ngx_http_opentelemetry_init(ngx_conf_t *cf)
     ngx_writeError(cf->cycle->log, __func__, "Starting Opentelemetry Modlue init");
 
     cp = ap = pap = srp = prp = rp = lp = pcp = 0;
+
     res = -1;
 
     cmcf = ngx_http_conf_get_module_main_conf(cf, ngx_http_core_module);
@@ -582,7 +582,7 @@ static ngx_int_t ngx_http_opentelemetry_init(ngx_conf_t *cf)
                         case NGX_HTTP_FIND_CONFIG_PHASE:
                         case NGX_HTTP_POST_REWRITE_PHASE:
                         case NGX_HTTP_POST_ACCESS_PHASE:
-                        break;
+                            break;
                     }
                     phase_index++;
                 }
@@ -1010,6 +1010,7 @@ static void stopMonitoringRequest(ngx_http_request_t* r)
         return;
     }
     APPD_SDK_HANDLE_REQ reqHandle = (APPD_SDK_HANDLE_REQ)ctx->otel_req_handle_key;
+
     if (r->pool) {
         ngx_pfree(r->pool, ctx);
     }
@@ -1135,7 +1136,6 @@ static void startMonitoringRequest(ngx_http_request_t* r){
 }
 
 static ngx_int_t ngx_http_otel_rewrite_handler(ngx_http_request_t *r){
-
     otel_startInteraction(r, "ngx_http_rewrite_module");
     ngx_int_t rvalue = h[0](r);
     otel_stopInteraction(r, "ngx_http_rewrite_module");

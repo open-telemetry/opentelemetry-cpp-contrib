@@ -139,6 +139,7 @@ static ngx_int_t ngx_http_otel_log_handler(ngx_http_request_t *r);
 static ngx_int_t ngx_http_otel_try_files_handler(ngx_http_request_t *r);
 static ngx_int_t ngx_http_otel_mirror_handler(ngx_http_request_t *r);
 
+
 /*
     Utility fuction to check if the given module is monitored by Appd Agent
 */
