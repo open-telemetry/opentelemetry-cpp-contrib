@@ -19,8 +19,11 @@
 #include "mocks/mock_sdkwrapper.h"
 #include "api/TenantConfig.h"
 #include "api/Payload.h"
+#include "sdkwrapper/SdkConstants.h"
 
 #include <unordered_map>
+
+using namespace appd::core::sdkwrapper;
 
 class FakeRequestProcessingEngine :  appd::core::RequestProcessingEngine {
 public:
@@ -125,14 +128,34 @@ TEST(TestRequestProcessingEngine, StartRequest)
 	std::string wscontext = "ws_context";
 	appd::core::RequestPayload payload;
 	payload.set_http_headers("key", "value");
-	payload.set_uri("dummy_span");
 	payload.set_request_protocol("GET");
+	payload.set_uri("dummy_span");
+	payload.set_server_name("localhost");
+	payload.set_status_code(200);
+	payload.set_host("host");
+  payload.set_http_request_method("GET");
+  payload.set_scheme("http");
+  payload.set_target("target");
+  payload.set_flavor("1.1");
+  payload.set_client_ip("clientip");
+  payload.set_net_ip("netip");
+  payload.set_port(80);
+
 
 	appd::core::sdkwrapper::OtelKeyValueMap keyValueMap;
-  keyValueMap["request_protocol"] = (opentelemetry::nostd::string_view)"GET";
-
-  	std::shared_ptr<appd::core::sdkwrapper::IScopedSpan> span;
-  	span.reset(new MockScopedSpan);
+  keyValueMap[kAttrRequestProtocol] = (opentelemetry::nostd::string_view)"GET";
+  keyValueMap[kAttrHTTPServerName] = (opentelemetry::nostd::string_view)"localhost";
+  keyValueMap[kAttrHTTPMethod] = (opentelemetry::nostd::string_view)"GET";
+  keyValueMap[kAttrHTTPHost] =(opentelemetry::nostd::string_view)"host";
+  keyValueMap[kAttrHTTPStatusCode] = (long) 200;
+  keyValueMap[kAttrNETHostPort] = (long)80;
+  keyValueMap[kAttrHTTPScheme] = (opentelemetry::nostd::string_view)"http";
+  keyValueMap[kAttrHTTPTarget] = (opentelemetry::nostd::string_view)"target";
+  keyValueMap[kAttrHTTPFlavor] = (opentelemetry::nostd::string_view)"1.1";
+  keyValueMap[kAttrNETPeerIP] = (opentelemetry::nostd::string_view)"netip";
+  keyValueMap[kAttrHTTPClientIP] = (opentelemetry::nostd::string_view)"clientip";
+	std::shared_ptr<appd::core::sdkwrapper::IScopedSpan> span;
+	span.reset(new MockScopedSpan);
 
 	// sdkwrapper's create span function should be called
 	EXPECT_CALL(*sdkWrapper, CreateSpan("dummy_span",
