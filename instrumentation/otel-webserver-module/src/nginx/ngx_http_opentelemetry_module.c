@@ -798,7 +798,7 @@ static void otel_stopInteraction(ngx_http_request_t* r, const char* module_name,
         ngx_writeError(r->connection->log, __func__, "Error: Stop Interaction failed, result code: %d", res);
     }
 
-    free(backendName);
+    free (backendName);
     free (code);
     free (msg);
 }

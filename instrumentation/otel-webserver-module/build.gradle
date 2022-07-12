@@ -11,10 +11,6 @@ project.ext {
     modDepDir = "${platBuildDir}/module-dependencies"
 
     debug = false
-    //if (!Project.hasProperty('buildType')) {
-    //    buildType = 'release'
-    //}
-
     if (buildType != 'release') {
         buildType = 'debug'
         debug = true;
