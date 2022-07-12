@@ -3,6 +3,7 @@ apply from: 'common.gradle'
 
 def coverageEnabled = System.getenv('enableCoverage')
 def target_system = System.getProperty('targetSystem') ?: 'centos6'
+def buildType = System.getProperty('buildType') ?: 'release'
 
 project.ext {
     // To do a 32-bit build, pass "-Dos.arch=x86"
@@ -10,9 +11,9 @@ project.ext {
     modDepDir = "${platBuildDir}/module-dependencies"
 
     debug = false
-    if (!Project.hasProperty('buildType')) {
-        buildType = 'release'
-    }
+    //if (!Project.hasProperty('buildType')) {
+    //    buildType = 'release'
+    //}
 
     if (buildType != 'release') {
         buildType = 'debug'

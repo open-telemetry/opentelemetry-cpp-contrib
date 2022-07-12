@@ -110,9 +110,11 @@ static void ngx_http_opentelemetry_exit_worker(ngx_cycle_t *cycle);
 static ngx_flag_t ngx_initialize_opentelemetry(ngx_http_request_t *r);
 static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t* r, int* count);
 static void startMonitoringRequest(ngx_http_request_t* r);
-static void stopMonitoringRequest(ngx_http_request_t* r);
+static void stopMonitoringRequest(ngx_http_request_t* r,
+        const char* request_handle_key);
 static APPD_SDK_STATUS_CODE otel_startInteraction(ngx_http_request_t* r, const char* module_name);
-static void otel_stopInteraction(ngx_http_request_t* r, const char* module_name);
+static void otel_stopInteraction(ngx_http_request_t* r, const char* module_name,
+        const char* request_handle_key);
 static void otel_payload_decorator(ngx_http_request_t* r, APPD_SDK_ENV_RECORD* propagationHeaders, int count);
 static ngx_flag_t otel_requestHasErrors(ngx_http_request_t* r);
 static ngx_uint_t otel_getErrorCode(ngx_http_request_t* r);
