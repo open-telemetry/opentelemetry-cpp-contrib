@@ -180,13 +180,15 @@ RUN wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
     && tar -xvf nginx-${NGINX_VERSION}.tar.gz -C /build-dependencies \
     && rm -rf nginx-${NGINX_VERSION}.tar.gz
 
+RUN apt-get install nginx -y
+
 # Build Webserver Module
 COPY . /otel-webserver-module
 
 RUN cp -r /dependencies /otel-webserver-module/ \
     && cp -r /build-dependencies /otel-webserver-module/ \
     && cd otel-webserver-module \
-    && ./gradlew assembleApacheModule -DtargetSystem=ubuntu
+    && ./gradlew assembleWebServerModule -DtargetSystem=ubuntu
 
 RUN cd /otel-webserver-module/build \
     && tar -xf opentelemetry-webserver-sdk-x64-linux.tgz \
@@ -195,6 +197,14 @@ RUN cd /otel-webserver-module/build \
     && cp opentelemetry_module.conf /etc/apache2/opentelemetry_module.conf \
     && sed -i "s/libmod_apache_otel22.so/libmod_apache_otel.so/g" /etc/apache2/opentelemetry_module.conf \
     && echo 'Include opentelemetry_module.conf' >> /etc/apache2/apache2.conf \
+    && cd /opt/opentelemetry-webserver-sdk \
+    && ./install.sh \
+    && cd /
+
+RUN cd /otel-webserver-module/build \
+    && cp ../conf/nginx/opentelemetry_module.conf /opt/ \
+    && sed -i '5i load_module /opt/opentelemetry-webserver-sdk/WebServerModule/Nginx/ngx_http_opentelemetry_module.so;' /etc/nginx/nginx.conf \
+    && sed -i '64i include /opt/opentelemetry_module.conf;' /etc/nginx/nginx.conf \ 
     && cd /opt/opentelemetry-webserver-sdk \
     && ./install.sh \
     && cd /
