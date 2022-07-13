@@ -67,12 +67,12 @@ struct InteractionPayload
 
     std::string target;
     std::string scheme;
-    long port;
+    std::string host;
 
 	InteractionPayload() {}
 
-	InteractionPayload(std::string module, std::string phase, bool b, std::string aTarget, std::string aScheme, long aPort) 
-	: moduleName(module), phaseName(phase), resolveBackends(b), target(aTarget), scheme(aScheme), port(aPort)
+	InteractionPayload(std::string module, std::string phase, bool b, std::string aTarget, std::string aScheme, std::string aHost)
+	: moduleName(module), phaseName(phase), resolveBackends(b), target(aTarget), scheme(aScheme), host(aHost)
 	{}
 };
 
