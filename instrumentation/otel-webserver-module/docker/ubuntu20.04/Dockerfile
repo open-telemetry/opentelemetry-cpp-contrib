@@ -37,6 +37,8 @@ ARG EXPAT_RVERSION="R_2_3_0"
 ARG APRUTIL_VERSION="1.6.1"
 ARG LOG4CXX_VERSION="0.11.0"
 ARG GTEST_VERSION="1.10.0"
+ARG PCRE_VERSION="8.44"
+ARG NGINX_VERSION="1.18.0"
 
 # Install GRPC
 RUN git clone --shallow-submodules --depth 1 --recurse-submodules -b v${GRPC_VERSION} \
@@ -163,6 +165,20 @@ RUN wget https://boostorg.jfrog.io/artifactory/main/release/${BOOST_VERSION}/sou
     && ./bootstrap.sh --with-libraries=filesystem,system --prefix=/dependencies/boost/${BOOST_VERSION}/ \
     && ./b2 install define=BOOST_ERROR_CODE_HEADER_ONLY link=static threading=multi cxxflags="-fvisibility=hidden -fPIC" cflags="-fvisibility=hidden -fPIC" \
     && cd .. && rm -rf ${BOOST_FILENAME} && rm ${BOOST_FILENAME}.tar.gz
+
+# install pcre
+RUN mkdir -p dependencies/pcre/${PCRE_VERSION}/ \
+    && wget https://ftp.exim.org/pub/pcre/pcre-${PCRE_VERSION}.tar.gz --no-check-certificate \
+    && tar -xvf pcre-${PCRE_VERSION}.tar.gz \
+    && cd pcre-${PCRE_VERSION} \
+    && ./configure --prefix=/dependencies/pcre/${PCRE_VERSION} --enable-jit \
+    && make && make install \
+    && cd .. && rm -rf ${PCRE_VERSION}.tar.gz && rm -rf pcre-${PCRE_VERSION}
+
+# install nginx
+RUN wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
+    && tar -xvf nginx-${NGINX_VERSION}.tar.gz -C /build-dependencies \
+    && rm -rf nginx-${NGINX_VERSION}.tar.gz
 
 # Build Webserver Module
 COPY . /otel-webserver-module

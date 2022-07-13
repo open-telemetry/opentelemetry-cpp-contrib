@@ -101,7 +101,7 @@ boost::filesystem::path ApiUtils::getSDKInstallPath()
 #ifdef _WIN32
     char path[FILENAME_MAX];
     HMODULE hm = NULL;
-    if (!(hm = GetModuleHandleA("appdynamics_native_sdk")))
+    if (!(hm = GetModuleHandleA("opentelemetry_webserver_sdk")))
     {
         int ret = GetLastError();
         // Logger not initialized it
