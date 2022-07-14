@@ -709,14 +709,16 @@ static void otel_payload_decorator(ngx_http_request_t* r, APPD_SDK_ENV_RECORD* p
            return;
        }
        h->key.len = strlen(propagationHeaders[i].name);
-       h->key.data = propagationHeaders[i].name;
+       h->key.data = ngx_pcalloc(r->pool, sizeof(char)*((h->key.len)+1));
+       strcpy(h->key.data, propagationHeaders[i].name);
 
        ngx_writeTrace(r->connection->log, __func__, "Key : %s", propagationHeaders[i].name);
 
        h->hash = ngx_hash_key(h->key.data, h->key.len);
 
        h->value.len = strlen(propagationHeaders[i].value);
-       h->value.data = propagationHeaders[i].value;
+       h->value.data = ngx_pcalloc(r->pool, sizeof(char)*((h->value.len)+1));
+       strcpy(h->value.data, propagationHeaders[i].value);
        h->lowcase_key = h->key.data;
 
        cmcf = ngx_http_get_module_main_conf(r, ngx_http_core_module);
