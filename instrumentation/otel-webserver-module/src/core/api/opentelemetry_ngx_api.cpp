@@ -78,14 +78,13 @@ APPD_SDK_STATUS_CODE endRequest(APPD_SDK_HANDLE_REQ req_handle_key, const char* 
     return res;
 }
 
-APPD_SDK_STATUS_CODE startModuleInteraction(const char* req_handle_key, const char* module_name, const char* stage, bool resolveBackends, APPD_SDK_ENV_RECORD* propagationHeaders, int *ix)
+APPD_SDK_STATUS_CODE startModuleInteraction(const char* req_handle_key, const char* module_name, const char* stage, bool resolveBackends, APPD_SDK_ENV_RECORD* propagationHeaders, int *ix, const char* target, const char* scheme, const char* host)
 {
     APPD_SDK_STATUS_CODE res = APPD_SUCCESS;
     std::unordered_map<std::string, std::string> pHeaders;
     std::string module(module_name);
     std::string m_stage(stage);
-
-    std::unique_ptr<appd::core::InteractionPayload> payload(new appd::core::InteractionPayload(module, m_stage, resolveBackends)); 
+    std::unique_ptr<appd::core::InteractionPayload> payload(new appd::core::InteractionPayload(module, m_stage, resolveBackends, target, scheme, host));
     res = wsAgent.startInteraction((APPD_SDK_HANDLE_REQ)req_handle_key, payload.get(), pHeaders);
 
     if (APPD_ISSUCCESS(res))

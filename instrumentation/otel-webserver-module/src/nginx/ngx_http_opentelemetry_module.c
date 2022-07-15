@@ -675,7 +675,8 @@ static APPD_SDK_STATUS_CODE otel_startInteraction(ngx_http_request_t* r, const c
         }
         ngx_writeTrace(r->connection->log, __func__, "Starting a new module interaction for: %s", module_name); 
         int ix = 0;
-        res = startModuleInteraction(ctx->otel_req_handle_key, module_name, "", resolveBackends, propagationHeaders, &ix);
+        // Todo : In the below line $scheme is Ngnix variable, need to findn correct way to retrieve this 
+        res = startModuleInteraction(ctx->otel_req_handle_key, module_name, "", resolveBackends, propagationHeaders, &ix, FromNgxString(r->unparsed_uri), "$scheme", FromNgxString(r->headers_in.host->value));
 
         if (APPD_ISSUCCESS(res))
         {

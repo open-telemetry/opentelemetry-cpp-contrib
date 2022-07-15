@@ -164,6 +164,9 @@ APPD_SDK_STATUS_CODE RequestProcessingEngine::startInteraction(
     std::string spanName = payload->moduleName + "_" + payload->phaseName;
     keyValueMap["interactionType"] = "EXIT_CALL";
     auto interactionSpan = m_sdkWrapper->CreateSpan(spanName, SpanKind::CLIENT, keyValueMap);
+    interactionSpan->AddAttribute("http.target", payload->target);
+    interactionSpan->AddAttribute("http.scheme", payload->scheme);
+    interactionSpan->AddAttribute("http.host", payload->host);
     LOG4CXX_TRACE(mLogger, "Client Span started with SpanName: " << spanName
         << " Span Id: " << interactionSpan.get());
     m_sdkWrapper->PopulatePropagationHeaders(propagationHeaders);
