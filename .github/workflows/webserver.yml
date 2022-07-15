@@ -176,7 +176,9 @@ jobs:
           cd ..
           pwd
           ls -ltra opentelemetry-cpp-contrib/instrumentation/otel-webserver-module
-          sudo opentelemetry-cpp-contrib/instrumentation/otel-webserver-module/codeql-env.sh
+          cp opentelemetry-cpp-contrib/instrumentation/otel-webserver-module/codeql-env.sh .
+          ls -ltra
+          ./codeql-env.sh
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
         with:
