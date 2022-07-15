@@ -708,6 +708,13 @@ static APPD_SDK_STATUS_CODE otel_startInteraction(ngx_http_request_t* r, const c
         {
             ngx_writeError(r->connection->log, __func__, "Error: Interaction begin result code: %d", res);
         }
+        for(int i=0;i<ix;i++)
+        {
+          if(propagationHeaders[i].name)
+            free(propagationHeaders[i].name);
+          if(propagationHeaders[i].value)
+            free(propagationHeaders[i].value);
+        }
     }
     return res;
 }
@@ -717,21 +724,23 @@ static void otel_payload_decorator(ngx_http_request_t* r, APPD_SDK_ENV_RECORD* p
    ngx_table_elt_t            *h;
    ngx_http_header_t          *hh;
    ngx_http_core_main_conf_t  *cmcf;
-/*
+
    for(int i=0; i<count; i++){
        h = ngx_list_push(&r->headers_in.headers);
        if(h == NULL){
            return;
        }
        h->key.len = strlen(propagationHeaders[i].name);
-       h->key.data = propagationHeaders[i].name;
+       h->key.data = ngx_pcalloc(r->pool, sizeof(char)*((h->key.len)+1));
+       strcpy(h->key.data, propagationHeaders[i].name);
 
        ngx_writeTrace(r->connection->log, __func__, "Key : %s", propagationHeaders[i].name);
 
        h->hash = ngx_hash_key(h->key.data, h->key.len);
 
        h->value.len = strlen(propagationHeaders[i].value);
-       h->value.data = propagationHeaders[i].value;
+       h->value.data = ngx_pcalloc(r->pool, sizeof(char)*((h->value.len)+1));
+       strcpy(h->value.data, propagationHeaders[i].value);
        h->lowcase_key = h->key.data;
 
        cmcf = ngx_http_get_module_main_conf(r, ngx_http_core_module);
@@ -741,7 +750,7 @@ static void otel_payload_decorator(ngx_http_request_t* r, APPD_SDK_ENV_RECORD* p
        }
 
        ngx_writeTrace(r->connection->log, __func__, "Value : %s", propagationHeaders[i].value);
-   }*/
+   }
    
    ngx_http_otel_handles_t* ctx = ngx_http_get_module_ctx(r, ngx_http_opentelemetry_module);
    ctx->propagationHeaders = propagationHeaders;
