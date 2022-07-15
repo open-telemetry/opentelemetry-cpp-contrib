@@ -164,7 +164,6 @@ jobs:
   #         mv /tmp/buildx-cache/apache_centos6-new /tmp/buildx-cache/apache_centos6
 
   CodeQL-Build:
-    #needs: webserver-build-test-ubuntu
     runs-on: ubuntu-20.04
     steps:
       - name: checkout otel webserver
