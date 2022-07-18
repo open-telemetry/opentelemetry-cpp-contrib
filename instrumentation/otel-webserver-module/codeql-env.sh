@@ -1,29 +1,29 @@
 #!/bin/bash
 
 apt-get -y update && apt-get -y upgrade && apt-get -y dist-upgrade
-apt-get install -qq -y --ignore-missing     \
-	build-essential		                    \
-	curl			                        \
-	git			                            \
-	make			                        \
-	pkg-config		                        \
-	protobuf-compiler	                    \
-	libprotobuf-dev                         \
-	python			                        \
-	sudo			                        \
-	tar			                            \
-	zip			                            \
-	unzip			                        \
-	wget			                        \
-    cmake
+apt-get install -qq -y --ignore-missing \
+  build-essential                       \
+  curl                                  \
+  git                                   \
+  make                                  \
+  pkg-config                            \
+  protobuf-compiler                     \
+  libprotobuf-dev                       \
+  python                                \
+  sudo                                  \
+  tar                                   \
+  zip                                   \
+  unzip                                 \
+  wget                                  \
+  cmake
 
-apt-get install -y 							\
-    lcov    								\
-    m4                                      \
-    autoconf                                \
-    automake                                \
-    libtool                                 \
-    default-jre
+apt-get install -y  \
+  lcov              \
+  m4                \
+  autoconf          \
+  automake          \
+  libtool           \
+  default-jre
 
 GRPC_VERSION="1.36.4"
 OPENTELEMETRY_VERSION="1.2.0"

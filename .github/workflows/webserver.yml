@@ -14,7 +14,7 @@ on:
 
 jobs:
   webserver-build-test-ubuntu:
-    name: apache-ubuntu
+    name: webserver-ubuntu-build
     runs-on: ubuntu-20.04
     steps:
       - name: checkout otel webserver
@@ -49,7 +49,7 @@ jobs:
             'cd /otel-webserver-module; rm -rf build;              \
             cp -r /dependencies /otel-webserver-module/;           \
             cp -r /build-dependencies /otel-webserver-module/;     \
-            ./gradlew assembleApacheModule -DtargetSystem=ubuntu'
+            ./gradlew assembleWebServerModule -DtargetSystem=ubuntu'
       - name: unit test
         run: |
           docker exec apache_ubuntu_container bash -c \
@@ -60,7 +60,7 @@ jobs:
           mv /tmp/buildx-cache/apache_ubuntu-new /tmp/buildx-cache/apache_ubuntu
 
   webserver-build-test-centos7:
-    name: apache-centos7
+    name: webserver-centos7-build
     runs-on: ubuntu-20.04
     steps:
       - name: checkout otel webserver
@@ -118,7 +118,7 @@ jobs:
           path: /tmp/apache_centos7/opentelemetry-webserver-sdk-x64-linux.tgz
 
   webserver-build-test-centos6:
-    name: apache-centos6
+    name: webserver-centos6-build
     runs-on: ubuntu-20.04
     steps:
       - name: checkout otel webserver
@@ -163,8 +163,8 @@ jobs:
           rm -rf /tmp/buildx-cache/apache_centos6
           mv /tmp/buildx-cache/apache_centos6-new /tmp/buildx-cache/apache_centos6
 
-  CodeQL-Build:
-    name: codeql-build
+  Codeql-build:
+    name: static-analysis
     runs-on: ubuntu-20.04
     steps:
       - name: checkout otel webserver
