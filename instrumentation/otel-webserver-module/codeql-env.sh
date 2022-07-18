@@ -61,7 +61,7 @@ git clone --shallow-submodules --depth 1 --recurse-submodules -b v${GRPC_VERSION
   && cd ../../.. && rm -rf grpc
 
 # install opentelemetry
-mkdir -p dependencies/opentelemetry/${OPENTELEMETRY_VERSION}/lib \
+mkdir -p /dependencies/opentelemetry/${OPENTELEMETRY_VERSION}/lib \
     && mkdir -p dependencies/opentelemetry/${OPENTELEMETRY_VERSION}/include \
     && git clone https://github.com/open-telemetry/opentelemetry-cpp \
     && cd opentelemetry-cpp/ \
@@ -81,7 +81,7 @@ mkdir -p dependencies/opentelemetry/${OPENTELEMETRY_VERSION}/lib \
     && cd .. && rm -rf opentelemetry-cpp
 
 #install Apr
-mkdir -p dependencies/apr/${APR_VERSION} \
+mkdir -p /dependencies/apr/${APR_VERSION} \
     && wget https://dlcdn.apache.org//apr/apr-${APR_VERSION}.tar.gz --no-check-certificate \
     && tar -xf apr-${APR_VERSION}.tar.gz \
     && cd apr-${APR_VERSION} \
@@ -91,7 +91,7 @@ mkdir -p dependencies/apr/${APR_VERSION} \
     && cd ../ && rm -rf apr-${APR_VERSION} && rm -rf apr-${APR_VERSION}.tar.gz
 
 # install libexpat
-mkdir -p dependencies/expat/${EXPAT_VERSION} \
+mkdir -p /dependencies/expat/${EXPAT_VERSION} \
     && wget https://github.com/libexpat/libexpat/releases/download/${EXPAT_RVERSION}/expat-${EXPAT_VERSION}.tar.gz --no-check-certificate \
     && tar -xf expat-${EXPAT_VERSION}.tar.gz \
     && cd expat-${EXPAT_VERSION} \
@@ -101,7 +101,7 @@ mkdir -p dependencies/expat/${EXPAT_VERSION} \
     && cd ../ && rm -rf expat-${EXPAT_VERSION} && rm -rf expat-${EXPAT_VERSION}.tar.gz
 
 # install Apr-util
-mkdir -p dependencies/apr-util/${APRUTIL_VERSION} \
+mkdir -p /dependencies/apr-util/${APRUTIL_VERSION} \
     && wget https://dlcdn.apache.org//apr/apr-util-${APRUTIL_VERSION}.tar.gz --no-check-certificate \
     && tar -xf apr-util-${APRUTIL_VERSION}.tar.gz \
     && cd apr-util-${APRUTIL_VERSION} \
@@ -112,7 +112,7 @@ mkdir -p dependencies/apr-util/${APRUTIL_VERSION} \
 
 
 #install log4cxx
-mkdir -p dependencies/apache-log4cxx/${LOG4CXX_VERSION} \
+mkdir -p /dependencies/apache-log4cxx/${LOG4CXX_VERSION} \
     && wget https://archive.apache.org/dist/logging/log4cxx/${LOG4CXX_VERSION}/apache-log4cxx-${LOG4CXX_VERSION}.tar.gz --no-check-certificate \
     && tar -xf apache-log4cxx-${LOG4CXX_VERSION}.tar.gz \
     && cd apache-log4cxx-${LOG4CXX_VERSION} \
@@ -123,7 +123,7 @@ mkdir -p dependencies/apache-log4cxx/${LOG4CXX_VERSION} \
     && cd .. && rm -rf apache-log4cxx-${LOG4CXX_VERSION}.tar.gz && rm -rf apache-log4cxx-${LOG4CXX_VERSION}
 
 # install googletest
-mkdir -p dependencies/googletest/${GTEST_VERSION}/ \
+mkdir -p /dependencies/googletest/${GTEST_VERSION}/ \
     && wget https://github.com/google/googletest/archive/refs/tags/release-${GTEST_VERSION}.tar.gz --no-check-certificate \
     && tar -xf release-${GTEST_VERSION}.tar.gz \
     && cd googletest-release-${GTEST_VERSION}/  \
@@ -134,7 +134,7 @@ mkdir -p dependencies/googletest/${GTEST_VERSION}/ \
     && cd ../.. && rm -rf release-${GTEST_VERSION}.tar.gz && rm -rf googletest-release-${GTEST_VERSION}/
 
 #Installing Apache and apr source code
-mkdir build-dependencies \
+mkdir -p /build-dependencies \
     && wget --no-check-certificate https://archive.apache.org/dist/apr/apr-${APR_VERSION}.tar.gz \
     && tar -xf apr-${APR_VERSION}.tar.gz \
     && mv -f apr-${APR_VERSION} build-dependencies \
@@ -166,7 +166,7 @@ wget https://boostorg.jfrog.io/artifactory/main/release/${BOOST_VERSION}/source/
     && cd .. && rm -rf ${BOOST_FILENAME} && rm ${BOOST_FILENAME}.tar.gz
 
 # install pcre
-mkdir -p dependencies/pcre/${PCRE_VERSION}/ \
+mkdir -p /dependencies/pcre/${PCRE_VERSION}/ \
     && wget https://ftp.exim.org/pub/pcre/pcre-${PCRE_VERSION}.tar.gz --no-check-certificate \
     && tar -xvf pcre-${PCRE_VERSION}.tar.gz \
     && cd pcre-${PCRE_VERSION} \
