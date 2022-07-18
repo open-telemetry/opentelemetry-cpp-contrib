@@ -137,16 +137,16 @@ mkdir -p /dependencies/googletest/${GTEST_VERSION}/ \
 mkdir -p /build-dependencies \
     && wget --no-check-certificate https://archive.apache.org/dist/apr/apr-${APR_VERSION}.tar.gz \
     && tar -xf apr-${APR_VERSION}.tar.gz \
-    && mv -f apr-${APR_VERSION} build-dependencies \
+    && mv -f apr-${APR_VERSION} /build-dependencies \
     && wget --no-check-certificate https://archive.apache.org/dist/apr/apr-util-${APRUTIL_VERSION}.tar.gz \
     && tar -xf apr-util-${APRUTIL_VERSION}.tar.gz \
-    && mv -f apr-util-${APRUTIL_VERSION} build-dependencies \
+    && mv -f apr-util-${APRUTIL_VERSION} /build-dependencies \
     && wget --no-check-certificate http://archive.apache.org/dist/httpd/httpd-2.2.31.tar.gz \
     && tar -xf httpd-2.2.31.tar.gz \
-    && mv -f httpd-2.2.31 build-dependencies \
+    && mv -f httpd-2.2.31 /build-dependencies \
     && wget --no-check-certificate http://archive.apache.org/dist/httpd/httpd-2.4.23.tar.gz \
     && tar -xf httpd-2.4.23.tar.gz \
-    && mv -f httpd-2.4.23 build-dependencies
+    && mv -f httpd-2.4.23 /build-dependencies
 
 rm -rf apr-util-${APRUTIL_VERSION} && rm -rf apr-util-${APRUTIL_VERSION}.tar.gz \
     && rm -rf httpd-2.4.23.tar.gz && rm -rf httpd-2.2.31.tar.gz \
