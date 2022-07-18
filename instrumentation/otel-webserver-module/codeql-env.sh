@@ -25,7 +25,6 @@ apt-get install -y 							\
     libtool                                 \
     default-jre
 
-# The following arguments would be passed from docker-compose.yml
 GRPC_VERSION="1.36.4"
 OPENTELEMETRY_VERSION="1.2.0"
 BOOST_VERSION="1.75.0"
@@ -178,30 +177,3 @@ mkdir -p /dependencies/pcre/${PCRE_VERSION}/ \
 wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
     && tar -xvf nginx-${NGINX_VERSION}.tar.gz -C /build-dependencies \
     && rm -rf nginx-${NGINX_VERSION}.tar.gz
-
-# # Build Webserver Module
-# COPY . /otel-webserver-module
-
-# RUN cp -r /dependencies /otel-webserver-module/ \
-#     && cp -r /build-dependencies /otel-webserver-module/ \
-#     && cd otel-webserver-module \
-#     && ./gradlew assembleWebServerModule -DtargetSystem=ubuntu
-
-# RUN cd /otel-webserver-module/build \
-#     && tar -xf opentelemetry-webserver-sdk-x64-linux.tgz \
-#     && mv -f opentelemetry-webserver-sdk /opt/ \
-#     && cd ../ \
-#     && cp opentelemetry_module.conf /etc/apache2/opentelemetry_module.conf \
-#     && sed -i "s/libmod_apache_otel22.so/libmod_apache_otel.so/g" /etc/apache2/opentelemetry_module.conf \
-#     && echo 'Include opentelemetry_module.conf' >> /etc/apache2/apache2.conf \
-#     && cd /opt/opentelemetry-webserver-sdk \
-#     && ./install.sh \
-#     && cd /
-
-# RUN cd /otel-webserver-module/build \
-#     && cp ../conf/nginx/opentelemetry_module.conf /opt/ \
-#     && sed -i '5i load_module /opt/opentelemetry-webserver-sdk/WebServerModule/Nginx/ngx_http_opentelemetry_module.so;' /etc/nginx/nginx.conf \
-#     && sed -i '64i include /opt/opentelemetry_module.conf;' /etc/nginx/nginx.conf \
-#     && cd /opt/opentelemetry-webserver-sdk \
-#     && ./install.sh \
-#     && cd /
