@@ -190,7 +190,10 @@ jobs:
           cd instrumentation/otel-webserver-module
           cp -r /dependencies ../otel-webserver-module/
           cp -r /build-dependencies ../otel-webserver-module/
-          ./gradlew assembleWebserverModule -DtargetSystem=ubuntu
+          ls -ltra build-dependencies
+          echo "***********"
+          ls -ltra dependencies
+          ./gradlew assembleWebserverModule -DtargetSystem=ubuntu --info
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
 
