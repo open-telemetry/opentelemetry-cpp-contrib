@@ -188,6 +188,8 @@ jobs:
           pwd
           ls -ltra
           cd instrumentation/otel-webserver-module
+          cp -r /dependencies ../otel-webserver-module/
+          cp -r /build-dependencies ../otel-webserver-module/
           ./gradlew assembleWebserverModule -DtargetSystem=ubuntu
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
