@@ -17,6 +17,7 @@
 #include "api/opentelemetry_ngx_api.h"
 #include "api/WSAgent.h"
 #include "api/Payload.h"
+#include <cstring>
 
 
 appd::core::WSAgent wsAgent; // global variable for interface between Hooks and Core Logic
@@ -78,7 +79,7 @@ APPD_SDK_STATUS_CODE endRequest(APPD_SDK_HANDLE_REQ req_handle_key, const char* 
     return res;
 }
 
-APPD_SDK_STATUS_CODE startModuleInteraction(const char* req_handle_key, const char* module_name, const char* stage, bool resolveBackends, APPD_SDK_ENV_RECORD* propagationHeaders, int *ix)
+APPD_SDK_STATUS_CODE startModuleInteraction(APPD_SDK_HANDLE_REQ req_handle_key, const char* module_name, const char* stage, bool resolveBackends, APPD_SDK_ENV_RECORD* propagationHeaders, int *ix)
 {
     APPD_SDK_STATUS_CODE res = APPD_SUCCESS;
     std::unordered_map<std::string, std::string> pHeaders;
@@ -86,7 +87,7 @@ APPD_SDK_STATUS_CODE startModuleInteraction(const char* req_handle_key, const ch
     std::string m_stage(stage);
 
     std::unique_ptr<appd::core::InteractionPayload> payload(new appd::core::InteractionPayload(module, m_stage, resolveBackends)); 
-    res = wsAgent.startInteraction((APPD_SDK_HANDLE_REQ)req_handle_key, payload.get(), pHeaders);
+    res = wsAgent.startInteraction(req_handle_key, payload.get(), pHeaders);
 
     if (APPD_ISSUCCESS(res))
     {
@@ -94,8 +95,12 @@ APPD_SDK_STATUS_CODE startModuleInteraction(const char* req_handle_key, const ch
         {
             for (auto itr = pHeaders.begin(); itr != pHeaders.end(); itr++)
             {
-                propagationHeaders[*ix].name = itr->first.c_str();
-                propagationHeaders[*ix].value = itr->second.c_str();
+                char *temp_key = (char*)malloc(itr->first.size() + 1); 
+                std::strcpy(temp_key, itr->first.c_str());
+                propagationHeaders[*ix].name = temp_key;
+                char *temp_value= (char*)malloc(itr->second.size() + 1); 
+                std::strcpy(temp_value, itr->second.c_str());
+                 propagationHeaders[*ix].value = temp_value;
                 ++(*ix);
             }
         }
@@ -103,10 +108,10 @@ APPD_SDK_STATUS_CODE startModuleInteraction(const char* req_handle_key, const ch
     return res;
 }
 
-APPD_SDK_STATUS_CODE stopModuleInteraction(const char* req_handle_key, const char* backendName, const char* backendType, unsigned int err_code, const char* msg)
+APPD_SDK_STATUS_CODE stopModuleInteraction(APPD_SDK_HANDLE_REQ req_handle_key, const char* backendName, const char* backendType, unsigned int err_code, const char* msg)
 {
     std::unique_ptr<appd::core::EndInteractionPayload> payload(new appd::core::EndInteractionPayload(backendName, backendType, err_code, msg));
-    APPD_SDK_STATUS_CODE res = wsAgent.endInteraction((APPD_SDK_HANDLE_REQ)req_handle_key, false, payload.get());
+    APPD_SDK_STATUS_CODE res = wsAgent.endInteraction(req_handle_key, false, payload.get());
 
     return res;
 }
