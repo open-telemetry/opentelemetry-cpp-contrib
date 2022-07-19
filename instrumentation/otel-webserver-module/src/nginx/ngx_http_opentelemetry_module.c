@@ -924,25 +924,25 @@ static ngx_flag_t ngx_initialize_opentelemetry(ngx_http_request_t *r)
 
         // Otel Max Queue Size
         env_config[ix].name = APPD_SDK_ENV_MAX_QUEUE_SIZE;
-        sprintf(qs, "%d", conf->nginxModuleOtelMaxQueueSize);
+        sprintf(qs, "%lu", conf->nginxModuleOtelMaxQueueSize);
         env_config[ix].value = qs;
         ++ix;
 
         // Otel Scheduled Delay
         env_config[ix].name = APPD_SDK_ENV_SCHEDULED_DELAY;
-        sprintf(sd, "%d", conf->nginxModuleOtelScheduledDelayMillis);
+        sprintf(sd, "%lu", conf->nginxModuleOtelScheduledDelayMillis);
         env_config[ix].value = sd;
         ++ix;
 
         // Otel Max Export Batch Size
         env_config[ix].name = APPD_SDK_ENV_EXPORT_BATCH_SIZE;
-        sprintf(es, "%d", conf->nginxModuleOtelMaxExportBatchSize);
+        sprintf(es, "%lu", conf->nginxModuleOtelMaxExportBatchSize);
         env_config[ix].value = es;
         ++ix;
 
         // Otel Export Timeout
         env_config[ix].name = APPD_SDK_ENV_EXPORT_TIMEOUT;
-        sprintf(et, "%d", conf->nginxModuleOtelExportTimeoutMillis);
+        sprintf(et, "%lu", conf->nginxModuleOtelExportTimeoutMillis);
         env_config[ix].value = et;
         ++ix;
 
@@ -1389,9 +1389,9 @@ static char* computeContextName(ngx_http_request_t *r, ngx_http_opentelemetry_lo
 
 static void traceConfig(ngx_http_request_t *r, ngx_http_opentelemetry_loc_conf_t* conf){
     ngx_writeTrace(r->connection->log, __func__, " Config { :"
-                                                      "(Enabled=\"%d\")"
+                                                      "(Enabled=\"%ld\")"
                                                       "(OtelExporterEndpoint=\"%s\")"
-                                                      "(OtelSslEnabled=\"%d\")"
+                                                      "(OtelSslEnabled=\"%ld\")"
                                                       "(OtelSslCertificatePath=\"%s\")"
                                                       "(OtelSpanExporter=\"%s\")"
                                                       "(OtelSpanProcessor=\"%s\")"
@@ -1399,15 +1399,15 @@ static void traceConfig(ngx_http_request_t *r, ngx_http_opentelemetry_loc_conf_t
                                                       "(ServiceNamespace=\"%s\")"
                                                       "(ServiceName=\"%s\")"
                                                       "(ServiceInstanceId=\"%s\")"
-                                                      "(OtelMaxQueueSize=\"%d\")"
-                                                      "(OtelScheduledDelayMillis=\"%d\")"
-                                                      "(OtelExportTimeoutMillis=\"%d\")"
-                                                      "(OtelMaxExportBatchSize=\"%d\")"
-                                                      "(ResolveBackends=\"%d\")"
-                                                      "(TraceAsError=\"%d\")"
-                                                      "(ReportAllInstrumentedModules=\"%d\")"
-                                                      "(MaskCookie=\"%d\")"
-                                                      "(MaskSmUser=\"%d\")"
+                                                      "(OtelMaxQueueSize=\"%lu\")"
+                                                      "(OtelScheduledDelayMillis=\"%lu\")"
+                                                      "(OtelExportTimeoutMillis=\"%lu\")"
+                                                      "(OtelMaxExportBatchSize=\"%lu\")"
+                                                      "(ResolveBackends=\"%ld\")"
+                                                      "(TraceAsError=\"%ld\")"
+                                                      "(ReportAllInstrumentedModules=\"%ld\")"
+                                                      "(MaskCookie=\"%ld\")"
+                                                      "(MaskSmUser=\"%ld\")"
                                                       "(SegmentType=\"%s\")"
                                                       "(SegmentParameter=\"%s\")"
                                                       " }",
