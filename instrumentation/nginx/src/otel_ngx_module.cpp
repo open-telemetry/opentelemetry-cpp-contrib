@@ -123,6 +123,7 @@ static void OtelCaptureHeaders(nostd::shared_ptr<opentelemetry::trace::Span> spa
 }
 
 static ngx_int_t OtelGetContextVar(ngx_http_request_t*, ngx_http_variable_value_t*, uintptr_t) {
+  // Filled out on context creation.
   return NGX_OK;
 }
 
