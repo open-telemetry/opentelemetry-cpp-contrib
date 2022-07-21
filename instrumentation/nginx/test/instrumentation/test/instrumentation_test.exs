@@ -513,7 +513,7 @@ defmodule InstrumentationTest do
     %HTTPoison.Response{status_code: status, headers: headers} =
       HTTPoison.get!("#{@host}/route_to_internal")
 
-    read_traces(trace_file, 1)
+    [trace] = read_traces(trace_file, 1)
     [span] = collect_spans(trace)
     {_, header_trace_id} = Enum.find(headers, fn {k, _} -> k == "Trace-Id" end)
     assert header_trace_id == span["traceId"]
