@@ -49,9 +49,9 @@ RUN yum update -y \
 
 # install lcov package
 RUN wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
-	&& yum install ./epel-release-latest-*.noarch.rpm -y \
-	&& yum install lcov -y \
-	&& yum clean all
+    && yum install ./epel-release-latest-*.noarch.rpm -y \
+    && yum install lcov -y \
+    && yum clean all
 
 # install devtoolset toolchain
 # RUN curl https://www.getpagespeed.com/files/centos6-eol.repo --output /etc/yum.repos.d/CentOS-Base.repo \
@@ -264,15 +264,20 @@ RUN wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
     && rm -rf nginx-${NGINX_VERSION}.tar.gz
 
 # Build Webserver Module
-
 COPY . /otel-webserver-module
 
 RUN cp -r /dependencies /otel-webserver-module/ \
     && cp -r /build-dependencies /otel-webserver-module/ \
     && cd otel-webserver-module \
-    && ./gradlew assembleApacheModule -DtargetSystem=centos7
+    && ./gradlew assembleWebServerModule 
 
-# install webserver module
+RUN echo '[nginx]' >> /etc/yum.repos.d/nginx.repo \
+    && echo 'name=nginx repo' >> /etc/yum.repos.d/nginx.repo \
+    && echo 'baseurl=https://nginx.org/packages/centos/7/x86_64' >> /etc/yum.repos.d/nginx.repo \
+    && echo 'gpgcheck=0' >> /etc/yum.repos.d/nginx.repo \ 
+    && echo 'enabled=1' >> /etc/yum.repos.d/nginx.repo \
+    && yum install nginx-1.18.0 -y 
+
 RUN cd /otel-webserver-module/build \
     && tar -xf opentelemetry-webserver-sdk-x64-linux.tgz \
     && mv -f opentelemetry-webserver-sdk /opt/ \
@@ -282,6 +287,11 @@ RUN cd /otel-webserver-module/build \
     && echo 'Include conf/opentelemetry_module.conf' >> /etc/httpd/conf/httpd.conf \
     && cd /opt/opentelemetry-webserver-sdk \
     && ./install.sh \
+    && cd /
+
+RUN cp /otel-webserver-module/conf/nginx/opentelemetry_module.conf /opt/ \
+    && sed -i '8i load_module /opt/opentelemetry-webserver-sdk/WebServerModule/Nginx/ngx_http_opentelemetry_module.so;' /etc/nginx/nginx.conf \
+    && sed -i '33i include /opt/opentelemetry_module.conf;' /etc/nginx/nginx.conf \ 
     && cd /
 
 # Remove unwanted files
