@@ -67,8 +67,7 @@ A sample configuration is mentioned in [opentelemetry_module.conf](https://githu
 
 #### Platform Supported
 - The build is supported for **x86-64** platforms.
-- Currently, it is built and tested on **Centos6** by default
-- Other OS support: **Centos7, ubuntu20.04**.
+- OS support: **Centos6**, **Centos7, ubuntu20.04**.
 
 #### Automatic build and Installation
 
@@ -95,7 +94,7 @@ After going inside the container run the following commands ```cd \otel-webserve
 
 The build file can be copied at a suitable location in User's system by running the command ```docker cp <container_name>:/otel-webserver-module/build/opentelemetry-webserver-sdk-x64-linux.tgz  <desired_location>```. The installation steps can be inferred from ```install.sh``` script.
 
-Alternatively, build package can also be downloaded from [GitHub Actions](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/webserver.yml) of the source repository.
+Alternatively, build package can also be downloaded from [GitHub Actions](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/webserver.yml) of the source repository. Click on any top successful workflow runs on main branch and the artifact would be available for download.
 
 ## Nginx Webserver Module
 
@@ -169,8 +168,7 @@ Currently, Nginx Webserver module monitores some fixed set of modules, which get
 #### Platform Supported
 - Supports only Nginx v1.18.0.
 - The build is supported for **x86-64** platforms.
-- Currently, it is built and tested on **Centos6** by default
-- Other OS support: **Centos7, ubuntu20.04**.
+- OS support: **Centos6**, **Centos7, ubuntu20.04**.
 
 #### Automatic build and Installation
 
@@ -202,7 +200,7 @@ The above command builds the package and the same is located at ```/otel-webserv
 
 The build file can be copied at a suitable location in User's system by running the command ```docker cp <container_name>:/otel-webserver-module/build/opentelemetry-webserver-sdk-x64-linux.tgz  <desired_location>```.
 
-Alternatively, build package can also be downloaded from [GitHub Actions](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/webserver.yml) of the source repository.
+Alternatively, build package can also be downloaded from [GitHub Actions](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/webserver.yml) of the source repository. Click on any top successful workflow runs on main branch and the artifact would be available for download.
 
 In order to install, untar the package to /opt directory.
 ```
@@ -212,17 +210,28 @@ cd /opt/opentelemetry-webserver-sdk/
 ```
 Copy the ```conf/nginx/opentelemetry_module.conf``` to /opt/.
 Make sure to edit the directives values according to your need e.g NginxModuleOtelExporterEndpoint should point to collector url.
-Edit the nginx.conf to provide the reference to opentelemetry_module.conf and shared library. Please mind the order and location of the below entries by referring to ```conf/nginx/nginx.conf```.
+Edit the nginx.conf to provide the reference to opentelemetry_module.conf and shared library.
+Please mind the order and location of the below entries by referring to ```conf/nginx/nginx.conf```.
 ```
 load_module /opt/opentelemetry-webserver-sdk/WebServerModule/Nginx/ngx_http_opentelemetry_module.so;
 include /opt/opentelemetry_module.conf;
 ```
+
 Before running Nginx webserver, make sure to update LD_LIBRARY_PATH to pick up opentelemetry dependencies.
 ```
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/opentelemetry-webserver-sdk/sdk_lib/lib
 ```
 
+### Usability of the downloaded artifact
+The downloaded artifact from [GitHub Actions](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/webserver.yml) is built on CentOS7. This contains shared libraries for both apache and nginx instrumentation. The shared libraries can be located at ```WebServerModule/Apache``` or ```WebServerModule/Nginx``` for respective webservers. But, the common libraries, related to opentelemetry, are located at ```sdk_lib/lib/``` which are used by both apache and nginx instrumentation.
+
+Currently, artifact is generated on x86-64 is published.
+**Therefore, the artifact should work on any linux distribution running on x86-64 plarform and having glibc version >= 2.17.**
+
 ### Maintainers
 * [Kumar Pratyush](https://github.com/kpratyus), Cisco
 * [Debajit Das](https://github.com/DebajitDas), Cisco
+
+### Blogs
+* [Instrument Apache HttpServer with OpenTelemetry](https://opentelemetry.io/blog/2022/instrument-apache-httpd-server/)
 
