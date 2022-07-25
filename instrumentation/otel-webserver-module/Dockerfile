@@ -174,8 +174,10 @@ RUN wget --no-check-certificate https://ftpmirror.gnu.org/libtool/libtool-${LIBT
     && libtool --version \
     && cd .. && rm -rf libtool--${LIBTOOL_VERSION}.tar.gz
 
+RUN ls
+
 #install log4cxx
-RUN mkdir -p dependencies/apache-log4cxx/-${LOG4CXX_VERSION} \
+RUN mkdir -p dependencies/apache-log4cxx/${LOG4CXX_VERSION} \
     && wget https://archive.apache.org/dist/logging/log4cxx/${LOG4CXX_VERSION}/apache-log4cxx-${LOG4CXX_VERSION}.tar.gz --no-check-certificate \
     && tar -xf apache-log4cxx-${LOG4CXX_VERSION}.tar.gz \
     && cd apache-log4cxx-${LOG4CXX_VERSION} \
