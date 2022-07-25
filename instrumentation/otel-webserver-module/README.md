@@ -83,6 +83,10 @@ This would start the container alongwith the the Opentelemetry Collector and Zip
 
 #### Manual build and Installation
 
+The artifact can be either downloaded or built manually.
+
+##### Generate the artifact manually
+
 We will use Docker to run the Module. First, it is to be made sure that the Docker is up and running. 
 Then execute the following commands -:
 ```
@@ -92,9 +96,16 @@ docker-compose --profile default up
 Next, login into the Docker container. 
 After going inside the container run the following commands ```cd \otel-webserver-module```. After making code changes the build and installation can be done by running ```./install.sh```.
 
-The build file can be copied at a suitable location in User's system by running the command ```docker cp <container_name>:/otel-webserver-module/build/opentelemetry-webserver-sdk-x64-linux.tgz  <desired_location>```. The installation steps can be inferred from ```install.sh``` script.
+The build file can be copied at a suitable location in User's system by running the command ```docker cp <container_name>:/otel-webserver-module/build/opentelemetry-webserver-sdk-x64-linux.tgz  <desired_location>```.
 
-Alternatively, build package can also be downloaded from [GitHub Actions](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/webserver.yml) of the source repository. Click on any top successful workflow runs on main branch and the artifact would be available for download.
+##### Download the artifact
+
+The artifact can also be downloaded from [GitHub Actions](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/webserver.yml) of the source repository. Click on any top successful workflow runs on main branch and the artifact would be available for download.
+
+##### Installation Steps
+
+The installation steps can be referred from [instrument-apache-httpd-server](https://opentelemetry.io/blog/2022/instrument-apache-httpd-server/#installing-opentelemetry-module-in-target-system).
+Please ignore the initial steps which talks about generating the artifact locally.
 
 ## Nginx Webserver Module
 
@@ -184,7 +195,10 @@ This would start the container alongwith the the Opentelemetry Collector and Zip
 
 #### Manual build and Installation
 
-We will use Docker to run the Module. First, it is to be made sure that the Docker is up and running.
+The artifact can be either downloaded or built manually.
+
+##### Generate the artifact manually
+We will use Docker to build the artifact. First, it is to be made sure that the Docker is up and running.
 Then execute the following commands -:
 ```
 docker-compose --profile centos7_nginx build
@@ -196,13 +210,17 @@ After going inside the container run the following commands
 cd /otel-webserver-module
 ./gradlew assembleWebServerModule
 ```
-The above command builds the package and the same is located at ```/otel-webserver-module/build```.
+The above command builds the aritifact and the same is located at ```/otel-webserver-module/build```.
 
 The build file can be copied at a suitable location in User's system by running the command ```docker cp <container_name>:/otel-webserver-module/build/opentelemetry-webserver-sdk-x64-linux.tgz  <desired_location>```.
 
-Alternatively, build package can also be downloaded from [GitHub Actions](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/webserver.yml) of the source repository. Click on any top successful workflow runs on main branch and the artifact would be available for download.
+##### Download the artifact
 
-In order to install, untar the package to /opt directory.
+The artifact can also be downloaded from [GitHub Actions](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/webserver.yml) of the source repository. Click on any top successful workflow runs on main branch and the artifact would be available for download.
+
+##### Installation Steps
+
+In order to install, untar the artifact to /opt directory.
 ```
 tar -xf opentelemetry-webserver-sdk-x64-linux.tgz -C /opt
 cd /opt/opentelemetry-webserver-sdk/
