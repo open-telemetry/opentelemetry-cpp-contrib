@@ -12,7 +12,9 @@
 namespace sdktrace = opentelemetry::sdk::trace;
 namespace nostd = opentelemetry::nostd;
 
+#ifndef HAVE_CONSOLE_LOG
 #define HAVE_CONSOLE_LOG
+#endif
 
 namespace {
 void initTracer() {
