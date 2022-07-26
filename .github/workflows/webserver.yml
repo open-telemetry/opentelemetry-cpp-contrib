@@ -95,7 +95,7 @@ jobs:
             'cd /otel-webserver-module; rm -rf build; \
             cp -r /dependencies /otel-webserver-module/;           \
             cp -r /build-dependencies /otel-webserver-module/;     \
-            ./gradlew assembleApacheModule'
+            ./gradlew assembleWebServerModule'
       - name: unit test
         run: |
           docker exec apache_centos7_container bash -c \
@@ -153,7 +153,7 @@ jobs:
             'cd /otel-webserver-module; rm -rf build; \
             cp -r /dependencies /otel-webserver-module/;           \
             cp -r /build-dependencies /otel-webserver-module/;     \
-            ./gradlew assembleApacheModule'
+            ./gradlew assembleWebServerModule'
       - name: unit test
         run: |
           docker exec apache_centos6_container bash -c \

@@ -10,9 +10,9 @@ processors:
     - key: service.namespace                                         
       value: "sample_namespace"                                
       action: upsert
-    - key: service.name                                             
-      value: "sample_service"                                         
-      action: upsert                                                
+#    - key: service.name                                             
+#      value: "sample_service"                                         
+#      action: upsert                                                
 receivers:
     otlp:
       protocols:
