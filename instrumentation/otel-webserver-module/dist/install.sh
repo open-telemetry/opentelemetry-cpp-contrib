@@ -1,12 +1,6 @@
 #!/bin/sh
-#
-#
-# Copyright 2014 AppDynamics.
-# All rights reserved.
-#
-#
-# Install script for AppDynamics WebServer agent
-#
+# Install script for WebServer Instrumentation
+
 usage() {
 cat << EOF
   Usage: `basename $0`
@@ -71,7 +65,7 @@ fatal_error() {
     log_error $1
     cat >&2 <<EOF
 
-AppDynamics WebServer Agent installation has failed. Please check $install_log for
+Webserver Instrumentation installation has failed. Please check $install_log for
 possible causes. Please also attach it when filing a bug report.
 EOF
 
@@ -113,7 +107,7 @@ datestamp=`date +%Y_%m_%d_%H_%M_%S 2>/dev/null`
 install_log=/tmp/appd_install_${datestamp}.log
 rm -f $install_log > /dev/null 2>&1
 cat > $install_log <<EOF
-AppDynamics WebServer agent installation log
+Webserver Instrumentation installation log
 Version: ${agentVersionId}
 Date: `date 2>/dev/null`
 
@@ -127,7 +121,7 @@ Environment:
 ################################################################################
 EOF
 
-echo "Install script for AppDynamics WebServer Agent ${agentVersionId}"
+echo "Install script for WebServer Instrumentation ${agentVersionId}"
 
 # Check for SELinux
 getenforce=`which getenforce 2>/dev/null`
