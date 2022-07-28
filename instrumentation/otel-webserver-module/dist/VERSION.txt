@@ -1,1 +1,1 @@
-${moduleVersion}${moduleRelease}-${headSHA1}
+${moduleVersion}${moduleRelease}
