@@ -100,7 +100,9 @@ The build file can be copied at a suitable location in User's system by running 
 
 ##### Download the artifact
 
-The artifact can also be downloaded from [Release/Tag with suffix "webserver/"](https://github.com/open-telemetry/opentelemetry-cpp-contrib/releases) or [GitHub Actions](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/webserver.yml) of the source repository. Click on any top successful workflow runs on main branch and the artifact would be available for download.
+The artifact can also be downloaded from either of below links
+-[Releases](https://github.com/open-telemetry/opentelemetry-cpp-contrib/releases) - Make sure to download from releases/tags having ```webserver/vXX.XX.XX```
+-[GitHub Actions](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/webserver.yml) - Click on any top successful workflow runs on main branch and the artifact would be available for download.
 
 ##### Installation Steps
 
@@ -216,7 +218,9 @@ The build file can be copied at a suitable location in User's system by running 
 
 ##### Download the artifact
 
-The artifact can also be downloaded from [Release/Tag with suffix "webserver/"](https://github.com/open-telemetry/opentelemetry-cpp-contrib/releases) or [GitHub Actions](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/webserver.yml) of the source repository. Click on any top successful workflow runs on main branch and the artifact would be available for download.
+The artifact can also be downloaded from either of below links
+-[Releases](https://github.com/open-telemetry/opentelemetry-cpp-contrib/releases) - Make sure to download from releases/tags having ```webserver/vXX.XX.XX```
+-[GitHub Actions](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/webserver.yml) - Click on any top successful workflow runs on main branch and the artifact would be available for download.
 
 ##### Installation Steps
 
@@ -241,7 +245,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/opentelemetry-webserver-sdk/sdk_lib
 ```
 
 ### Usability of the downloaded artifact
-The downloaded artifact from [Release/Tag with suffix "webserver/"](https://github.com/open-telemetry/opentelemetry-cpp-contrib/releases) or [GitHub Actions](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/webserver.yml) is built on CentOS7. This contains shared libraries for both apache and nginx instrumentation. The shared libraries can be located at ```WebServerModule/Apache``` or ```WebServerModule/Nginx``` for respective webservers. But, the common libraries, related to opentelemetry, are located at ```sdk_lib/lib/``` which are used by both apache and nginx instrumentation.
+The downloaded artifact from [Release/Tag](https://github.com/open-telemetry/opentelemetry-cpp-contrib/releases) or [GitHub Actions](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/webserver.yml) is built on CentOS7. This contains shared libraries for both apache and nginx instrumentation. The shared libraries can be located at ```WebServerModule/Apache``` or ```WebServerModule/Nginx``` for respective webservers. But, the common libraries, related to opentelemetry, are located at ```sdk_lib/lib/``` which are used by both apache and nginx instrumentation.
 
 Currently, artifact is generated on x86-64 is published.
 **Therefore, the artifact should work on any linux distribution running on x86-64 plarform and having glibc version >= 2.17.**
