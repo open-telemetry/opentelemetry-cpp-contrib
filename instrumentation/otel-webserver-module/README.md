@@ -101,8 +101,8 @@ The build file can be copied at a suitable location in User's system by running 
 ##### Download the artifact
 
 The artifact can also be downloaded from either of below links
--[Releases](https://github.com/open-telemetry/opentelemetry-cpp-contrib/releases) - Make sure to download from releases/tags having ```webserver/vXX.XX.XX```
--[GitHub Actions](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/webserver.yml) - Click on any top successful workflow runs on main branch and the artifact would be available for download.
+- [Releases](https://github.com/open-telemetry/opentelemetry-cpp-contrib/releases) - Make sure to download from releases/tags having ```webserver/vXX.XX.XX```
+- [GitHub Actions](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/webserver.yml) - Click on any top successful workflow runs on main branch and the artifact would be available for download.
 
 ##### Installation Steps
 
@@ -219,8 +219,8 @@ The build file can be copied at a suitable location in User's system by running 
 ##### Download the artifact
 
 The artifact can also be downloaded from either of below links
--[Releases](https://github.com/open-telemetry/opentelemetry-cpp-contrib/releases) - Make sure to download from releases/tags having ```webserver/vXX.XX.XX```
--[GitHub Actions](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/webserver.yml) - Click on any top successful workflow runs on main branch and the artifact would be available for download.
+- [Releases](https://github.com/open-telemetry/opentelemetry-cpp-contrib/releases) - Make sure to download from releases/tags having ```webserver/vXX.XX.XX```
+- [GitHub Actions](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/webserver.yml) - Click on any top successful workflow runs on main branch and the artifact would be available for download.
 
 ##### Installation Steps
 
