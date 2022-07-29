@@ -21,6 +21,7 @@
       'core/api/RequestProcessingEngine.cpp',
       'core/api/ApiUtils.cpp',
       'core/api/SpanNamer.cpp',
+      'core/api/opentelemetry_ngx_api.cpp',
       'core/AgentLogger.cpp',
       'core/AgentCore.cpp',
       'core/sdkwrapper/SdkHelperFactory.cpp',
