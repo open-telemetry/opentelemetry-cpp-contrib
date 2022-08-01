@@ -7,14 +7,14 @@ on:
       - 'instrumentation/otel-webserver-module/**'
       - '.github/workflows/webserver.yml'
   pull_request:
-    branches: [ main ]
+    branches: [ main, webserver-dev ]
     paths:
       - 'instrumentation/otel-webserver-module/**'
       - '.github/workflows/webserver.yml'
 
 jobs:
   webserver-build-test-ubuntu:
-    name: apache-ubuntu
+    name: webserver-ubuntu-build
     runs-on: ubuntu-20.04
     steps:
       - name: checkout otel webserver
@@ -49,19 +49,20 @@ jobs:
             'cd /otel-webserver-module; rm -rf build;              \
             cp -r /dependencies /otel-webserver-module/;           \
             cp -r /build-dependencies /otel-webserver-module/;     \
-            ./gradlew assembleApacheModule -DtargetSystem=ubuntu'
-    #Disabled due to build failure only on Ubuntu
-    #  - name: unit test
-    #    run: |
-    #      docker exec apache_ubuntu_container bash -c \
-    #        'cd /otel-webserver-module; ./gradlew runUnitTest -DtargetSystem=ubuntu'
+
+            ./gradlew assembleWebServerModule -DtargetSystem=ubuntu'
+      - name: unit test
+        run: |
+          docker exec apache_ubuntu_container bash -c \
+            'cd /otel-webserver-module; ./gradlew runUnitTest -DtargetSystem=ubuntu'
+
       - name: update cache
         run: |
           rm -rf /tmp/buildx-cache/apache_ubuntu
           mv /tmp/buildx-cache/apache_ubuntu-new /tmp/buildx-cache/apache_ubuntu
 
   webserver-build-test-centos7:
-    name: apache-centos7
+    name: webserver-centos7-build
     runs-on: ubuntu-20.04
     steps:
       - name: checkout otel webserver
@@ -96,7 +97,7 @@ jobs:
             'cd /otel-webserver-module; rm -rf build; \
             cp -r /dependencies /otel-webserver-module/;           \
             cp -r /build-dependencies /otel-webserver-module/;     \
-            ./gradlew assembleApacheModule'
+            ./gradlew assembleWebServerModule'
       - name: unit test
         run: |
           docker exec apache_centos7_container bash -c \
@@ -119,7 +120,7 @@ jobs:
           path: /tmp/apache_centos7/opentelemetry-webserver-sdk-x64-linux.tgz
 
   webserver-build-test-centos6:
-    name: apache-centos6
+    name: webserver-centos6-build
     runs-on: ubuntu-20.04
     steps:
       - name: checkout otel webserver
@@ -154,7 +155,7 @@ jobs:
             'cd /otel-webserver-module; rm -rf build; \
             cp -r /dependencies /otel-webserver-module/;           \
             cp -r /build-dependencies /otel-webserver-module/;     \
-            ./gradlew assembleApacheModule'
+            ./gradlew assembleWebServerModule'
       - name: unit test
         run: |
           docker exec apache_centos6_container bash -c \
@@ -163,4 +164,28 @@ jobs:
         run: |
           rm -rf /tmp/buildx-cache/apache_centos6
           mv /tmp/buildx-cache/apache_centos6-new /tmp/buildx-cache/apache_centos6
+
+  Codeql-build:
+    name: static-analysis
+    runs-on: ubuntu-20.04
+    steps:
+      - name: checkout otel webserver
+        uses: actions/checkout@v3
+      - name: setup environment
+        run: |
+          cd ..
+          cp opentelemetry-cpp-contrib/instrumentation/otel-webserver-module/codeql-env.sh .
+          sudo ./codeql-env.sh
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: cpp
+      - name: build
+        run: |
+          cd instrumentation/otel-webserver-module
+          cp -r /dependencies ../otel-webserver-module/
+          cp -r /build-dependencies ../otel-webserver-module/
+          ./gradlew assembleWebserverModule -DtargetSystem=ubuntu --info
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
 

@@ -168,6 +168,8 @@ Set the operation name when starting a new span.
 Enable propagation of distributed tracing headers, e.g. `traceparent`. When no parent trace is given, a new trace will
 be started. The default propagator is W3C.
 
+The same inheritance rules as [`proxy_set_header`](http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_set_header) apply, which means this directive is applied at the current configuration level if and only if there are no `proxy_set_header` directives defined on a lower level.
+
 - **required**: `false`
 - **syntax**: `opentelemetry_propagate` or `opentelemetry_propagate b3`
 - **block**: `http`, `server`, `location`
