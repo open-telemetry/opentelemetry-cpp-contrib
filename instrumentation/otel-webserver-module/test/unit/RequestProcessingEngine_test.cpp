@@ -171,7 +171,7 @@ TEST(TestRequestProcessingEngine, StartRequest)
 
 	auto* reqContext = (appd::core::RequestContext*)(reqHandle);
 	ASSERT_TRUE(reqContext);
-	//EXPECT_TRUE(reqContext->rootSpan().get() != null);
+	EXPECT_TRUE(reqContext->rootSpan().get() != nullptr);
 	EXPECT_EQ(reqContext->getContextName(), "ws_context");
 	EXPECT_FALSE(reqContext->hasActiveInteraction());
 
