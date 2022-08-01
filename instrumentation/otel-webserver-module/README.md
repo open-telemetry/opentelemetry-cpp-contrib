@@ -67,8 +67,7 @@ A sample configuration is mentioned in [opentelemetry_module.conf](https://githu
 
 #### Platform Supported
 - The build is supported for **x86-64** platforms.
-- Currently, it is built and tested on **Centos6** by default
-- Other OS support: **Centos7, ubuntu20.04**.
+- OS support: **Centos6**, **Centos7, ubuntu20.04**.
 
 #### Automatic build and Installation
 
@@ -84,6 +83,10 @@ This would start the container alongwith the the Opentelemetry Collector and Zip
 
 #### Manual build and Installation
 
+The artifact can be either downloaded or built manually.
+
+##### Generate the artifact manually
+
 We will use Docker to run the Module. First, it is to be made sure that the Docker is up and running. 
 Then execute the following commands -:
 ```
@@ -93,7 +96,18 @@ docker-compose --profile default up
 Next, login into the Docker container. 
 After going inside the container run the following commands ```cd \otel-webserver-module```. After making code changes the build and installation can be done by running ```./install.sh```.
 
-The build file can be copied at a suitable location in User's system by running the command ```docker cp <container_name>:/otel-webserver-module/build/opentelemetry-webserver-sdk-x64-linux.tgz  <desired_location>```. The installation steps can be inferred from ```install.sh``` script.
+The build file can be copied at a suitable location in User's system by running the command ```docker cp <container_name>:/otel-webserver-module/build/opentelemetry-webserver-sdk-x64-linux.tgz  <desired_location>```.
+
+##### Download the artifact
+
+The artifact can also be downloaded from either of below links
+- [Releases](https://github.com/open-telemetry/opentelemetry-cpp-contrib/releases) - Make sure to download from releases/tags having ```webserver/vXX.XX.XX``` e.g [webserver/v1.0.0](https://github.com/open-telemetry/opentelemetry-cpp-contrib/releases/tag/webserver%2Fv1.0.0)
+- [GitHub Actions](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/webserver.yml) - Click on any top successful workflow runs on main branch and the artifact would be available for download.
+
+##### Installation Steps
+
+The installation steps can be referred from [instrument-apache-httpd-server](https://opentelemetry.io/blog/2022/instrument-apache-httpd-server/#installing-opentelemetry-module-in-target-system).
+Please ignore the initial steps which talks about generating the artifact locally.
 
 ## Nginx Webserver Module
 
@@ -115,7 +129,8 @@ Currently, Nginx Webserver module monitores some fixed set of modules, which get
 * ngx_http_autoindex_module
 * ngx_http_index_module
 * ngx_http_random_index_module
-* ngx_http_log_module
+* ngx_http_try_files_module
+* ngx_http_mirror_module
 
 ### Third Party Dependencies
 
@@ -164,8 +179,9 @@ Currently, Nginx Webserver module monitores some fixed set of modules, which get
 - Docker Desktop should be installed on the system
 
 #### Platform Supported
+- Supports only Nginx v1.18.0.
 - The build is supported for **x86-64** platforms.
-- Currently, the build is supported on **Centos6** and **Centos7**
+- OS support: **Centos6**, **Centos7, ubuntu20.04**.
 
 #### Automatic build and Installation
 
@@ -175,16 +191,69 @@ Then execute the following commands -:
 docker-compose --profile centos_nginx build
 docker-compose --profile centos_nginx up
 ```
-Alternatively, replace the value of *centos_nginx* from **'centos_nginx'** to **'centos7_nginx'** to build in respective supported platforms.
+Alternatively, replace the value of *centos_nginx* from **'centos_nginx'** to **'centos7_nginx'** or **'ubuntu20.04_nginx'** to build in respective supported platforms.
 
 This would start the container alongwith the the Opentelemetry Collector and Zipkin. You can check the traces on Zipkin dashboard by checking the port number of Zipkin using ```docker ps``` command. Multiple requests can be sent using the browser.
 
 #### Manual build and Installation
 
-TBD
+The artifact can be either downloaded or built manually.
 
+##### Generate the artifact manually
+We will use Docker to build the artifact. First, it is to be made sure that the Docker is up and running.
+Then execute the following commands -:
+```
+docker-compose --profile centos7_nginx build
+docker-compose --profile centos7_nginx up
+```
+Next, login into the Docker container.
+After going inside the container run the following commands
+```
+cd /otel-webserver-module
+./gradlew assembleWebServerModule
+```
+The above command builds the aritifact and the same is located at ```/otel-webserver-module/build```.
+
+The build file can be copied at a suitable location in User's system by running the command ```docker cp <container_name>:/otel-webserver-module/build/opentelemetry-webserver-sdk-x64-linux.tgz  <desired_location>```.
+
+##### Download the artifact
+
+The artifact can also be downloaded from either of below links
+- [Releases](https://github.com/open-telemetry/opentelemetry-cpp-contrib/releases) - Make sure to download from releases/tags having ```webserver/vXX.XX.XX``` e.g [webserver/v1.0.0](https://github.com/open-telemetry/opentelemetry-cpp-contrib/releases/tag/webserver%2Fv1.0.0)
+- [GitHub Actions](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/webserver.yml) - Click on any top successful workflow runs on main branch and the artifact would be available for download.
+
+##### Installation Steps
+
+In order to install, untar the artifact to /opt directory.
+```
+tar -xf opentelemetry-webserver-sdk-x64-linux.tgz -C /opt
+cd /opt/opentelemetry-webserver-sdk/
+./install.sh
+```
+Copy the ```conf/nginx/opentelemetry_module.conf``` to /opt/.
+Make sure to edit the directives values according to your need e.g NginxModuleOtelExporterEndpoint should point to collector url.
+Edit the nginx.conf to provide the reference to opentelemetry_module.conf and shared library.
+Please mind the order and location of the below entries by referring to ```conf/nginx/nginx.conf```.
+```
+load_module /opt/opentelemetry-webserver-sdk/WebServerModule/Nginx/ngx_http_opentelemetry_module.so;
+include /opt/opentelemetry_module.conf;
+```
+
+Before running Nginx webserver, make sure to update LD_LIBRARY_PATH to pick up opentelemetry dependencies.
+```
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/opentelemetry-webserver-sdk/sdk_lib/lib
+```
+
+### Usability of the downloaded artifact
+The downloaded artifact from [Release/Tag](https://github.com/open-telemetry/opentelemetry-cpp-contrib/releases) or [GitHub Actions](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/webserver.yml) is built on CentOS7. This contains shared libraries for both apache and nginx instrumentation. The shared libraries can be located at ```WebServerModule/Apache``` or ```WebServerModule/Nginx``` for respective webservers. But, the common libraries, related to opentelemetry, are located at ```sdk_lib/lib/``` which are used by both apache and nginx instrumentation.
+
+Currently, artifact is generated on x86-64 is published.
+**Therefore, the artifact should work on any linux distribution running on x86-64 plarform and having glibc version >= 2.17.**
 
 ### Maintainers
 * [Kumar Pratyush](https://github.com/kpratyus), Cisco
 * [Debajit Das](https://github.com/DebajitDas), Cisco
+
+### Blogs
+* [Instrument Apache HttpServer with OpenTelemetry](https://opentelemetry.io/blog/2022/instrument-apache-httpd-server/)
 
