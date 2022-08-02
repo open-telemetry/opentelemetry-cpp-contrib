@@ -49,13 +49,13 @@ jobs:
             'cd /otel-webserver-module; rm -rf build;              \
             cp -r /dependencies /otel-webserver-module/;           \
             cp -r /build-dependencies /otel-webserver-module/;     \
-            ./gradlew assembleApacheModule -DtargetSystem=ubuntu'
-            
-          #Disabled due to build failure only on Ubuntu
-          #  - name: unit test
-          #    run: |
-          #      docker exec apache_ubuntu_container bash -c \
-          #        'cd /otel-webserver-module; ./gradlew runUnitTest -DtargetSystem=ubuntu'
+
+            ./gradlew assembleWebServerModule -DtargetSystem=ubuntu'
+      - name: unit test
+        run: |
+          docker exec apache_ubuntu_container bash -c \
+            'cd /otel-webserver-module; ./gradlew runUnitTest -DtargetSystem=ubuntu'
+
       - name: update cache
         run: |
           rm -rf /tmp/buildx-cache/apache_ubuntu
