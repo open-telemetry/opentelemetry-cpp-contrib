@@ -51,10 +51,6 @@ jobs:
             cp -r /build-dependencies /otel-webserver-module/;     \
 
             ./gradlew assembleWebServerModule -DtargetSystem=ubuntu'
-      - name: unit test
-        run: |
-          docker exec apache_ubuntu_container bash -c \
-            'cd /otel-webserver-module; ./gradlew runUnitTest -DtargetSystem=ubuntu'
 
       - name: update cache
         run: |
