@@ -45,7 +45,6 @@ class RequestPayload
     std::string target;
     std::string flavor;
     std::string client_ip;
-    std::string net_ip;
     long port;
     long status_code;
 
