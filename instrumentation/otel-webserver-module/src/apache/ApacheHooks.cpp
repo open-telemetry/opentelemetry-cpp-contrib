@@ -550,17 +550,11 @@ void fillRequestPayload(request_rec* request, appd::core::RequestPayload* payloa
     }
 
 #ifdef APLOG_USE_MODULE
-
     payload->set_client_ip(request->useragent_ip);
-    if (request->connection)
-    {
-        payload->set_net_ip(request->connection->client_ip);
-    }
-
 #else
     if (request->connection)
     {
-        payload->set_net_ip(request->connection->remote_ip);
+        payload->set_client_ip(request->connection->remote_ip);
     }
 
 #endif
