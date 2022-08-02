@@ -65,7 +65,6 @@ public:
     void set_target(const char* aTarget) {target = aTarget; }
     void set_flavor(const char* aflavor) {flavor = aflavor; }
     void set_client_ip(const char* clientIp) {client_ip = clientIp; }
-    void set_net_ip(const char* netIp) {net_ip = netIp; }
     void set_port(long aPort) {port = aPort; }
     void set_status_code(long statusCode) {status_code = statusCode; }
 
@@ -82,7 +81,6 @@ public:
     std::string get_target() {return target; }
     std::string get_flavor() {return flavor; }
     std::string get_client_ip() {return client_ip; }
-    std::string get_net_ip() {return net_ip; }
     long get_port() {return port; }
     long get_status_code() {return status_code; }
 };

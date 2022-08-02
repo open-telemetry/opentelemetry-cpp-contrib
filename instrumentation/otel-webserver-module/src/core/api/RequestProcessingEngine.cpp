@@ -67,12 +67,11 @@ APPD_SDK_STATUS_CODE RequestProcessingEngine::startRequest(
     keyValueMap[kAttrHTTPServerName] = payload->get_server_name();
     keyValueMap[kAttrHTTPMethod] = payload->get_http_request_method();
     keyValueMap[kAttrHTTPScheme] = payload->get_scheme();
-    keyValueMap[kAttrHTTPHost] = payload->get_host();
+    keyValueMap[kAttrNetHostName] = payload->get_host();
     keyValueMap[kAttrNETHostPort] = payload->get_port();
     keyValueMap[kAttrHTTPTarget] =payload->get_target();
     keyValueMap[kAttrHTTPFlavor] = payload->get_flavor();
     keyValueMap[kAttrHTTPStatusCode] = payload->get_status_code();
-    keyValueMap[kAttrNETPeerIP] = payload->get_net_ip();
     keyValueMap[kAttrHTTPClientIP] = payload->get_client_ip();
     auto span = m_sdkWrapper->CreateSpan(spanName, sdkwrapper::SpanKind::SERVER, keyValueMap, payload->get_http_headers());
 
