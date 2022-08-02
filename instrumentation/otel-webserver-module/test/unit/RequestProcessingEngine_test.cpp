@@ -138,7 +138,6 @@ TEST(TestRequestProcessingEngine, StartRequest)
   payload.set_target("target");
   payload.set_flavor("1.1");
   payload.set_client_ip("clientip");
-  payload.set_net_ip("netip");
   payload.set_port(80);
 
 
@@ -146,13 +145,12 @@ TEST(TestRequestProcessingEngine, StartRequest)
   keyValueMap[kAttrRequestProtocol] = (opentelemetry::nostd::string_view)"GET";
   keyValueMap[kAttrHTTPServerName] = (opentelemetry::nostd::string_view)"localhost";
   keyValueMap[kAttrHTTPMethod] = (opentelemetry::nostd::string_view)"GET";
-  keyValueMap[kAttrHTTPHost] =(opentelemetry::nostd::string_view)"host";
+  keyValueMap[kAttrNetHostName] =(opentelemetry::nostd::string_view)"host";
   keyValueMap[kAttrHTTPStatusCode] = (long) 200;
   keyValueMap[kAttrNETHostPort] = (long)80;
   keyValueMap[kAttrHTTPScheme] = (opentelemetry::nostd::string_view)"http";
   keyValueMap[kAttrHTTPTarget] = (opentelemetry::nostd::string_view)"target";
   keyValueMap[kAttrHTTPFlavor] = (opentelemetry::nostd::string_view)"1.1";
-  keyValueMap[kAttrNETPeerIP] = (opentelemetry::nostd::string_view)"netip";
   keyValueMap[kAttrHTTPClientIP] = (opentelemetry::nostd::string_view)"clientip";
 	std::shared_ptr<appd::core::sdkwrapper::IScopedSpan> span;
 	span.reset(new MockScopedSpan);
