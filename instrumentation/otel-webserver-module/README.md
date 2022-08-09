@@ -1,6 +1,6 @@
 # otel-webserver-module
 
-The OTEL webserver module comprises only Apache webserver module currently. Further support for Nginx webserver would be added in future.
+The OTEL webserver module comprises of both Apache and Nginx instrumentation.
 
 ## Apache Webserver Module
 
