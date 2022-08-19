@@ -21,11 +21,12 @@ constexpr char kEndpoint[] = "Endpoint";
 constexpr char kAccount[] = "Account";
 constexpr char kNamespace[] = "Namespace";
 
-enum class TransportProtocol{
-    kEtw,
-    kTcp,
-    kUdp,
-    kUnix,
+enum class TransportProtocol
+{
+    kETW,
+    kTCP,
+    kUDP,
+    kUNIX,
     kUnknown
 };
 
@@ -33,13 +34,14 @@ class ConnectionStringParser {
 
 public:
     ConnectionStringParser(const ExporterOptions& options):
-    account_(""), namespace_(""), url_(nullptr)
+    account_(""), namespace_(""), url_(nullptr), transport_protocol_{TransportProtocol::kUnknown}
     {
         auto &connection_string = options.connection_string;
         std::string::size_type key_pos = 0;
         std::string::size_type key_end;
         std::string::size_type val_pos;
         std::string::size_type val_end;
+        bool is_endpoint_found = false;
         while ((key_end = connection_string.find(kSemicolon, key_pos)) != std::string::npos){
             if (val_pos = connection_string.find_first_not_of(std::string(1, kSemicolon), key_end) == std::string::npos)
             {
@@ -53,14 +55,34 @@ public:
             } else if (key == kAccount) {
                 account_ = value;
             } else if (key == kEndpoint) {
+                is_endpoint_found = true;
                 url_ = std::unique_ptr<ext::http::common::UrlParser>(new ext::http::common::UrlParser(value));
+                if (url_->success_){
+                    if (url_->scheme_ == "unix")
+                    {
+                        transport_protocol_ = TransportProtocol::kUNIX;
+                    }
+                    if (url_->scheme_ == "tcp")
+                    {
+                        transport_protocol_ = TransportProtocol::kTCP;
+                    }
+                    if (url_->scheme_ == "udp")
+                    {
+                        transport_protocol_ = TransportProtocol::kUNIX;
+                    }
+                }
             }
+        }
+        if (account_.size() && namespace_.size() && !is_endpoint_found){
+            transport_protocol_ = TransportProtocol::kETW;
         }
     }
 
-    bool IsValid(){
-
+    bool IsValid()
+    {
+        return transport_protocol_ != TransportProtocol::kUnknown;
     }
+
 private:
     std::string account_;
     std::string namespace_;
