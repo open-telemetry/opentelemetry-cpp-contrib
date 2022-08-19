@@ -27,9 +27,7 @@ namespace metrics
         }
 
     }
-
-    uint16_t GrowingBuffer::SerializeEncodedChars(const char *str) {}
-
+    
     void GrowingBuffer::ResizeBufferIfNeeded( uint64_t additional_capacity)
     {
         auto target_capacity = additional_capacity + current_buffer_index_;

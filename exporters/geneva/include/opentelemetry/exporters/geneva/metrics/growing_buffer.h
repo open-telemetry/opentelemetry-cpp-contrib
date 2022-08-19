@@ -22,16 +22,13 @@ class GrowingBuffer
     public:
 
         uint16_t SerializeEncodedString(const std::string&);
-        uint16_t SerializeEncodedChars(const char *);
-        
+                
         template <class T>
         void SerializeInt(T value) {
             ResizeBufferIfNeeded(sizeof(T));
             *(reinterpret_cast<T*>(buffer_->data() + current_buffer_index_)) = value;
             current_buffer_index_+= sizeof(T);          
-
         }
-
 
         uint64_t GetSize() const {
             return current_buffer_index_;
@@ -40,8 +37,6 @@ class GrowingBuffer
         void* GetData() const {
             return buffer_->data();
         }
-
-
     private:
         std::vector<unsigned char>* buffer_;
         uint64_t current_buffer_index_;
