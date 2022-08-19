@@ -15,7 +15,6 @@ namespace geneva
 {
 namespace metrics
 {
-
 /**
  * The Geneva metrics exporter exports metrics data to Geneva 
  */
