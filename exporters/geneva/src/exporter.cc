@@ -15,8 +15,10 @@ namespace geneva
 {
 namespace metrics
 {
-    Exporter::Exporter(const ExporterOptions &options):options_(options)
-    {}
+    Exporter::Exporter(const ExporterOptions &options):options_(options), connection_string_(options.connection_string)
+    {
+      
+    }
 
     sdk::metrics::AggregationTemporality Exporter::GetAggregationTemporality(
     sdk::metrics::InstrumentType instrument_type) const noexcept

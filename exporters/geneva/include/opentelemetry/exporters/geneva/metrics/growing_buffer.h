@@ -17,6 +17,7 @@ namespace metrics
 {
 
 constexpr size_t kInitialBufferSize = 265;
+using ByteVector = std::vector<unsigned char>;
 class GrowingBuffer
 {
     public:
@@ -38,7 +39,7 @@ class GrowingBuffer
             return buffer_->data();
         }
     private:
-        std::vector<unsigned char>* buffer_;
+        ByteVector* buffer_;
         uint64_t current_buffer_index_;
         void ResizeBufferIfNeeded( uint64_t additional_capacity);
 };
