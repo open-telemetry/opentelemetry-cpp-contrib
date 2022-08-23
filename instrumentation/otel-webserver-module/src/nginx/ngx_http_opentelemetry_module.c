@@ -739,7 +739,14 @@ static void otel_payload_decorator(ngx_http_request_t* r, APPD_SDK_ENV_RECORD* p
        for(ngx_uint_t j = 0; j<nelts; j++){
            h = &header[j];
            if(strcmp(httpHeaders[i], h->key.data)==0){
+               
                header_found=1;
+
+               if(h->key.data)
+                    ngx_pfree(r->pool, h->key.data);
+               if(h->value.data)
+                    ngx_pfree(r->pool, h->value.data);
+               
                break;
            }
        }
@@ -747,6 +754,9 @@ static void otel_payload_decorator(ngx_http_request_t* r, APPD_SDK_ENV_RECORD* p
        {
            h = ngx_list_push(&r->headers_in.headers);
        }
+
+       if(h == NULL )
+            return;
 
        h->key.len = strlen(propagationHeaders[i].name);
        h->key.data = ngx_pcalloc(r->pool, sizeof(char)*((h->key.len)+1));
