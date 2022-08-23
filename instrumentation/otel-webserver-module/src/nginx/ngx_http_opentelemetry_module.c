@@ -746,28 +746,28 @@ static void otel_payload_decorator(ngx_http_request_t* r, APPD_SDK_ENV_RECORD* p
        if(header_found==0)
        {
            h = ngx_list_push(&r->headers_in.headers);
-        }
+       }
 
-           h->key.len = strlen(propagationHeaders[i].name);
-           h->key.data = ngx_pcalloc(r->pool, sizeof(char)*((h->key.len)+1));
-           strcpy(h->key.data, propagationHeaders[i].name);
+       h->key.len = strlen(propagationHeaders[i].name);
+       h->key.data = ngx_pcalloc(r->pool, sizeof(char)*((h->key.len)+1));
+       strcpy(h->key.data, propagationHeaders[i].name);
 
-           ngx_writeTrace(r->connection->log, __func__, "Key : %s", propagationHeaders[i].name);
+       ngx_writeTrace(r->connection->log, __func__, "Key : %s", propagationHeaders[i].name);
 
-           h->hash = ngx_hash_key(h->key.data, h->key.len);
+       h->hash = ngx_hash_key(h->key.data, h->key.len);
 
-           h->value.len = strlen(propagationHeaders[i].value);
-           h->value.data = ngx_pcalloc(r->pool, sizeof(char)*((h->value.len)+1));
-           strcpy(h->value.data, propagationHeaders[i].value);
-           h->lowcase_key = h->key.data;
+       h->value.len = strlen(propagationHeaders[i].value);
+       h->value.data = ngx_pcalloc(r->pool, sizeof(char)*((h->value.len)+1));
+       strcpy(h->value.data, propagationHeaders[i].value);
+       h->lowcase_key = h->key.data;
 
-           cmcf = ngx_http_get_module_main_conf(r, ngx_http_core_module);
-           hh = ngx_hash_find(&cmcf->headers_in_hash, h->hash,h->lowcase_key, h->key.len);
-           if (hh && hh->handler(r, h, hh->offset) != NGX_OK) {
-               return;
-           }
+       cmcf = ngx_http_get_module_main_conf(r, ngx_http_core_module);
+       hh = ngx_hash_find(&cmcf->headers_in_hash, h->hash,h->lowcase_key, h->key.len);
+       if (hh && hh->handler(r, h, hh->offset) != NGX_OK) {
+           return;
+       }
 
-           ngx_writeTrace(r->connection->log, __func__, "Value : %s", propagationHeaders[i].value);
+       ngx_writeTrace(r->connection->log, __func__, "Value : %s", propagationHeaders[i].value);
 
    }
    
