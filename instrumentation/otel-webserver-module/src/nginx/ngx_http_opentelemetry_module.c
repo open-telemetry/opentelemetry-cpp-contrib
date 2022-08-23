@@ -721,35 +721,54 @@ static APPD_SDK_STATUS_CODE otel_startInteraction(ngx_http_request_t* r, const c
 
 static void otel_payload_decorator(ngx_http_request_t* r, APPD_SDK_ENV_RECORD* propagationHeaders, int count)
 {
+   ngx_list_part_t  *part;
+   ngx_table_elt_t  *header;
    ngx_table_elt_t            *h;
    ngx_http_header_t          *hh;
    ngx_http_core_main_conf_t  *cmcf;
+   ngx_uint_t       nelts;
+
+   part = &r->headers_in.headers.part;
+   header = (ngx_table_elt_t*)part->elts;
+   nelts = part->nelts;
 
    for(int i=0; i<count; i++){
-       h = ngx_list_push(&r->headers_in.headers);
-       if(h == NULL){
-           return;
+
+       char* c = httpHeaders[i];
+       int header_found=0;
+       for(ngx_uint_t j = 0; j<nelts; j++){
+           h = &header[j];
+           if(strcmp(httpHeaders[i], h->key.data)==0){
+               header_found=1;
+               break;
+           }
        }
-       h->key.len = strlen(propagationHeaders[i].name);
-       h->key.data = ngx_pcalloc(r->pool, sizeof(char)*((h->key.len)+1));
-       strcpy(h->key.data, propagationHeaders[i].name);
+       if(header_found==0)
+       {
+           h = ngx_list_push(&r->headers_in.headers);
+        }
 
-       ngx_writeTrace(r->connection->log, __func__, "Key : %s", propagationHeaders[i].name);
+           h->key.len = strlen(propagationHeaders[i].name);
+           h->key.data = ngx_pcalloc(r->pool, sizeof(char)*((h->key.len)+1));
+           strcpy(h->key.data, propagationHeaders[i].name);
 
-       h->hash = ngx_hash_key(h->key.data, h->key.len);
+           ngx_writeTrace(r->connection->log, __func__, "Key : %s", propagationHeaders[i].name);
 
-       h->value.len = strlen(propagationHeaders[i].value);
-       h->value.data = ngx_pcalloc(r->pool, sizeof(char)*((h->value.len)+1));
-       strcpy(h->value.data, propagationHeaders[i].value);
-       h->lowcase_key = h->key.data;
+           h->hash = ngx_hash_key(h->key.data, h->key.len);
 
-       cmcf = ngx_http_get_module_main_conf(r, ngx_http_core_module);
-       hh = ngx_hash_find(&cmcf->headers_in_hash, h->hash,h->lowcase_key, h->key.len);
-       if (hh && hh->handler(r, h, hh->offset) != NGX_OK) {
-           return;
-       }
+           h->value.len = strlen(propagationHeaders[i].value);
+           h->value.data = ngx_pcalloc(r->pool, sizeof(char)*((h->value.len)+1));
+           strcpy(h->value.data, propagationHeaders[i].value);
+           h->lowcase_key = h->key.data;
 
-       ngx_writeTrace(r->connection->log, __func__, "Value : %s", propagationHeaders[i].value);
+           cmcf = ngx_http_get_module_main_conf(r, ngx_http_core_module);
+           hh = ngx_hash_find(&cmcf->headers_in_hash, h->hash,h->lowcase_key, h->key.len);
+           if (hh && hh->handler(r, h, hh->offset) != NGX_OK) {
+               return;
+           }
+
+           ngx_writeTrace(r->connection->log, __func__, "Value : %s", propagationHeaders[i].value);
+
    }
    
    ngx_http_otel_handles_t* ctx = ngx_http_get_module_ctx(r, ngx_http_opentelemetry_module);
