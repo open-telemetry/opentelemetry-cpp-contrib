@@ -1,13 +1,14 @@
 // Copyright The OpenTelemetry Authors
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef ENABLE_METRICS_PREVIEW
-
 # include "opentelemetry/exporters/geneva/metrics/exporter.h"
+#include "opentelemetry/exporters/geneva/metrics/unix_domain_socket_data_transport.h"
+#include "opentelemetry/metrics/meter_provider.h"
 #  include "opentelemetry/sdk_config.h"
 
-
+#include<memory>
 #include<mutex>
+
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter
 {
@@ -16,10 +17,12 @@ namespace geneva
 namespace metrics
 {
     Exporter::Exporter(const ExporterOptions &options):options_(options), 
-      connection_string_parser_(options_.connection_string)
+      connection_string_parser_(options_.connection_string), data_transport_{nullptr}
     {
       if (connection_string_parser_.IsValid()){
-        if (connection_string_parser_.transport_protocol_ == k)
+        if (connection_string_parser_.transport_protocol_ == TransportProtocol::kUNIX){
+          data_transport_ = std::unique_ptr<DataTransport>(new UnixDomainSocketDataTransport(options_.connection_string));
+        }
       }
     }
 
@@ -53,14 +56,13 @@ opentelemetry::sdk::common::ExportResult Exporter::Export(
 
     for (auto &record : data.scope_metric_data_)
     {
-        for (const auto &point_data:  record.metric_data_)
+        for (const auto &metric_data:  record.metric_data_)
         {
-            if (nostd::holds_alternative<sdk::metrics::SumPointData>(point_data))
+            for (auto &point_data_with_attributes : metric_data.point_data_attr_)
+            if (nostd::holds_alternative<sdk::metrics::SumPointData>(point_data_with_attributes.point_data))
             {
                 
             }
-
-
         }
 
     }

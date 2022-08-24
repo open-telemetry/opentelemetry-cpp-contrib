@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
+
 #include "opentelemetry/ext/http/common/url_parser.h"
+#include "opentelemetry/exporters/geneva/metrics/socket_tools.h"
 #include "opentelemetry/version.h"
 #include <string>
 #include <memory>
@@ -56,18 +58,21 @@ public:
                 is_endpoint_found = true;
                 url_ = std::unique_ptr<ext::http::common::UrlParser>(new ext::http::common::UrlParser(value));
                 if (url_->success_){
+#ifdef HAVE_UNIX_DOMAIN
                     if (url_->scheme_ == "unix")
                     {
                         transport_protocol_ = TransportProtocol::kUNIX;
                     }
+#endif
                     if (url_->scheme_ == "tcp")
                     {
                         transport_protocol_ = TransportProtocol::kTCP;
                     }
                     if (url_->scheme_ == "udp")
                     {
-                        transport_protocol_ = TransportProtocol::kUNIX;
+                        transport_protocol_ = TransportProtocol::kUDP;
                     }
+                    
                 }
             }
         }

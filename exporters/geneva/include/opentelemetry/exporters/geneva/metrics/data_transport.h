@@ -19,7 +19,7 @@ using ByteVector = std::vector<unsigned char>;
     class DataTransport {
         public:
             virtual bool Connect() noexcept = 0;
-            virtual void Send(ByteVector &data) noexcept = 0;
+            virtual bool Send(ByteVector &data) noexcept = 0;
             virtual bool Disconnect() noexcept = 0;
     };
 }

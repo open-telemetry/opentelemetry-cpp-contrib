@@ -18,11 +18,11 @@ namespace metrics
 
 constexpr size_t kInitialBufferSize = 265;
 using ByteVector = std::vector<unsigned char>;
-class GrowingBuffer
+class DataBuffer
 {
     public:
-
-        uint16_t SerializeEncodedString(const std::string&);
+        DataBuffer();
+        void SerializeEncodedString(const std::string&);
                 
         template <class T>
         void SerializeInt(T value) {
