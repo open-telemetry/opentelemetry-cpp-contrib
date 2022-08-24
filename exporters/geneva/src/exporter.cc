@@ -15,9 +15,12 @@ namespace geneva
 {
 namespace metrics
 {
-    Exporter::Exporter(const ExporterOptions &options):options_(options), connection_string_(options.connection_string)
+    Exporter::Exporter(const ExporterOptions &options):options_(options), 
+      connection_string_parser_(options_.connection_string)
     {
-      
+      if (connection_string_parser_.IsValid()){
+        if (connection_string_parser_.transport_protocol_ == k)
+      }
     }
 
     sdk::metrics::AggregationTemporality Exporter::GetAggregationTemporality(

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
-#include "opentelemetry/exporters/geneva/metrics/exporter_options.h"
 #include "opentelemetry/ext/http/common/url_parser.h"
 #include "opentelemetry/version.h"
 #include <string>
@@ -33,10 +32,9 @@ enum class TransportProtocol
 class ConnectionStringParser {
 
 public:
-    ConnectionStringParser(const ExporterOptions& options):
+    ConnectionStringParser(const std::string& connection_string):
     account_(""), namespace_(""), url_(nullptr), transport_protocol_{TransportProtocol::kUnknown}
     {
-        auto &connection_string = options.connection_string;
         std::string::size_type key_pos = 0;
         std::string::size_type key_end;
         std::string::size_type val_pos;
@@ -85,7 +83,6 @@ public:
         return transport_protocol_ != TransportProtocol::kUnknown;
     }
 
-private:
     std::string account_;
     std::string namespace_;
     std::unique_ptr<ext::http::common::UrlParser> url_;

@@ -5,8 +5,8 @@
 
 # include "opentelemetry/sdk/metrics/metric_exporter.h"
 # include "opentelemetry/exporters/geneva/metrics/exporter_options.h"
+#include "opentelemetry/exporters/geneva/metrics/data_transport.h"
 #include "opentelemetry/exporters/geneva/metrics/connection_string_parser.h"
-# include "opentelemetry/exporters/ge/common/socket_tools.h"
 # include "opentelemetry/common/spin_lock_mutex.h"
 
 OPENTELEMETRY_BEGIN_NAMESPACE
@@ -39,20 +39,11 @@ public:
 
 private:
     const ExporterOptions options_;
-    ConnectionStringParser connection_string_;
+    ConnectionStringParser connection_string_parser_;
     const sdk::metrics::AggregationTemporalitySelector aggregation_temporality_selector_;
     bool is_shutdown_ = false;
     mutable opentelemetry::common::SpinLockMutex lock_;
-
-    // Connectivity management. One end-point per exporter instance.
-    bool Connect();
-    bool Disconnect();
-    bool connected_{false};
-    bool Initialize();
-    // Socket connection is re-established for every batch of events
-    SocketTools::Socket socket_;
-    SocketTools::SocketParams socketparams_{AF_INET, SOCK_STREAM, 0};
-    nostd::unique_ptr<SocketTools::SocketAddr> addr_;
+    std::unique_ptr<DataTransport> data_transport_;
 };
 }
 }
