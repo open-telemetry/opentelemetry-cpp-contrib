@@ -14,12 +14,11 @@
 * limitations under the License.
 */
 
+#include "ngx_http_opentelemetry_module.h"
+#include "ngx_http_opentelemetry_log.h"
 #include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
-
-#include "ngx_http_opentelemetry_module.h"
-#include "ngx_http_opentelemetry_log.h"
 
 ngx_http_opentelemetry_worker_conf_t *worker_conf;
 static contextNode contexts[5];

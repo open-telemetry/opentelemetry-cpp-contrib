@@ -51,8 +51,7 @@ project.ext {
     
     apache22Version = "2.2.31"
     apache24Version = "2.4.23"
-    //nginxVersion = '1.18.0'
-    nginxSupportedVersions = ['1.18.0', '1.22.0', '1.23.0']
+    nginxSupportedVersions=props.get("nginxSupportedVersions").split(',')
 
     libraryStageDir = "${platBuildDir}/opentelemetry-webserver-sdk"
     apacheStageDir = "${libraryStageDir}/WebServerModule/Apache"
@@ -417,7 +416,8 @@ nginxSupportedVersions.each { nginxVersion ->
 
         dependsOn "configureNginx${nginxVersion}"
         dependsOn stageLibrary
-        //dependsOn "copyMakefile${nginxVersion}"
+        dependsOn "copyMakefile${nginxVersion}"
+
 
         outputs.file "${buildDir}/nginx-${nginxVersion}/objs/ngx_http_opentelemetry_module.so"
         workingDir "${buildDir}/nginx-${nginxVersion}"

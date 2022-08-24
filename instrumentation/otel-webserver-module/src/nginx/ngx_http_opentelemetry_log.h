@@ -15,9 +15,9 @@
 */
 
 
-#include <stdbool.h>
 #include <ngx_config.h>
 #include <ngx_core.h>
+#include <stdbool.h>
 #include <stdarg.h>
 
 /* 
