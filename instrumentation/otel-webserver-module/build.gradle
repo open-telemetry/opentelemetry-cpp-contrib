@@ -365,37 +365,24 @@ task assembleApacheModule(type: Tar) {
 }
 
 // NGINX
-task downloadNginx(type: Download) {
-    nginxSupportedVersions.each {
-        nginxVersion ->
-            src "http://nginx.org/download/nginx-${nginxVersion}.tar.gz"
-            dest buildDir
-            overwrite false
-    }
-}
-
-task extractNginx(type: Copy) {
-    dependsOn downloadNginx
-    nginxSupportedVersions.each {
-        nginxVersion ->
-            from tarTree(resources.gzip("build/nginx-${nginxVersion}.tar.gz"))
-            into buildDir
-    }
-}
-
-void updateMakefile(String version) {
-    println version
-    exec {
-        commandLine 'ls', '-ltra'
-    }
-}
-
 nginxSupportedVersions.each { nginxVersion ->
+    task("downloadNginx${nginxVersion}", type: Download) {
+        src "http://nginx.org/download/nginx-${nginxVersion}.tar.gz"
+        dest buildDir
+        overwrite false
+    }
+
+    task("extractNginx${nginxVersion}", type: Copy) {
+        dependsOn "downloadNginx${nginxVersion}"
+        from tarTree(resources.gzip("build/nginx-${nginxVersion}.tar.gz"))
+        into buildDir
+    }
+
     task("configureNginx${nginxVersion}", type: Exec) {
         group = 'OpenTelemetry module for Nginx'
         description = 'Run configure to generate the build files for OpenTelemetry Module for Nginx'
 
-        dependsOn extractNginx
+        dependsOn "extractNginx${nginxVersion}"
         workingDir "${buildDir}/nginx-${nginxVersion}"
         commandLine './configure', "--with-compat", "--with-cc-opt=-Wno-error -Wno-unused-variable -Wno-unused-but-set-variable", "--with-ld-opt=-L${libraryStageDir}/sdk_lib/lib", "--add-dynamic-module=${projectDir}/src/nginx"
     }
@@ -418,8 +405,9 @@ nginxSupportedVersions.each { nginxVersion ->
     }
 
     task("updateMakefile${nginxVersion}", type: Exec) {
-        //def inputfile = ${buildDir}/nginx-${nginxVersion}/objs/Makefile
-        //println inputfile
+        group = 'OpenTelemetry module for Nginx'
+        description = 'Updating the Makefile for dynamic build'
+
         commandLine 'bash', '-c', "src/nginx/script.sh ${buildDir}/nginx-${nginxVersion}/objs/Makefile"
     }
 
@@ -429,7 +417,6 @@ nginxSupportedVersions.each { nginxVersion ->
 
         dependsOn "configureNginx${nginxVersion}"
         dependsOn stageLibrary
-        //dependsOn "copyMakefile${nginxVersion}"
         dependsOn "updateMakefile${nginxVersion}"
 
         outputs.file "${buildDir}/nginx-${nginxVersion}/objs/ngx_http_opentelemetry_module.so"
@@ -460,7 +447,6 @@ nginxSupportedVersions.each { nginxVersion ->
         workingDir "${nginxStageDir}/${nginxVersion}"
         commandLine 'strip', '-x', "ngx_http_opentelemetry_module.${sharedLibraryExt}"
     }
-
 }
 
 task assembleNginxModule(type: Tar) {
