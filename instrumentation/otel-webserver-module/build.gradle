@@ -383,6 +383,13 @@ task extractNginx(type: Copy) {
     }
 }
 
+void updateMakefile(String version) {
+    println version
+    exec {
+        commandLine 'ls', '-ltra'
+    }
+}
+
 nginxSupportedVersions.each { nginxVersion ->
     task("configureNginx${nginxVersion}", type: Exec) {
         group = 'OpenTelemetry module for Nginx'
@@ -410,14 +417,20 @@ nginxSupportedVersions.each { nginxVersion ->
         into "${buildDir}/nginx-${nginxVersion}/objs/"
     }
 
+    task("updateMakefile${nginxVersion}", type: Exec) {
+        //def inputfile = ${buildDir}/nginx-${nginxVersion}/objs/Makefile
+        //println inputfile
+        commandLine 'bash', '-c', "src/nginx/script.sh ${buildDir}/nginx-${nginxVersion}/objs/Makefile"
+    }
+
     task("buildNginxModule${nginxVersion}",type: Exec) {
         group = 'OpenTelemetry module for Nginx'
         description = 'Build the Nginx Web Server Agent'
 
         dependsOn "configureNginx${nginxVersion}"
         dependsOn stageLibrary
-        dependsOn "copyMakefile${nginxVersion}"
-
+        //dependsOn "copyMakefile${nginxVersion}"
+        dependsOn "updateMakefile${nginxVersion}"
 
         outputs.file "${buildDir}/nginx-${nginxVersion}/objs/ngx_http_opentelemetry_module.so"
         workingDir "${buildDir}/nginx-${nginxVersion}"
