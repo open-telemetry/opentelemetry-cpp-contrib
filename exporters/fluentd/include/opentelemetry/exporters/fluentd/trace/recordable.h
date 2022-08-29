@@ -67,9 +67,9 @@ public:
 
   void SetDuration(std::chrono::nanoseconds duration) noexcept override;
 
-  void SetInstrumentationLibrary(
-      const opentelemetry::sdk::instrumentationlibrary::InstrumentationLibrary
-          &instrumentation_library) noexcept override;
+  void SetInstrumentationScope(
+      const opentelemetry::sdk::instrumentationscope::InstrumentationScope
+          &instrumentation_scope) noexcept override;
 
 private:
   std::string tag_;

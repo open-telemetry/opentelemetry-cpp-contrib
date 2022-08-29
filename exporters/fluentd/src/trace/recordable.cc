@@ -136,12 +136,12 @@ void Recordable::SetSpanKind(
   }
 }
 
-void Recordable::SetInstrumentationLibrary(
-    const opentelemetry::sdk::instrumentationlibrary::InstrumentationLibrary
-        &instrumentation_library) noexcept {
-  options_["tags"]["otel.library.name"] = instrumentation_library.GetName();
+void Recordable::SetInstrumentationScope(
+    const opentelemetry::sdk::instrumentationscope::InstrumentationScope
+        &instrumentation_scope) noexcept {
+  options_["tags"]["otel.library.name"] = instrumentation_scope.GetName();
   options_["tags"]["otel.library.version"] =
-      instrumentation_library.GetVersion();
+      instrumentation_scope.GetVersion();
 }
 
 } // namespace trace
