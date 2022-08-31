@@ -9,7 +9,6 @@ find_package(CURL)
 include_directories(include)
 # create fluentd trace exporter
 add_library(opentelemetry_exporter_geneva_metrics src/exporter.cc 
-                                                  src/data_buffer.cc
                                                   src/unix_domain_socket_data_transport.cc)
 target_include_directories(opentelemetry_exporter_geneva_metrics
                            PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})

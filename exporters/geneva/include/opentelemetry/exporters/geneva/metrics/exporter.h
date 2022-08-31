@@ -23,6 +23,13 @@ constexpr size_t kBinaryHeaderSize = 4 ; // event_id (2) + body_length (2)
 constexpr size_t kMetricPayloadSize = 24 ; // count_dimension (2)  + reserverd_word (2) + reserverd_dword(4) + timestamp_utc (8) + metric_data (8)
 constexpr size_t kExternalPayloadSize = 40 ; // count_dimension (2) + reserverd_word (2) + count (4) + timestamp_utc (8) + metric_data_sum (8) + metric_data_min(8) + metric_data_max(8)
 
+
+enum class MetricsEventType: uint16_t {
+    ULongMetric = 50,
+    DoubleMetric = 55,
+    ExternallyAggregatedULongDistributionMetric = 56
+};
+
 /**
  * The Geneva metrics exporter exports metrics data to Geneva 
  */
@@ -48,7 +55,7 @@ private:
     const ExporterOptions options_;
     ConnectionStringParser connection_string_parser_;
     const sdk::metrics::AggregationTemporalitySelector aggregation_temporality_selector_;
-    bool is_shutdown_ = false;
+    bool is_shutdown_ = false;  
     mutable opentelemetry::common::SpinLockMutex lock_;
     std::unique_ptr<DataTransport> data_transport_;
     
@@ -60,8 +67,8 @@ private:
 
     size_t InitializeBufferForNonHistogramData();
     size_t InitiaizeBufferForHistogramData();
-    size_t SerializeNonHistogramMetrics(sdk::metrics::AggregationType, const sdk::metrics::PointType &,  common::SystemTimestamp, std::string, const sdk::metrics::PointAttributes& );
-    size_t SerializeHistogramMetrics(sdk::metrics::AggregationType, const sdk::metrics::PointType & ,  common::SystemTimestamp, std::string, const sdk::metrics::PointAttributes&  );
+    size_t SerializeNonHistogramMetrics(sdk::metrics::AggregationType, MetricsEventType,  const sdk::metrics::ValueType &,  common::SystemTimestamp, std::string, const sdk::metrics::PointAttributes&);
+    size_t SerializeHistogramMetrics(sdk::metrics::AggregationType, MetricsEventType, const sdk::metrics::ValueType & ,  common::SystemTimestamp, std::string, const sdk::metrics::PointAttributes&);
 };
 
 template <class T>
@@ -122,13 +129,6 @@ static std::string AttributeValueToString(
   }
   return result;
 }
-
-enum class MetricsEventType: uint16_t {
-    ULongMetric = 50,
-    DoubleMetric = 55,
-    ExternallyAggregatedULongDistributionMetric = 56
-};
-
 }
 }
 }

@@ -67,15 +67,31 @@ opentelemetry::sdk::common::ExportResult Exporter::Export(
             for (auto &point_data_with_attributes : metric_data.point_data_attr_)
             if (nostd::holds_alternative<sdk::metrics::SumPointData>(point_data_with_attributes.point_data))
             {
-              SerializeNonHistogramMetrics(sdk::metrics::AggregationType::kSum, point_data_with_attributes.point_data, metric_data.end_ts, metric_data.instrument_descriptor.name_, point_data_with_attributes.attributes);
+              auto value = nostd::get<sdk::metrics::SumPointData>(point_data_with_attributes.point_data);
+              if (nostd::holds_alternative<double>(value.value_)) {
+                  SerializeNonHistogramMetrics(sdk::metrics::AggregationType::kSum, MetricsEventType::ULongMetric, value.value_, metric_data.end_ts, metric_data.instrument_descriptor.name_, point_data_with_attributes.attributes);
+              } else {
+                  SerializeNonHistogramMetrics(sdk::metrics::AggregationType::kSum, MetricsEventType::DoubleMetric, value.value_, metric_data.end_ts, metric_data.instrument_descriptor.name_, point_data_with_attributes.attributes);
+              }
             }
             else if (nostd::holds_alternative<sdk::metrics::LastValuePointData>(point_data_with_attributes.point_data))
             {
-              SerializeNonHistogramMetrics(sdk::metrics::AggregationType::kLastValue, point_data_with_attributes.point_data, metric_data.end_ts, metric_data.instrument_descriptor.name_, point_data_with_attributes.attributes);
+              auto value = nostd::get<sdk::metrics::SumPointData>(point_data_with_attributes.point_data);
+              MetricsEventType event_type = MetricsEventType::ULongMetric;
+              if (nostd::holds_alternative<double>(value.value_)) {
+                event_type = MetricsEventType::DoubleMetric;
+              }
+              SerializeNonHistogramMetrics(sdk::metrics::AggregationType::kLastValue, event_type, value.value_, metric_data.end_ts, metric_data.instrument_descriptor.name_, point_data_with_attributes.attributes);
+ 
 
             } else if (nostd::holds_alternative<sdk::metrics::HistogramPointData>(point_data_with_attributes.point_data))
             {
-              SerializeHistogramMetrics(sdk::metrics::AggregationType::kLastValue, point_data_with_attributes.point_data, metric_data.end_ts, metric_data.instrument_descriptor.name_,point_data_with_attributes.attributes);
+              auto value = nostd::get<sdk::metrics::SumPointData>(point_data_with_attributes.point_data);
+              MetricsEventType event_type = MetricsEventType::ULongMetric;
+              if (nostd::holds_alternative<double>(value.value_)) {
+                event_type = MetricsEventType::DoubleMetric;
+              }
+              SerializeHistogramMetrics(sdk::metrics::AggregationType::kHistogram, event_type, value.value_, metric_data.end_ts, metric_data.instrument_descriptor.name_,point_data_with_attributes.attributes);
             }
         }
     }
@@ -123,13 +139,13 @@ size_t Exporter::InitiaizeBufferForHistogramData()
   return bufferIndex;
 }
 
-size_t Exporter::SerializeNonHistogramMetrics(sdk::metrics::AggregationType agg_type, const sdk::metrics::PointType& point_data,  common::SystemTimestamp ts, std::string metric_name, const sdk::metrics::PointAttributes& attributes)
+size_t Exporter::SerializeNonHistogramMetrics(sdk::metrics::AggregationType agg_type, MetricsEventType event_type, const sdk::metrics::ValueType& value,  common::SystemTimestamp ts, std::string metric_name, const sdk::metrics::PointAttributes& attributes)
 {
   auto bufferIndex = buffer_index_non_histogram_;
   SerializeString(buffer_non_histogram_, bufferIndex, metric_name);
   for (const auto &kv: attributes ){
     if (kv.first.size() > kMaxDimensionNameSize ) {
-      LOG_WARN("Dimension name limit overflow: %s", kv.first);
+      LOG_WARN("Dimension name limit overflow: %s", kv.first.c_str());
       continue;
     }
     SerializeString(buffer_non_histogram_, bufferIndex, kv.first);
@@ -147,10 +163,6 @@ size_t Exporter::SerializeNonHistogramMetrics(sdk::metrics::AggregationType agg_
   //Add rest of the fields in front of buffer
   bufferIndex  = 0;
 
-  MetricsEventType event_type = MetricsEventType::ULongMetric;
-  if (nostd::holds_alternative<double>(point_data)) {
-    event_type = MetricsEventType::DoubleMetric;
-  }
   SerializeInt<uint16_t>(buffer_non_histogram_, bufferIndex, static_cast<uint16_t>(event_type));
 
   // count of dimensions.
@@ -166,19 +178,20 @@ size_t Exporter::SerializeNonHistogramMetrics(sdk::metrics::AggregationType agg_
   auto ts_epoch =  std::chrono::duration_cast<std::chrono::duration<std::uint64_t>>(ts.time_since_epoch()).count();
   SerializeInt<uint64_t>(buffer_non_histogram_, bufferIndex, ts_epoch);
   if (event_type == MetricsEventType::ULongMetric){
-    SerializeInt<uint64_t>(buffer_non_histogram_, bufferIndex, static_cast<uint64_t>(nostd::holds_alternative<long>(point_data)));
+    SerializeInt<uint64_t>(buffer_non_histogram_, bufferIndex, static_cast<uint64_t>(nostd::get<long>(value)));
   } else {
-    SerializeInt<uint64_t>(buffer_non_histogram_, bufferIndex, static_cast<uint64_t>(nostd::holds_alternative<double>(point_data)));
+    SerializeInt<uint64_t>(buffer_non_histogram_, bufferIndex, static_cast<uint64_t>(nostd::get<double>(value)));
   }
+  return 0;
 }
 
-size_t Exporter::SerializeHistogramMetrics(sdk::metrics::AggregationType agg_type, const sdk::metrics::PointType &point_data ,  common::SystemTimestamp ts, std::string metric_name, const sdk::metrics::PointAttributes& attributes) 
+size_t Exporter::SerializeHistogramMetrics(sdk::metrics::AggregationType agg_type, MetricsEventType event_type, const sdk::metrics::ValueType &value,  common::SystemTimestamp ts, std::string metric_name, const sdk::metrics::PointAttributes& attributes) 
 {
   auto bufferIndex = buffer_index_histogram_;
   SerializeString(buffer_histogram_, bufferIndex, metric_name);
   for (const auto &kv: attributes ){
     if (kv.first.size() > kMaxDimensionNameSize ) {
-      LOG_WARN("Dimension name limit overflow: %s", kv.first);
+      LOG_WARN("Dimension name limit overflow: %s", kv.first.c_str());
       continue;
     }
     SerializeString(buffer_histogram_, bufferIndex, kv.first);
@@ -196,10 +209,6 @@ size_t Exporter::SerializeHistogramMetrics(sdk::metrics::AggregationType agg_typ
   //Add rest of the fields in front of buffer
   bufferIndex  = 0;
 
-  MetricsEventType event_type = MetricsEventType::ULongMetric;
-  if (nostd::holds_alternative<double>(point_data)) {
-    event_type = MetricsEventType::DoubleMetric;
-  }
   SerializeInt<uint16_t>(buffer_histogram_, bufferIndex, static_cast<uint16_t>(event_type));
 
   // count of dimensions.
@@ -215,10 +224,11 @@ size_t Exporter::SerializeHistogramMetrics(sdk::metrics::AggregationType agg_typ
   auto ts_epoch =  std::chrono::duration_cast<std::chrono::duration<std::uint64_t>>(ts.time_since_epoch()).count();
   SerializeInt<uint64_t>(buffer_histogram_, bufferIndex, ts_epoch);
   if (event_type == MetricsEventType::ULongMetric){
-    SerializeInt<uint64_t>(buffer_histogram_, bufferIndex, static_cast<uint64_t>(nostd::holds_alternative<long>(point_data)));
+    SerializeInt<uint64_t>(buffer_histogram_, bufferIndex, static_cast<uint64_t>(nostd::get<long>(value)));
   } else {
-    SerializeInt<uint64_t>(buffer_histogram_, bufferIndex, static_cast<uint64_t>(nostd::holds_alternative<double>(point_data)));
+    SerializeInt<uint64_t>(buffer_histogram_, bufferIndex, static_cast<uint64_t>(nostd::get<double>(value)));
   }
+  return 0;
 }
 
 }
