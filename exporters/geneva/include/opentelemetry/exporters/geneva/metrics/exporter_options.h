@@ -7,25 +7,22 @@
 #include <string>
 
 OPENTELEMETRY_BEGIN_NAMESPACE
-namespace exporter
-{
-namespace geneva
-{
-namespace metrics
-{
+namespace exporter {
+namespace geneva {
+namespace metrics {
 
- struct ExporterOptions
- {
-    /*
-    Format -
-      Windows:
-          Account={MetricAccount};NameSpace={MetricNamespace}
-      Linux:
-          Endpoint=unix:{UDS Path};Account={MetricAccount};Namespace={MetricNamespace}
-    */
-    std::string connection_string ;
- };
-}
-}
-}
+struct ExporterOptions {
+  /*
+  Format -
+    Windows:
+        Account={MetricAccount};NameSpace={MetricNamespace}
+    Linux:
+        Endpoint=unix:{UDS
+  Path};Account={MetricAccount};Namespace={MetricNamespace}
+  */
+  std::string connection_string;
+};
+} // namespace metrics
+} // namespace geneva
+} // namespace exporter
 OPENTELEMETRY_END_NAMESPACE

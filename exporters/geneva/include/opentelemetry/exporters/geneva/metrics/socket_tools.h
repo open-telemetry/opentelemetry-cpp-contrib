@@ -251,8 +251,8 @@ struct SocketAddr {
       m_data_un.sun_family = AF_UNIX;
       const char *unix_domain_path = ipAddress.data();
       // Max length of Unix domain filename is up to 108 chars
-      strncpy_s(m_data_un.sun_path, sizeof(m_data_un.sun_path), unix_domain_path,
-                sizeof(m_data_un.sun_path));
+      strncpy_s(m_data_un.sun_path, sizeof(m_data_un.sun_path),
+                unix_domain_path, sizeof(m_data_un.sun_path));
       return;
     }
 #endif
@@ -502,13 +502,13 @@ struct Socket {
         ::recv(m_sock, reinterpret_cast<char *>(buffer), size, flags));
   }
 
-  template <typename T> size_t readall(T &buffer) {
+  size_t readall(char *buffer, size_t size) {
     size_t total_bytes_received = 0;
     int bytes_received = 0;
     // Read response fully
     do {
-      bytes_received = recv((void *)(buffer.data() + total_bytes_received),
-                            buffer.size() - total_bytes_received);
+      bytes_received = recv((void *)(buffer + total_bytes_received),
+                            size - total_bytes_received);
       if (bytes_received > 0) {
         total_bytes_received += bytes_received;
       } else if (bytes_received == 0) {
@@ -528,18 +528,17 @@ struct Socket {
         // recv() error occurred.
         break;
       }
-    } while ((bytes_received > 0) && (total_bytes_received < buffer.size()));
-    buffer.resize(total_bytes_received);
+    } while ((bytes_received > 0) && (total_bytes_received < size));
     return total_bytes_received;
   }
 
-  template <typename T> size_t writeall(T &buffer) {
+  size_t writeall(char const *buffer, size_t size) {
     size_t total_bytes_sent = 0;
     int bytes_sent = 0;
     // Write response fully
     do {
-      bytes_sent = send((void *)(buffer.data() + total_bytes_sent),
-                        buffer.size() - total_bytes_sent);
+      bytes_sent =
+          send((void *)(buffer + total_bytes_sent), size - total_bytes_sent);
       if (bytes_sent > 0) {
         total_bytes_sent += bytes_sent;
       } else if (bytes_sent == 0) {
@@ -550,7 +549,7 @@ struct Socket {
         // send() error occurred.
         break;
       }
-    } while (total_bytes_sent < buffer.size());
+    } while (total_bytes_sent < size);
     return total_bytes_sent;
   }
 
