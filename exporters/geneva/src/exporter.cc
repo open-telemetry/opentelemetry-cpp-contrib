@@ -141,19 +141,84 @@ size_t Exporter::SerializeNonHistogramMetrics(sdk::metrics::AggregationType agg_
   // length zero for auto-pilot
   SerializeInt<uint16_t>(buffer_non_histogram_, bufferIndex, 0);
 
-  // get final size of payload
+  // get final size of payload to be added in front of buffer
   uint16_t bodyLength = bufferIndex - kBufferSize;
 
   //Add rest of the fields in front of buffer
-  bufferIndex  = k
-  SerializeNonHistogramMetrics()
+  bufferIndex  = 0;
 
+  MetricsEventType event_type = MetricsEventType::ULongMetric;
+  if (nostd::holds_alternative<double>(point_data)) {
+    event_type = MetricsEventType::DoubleMetric;
+  }
+  SerializeInt<uint16_t>(buffer_non_histogram_, bufferIndex, static_cast<uint16_t>(event_type));
 
+  // count of dimensions.
+  SerializeInt<u_int16_t>(buffer_non_histogram_, bufferIndex, static_cast<uint16_t>(attributes.size()));
 
+  //reserverd word (2 bytes)
+  SerializeInt<uint16_t>(buffer_non_histogram_, bufferIndex, 0);
 
+  //reserved word (4 bytes)
+  SerializeInt<uint32_t>(buffer_non_histogram_, bufferIndex, 0);
 
+  // timestamp utc (8 bytes)
+  auto ts_epoch =  std::chrono::duration_cast<std::chrono::duration<std::uint64_t>>(ts.time_since_epoch()).count();
+  SerializeInt<uint64_t>(buffer_non_histogram_, bufferIndex, ts_epoch);
+  if (event_type == MetricsEventType::ULongMetric){
+    SerializeInt<uint64_t>(buffer_non_histogram_, bufferIndex, static_cast<uint64_t>(nostd::holds_alternative<long>(point_data)));
+  } else {
+    SerializeInt<uint64_t>(buffer_non_histogram_, bufferIndex, static_cast<uint64_t>(nostd::holds_alternative<double>(point_data)));
+  }
+}
 
+size_t Exporter::SerializeHistogramMetrics(sdk::metrics::AggregationType agg_type, const sdk::metrics::PointType &point_data ,  common::SystemTimestamp ts, std::string metric_name, const sdk::metrics::PointAttributes& attributes) 
+{
+  auto bufferIndex = buffer_index_histogram_;
+  SerializeString(buffer_histogram_, bufferIndex, metric_name);
+  for (const auto &kv: attributes ){
+    if (kv.first.size() > kMaxDimensionNameSize ) {
+      LOG_WARN("Dimension name limit overflow: %s", kv.first);
+      continue;
+    }
+    SerializeString(buffer_histogram_, bufferIndex, kv.first);
+  }
+  for (const auto &kv: attributes){
+    auto attr_value = AttributeValueToString(kv.second);
+    SerializeString(buffer_histogram_, bufferIndex, attr_value);
+  }
+  // length zero for auto-pilot
+  SerializeInt<uint16_t>(buffer_histogram_, bufferIndex, 0);
 
+  // get final size of payload to be added in front of buffer
+  uint16_t bodyLength = bufferIndex - kBufferSize;
+
+  //Add rest of the fields in front of buffer
+  bufferIndex  = 0;
+
+  MetricsEventType event_type = MetricsEventType::ULongMetric;
+  if (nostd::holds_alternative<double>(point_data)) {
+    event_type = MetricsEventType::DoubleMetric;
+  }
+  SerializeInt<uint16_t>(buffer_histogram_, bufferIndex, static_cast<uint16_t>(event_type));
+
+  // count of dimensions.
+  SerializeInt<u_int16_t>(buffer_histogram_, bufferIndex, static_cast<uint16_t>(attributes.size()));
+
+  //reserverd word (2 bytes)
+  SerializeInt<uint16_t>(buffer_histogram_, bufferIndex, 0);
+
+  //reserved word (4 bytes)
+  SerializeInt<uint32_t>(buffer_histogram_, bufferIndex, 0);
+
+  // timestamp utc (8 bytes)
+  auto ts_epoch =  std::chrono::duration_cast<std::chrono::duration<std::uint64_t>>(ts.time_since_epoch()).count();
+  SerializeInt<uint64_t>(buffer_histogram_, bufferIndex, ts_epoch);
+  if (event_type == MetricsEventType::ULongMetric){
+    SerializeInt<uint64_t>(buffer_histogram_, bufferIndex, static_cast<uint64_t>(nostd::holds_alternative<long>(point_data)));
+  } else {
+    SerializeInt<uint64_t>(buffer_histogram_, bufferIndex, static_cast<uint64_t>(nostd::holds_alternative<double>(point_data)));
+  }
 }
 
 }

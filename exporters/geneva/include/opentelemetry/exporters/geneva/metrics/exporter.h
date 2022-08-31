@@ -116,13 +116,18 @@ static std::string AttributeValueToString(
   }
   else
   {
-
     LOG_WARN(
         "[Geneva Metrics Exporter] AttributeValueToString - "
         " Nested attributes not supported - ignored");
   }
   return result;
 }
+
+enum class MetricsEventType: uint16_t {
+    ULongMetric = 50,
+    DoubleMetric = 55,
+    ExternallyAggregatedULongDistributionMetric = 56
+};
 
 }
 }
