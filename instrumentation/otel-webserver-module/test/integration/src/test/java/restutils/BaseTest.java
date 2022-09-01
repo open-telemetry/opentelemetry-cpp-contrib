@@ -19,6 +19,6 @@ public class BaseTest {
 
     @BeforeClass
     public void generateLoad(){
-        loadGenUtils.generateLoad(WEBSERVER_URL, 90);
+        loadGenUtils.generateLoad(WEBSERVER_URL, 108);
     }
 }
