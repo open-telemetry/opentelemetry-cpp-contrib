@@ -1,0 +1,398 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "array",
+  "items": [
+    {
+      "type": "object",
+      "properties": {
+        "traceId": {
+          "type": "string"
+        },
+        "parentId": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "integer"
+        },
+        "duration": {
+          "type": "integer"
+        },
+        "localEndpoint": {
+          "type": "object",
+          "properties": {
+            "serviceName": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "serviceName"
+          ]
+        },
+        "tags": {
+          "type": "object",
+          "properties": {
+            "cloud.zone": {
+              "type": "string"
+            },
+            "host.name": {
+              "type": "string"
+            },
+            "interactionType": {
+              "type": "string"
+            },
+            "otel.library.name": {
+              "type": "string"
+            },
+            "otel.library.version": {
+              "type": "string"
+            },
+            "otel.status_code": {
+              "type": "string"
+            },
+            "service.instance.id": {
+              "type": "string"
+            },
+            "service.namespace": {
+              "type": "string"
+            },
+            "telemetry.sdk.language": {
+              "type": "string"
+            },
+            "telemetry.sdk.name": {
+              "type": "string"
+            },
+            "telemetry.sdk.version": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "cloud.zone",
+            "host.name",
+            "interactionType",
+            "otel.library.name",
+            "otel.library.version",
+            "otel.status_code",
+            "service.instance.id",
+            "service.namespace",
+            "telemetry.sdk.language",
+            "telemetry.sdk.name",
+            "telemetry.sdk.version"
+          ]
+        }
+      },
+      "required": [
+        "traceId",
+        "parentId",
+        "id",
+        "kind",
+        "name",
+        "timestamp",
+        "duration",
+        "localEndpoint",
+        "tags"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "traceId": {
+          "type": "string"
+        },
+        "parentId": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "integer"
+        },
+        "duration": {
+          "type": "integer"
+        },
+        "localEndpoint": {
+          "type": "object",
+          "properties": {
+            "serviceName": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "serviceName"
+          ]
+        },
+        "tags": {
+          "type": "object",
+          "properties": {
+            "cloud.zone": {
+              "type": "string"
+            },
+            "host.name": {
+              "type": "string"
+            },
+            "interactionType": {
+              "type": "string"
+            },
+            "otel.library.name": {
+              "type": "string"
+            },
+            "otel.library.version": {
+              "type": "string"
+            },
+            "otel.status_code": {
+              "type": "string"
+            },
+            "service.instance.id": {
+              "type": "string"
+            },
+            "service.namespace": {
+              "type": "string"
+            },
+            "telemetry.sdk.language": {
+              "type": "string"
+            },
+            "telemetry.sdk.name": {
+              "type": "string"
+            },
+            "telemetry.sdk.version": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "cloud.zone",
+            "host.name",
+            "interactionType",
+            "otel.library.name",
+            "otel.library.version",
+            "otel.status_code",
+            "service.instance.id",
+            "service.namespace",
+            "telemetry.sdk.language",
+            "telemetry.sdk.name",
+            "telemetry.sdk.version"
+          ]
+        }
+      },
+      "required": [
+        "traceId",
+        "parentId",
+        "id",
+        "kind",
+        "name",
+        "timestamp",
+        "duration",
+        "localEndpoint",
+        "tags"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "traceId": {
+          "type": "string"
+        },
+        "parentId": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "integer"
+        },
+        "duration": {
+          "type": "integer"
+        },
+        "localEndpoint": {
+          "type": "object",
+          "properties": {
+            "serviceName": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "serviceName"
+          ]
+        },
+        "tags": {
+          "type": "object",
+          "properties": {
+            "cloud.zone": {
+              "type": "string"
+            },
+            "host.name": {
+              "type": "string"
+            },
+            "interactionType": {
+              "type": "string"
+            },
+            "otel.library.name": {
+              "type": "string"
+            },
+            "otel.library.version": {
+              "type": "string"
+            },
+            "otel.status_code": {
+              "type": "string"
+            },
+            "service.instance.id": {
+              "type": "string"
+            },
+            "service.namespace": {
+              "type": "string"
+            },
+            "telemetry.sdk.language": {
+              "type": "string"
+            },
+            "telemetry.sdk.name": {
+              "type": "string"
+            },
+            "telemetry.sdk.version": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "cloud.zone",
+            "host.name",
+            "interactionType",
+            "otel.library.name",
+            "otel.library.version",
+            "otel.status_code",
+            "service.instance.id",
+            "service.namespace",
+            "telemetry.sdk.language",
+            "telemetry.sdk.name",
+            "telemetry.sdk.version"
+          ]
+        }
+      },
+      "required": [
+        "traceId",
+        "parentId",
+        "id",
+        "kind",
+        "name",
+        "timestamp",
+        "duration",
+        "localEndpoint",
+        "tags"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "traceId": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "integer"
+        },
+        "duration": {
+          "type": "integer"
+        },
+        "localEndpoint": {
+          "type": "object",
+          "properties": {
+            "serviceName": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "serviceName"
+          ]
+        },
+        "tags": {
+          "type": "object",
+          "properties": {
+            "cloud.zone": {
+              "type": "string"
+            },
+            "host.name": {
+              "type": "string"
+            },
+            "otel.library.name": {
+              "type": "string"
+            },
+            "otel.library.version": {
+              "type": "string"
+            },
+            "otel.status_code": {
+              "type": "string"
+            },
+            "request_protocol": {
+              "type": "string"
+            },
+            "service.instance.id": {
+              "type": "string"
+            },
+            "service.namespace": {
+              "type": "string"
+            },
+            "telemetry.sdk.language": {
+              "type": "string"
+            },
+            "telemetry.sdk.name": {
+              "type": "string"
+            },
+            "telemetry.sdk.version": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "cloud.zone",
+            "host.name",
+            "otel.library.name",
+            "otel.library.version",
+            "otel.status_code",
+            "request_protocol",
+            "service.instance.id",
+            "service.namespace",
+            "telemetry.sdk.language",
+            "telemetry.sdk.name",
+            "telemetry.sdk.version"
+          ]
+        }
+      },
+      "required": [
+        "traceId",
+        "id",
+        "kind",
+        "name",
+        "timestamp",
+        "duration",
+        "localEndpoint",
+        "tags"
+      ]
+    }
+  ]
+}
