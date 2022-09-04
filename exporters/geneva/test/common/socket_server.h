@@ -35,8 +35,8 @@
 #include <string>
 #include <thread>
 
-#include "opentelemetry/exporters/fluentd/common/macros.h"
-#include "opentelemetry/exporters/fluentd/common/socket_tools.h"
+#include "opentelemetry/exporters/geneva/metrics/macros.h"
+#include "opentelemetry/exporters/geneva/metrics/socket_tools.h"
 
 using namespace SocketTools;
 
@@ -248,7 +248,7 @@ struct SocketServer : public Reactor::SocketCallback {
   virtual void ReadStreamBuffer(Connection &conn_tcp) {
     conn_tcp.request_buffer.clear();
     conn_tcp.request_buffer.resize(4096, 0);
-    size_t size = conn_tcp.socket.readall(conn_tcp.request_buffer);
+    size_t size = conn_tcp.socket.readall(const_cast<char *>(conn_tcp.request_buffer.data()), conn_tcp.request_buffer.size());
     if (size > 0) {
       LOG_TRACE("Server: [%s] stream read %zu bytes", CLID(conn_tcp), size);
       conn_tcp.request_buffer.resize(size);
@@ -318,7 +318,7 @@ struct SocketServer : public Reactor::SocketCallback {
 
     // Handle TCP and Unix Domain response
     reactor.addSocket(conn.socket, SocketTools::Reactor::Writable);
-    total_bytes_sent = conn.socket.writeall(conn.response_buffer);
+    total_bytes_sent = conn.socket.writeall(conn.response_buffer.data(), conn.request_buffer.size());
     if (conn.response_buffer.size() != total_bytes_sent) {
       conn.response_buffer.erase(0, total_bytes_sent);
       LOG_WARN("Server: [%s] response blocked, total sent %zu bytes",

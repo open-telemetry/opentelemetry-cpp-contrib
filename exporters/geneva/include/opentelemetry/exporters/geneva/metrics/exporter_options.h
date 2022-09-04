@@ -17,7 +17,7 @@ struct ExporterOptions {
     Windows:
         Account={MetricAccount};NameSpace={MetricNamespace}
     Linux:
-        Endpoint=unix:{UDS
+        Endpoint=unix://{UDS
   Path};Account={MetricAccount};Namespace={MetricNamespace}
   */
   std::string connection_string;

@@ -17,12 +17,16 @@ Exporter::Exporter(const ExporterOptions &options)
     : options_(options), connection_string_parser_(options_.connection_string),
       data_transport_{nullptr}, buffer_index_histogram_(0),
       buffer_index_non_histogram_(0) {
+        std::cout << "exporter constructor\n"; //LALIT
   if (connection_string_parser_.IsValid()) {
     if (connection_string_parser_.transport_protocol_ ==
         TransportProtocol::kUNIX) {
+        std::cout << "before transport\n"; //LALIT
       data_transport_ = std::unique_ptr<DataTransport>(
           new UnixDomainSocketDataTransport(options_.connection_string));
+        std::cout << "After transport\n"; //LALIT
     }
+    std::cout << "Initilaized exporter \n"; //LALIT
   }
   // Connect transport at initialization
   auto status = data_transport_->Connect();
@@ -72,6 +76,7 @@ opentelemetry::sdk::common::ExportResult Exporter::Export(
           if (nostd::holds_alternative<double>(value.value_)) {
             event_type = MetricsEventType::DoubleMetric;
           }
+          std::cout << "Non Histogram  - Sum\n "; //LALIT
           body_length = SerializeNonHistogramMetrics(
               sdk::metrics::AggregationType::kSum, event_type, value.value_,
               metric_data.end_ts, metric_data.instrument_descriptor.name_,
