@@ -734,7 +734,6 @@ static void otel_payload_decorator(ngx_http_request_t* r, APPD_SDK_ENV_RECORD* p
 
    for(int i=0; i<count; i++){
 
-       char* c = httpHeaders[i];
        int header_found=0;
        for(ngx_uint_t j = 0; j<nelts; j++){
            h = &header[j];
