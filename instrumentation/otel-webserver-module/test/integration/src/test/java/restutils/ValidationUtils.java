@@ -2,14 +2,17 @@ package restutils;
 
 import io.restassured.response.Response;
 import org.json.JSONArray;
-import org.testng.Assert;
 import org.json.JSONObject;
+import org.testng.Assert;
+
+import java.util.logging.Logger;
 
 import static utils.Constants.*;
 
 
 public class ValidationUtils extends BaseTest{
 
+    private static final Logger LOGGER = Logger.getLogger(ValidationUtils.class.getName());
     public RestClient restClient = new RestClient();
     public Response response;
 
@@ -19,6 +22,7 @@ public class ValidationUtils extends BaseTest{
 
     public void verifyAllTraces() {
         response = restClient.getResponse(ZIPKIN_URL + TRACES);
+        LOGGER.info(response.body().asString());
         JSONArray jsonArray = new JSONArray(response.getBody().asString());
         for(int i=0; i<jsonArray.length(); i++) {
             JSONArray traceArray = jsonArray.getJSONArray(i);
@@ -41,6 +45,7 @@ public class ValidationUtils extends BaseTest{
         response =  restClient.getResponse(ZIPKIN_URL + SPANS);
         String spans = response.jsonPath().get("$").toString();
         System.out.println(spans);
+        LOGGER.info(spans);
         if(!spans.isEmpty()){
             Assert.assertTrue(spans.contains("/"));
             //spans.contains("mod_dav.c_handler");
@@ -54,8 +59,7 @@ public class ValidationUtils extends BaseTest{
 
     public void verifyAllServices() {
         response = restClient.getResponse(ZIPKIN_URL + SERVICES);
-        System.out.println(response.body().jsonPath().get().toString());
-        System.out.println(response.body().asString());
+        LOGGER.info(response.body().jsonPath().get().toString());
         Assert.assertTrue(response.body().jsonPath().get().toString().contentEquals("[demoservice]"));
     }
 
