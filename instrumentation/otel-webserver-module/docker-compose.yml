@@ -98,7 +98,7 @@ services:
             - centos_nginx
             - centos7_nginx
             - ubuntu20.04_nginx
-        command: ["--config=/etc/otel-config.yml", "${OTELCOL_ARGS}"]
+        command: ["--config=/etc/otel-config.yml"]
         volumes:
             - ./otel-config.yml:/etc/otel-config.yml
         ports:
