@@ -12,6 +12,6 @@ public class RestClient {
                 .assertThat()
                 .statusCode(200);
 
-        return  RestAssured.given().get(Uri);
+        return RestAssured.given().get(Uri);
     }
 }
