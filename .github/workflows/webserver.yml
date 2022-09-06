@@ -123,7 +123,6 @@ jobs:
           docker-compose --profile centos7 up -d
           sleep 30
           ./gradlew :test:integration:integrationTests -i
-      - name: upload test report
         uses: actions/upload-artifact@v3
         with:
           name: test-report.html

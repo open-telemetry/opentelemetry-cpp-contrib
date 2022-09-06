@@ -2,7 +2,7 @@ package utils;
 
 public class Constants {
 
-    public static final String TRACES= "/traces?lookback=900000&limit=10";
+    public static final String TRACES= "/traces?lookback=1800000&limit=9";
     public static final String SERVICES= "/services";
     public static final String SPANS= "/spans?serviceName=demoservice";
 
