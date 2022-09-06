@@ -123,6 +123,11 @@ jobs:
           docker-compose --profile centos7 up -d
           sleep 30
           ./gradlew :test:integration:integrationTests -i
+      - name: upload test report
+          uses: actions/upload-artifact@v3
+          with:
+            name: test-report.html
+            path: /home/runner/work/opentelemetry-cpp-contrib/opentelemetry-cpp-contrib/opentelemetry-cpp-contrib/instrumentation/otel-webserver-module/test/integration/build/reports/tests/integrationTests/index.html
 
   webserver-build-test-centos6:
     name: webserver-centos6-build
