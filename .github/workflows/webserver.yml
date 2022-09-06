@@ -122,7 +122,7 @@ jobs:
           git pull origin tests/zipkin
           docker-compose --profile centos7 up -d
           sleep 30
-          ./gradlew :test:integration:integrationTests
+          ./gradlew :test:integration:integrationTests -i
 
   webserver-build-test-centos6:
     name: webserver-centos6-build

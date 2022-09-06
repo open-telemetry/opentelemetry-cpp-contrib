@@ -4,9 +4,7 @@ import io.restassured.response.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
-
 import java.util.logging.Logger;
-
 import static utils.Constants.*;
 
 
@@ -46,21 +44,27 @@ public class ValidationUtils extends BaseTest{
         String spans = response.jsonPath().get("$").toString();
         System.out.println(spans);
         LOGGER.info(spans);
-        if(!spans.isEmpty()){
-            Assert.assertTrue(spans.contains("/"));
-            //spans.contains("mod_dav.c_handler");
-            Assert.assertTrue(spans.contains("mod_proxy.c_handler"));
-            Assert.assertTrue(spans.contains("mod_proxy_balancer.c_handler"));
-
-        } else{
-            Assert.assertTrue(false);
+        JSONArray jsonArray = new JSONArray(response.getBody().asString());
+        for(int i=0; i<jsonArray.length(); i++) {
+            if(i==0){
+                Assert.assertTrue(jsonArray.getString(i).contentEquals("/"));
+            }
+            else if(i==1){
+                Assert.assertTrue(jsonArray.getString(i).contentEquals("mod_proxy.c_handler"));
+            }
+            else if(i==2){
+                Assert.assertTrue(jsonArray.getString(i).contentEquals("mod_proxy_balancer.c_handler"));
+            } else {
+                Assert.assertTrue(false);
+            }
         }
     }
 
     public void verifyAllServices() {
         response = restClient.getResponse(ZIPKIN_URL + SERVICES);
         LOGGER.info(response.body().jsonPath().get().toString());
-        Assert.assertTrue(response.body().jsonPath().get().toString().contentEquals("[demoservice]"));
+        JSONArray jsonArray = new JSONArray(response.getBody().asString());
+        Assert.assertTrue(jsonArray.getString(0).contentEquals("demoservice"));
     }
 
 }
