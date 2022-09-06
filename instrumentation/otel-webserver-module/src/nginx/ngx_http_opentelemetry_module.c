@@ -720,15 +720,42 @@ static APPD_SDK_STATUS_CODE otel_startInteraction(ngx_http_request_t* r, const c
 
 static void otel_payload_decorator(ngx_http_request_t* r, APPD_SDK_ENV_RECORD* propagationHeaders, int count)
 {
+   ngx_list_part_t  *part;
+   ngx_table_elt_t  *header;
    ngx_table_elt_t            *h;
    ngx_http_header_t          *hh;
    ngx_http_core_main_conf_t  *cmcf;
+   ngx_uint_t       nelts;
+
+   part = &r->headers_in.headers.part;
+   header = (ngx_table_elt_t*)part->elts;
+   nelts = part->nelts;
 
    for(int i=0; i<count; i++){
-       h = ngx_list_push(&r->headers_in.headers);
-       if(h == NULL){
-           return;
+
+       int header_found=0;
+       for(ngx_uint_t j = 0; j<nelts; j++){
+           h = &header[j];
+           if(strcmp(httpHeaders[i], h->key.data)==0){
+               
+               header_found=1;
+
+               if(h->key.data)
+                    ngx_pfree(r->pool, h->key.data);
+               if(h->value.data)
+                    ngx_pfree(r->pool, h->value.data);
+               
+               break;
+           }
        }
+       if(header_found==0)
+       {
+           h = ngx_list_push(&r->headers_in.headers);
+       }
+
+       if(h == NULL )
+            return;
+
        h->key.len = strlen(propagationHeaders[i].name);
        h->key.data = ngx_pcalloc(r->pool, sizeof(char)*((h->key.len)+1));
        strcpy(h->key.data, propagationHeaders[i].name);
@@ -749,6 +776,7 @@ static void otel_payload_decorator(ngx_http_request_t* r, APPD_SDK_ENV_RECORD* p
        }
 
        ngx_writeTrace(r->connection->log, __func__, "Value : %s", propagationHeaders[i].value);
+
    }
    
    ngx_http_otel_handles_t* ctx = ngx_http_get_module_ctx(r, ngx_http_opentelemetry_module);
