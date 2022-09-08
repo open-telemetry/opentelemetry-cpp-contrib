@@ -23,7 +23,7 @@ Exporter::Exporter(const ExporterOptions &options)
         TransportProtocol::kUNIX) {
         std::cout << "before transport\n"; //LALIT
       data_transport_ = std::unique_ptr<DataTransport>(
-          new UnixDomainSocketDataTransport(options_.connection_string));
+          new UnixDomainSocketDataTransport(connection_string_parser_.url_->path_));
         std::cout << "After transport\n"; //LALIT
     }
     std::cout << "Initilaized exporter \n"; //LALIT

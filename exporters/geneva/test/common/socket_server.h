@@ -149,8 +149,10 @@ struct SocketServer : public Reactor::SocketCallback {
     SocketAddr caddr;
     if (socket.accept(csocket, caddr)) {
 #ifdef HAVE_UNIX_DOMAIN
+      std::cout << "\n ---->Accept successful\n";
       // If server is Unix domain, then the client socket is also Unix domain
       if (bind_address.isUnixDomain) {
+        std::cout << "---->it is unix domain\n";
         caddr.isUnixDomain = bind_address.isUnixDomain;
         // Sometimes AF_UNIX does not auto-populate
         // the bind address on accept. Thus, copy.

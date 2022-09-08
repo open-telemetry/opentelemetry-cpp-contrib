@@ -32,16 +32,21 @@ public:
     std::string::size_type val_pos;
     std::string::size_type val_end;
     bool is_endpoint_found = false;
-    while ((key_end = connection_string.find(kSemicolon, key_pos)) !=
+    while ((key_end = connection_string.find(kEqual, key_pos)) !=
            std::string::npos) {
-      if (val_pos =
+      if ((val_pos =
               connection_string.find_first_not_of(
-                  std::string(1, kSemicolon), key_end) == std::string::npos) {
+                  kEqual, key_end)) == std::string::npos) {
         break;
       }
-      val_end = connection_string.find(kEqual, val_pos);
+      val_end = connection_string.find(kSemicolon, val_pos);
       auto key = connection_string.substr(key_pos, key_end - key_pos);
       auto value = connection_string.substr(val_pos, val_end - val_pos);
+      key_pos = val_end;
+      if (key_pos != std::string::npos){
+        ++key_pos;
+      }
+      std::cout << key << " " << value << "\n";
       if (key == kNamespace) {
         namespace_ = value;
       } else if (key == kAccount) {

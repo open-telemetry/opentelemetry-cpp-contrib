@@ -11,6 +11,7 @@ namespace metrics {
 
 UnixDomainSocketDataTransport::UnixDomainSocketDataTransport(
     const std::string &connection_string) {
+  std::cout << " UDS : Conn String" << connection_string << "\n";
   addr_.reset(new SocketTools::SocketAddr(connection_string.c_str(), true));
 }
 
@@ -28,6 +29,7 @@ bool UnixDomainSocketDataTransport::Connect() noexcept {
 
 bool UnixDomainSocketDataTransport::Send(char const *data,
                                          uint16_t length) noexcept {
+  std::cout << "---->SENDING length " << length << "\n";
   int error_code = 0;
   if (connected_) {
     socket_.getsockopt(SOL_SOCKET, SO_ERROR, error_code);
@@ -46,6 +48,7 @@ bool UnixDomainSocketDataTransport::Send(char const *data,
   }
 
   // try to write
+  std::cout << "--->WRITE ALL length: " << length << "\n";
   size_t sent_size = socket_.writeall(data, length);
   if (length == sent_size) {
     // Disconnect();
