@@ -38,7 +38,7 @@ struct TestServer {
   TestServer(SocketServer &server) : server(server) {
     server.onRequest = [&](SocketServer::Connection &conn) {        
       try {
-        std::cout << "------>RECEIVED:" << conn.response_buffer.size() << "\n";
+        std::cout << "------>RECEIVED:" << conn.request_buffer.size() << "\n";
         /*auto j = nlohmann::json::from_msgpack(msg);
         std::cout << "[" << count.fetch_add(1)
                   << "] SocketServer received payload: " << std::endl
@@ -75,25 +75,19 @@ TEST(GenevaMetricsExporter, BasicTests)
   SocketAddr destination(kUnixDomainPath.data(), true);
   SocketParams params{AF_UNIX, SOCK_STREAM, 0};
   SocketServer socketServer(destination, params);
-  //TestServer testServer(socketServer);
-  //testServer.Start();
-  std::cout << " here \n" ; //LALIT
-
+  TestServer testServer(socketServer);
+  testServer.Start();
   yield_for(std::chrono::milliseconds(500));
-  std::cout << "after yield\n"; //LALIT
 
   // conn_string: `Endpoint=unix:{udsPath};Account={MetricAccount};Namespace={MetricNamespace}`
   std::string conn_string = "Endpoint=unix://" + kUnixDomainPath + ";Account=" + kAccountName + ";Namespace=" + kNamespaceName;
 
   auto metric_data = GenerateSumDataMetrics();
-  std::cout << "generated metrics\n"; //LALIT
- ExporterOptions options{conn_string};
- std::cout << "after getting options\n"; //LALIT
- opentelemetry::exporter::geneva::metrics::Exporter exporter(options);
- std::cout << "Sending metrics\n"; //LALIT
- exporter.Export(metric_data);
-  yield_for(std::chrono::milliseconds(2000));
+  ExporterOptions options{conn_string};
+  opentelemetry::exporter::geneva::metrics::Exporter exporter(options);
+  exporter.Export(metric_data);
+  yield_for(std::chrono::milliseconds(5000));
 
- //testServer.Stop();
+  testServer.Stop();
 
 }

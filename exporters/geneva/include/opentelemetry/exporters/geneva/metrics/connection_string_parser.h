@@ -46,7 +46,6 @@ public:
       if (key_pos != std::string::npos){
         ++key_pos;
       }
-      std::cout << key << " " << value << "\n";
       if (key == kNamespace) {
         namespace_ = value;
       } else if (key == kAccount) {

@@ -251,7 +251,6 @@ struct SocketAddr {
     if (isUnixDomain) {
       m_data_un.sun_family = AF_UNIX;
       const char *unix_domain_path = ipAddress.data();
-      std::cout<< "Socket path:" << unix_domain_path << "\n"; //LALIT
       // Max length of Unix domain filename is up to 108 chars
       strncpy_s(m_data_un.sun_path, sizeof(m_data_un.sun_path),
                 unix_domain_path, sizeof(m_data_un.sun_path));
@@ -575,7 +574,6 @@ struct Socket {
 
   int bind(SocketAddr const &addr) {
     assert(m_sock != Invalid);
-    std::cout << "Address" << addr.isUnixDomain << addr.toString() << "\n"; //LALIT
     return ::bind(m_sock, addr, addr.size());
   }
 
