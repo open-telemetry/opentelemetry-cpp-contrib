@@ -88,13 +88,17 @@ static void SerializeInt(char *buffer, size_t &index, T value) {
 static void SerializeString(char *buffer, size_t &index,
                             const std::string &str) {
   auto size = str.size();
+  std::cout << "exporter: ------>SERIALIZE START\n";
+  std::cout << "exporter:: serilize " << str << " of size: " << str.size() << " from index " << index << "\n";
   SerializeInt<uint16_t>(buffer, index, static_cast<uint16_t>(size));
-  index += sizeof(uint16_t);
-
+  std::cout << "exporter:: written size " << size << " new index:" << index << "\n";
   if (size > 0) {
     memcpy(buffer + index, str.c_str(), size);
   }
   index += size;
+  std::cout << "\n exporter:: written data " << str.c_str() << " new index: " << index << "\n";
+    std::cout << "exporter: ------>SERIALIZE END\n\n\n";
+
 }
 
 static std::string AttributeValueToString(

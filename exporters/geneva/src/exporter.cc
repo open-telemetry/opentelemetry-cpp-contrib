@@ -148,9 +148,9 @@ size_t Exporter::InitiaizeBufferForHistogramData() {
 
   // Leave enough space for the header and fixed payload
   auto bufferIndex = kBinaryHeaderSize + kExternalPayloadSize;
-  SerializeString(buffer_non_histogram_, bufferIndex,
+  SerializeString(buffer_histogram_, bufferIndex,
                   connection_string_parser_.account_);
-  SerializeString(buffer_non_histogram_, bufferIndex,
+  SerializeString(buffer_histogram_, bufferIndex,
                   connection_string_parser_.namespace_);
   return bufferIndex;
 }
@@ -178,6 +178,8 @@ size_t Exporter::SerializeNonHistogramMetrics(
   // get final size of payload to be added in front of buffer
   uint16_t body_length = bufferIndex - kBinaryHeaderSize;
 
+  std::cout << "\n exporter final size : " << body_length << "\n";
+
   // Add rest of the fields in front of buffer
   bufferIndex = 0;
 
@@ -192,6 +194,7 @@ size_t Exporter::SerializeNonHistogramMetrics(
   // count of dimensions.
   SerializeInt<u_int16_t>(buffer_non_histogram_, bufferIndex,
                           static_cast<uint16_t>(attributes.size()));
+  std::cout << "exporter:: No of dimenstion : " << attributes.size() << "\n"; //LALIT
 
   // reserverd word (2 bytes)
   SerializeInt<uint16_t>(buffer_non_histogram_, bufferIndex, 0);
@@ -204,11 +207,17 @@ size_t Exporter::SerializeNonHistogramMetrics(
       std::chrono::duration_cast<std::chrono::duration<std::uint64_t>>(
           ts.time_since_epoch())
           .count();
+  std::cout << " exporter: serialize ts: " << ts_epoch << "\n";
+
   SerializeInt<uint64_t>(buffer_non_histogram_, bufferIndex, ts_epoch);
   if (event_type == MetricsEventType::ULongMetric) {
+      std::cout << " exporter: non-histogram serialize long metric " << nostd::get<long>(value) << "\n";
+
     SerializeInt<uint64_t>(buffer_non_histogram_, bufferIndex,
                            static_cast<uint64_t>(nostd::get<long>(value)));
   } else {
+    std::cout << " exporter: non-histogram serialize double metric " << nostd::get<double>(value) << "\n";
+
     SerializeInt<uint64_t>(buffer_non_histogram_, bufferIndex,
                            static_cast<uint64_t>(nostd::get<double>(value)));
   }
@@ -250,7 +259,7 @@ size_t Exporter::SerializeHistogramMetrics(
                          static_cast<uint16_t>(body_length));
 
   // count of dimensions.
-  SerializeInt<u_int16_t>(buffer_histogram_, bufferIndex,
+  SerializeInt<u_int16_t>(buffer_histogram_, bufferIndex, 
                           static_cast<uint16_t>(attributes.size()));
 
   // reserverd word (2 bytes)
@@ -265,10 +274,13 @@ size_t Exporter::SerializeHistogramMetrics(
           ts.time_since_epoch())
           .count();
   SerializeInt<uint64_t>(buffer_histogram_, bufferIndex, ts_epoch);
+  std::cout << " exporter: serialize ts: " << ts_epoch << "\n";
   if (event_type == MetricsEventType::ULongMetric) {
+    std::cout << " exporter: serialize long metric " << nostd::get<long>(value) << "\n";
     SerializeInt<uint64_t>(buffer_histogram_, bufferIndex,
                            static_cast<uint64_t>(nostd::get<long>(value)));
   } else {
+    std::cout << " exporter: serialize double metric " << nostd::get<double>(value) << "\n";
     SerializeInt<uint64_t>(buffer_histogram_, bufferIndex,
                            static_cast<uint64_t>(nostd::get<double>(value)));
   }

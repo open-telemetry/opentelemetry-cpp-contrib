@@ -39,6 +39,20 @@ struct TestServer {
     server.onRequest = [&](SocketServer::Connection &conn) {        
       try {
         std::cout << "------>RECEIVED:" << conn.request_buffer.size() << "\n";
+        std::stringstream ss{conn.request_buffer};
+        std::cout << "2\n";
+        kaitai::kstream ks(&ss);
+        std::cout << "3\n";
+        try {
+          ifx_metrics_bin_t event_bin = ifx_metrics_bin_t(&ks);
+          std::cout << "4\n";
+          std::cout << "\n----- EventID: " << event_bin.event_id()   << "\n";
+        } catch (...)
+        {
+          std::cout << "read failed\n";
+        }
+
+
         /*auto j = nlohmann::json::from_msgpack(msg);
         std::cout << "[" << count.fetch_add(1)
                   << "] SocketServer received payload: " << std::endl
