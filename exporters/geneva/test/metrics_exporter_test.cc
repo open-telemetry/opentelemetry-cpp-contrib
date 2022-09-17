@@ -45,6 +45,17 @@ struct TestServer {
         std::cout << "3\n";
         try {
           ifx_metrics_bin_t event_bin = ifx_metrics_bin_t(&ks);
+          EXPECT_EQ(event_bin.event_id(), kCounterDoubleEventId);
+          auto event_body = event_bin.body();
+          EXPECT_EQ(event_body->dimensions_values()->at(0)->value(), kCounterDoubleAttributeValue1);
+          EXPECT_EQ(event_body->dimensions_names()->at(0)->value(), kCounterDoubleAttributeKey1);
+          EXPECT_EQ(event_body->num_dimensions(), kCounterDoubleCountDimensions);
+          EXPECT_EQ(event_body->metric_account()->value(), kAccountName);
+          EXPECT_EQ(event_body->metric_namespace()->value(), kNamespaceName);
+          EXPECT_EQ(event_body->metric_name()->value(), kCounterDoubleInstrumentName);
+         // EXPECT_EQ(event_body->value_section(), 10.0);
+          std::cout << "------------>VALUE: " << event_body->value_section();
+
           std::cout << "4\n";
           std::cout << "\n----- EventID: " << event_bin.event_id()   << "\n";
         } catch (...)
