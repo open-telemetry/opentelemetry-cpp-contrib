@@ -22,7 +22,7 @@ static inline opentelemetry::sdk::metrics::ResourceMetrics GenerateSumDataMetric
             opentelemetry::sdk::metrics::InstrumentType::kCounter,
             opentelemetry::sdk::metrics::InstrumentValueType::kDouble},
         opentelemetry::sdk::metrics::AggregationTemporality::kDelta,
-        opentelemetry::common::SystemTimestamp{}, opentelemetry::common::SystemTimestamp{},
+        opentelemetry::common::SystemTimestamp{}, opentelemetry::common::SystemTimestamp{std::chrono::system_clock::now()},
         std::vector<opentelemetry::sdk::metrics::PointDataAttributes>{
             {opentelemetry::sdk::metrics::PointAttributes{{"a1", "b1"}}, sum_point_data} /*,
             {opentelemetry::sdk::metrics::PointAttributes{{"a2", "b2"}}, sum_point_data2}*/}};

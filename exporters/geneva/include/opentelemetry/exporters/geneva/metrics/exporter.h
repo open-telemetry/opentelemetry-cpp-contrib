@@ -13,6 +13,7 @@ OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter {
 namespace geneva {
 namespace metrics {
+
 constexpr size_t kBufferSize = 65360; // the maximum ETW payload (inclusive)
 constexpr size_t kMaxDimensionNameSize = 256;
 constexpr size_t kMaxDimensionValueSize = 1024;
@@ -23,6 +24,12 @@ constexpr size_t kMetricPayloadSize =
 constexpr size_t kExternalPayloadSize =
     40; // count_dimension (2) + reserverd_word (2) + count (4) + timestamp_utc
         // (8) + metric_data_sum (8) + metric_data_min(8) + metric_data_max(8)
+
+//time conversion constants
+constexpr uint32_t kWindowsTicksPerSecond = 10000000 ; // windows ticks are in 100 ns
+constexpr uint64_t kSecondsToUnixTime 
+    = 11644473600L ; // number of seconds between windows epoch start 1601-01-01T00:00:00Z
+                     // and UNIX/Linux epoch (1970-01-01T00:00:00Z)
 
 enum class MetricsEventType : uint16_t {
   ULongMetric = 50,
@@ -124,6 +131,13 @@ static std::string AttributeValueToString(
   }
   return result;
 }
+
+static uint64_t UnixTimeToWindowsTicks(uint64_t unix_epoch_secs)
+{
+  uint64_t secs_since_windows_epoch = unix_epoch_secs + kSecondsToUnixTime;
+  return (secs_since_windows_epoch * (uint64_t)kWindowsTicksPerSecond);
+}
+
 } // namespace metrics
 } // namespace geneva
 } // namespace exporter

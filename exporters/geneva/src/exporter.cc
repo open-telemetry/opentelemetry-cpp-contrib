@@ -203,13 +203,13 @@ size_t Exporter::SerializeNonHistogramMetrics(
   SerializeInt<uint32_t>(buffer_non_histogram_, bufferIndex, 0);
 
   // timestamp utc (8 bytes)
-  auto ts_epoch =
-      std::chrono::duration_cast<std::chrono::duration<std::uint64_t>>(
+  auto windows_ticks =
+      UnixTimeToWindowsTicks(std::chrono::duration_cast<std::chrono::duration<std::uint64_t>>(
           ts.time_since_epoch())
-          .count();
-  std::cout << " exporter: serialize ts: " << ts_epoch << "\n";
+          .count());
+  std::cout << " exporter: serialize ts: " << windows_ticks << "\n";
 
-  SerializeInt<uint64_t>(buffer_non_histogram_, bufferIndex, ts_epoch);
+  SerializeInt<uint64_t>(buffer_non_histogram_, bufferIndex, windows_ticks);
   if (event_type == MetricsEventType::ULongMetric) {
       std::cout << " exporter: non-histogram serialize long metric " << nostd::get<long>(value) << "\n";
 
@@ -255,7 +255,7 @@ size_t Exporter::SerializeHistogramMetrics(
                          static_cast<uint16_t>(event_type));
 
   // body length
-  SerializeInt<uint16_t>(buffer_non_histogram_, bufferIndex,
+  SerializeInt<uint16_t>(buffer_histogram_, bufferIndex,
                          static_cast<uint16_t>(body_length));
 
   // count of dimensions.
@@ -269,12 +269,12 @@ size_t Exporter::SerializeHistogramMetrics(
   SerializeInt<uint32_t>(buffer_histogram_, bufferIndex, 0);
 
   // timestamp utc (8 bytes)
-  auto ts_epoch =
+  auto windows_ticks =
       std::chrono::duration_cast<std::chrono::duration<std::uint64_t>>(
           ts.time_since_epoch())
           .count();
-  SerializeInt<uint64_t>(buffer_histogram_, bufferIndex, ts_epoch);
-  std::cout << " exporter: serialize ts: " << ts_epoch << "\n";
+  SerializeInt<uint64_t>(buffer_histogram_, bufferIndex, windows_ticks);
+  std::cout << " exporter: serialize ts: " << windows_ticks << "\n";
   if (event_type == MetricsEventType::ULongMetric) {
     std::cout << " exporter: serialize long metric " << nostd::get<long>(value) << "\n";
     SerializeInt<uint64_t>(buffer_histogram_, bufferIndex,
