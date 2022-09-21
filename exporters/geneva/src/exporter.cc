@@ -60,10 +60,16 @@ opentelemetry::sdk::common::ExportResult Exporter::Export(
     return sdk::common::ExportResult::kSuccess;
   }
 
-  for (auto &record : data.scope_metric_data_) {
-    for (const auto &metric_data : record.metric_data_) {
-      size_t body_length = 0;
+  for (auto &record : data.scope_metric_data_) 
+  {
+    for (const auto &metric_data : record.metric_data_) 
+    {
       for (auto &point_data_with_attributes : metric_data.point_data_attr_)
+      {
+        size_t body_length = 0;
+        //buffer_index_histogram_ = 0;
+        //buffer_index_non_histogram_ = 0;
+        std::cout << " <<<<< Exporter --> HaNDLING NEW  METRICS --------------------------------------------------->\n\n";
         if (nostd::holds_alternative<sdk::metrics::SumPointData>(
                 point_data_with_attributes.point_data)) {
           auto value = nostd::get<sdk::metrics::SumPointData>(
@@ -72,10 +78,13 @@ opentelemetry::sdk::common::ExportResult Exporter::Export(
           if (nostd::holds_alternative<double>(value.value_)) {
             event_type = MetricsEventType::DoubleMetric;
           }
+          std::cout << "<<<<THIS>>>>Size of attributes:" << point_data_with_attributes.attributes.size() << "\n";
+
           body_length = SerializeNonHistogramMetrics(
               sdk::metrics::AggregationType::kSum, event_type, value.value_,
               metric_data.end_ts, metric_data.instrument_descriptor.name_,
               point_data_with_attributes.attributes);
+          std::cout << "\n SENDING DATA FOR METRICS\n\n";
           data_transport_->Send(buffer_non_histogram_,
                                 body_length + kBinaryHeaderSize);
 
@@ -96,20 +105,24 @@ opentelemetry::sdk::common::ExportResult Exporter::Export(
                                 body_length + kBinaryHeaderSize);
         } else if (nostd::holds_alternative<sdk::metrics::HistogramPointData>(
                        point_data_with_attributes.point_data)) {
-          auto value = nostd::get<sdk::metrics::SumPointData>(
+          std::cout << " <<<< EXPORTER - Sending HISTOGRAM METRICS\n\n";
+          auto value = nostd::get<sdk::metrics::HistogramPointData>(
               point_data_with_attributes.point_data);
-          MetricsEventType event_type = MetricsEventType::ULongMetric;
-          if (nostd::holds_alternative<double>(value.value_)) {
-            event_type = MetricsEventType::DoubleMetric;
+          MetricsEventType event_type = MetricsEventType::ExternallyAggregatedULongDistributionMetric;
+          if (nostd::holds_alternative<double>(value.sum_)) {
+            // TBD -- Not supported
+            std::cout << "\n EXPORTER =========================================================== NOT SUPPORTED\n";
+            continue;
           }
           body_length = SerializeHistogramMetrics(
               sdk::metrics::AggregationType::kHistogram, event_type,
-              value.value_, metric_data.end_ts,
+              value.count_, value.sum_, value.min_, value.max_, metric_data.end_ts,
               metric_data.instrument_descriptor.name_,
               point_data_with_attributes.attributes);
-          data_transport_->Send(buffer_non_histogram_,
+          data_transport_->Send(buffer_histogram_,
                                 body_length + kBinaryHeaderSize);
         }
+      }
     }
   }
   return opentelemetry::sdk::common::ExportResult::kSuccess;
@@ -219,14 +232,16 @@ size_t Exporter::SerializeNonHistogramMetrics(
     std::cout << " exporter: non-histogram serialize double metric " << nostd::get<double>(value) << "\n";
 
     SerializeInt<uint64_t>(buffer_non_histogram_, bufferIndex,
-                           static_cast<uint64_t>(nostd::get<double>(value)));
+                           *(reinterpret_cast<const uint64_t *>(&(nostd::get<double>(value)))));
   }
   return body_length;
 }
 
 size_t Exporter::SerializeHistogramMetrics(
     sdk::metrics::AggregationType agg_type, MetricsEventType event_type,
-    const sdk::metrics::ValueType &value, common::SystemTimestamp ts,
+    uint64_t count, 
+    const sdk::metrics::ValueType &sum, const sdk::metrics::ValueType &min,
+    const sdk::metrics::ValueType &max, common::SystemTimestamp ts,
     std::string metric_name, const sdk::metrics::PointAttributes &attributes) {
   auto bufferIndex = buffer_index_histogram_;
   SerializeString(buffer_histogram_, bufferIndex, metric_name);
@@ -265,8 +280,8 @@ size_t Exporter::SerializeHistogramMetrics(
   // reserverd word (2 bytes)
   SerializeInt<uint16_t>(buffer_histogram_, bufferIndex, 0);
 
-  // reserved word (4 bytes)
-  SerializeInt<uint32_t>(buffer_histogram_, bufferIndex, 0);
+  // count of events
+  SerializeInt<uint32_t>(buffer_histogram_, bufferIndex, count);
 
   // timestamp utc (8 bytes)
   auto windows_ticks =
@@ -274,15 +289,43 @@ size_t Exporter::SerializeHistogramMetrics(
           ts.time_since_epoch())
           .count();
   SerializeInt<uint64_t>(buffer_histogram_, bufferIndex, windows_ticks);
-  std::cout << " exporter: serialize ts: " << windows_ticks << "\n";
-  if (event_type == MetricsEventType::ULongMetric) {
-    std::cout << " exporter: serialize long metric " << nostd::get<long>(value) << "\n";
+
+  // sum, min, max
+
+  if (event_type == MetricsEventType::ExternallyAggregatedULongDistributionMetric){
+    std::cout << " exporter: serialize long metric SUM " << nostd::get<long>(sum) << "\n";
+    std::cout << " exporter: serialize long metric MIN " << nostd::get<long>(min) << "\n";
+    std::cout << " exporter: serialize long metric MAX " << nostd::get<long>(max) << "\n";
+
+    //sum
     SerializeInt<uint64_t>(buffer_histogram_, bufferIndex,
-                           static_cast<uint64_t>(nostd::get<long>(value)));
-  } else {
-    std::cout << " exporter: serialize double metric " << nostd::get<double>(value) << "\n";
+                           static_cast<uint64_t>(nostd::get<long>(sum)));
+
+    //min
     SerializeInt<uint64_t>(buffer_histogram_, bufferIndex,
-                           static_cast<uint64_t>(nostd::get<double>(value)));
+                           static_cast<uint64_t>(nostd::get<long>(min))); 
+
+    //max
+    SerializeInt<uint64_t>(buffer_histogram_, bufferIndex,
+                           static_cast<uint64_t>(nostd::get<long>(max)));             
+  } 
+  else 
+  {
+    std::cout << " exporter: serialize double metric " << nostd::get<double>(sum) << "\n";
+    std::cout << " exporter: serialize long metric SUM " << nostd::get<double>(min) << "\n";
+    std::cout << " exporter: serialize long metric SUM " << nostd::get<double>(max) << "\n";
+
+    //sum
+    SerializeInt<uint64_t>(buffer_histogram_, bufferIndex,
+                           *(reinterpret_cast<const uint64_t *>(&(nostd::get<double>(sum)))));
+
+    //min
+    SerializeInt<uint64_t>(buffer_histogram_, bufferIndex,
+                           *(reinterpret_cast<const uint64_t *>(&(nostd::get<double>(min)))));
+
+    //max
+    SerializeInt<uint64_t>(buffer_histogram_, bufferIndex,
+                           *(reinterpret_cast<const uint64_t *>(&(nostd::get<double>(max)))));
   }
   return body_length;
 }

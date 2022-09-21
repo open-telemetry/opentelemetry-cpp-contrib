@@ -46,6 +46,7 @@ bool UnixDomainSocketDataTransport::Send(char const *data,
   }
 
   // try to write
+  std::cout << "UDS:::::===------------------------------------------------------------------> DOING Write of data of length ----->" << length << "\n";
   size_t sent_size = socket_.writeall(data, length);
   if (length == sent_size) {
     // Disconnect();

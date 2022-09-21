@@ -88,6 +88,7 @@ void ifx_metrics_bin_t::userdata_t::_read() {
         break;
     }
     case ifx_metrics_bin_t::METRIC_EVENT_TYPE_EXTERNALLY_AGGREGATED_ULONG_DISTRIBUTION_METRIC: {
+        std::cout << "\n katai: it's externally aggregated ulong distribution metrics\n";
         n_value_section = false;
         m_value_section = new ext_aggregated_uint64_value_t(m__io, this, m__root);
         break;
@@ -440,11 +441,17 @@ ifx_metrics_bin_t::ext_aggregated_uint64_value_t::ext_aggregated_uint64_value_t(
 }
 
 void ifx_metrics_bin_t::ext_aggregated_uint64_value_t::_read() {
+    std::cout << "\n katai: READ...ext_aggregated_uint64_value_t\n";
     m_count = m__io->read_u4le();
+    std::cout << "\n katai count: " << m_count;
     m_timestamp = m__io->read_u8le();
+    std::cout << "\n katai ts: " << m_timestamp;
     m_sum = m__io->read_u8le();
+    std::cout << "\n katai sum: " << m_sum;
     m_min = m__io->read_u8le();
+    std::cout << "\n katai min: " << m_min;
     m_max = m__io->read_u8le();
+    std::cout << "\n katai max: " << m_max;
 }
 
 ifx_metrics_bin_t::ext_aggregated_uint64_value_t::~ext_aggregated_uint64_value_t() {

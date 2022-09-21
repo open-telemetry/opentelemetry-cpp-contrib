@@ -81,6 +81,9 @@ private:
                                       const sdk::metrics::PointAttributes &);
   size_t SerializeHistogramMetrics(sdk::metrics::AggregationType,
                                    MetricsEventType,
+                                   uint64_t,
+                                   const sdk::metrics::ValueType &,
+                                   const sdk::metrics::ValueType &,
                                    const sdk::metrics::ValueType &,
                                    common::SystemTimestamp, std::string,
                                    const sdk::metrics::PointAttributes &);
