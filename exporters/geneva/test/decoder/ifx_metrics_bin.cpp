@@ -1,7 +1,6 @@
 // This is a generated file! Please edit source .ksy file and use kaitai-struct-compiler to rebuild
 
 #include "ifx_metrics_bin.h"
-#include <iostream> // LALIT
 
 ifx_metrics_bin_t::ifx_metrics_bin_t(kaitai::kstream* p__io, kaitai::kstruct* p__parent, ifx_metrics_bin_t* p__root) : kaitai::kstruct(p__io) {
     m__parent = p__parent;
@@ -19,15 +18,10 @@ ifx_metrics_bin_t::ifx_metrics_bin_t(kaitai::kstream* p__io, kaitai::kstruct* p_
 
 void ifx_metrics_bin_t::_read() {
     m_event_id = m__io->read_u2le();
-    std::cout << "\n katai: read event_id " << m_event_id << "\n"; // LALIT
     m_len_body = m__io->read_u2le();
-    std::cout << "\n katai: read length: " << m_len_body << "\n"; //LALIT
     m__raw_body = m__io->read_bytes(len_body());
-    std::cout << "\n katai:read raw body of length\n"; // LALIT
     m__io__raw_body = new kaitai::kstream(m__raw_body);
-    std::cout << "\n katai:covert to kstream\n"; //LALIT
     m_body = new userdata_t(event_id(), m__io__raw_body, this, m__root);
-    std::cout << "\n katai: got m_body\n"; // LALIT
 }
 
 ifx_metrics_bin_t::~ifx_metrics_bin_t() {
@@ -66,9 +60,7 @@ ifx_metrics_bin_t::userdata_t::userdata_t(uint16_t p_event_id, kaitai::kstream* 
 
 void ifx_metrics_bin_t::userdata_t::_read() {
     m_num_dimensions = m__io->read_u2le();
-    std::cout << "\n katai: read no of dimension : " << m_num_dimensions << "\n"; //LALIT
     m_padding = m__io->read_bytes(2);
-    std::cout << "\n katai: read padding bytes\n";
     n_value_section = true;
     switch (event_type()) {
     case ifx_metrics_bin_t::METRIC_EVENT_TYPE_EXTERNALLY_AGGREGATED_DOUBLE_SCALED_TO_LONG_DISTRIBUTION_METRIC: {
@@ -77,7 +69,6 @@ void ifx_metrics_bin_t::userdata_t::_read() {
         break;
     }
     case ifx_metrics_bin_t::METRIC_EVENT_TYPE_DOUBLE_METRIC: {
-        std::cout << "\n katai: it's double metric\n";
         n_value_section = false;
         m_value_section = new single_double_value_t(m__io, this, m__root);
         break;
@@ -88,7 +79,6 @@ void ifx_metrics_bin_t::userdata_t::_read() {
         break;
     }
     case ifx_metrics_bin_t::METRIC_EVENT_TYPE_EXTERNALLY_AGGREGATED_ULONG_DISTRIBUTION_METRIC: {
-        std::cout << "\n katai: it's externally aggregated ulong distribution metrics\n";
         n_value_section = false;
         m_value_section = new ext_aggregated_uint64_value_t(m__io, this, m__root);
         break;
@@ -120,17 +110,8 @@ void ifx_metrics_bin_t::userdata_t::_read() {
     }
     }
     m_metric_account = new len_string_t(m__io, this, m__root);
-    std::cout << "katai account-data: " << m_metric_account->value() << "\n";
-    std::cout << "katai account-len: " << m_metric_account->len_value()<< "\n";
-
     m_metric_namespace = new len_string_t(m__io, this, m__root);
-    std::cout << "katai: namespace-data: " << m_metric_namespace->value() << "\n";
-    std::cout << "katai: namespace-len: " << m_metric_namespace->len_value() << "\n";
-
     m_metric_name = new len_string_t(m__io, this, m__root);
-    std::cout << "katai: metrics name-data: " << m_metric_name->value() << "\n";
-    std::cout << "katai: metrics name-len: " << m_metric_name->len_value() << "\n";
-
     int l_dimensions_names = num_dimensions();
     m_dimensions_names = new std::vector<len_string_t*>();
     m_dimensions_names->reserve(l_dimensions_names);
@@ -441,17 +422,11 @@ ifx_metrics_bin_t::ext_aggregated_uint64_value_t::ext_aggregated_uint64_value_t(
 }
 
 void ifx_metrics_bin_t::ext_aggregated_uint64_value_t::_read() {
-    std::cout << "\n katai: READ...ext_aggregated_uint64_value_t\n";
     m_count = m__io->read_u4le();
-    std::cout << "\n katai count: " << m_count;
     m_timestamp = m__io->read_u8le();
-    std::cout << "\n katai ts: " << m_timestamp;
     m_sum = m__io->read_u8le();
-    std::cout << "\n katai sum: " << m_sum;
     m_min = m__io->read_u8le();
-    std::cout << "\n katai min: " << m_min;
     m_max = m__io->read_u8le();
-    std::cout << "\n katai max: " << m_max;
 }
 
 ifx_metrics_bin_t::ext_aggregated_uint64_value_t::~ext_aggregated_uint64_value_t() {
@@ -475,11 +450,8 @@ ifx_metrics_bin_t::single_double_value_t::single_double_value_t(kaitai::kstream*
 
 void ifx_metrics_bin_t::single_double_value_t::_read() {
     m_padding = m__io->read_bytes(4);
-    std::cout << "\n katai: read padding\n";
     m_timestamp = m__io->read_u8le();
-    std::cout << "\n katai: read ts:" << m_timestamp << "\n";
     m_value = m__io->read_f8le();
-    std::cout << "\n katai: read value:" << m_value << "\n";
 }
 
 ifx_metrics_bin_t::single_double_value_t::~single_double_value_t() {
