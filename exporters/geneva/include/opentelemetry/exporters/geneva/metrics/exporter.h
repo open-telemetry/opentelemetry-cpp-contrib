@@ -25,11 +25,13 @@ constexpr size_t kExternalPayloadSize =
     40; // count_dimension (2) + reserverd_word (2) + count (4) + timestamp_utc
         // (8) + metric_data_sum (8) + metric_data_min(8) + metric_data_max(8)
 
-//time conversion constants
-constexpr uint32_t kWindowsTicksPerSecond = 10000000 ; // windows ticks are in 100 ns
-constexpr uint64_t kSecondsToUnixTime 
-    = 11644473600L ; // number of seconds between windows epoch start 1601-01-01T00:00:00Z
-                     // and UNIX/Linux epoch (1970-01-01T00:00:00Z)
+// time conversion constants
+constexpr uint32_t kWindowsTicksPerSecond =
+    10000000; // windows ticks are in 100 ns
+constexpr uint64_t kSecondsToUnixTime =
+    11644473600L; // number of seconds between windows epoch start
+                  // 1601-01-01T00:00:00Z and UNIX/Linux epoch
+                  // (1970-01-01T00:00:00Z)
 
 enum class MetricsEventType : uint16_t {
   ULongMetric = 50,
@@ -79,14 +81,12 @@ private:
                                       const sdk::metrics::ValueType &,
                                       common::SystemTimestamp, std::string,
                                       const sdk::metrics::PointAttributes &);
-  size_t SerializeHistogramMetrics(sdk::metrics::AggregationType,
-                                   MetricsEventType,
-                                   uint64_t,
-                                   const sdk::metrics::ValueType &,
-                                   const sdk::metrics::ValueType &,
-                                   const sdk::metrics::ValueType &,
-                                   common::SystemTimestamp, std::string,
-                                   const sdk::metrics::PointAttributes &);
+  size_t SerializeHistogramMetrics(
+      sdk::metrics::AggregationType, MetricsEventType, uint64_t,
+      const sdk::metrics::ValueType &, const sdk::metrics::ValueType &,
+      const sdk::metrics::ValueType &, const sdk::metrics::ListType &boundaries,
+      const std::vector<uint64_t> &counts, common::SystemTimestamp, std::string,
+      const sdk::metrics::PointAttributes &);
 };
 
 template <class T>
@@ -98,17 +98,11 @@ static void SerializeInt(char *buffer, size_t &index, T value) {
 static void SerializeString(char *buffer, size_t &index,
                             const std::string &str) {
   auto size = str.size();
-  std::cout << "exporter: ------>SERIALIZE START\n";
-  std::cout << "exporter:: serilize " << str << " of size: " << str.size() << " from index " << index << "\n";
   SerializeInt<uint16_t>(buffer, index, static_cast<uint16_t>(size));
-  std::cout << "exporter:: written size " << size << " new index:" << index << "\n";
   if (size > 0) {
     memcpy(buffer + index, str.c_str(), size);
   }
   index += size;
-  std::cout << "\n exporter:: written data " << str.c_str() << " new index: " << index << "\n";
-    std::cout << "exporter: ------>SERIALIZE END\n\n\n";
-
 }
 
 static std::string AttributeValueToString(
@@ -135,8 +129,7 @@ static std::string AttributeValueToString(
   return result;
 }
 
-static uint64_t UnixTimeToWindowsTicks(uint64_t unix_epoch_secs)
-{
+static uint64_t UnixTimeToWindowsTicks(uint64_t unix_epoch_secs) {
   uint64_t secs_since_windows_epoch = unix_epoch_secs + kSecondsToUnixTime;
   return (secs_since_windows_epoch * (uint64_t)kWindowsTicksPerSecond);
 }

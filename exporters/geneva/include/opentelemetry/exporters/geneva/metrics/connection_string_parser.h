@@ -34,16 +34,15 @@ public:
     bool is_endpoint_found = false;
     while ((key_end = connection_string.find(kEqual, key_pos)) !=
            std::string::npos) {
-      if ((val_pos =
-              connection_string.find_first_not_of(
-                  kEqual, key_end)) == std::string::npos) {
+      if ((val_pos = connection_string.find_first_not_of(kEqual, key_end)) ==
+          std::string::npos) {
         break;
       }
       val_end = connection_string.find(kSemicolon, val_pos);
       auto key = connection_string.substr(key_pos, key_end - key_pos);
       auto value = connection_string.substr(val_pos, val_end - val_pos);
       key_pos = val_end;
-      if (key_pos != std::string::npos){
+      if (key_pos != std::string::npos) {
         ++key_pos;
       }
       if (key == kNamespace) {

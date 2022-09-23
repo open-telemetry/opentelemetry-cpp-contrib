@@ -24,15 +24,15 @@ if(BUILD_TESTING)
     # Prefer GTest from build tree. GTest is not always working with
     # CMAKE_PREFIX_PATH
     set(GTEST_INCLUDE_DIRS
-      ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googletest/include
-      ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googlemock/include)
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googletest/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googlemock/include)
     set(GTEST_BOTH_LIBRARIES
-      ${CMAKE_BINARY_DIR}/lib/libgtest.a
-      ${CMAKE_BINARY_DIR}/lib/libgtest_main.a
-      ${CMAKE_BINARY_DIR}/lib/libgmock.a)
+        ${CMAKE_BINARY_DIR}/lib/libgtest.a
+        ${CMAKE_BINARY_DIR}/lib/libgtest_main.a
+        ${CMAKE_BINARY_DIR}/lib/libgmock.a)
   else()
     message("finding gtest")
-    find_package(GTest REQUIRED) 
+    find_package(GTest REQUIRED)
   endif()
   include_directories(SYSTEM ${GTEST_INCLUDE_DIRS})
   include_directories(SYSTEM test/decoder)
@@ -41,16 +41,13 @@ if(BUILD_TESTING)
   # build geneva metrics tests
   add_compile_definitions(KS_STR_ENCODING_NONE HAVE_UNIX_DOMAIN)
   add_executable(
-    geneva_metrics_exporter_test test/metrics_exporter_test.cc 
-                test/decoder/ifx_metrics_bin.cpp
-                test/decoder/kaitai/kaitaistream.cpp)
-   message("Building test now")
-  target_link_libraries(
     geneva_metrics_exporter_test
-    ${GTEST_BOTH_LIBRARIES}
-    ${CMAKE_THREAD_LIBS_INIT}
-    opentelemetry_exporter_geneva_metrics)
-
+    test/metrics_exporter_test.cc test/decoder/ifx_metrics_bin.cpp
+    test/decoder/kaitai/kaitaistream.cpp)
+  message("Building test now")
+  target_link_libraries(
+    geneva_metrics_exporter_test ${GTEST_BOTH_LIBRARIES}
+    ${CMAKE_THREAD_LIBS_INIT} opentelemetry_exporter_geneva_metrics)
 
   gtest_add_tests(
     TARGET geneva_metrics_exporter_test

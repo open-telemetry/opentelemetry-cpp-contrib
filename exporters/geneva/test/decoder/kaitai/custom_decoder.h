@@ -7,10 +7,10 @@ namespace kaitai {
 
 class custom_decoder {
 public:
-    virtual ~custom_decoder() {};
-    virtual std::string decode(std::string src) = 0;
+  virtual ~custom_decoder(){};
+  virtual std::string decode(std::string src) = 0;
 };
 
-}
+} // namespace kaitai
 
 #endif
