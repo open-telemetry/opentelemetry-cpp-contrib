@@ -24,6 +24,28 @@ const std::string kServiceNamespace = "service.namespace";
 const std::string kServiceInstanceId = "service.instance.id";
 const std::string kOtelLibraryName = "telemetry.sdk.language";
 const std::string kOtelLibraryVersion = "telemetry.sdk.version";
+const std::string kHttpErrorCode = "HTTP ERROR CODE:";
+const std::string kAttrHTTPServerName         = "http.server_name";
+const std::string kAttrHTTPMethod             = "http.method";
+const std::string kAttrHTTPScheme             = "http.scheme";
+const std::string kAttrNetHostName            = "net.host.name";
+const std::string kAttrHTTPTarget             = "http.target";
+const std::string kAttrHTTPUrl                = "http.url";
+const std::string kAttrHTTPFlavor             = "http.flavor";
+const std::string kAttrHTTPClientIP           = "http.client_ip";
+const std::string kAttrHTTPStatusCode         = "http.status_code";
+const std::string kAttrNETHostPort            = "net.host.port";
+const std::string kAttrRequestProtocol        = "request_protocol";
+const std::string kHTTPFlavor1_0                 = "1.0";
+const std::string kHTTPFlavor1_1                = "1.1";
+
+
+constexpr int HTTP_ERROR_1XX = 100;
+constexpr int HTTP_ERROR_4XX = 400;
+constexpr int HTTP_ERROR_5XX = 500;
+constexpr int HTTP_PROTO_1000 = 1000;
+constexpr int HTTP_PROTO_1001 = 1001;
+
 } // sdkwrapper
 } // core
 } // appd

@@ -34,6 +34,8 @@
 #include "ApacheTracing.h"
 #include "ApacheConfig.h"
 
+#include "sdkwrapper/SdkConstants.h"
+
 std::string ApacheHooks::m_aggregatorCommDir = "";
 bool ApacheHooks::m_reportAllStages = false;
 const std::initializer_list<const char*> ApacheHooks::httpHeaders = {
@@ -48,6 +50,8 @@ const char* ApacheHooks::APPD_REQ_HANDLE_KEY = "appd_req_handle_key";
 const char* APPD_OUTPUT_FILTER_NAME = "APPD_EUM_AUTOINJECT";
 
 appd::core::WSAgent wsAgent; // global variable for interface between Hooks and Core Logic
+
+using namespace appd::core::sdkwrapper;
 
 void ApacheHooks::registerHooks(apr_pool_t *p)
 {
@@ -516,6 +520,46 @@ void fillRequestPayload(request_rec* request, appd::core::RequestPayload* payloa
     val = request->method ? request->method: " ";
     payload->set_http_request_method(val);
 
+    // websrv-698 Setting server span attributes
+    payload->set_status_code(request->status);
+
+    if (request->server)
+    {
+        payload->set_server_name(request->server->server_hostname);
+    }
+    payload->set_scheme(ap_run_http_scheme(request));
+
+    if (request->hostname)
+    {
+        payload->set_host(request->hostname);
+    }
+
+    if (request->unparsed_uri)
+    {
+        payload->set_target(request->unparsed_uri);
+    }
+
+    switch (request->proto_num)
+    {  // TODO: consider using ap_get_protocol for other flavors
+      case HTTP_PROTO_1000:
+        payload->set_flavor(kHTTPFlavor1_0.c_str());
+        break;
+      case HTTP_PROTO_1001:
+        payload->set_flavor(kHTTPFlavor1_1.c_str());
+        break;
+    }
+
+#ifdef APLOG_USE_MODULE
+    payload->set_client_ip(request->useragent_ip);
+#else
+    if (request->connection)
+    {
+        payload->set_client_ip(request->connection->remote_ip);
+    }
+
+#endif
+
+    payload->set_port(ap_default_port(request));
 }
 // We have to use this hook if we want to use directory level configuration.
 // post_read_request is too early in the cycle to get the config parameters for a
@@ -634,7 +678,7 @@ int ApacheHooks::appd_hook_log_transaction_end(request_rec* r)
     if (appd_requestHasErrors(r))
     {
         std::ostringstream oss;
-        oss << "HTTP ERROR CODE:" << r->status;
+        oss << r->status;
         res = wsAgent.endRequest(reqHandle, oss.str().c_str());
     }
     else

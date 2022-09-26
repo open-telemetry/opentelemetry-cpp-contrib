@@ -19,18 +19,13 @@
 
 #include <unordered_map>
 #include <memory>
+#include "sdkwrapper/SdkEnums.h"
 #include "sdkwrapper/IScopedSpan.h"
 #include "api/TenantConfig.h"
 
 namespace appd {
 namespace core {
 namespace sdkwrapper {
-
-enum class SpanKind {
-	INTERNAL,
-  	SERVER,
-  	CLIENT
-};
 
 class ISdkWrapper {
 public:
