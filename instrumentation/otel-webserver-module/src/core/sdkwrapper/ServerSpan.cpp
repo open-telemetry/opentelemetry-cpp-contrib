@@ -68,6 +68,12 @@ void ServerSpan::SetStatus(const StatusCode status, const std::string& desc)
   mScopedSpan->SetStatus(status, desc);
 }
 
+SpanKind ServerSpan::GetSpanKind()
+{
+  return SpanKind::SERVER;
+}
+
+
 } //sdkwrapper
 } //core
 } //appd

@@ -33,7 +33,7 @@ public:
    * Set name for this log
    * @param name the name to set
    */
-  void SetName(nostd::string_view name) noexcept override;
+  void SetName(nostd::string_view name) noexcept;
 
   /**
    * Set body field for this log.
@@ -86,12 +86,12 @@ public:
       opentelemetry::common::SystemTimestamp timestamp) noexcept override;
 
   /**
-   * Set instrumentation_library for this log.
-   * @param instrumentation_library the instrumentation library to set
+   * Set instrumentation_scope for this log.
+   * @param instrumentation_scope the instrumentation scope to set
    */
-  void SetInstrumentationLibrary(
-      const opentelemetry::sdk::instrumentationlibrary::InstrumentationLibrary
-          &instrumentation_library) noexcept override {} // Not Supported
+  void SetInstrumentationScope(
+      const opentelemetry::sdk::instrumentationscope::InstrumentationScope
+          &instrumentation_scope) noexcept override {} // Not Supported
 
   nlohmann::json &Log() { return json_; }
 

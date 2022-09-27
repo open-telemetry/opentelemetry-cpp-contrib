@@ -41,6 +41,10 @@ public:
        (const appd::core::sdkwrapper::StatusCode code,
         const std::string& desc),
        (override));
+
+    MOCK_METHOD(appd::core::sdkwrapper::SpanKind,  GetSpanKind,
+        (),
+        (override));
 };
 
 // TODO : General MOCK_METHOD command is giving some unexpected errors. Revisit later

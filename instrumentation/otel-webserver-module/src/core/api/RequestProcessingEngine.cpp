@@ -19,16 +19,21 @@
 #include "api/ApiUtils.h"
 #include "api/Payload.h"
 #include "sdkwrapper/SdkWrapper.h"
+#include "sdkwrapper/IScopedSpan.h"
+#include "sdkwrapper/SdkConstants.h"
 #include <sys/types.h>
 #include <unistd.h>
 #include <boost/filesystem.hpp>
 #include <boost/thread/locks.hpp>
 #include <log4cxx/logger.h>
 #include <unordered_map>
+#include <sstream>
 
 
 namespace appd {
 namespace core {
+
+using namespace sdkwrapper;
 
 RequestProcessingEngine::RequestProcessingEngine()
     : mLogger(getLogger(std::string(LogContext::AGENT) + ".RequestProcessingEngine"))
@@ -58,7 +63,16 @@ APPD_SDK_STATUS_CODE RequestProcessingEngine::startRequest(
 
     std::string spanName = m_spanNamer->getSpanName(payload->get_uri());
     appd::core::sdkwrapper::OtelKeyValueMap keyValueMap;
-    keyValueMap["request_protocol"] = payload->get_request_protocol();
+    keyValueMap[kAttrRequestProtocol] = payload->get_request_protocol();
+    keyValueMap[kAttrHTTPServerName] = payload->get_server_name();
+    keyValueMap[kAttrHTTPMethod] = payload->get_http_request_method();
+    keyValueMap[kAttrHTTPScheme] = payload->get_scheme();
+    keyValueMap[kAttrNetHostName] = payload->get_host();
+    keyValueMap[kAttrNETHostPort] = payload->get_port();
+    keyValueMap[kAttrHTTPTarget] =payload->get_target();
+    keyValueMap[kAttrHTTPFlavor] = payload->get_flavor();
+    keyValueMap[kAttrHTTPStatusCode] = payload->get_status_code();
+    keyValueMap[kAttrHTTPClientIP] = payload->get_client_ip();
     auto span = m_sdkWrapper->CreateSpan(spanName, sdkwrapper::SpanKind::SERVER, keyValueMap, payload->get_http_headers());
 
     LOG4CXX_TRACE(mLogger, "Span started for context: [" << wscontext
@@ -99,10 +113,31 @@ APPD_SDK_STATUS_CODE RequestProcessingEngine::endRequest(
 
     // check for error and set attribute in the scopedSpan.
     if (error) {
-        rootSpan->SetStatus(sdkwrapper::StatusCode::Error, error);
-        LOG4CXX_TRACE(mLogger, "Setting status as error[" << error <<"] on root Span");
+        std::stringstream strValue;
+        unsigned int errorValue;
+
+        strValue << error;
+        strValue >> errorValue;
+
+        std::string errorStatus (kHttpErrorCode + error); // This is status message eg: HTTP ERROR CODE:403
+
+        if (errorValue >= HTTP_ERROR_1XX &&   errorValue < HTTP_ERROR_4XX ) {
+            rootSpan->SetStatus(StatusCode::Unset);
+        }
+        else if (errorValue >= HTTP_ERROR_4XX &&   errorValue < HTTP_ERROR_5XX ) {
+            if (rootSpan->GetSpanKind() == SpanKind::SERVER)
+                rootSpan->SetStatus(StatusCode::Unset);
+            else
+                rootSpan->SetStatus(StatusCode::Error, errorStatus);
+
+        } else {
+            rootSpan->SetStatus(StatusCode::Error, errorStatus);
+        }
+
+        LOG4CXX_TRACE(mLogger, "Setting status as error[" << errorStatus <<"] on root Span");
+
     } else {
-        rootSpan->SetStatus(sdkwrapper::StatusCode::Ok);
+        rootSpan->SetStatus(StatusCode::Ok);
     }
 
     LOG4CXX_TRACE(mLogger, "Ending root span with id: " << rootSpan.get());
@@ -137,7 +172,7 @@ APPD_SDK_STATUS_CODE RequestProcessingEngine::startInteraction(
     // TODO : confirm and update name later
     std::string spanName = payload->moduleName + "_" + payload->phaseName;
     keyValueMap["interactionType"] = "EXIT_CALL";
-    auto interactionSpan = m_sdkWrapper->CreateSpan(spanName, sdkwrapper::SpanKind::CLIENT, keyValueMap);
+    auto interactionSpan = m_sdkWrapper->CreateSpan(spanName, SpanKind::CLIENT, keyValueMap);
     LOG4CXX_TRACE(mLogger, "Client Span started with SpanName: " << spanName
         << " Span Id: " << interactionSpan.get());
     m_sdkWrapper->PopulatePropagationHeaders(propagationHeaders);
@@ -177,11 +212,22 @@ APPD_SDK_API APPD_SDK_STATUS_CODE RequestProcessingEngine::endInteraction(
     // If errorCode is 0 or errMsg is empty, there is no error.
     bool isError = payload->errorCode != 0 && !payload->errorMsg.empty();
     if (isError) {
-        interactionSpan->SetStatus(sdkwrapper::StatusCode::Error, payload->errorMsg);
+        if (payload->errorCode >= HTTP_ERROR_1XX &&   payload->errorCode < HTTP_ERROR_4XX ) {
+            interactionSpan->SetStatus(StatusCode::Unset);
+        }
+        else if (payload->errorCode >= HTTP_ERROR_4XX &&   payload->errorCode < HTTP_ERROR_5XX ) {
+            if (interactionSpan->GetSpanKind() == SpanKind::SERVER)
+                interactionSpan->SetStatus(StatusCode::Unset);
+            else
+                interactionSpan->SetStatus(StatusCode::Error, payload->errorMsg);
+
+        } else {
+            interactionSpan->SetStatus(StatusCode::Error, payload->errorMsg);
+        }
         interactionSpan->AddAttribute("error_code", payload->errorCode);
         LOG4CXX_TRACE(mLogger, "Span updated with error Code: " << payload->errorCode);
     } else {
-        interactionSpan->SetStatus(sdkwrapper::StatusCode::Ok);
+        interactionSpan->SetStatus(StatusCode::Ok);
     }
 
     if (!payload->backendName.empty()) {

@@ -3,6 +3,7 @@ apply from: 'common.gradle'
 
 def coverageEnabled = System.getenv('enableCoverage')
 def target_system = System.getProperty('targetSystem') ?: 'centos6'
+def buildType = System.getProperty('buildType') ?: 'release'
 
 project.ext {
     // To do a 32-bit build, pass "-Dos.arch=x86"
@@ -10,10 +11,6 @@ project.ext {
     modDepDir = "${platBuildDir}/module-dependencies"
 
     debug = false
-    if (!Project.hasProperty('buildType')) {
-        buildType = 'release'
-    }
-
     if (buildType != 'release') {
         buildType = 'debug'
         debug = true;
@@ -49,9 +46,11 @@ project.ext {
     
     apache22Version = "2.2.31"
     apache24Version = "2.4.23"
+    nginxVersion = '1.18.0'
 
     libraryStageDir = "${platBuildDir}/opentelemetry-webserver-sdk"
     apacheStageDir = "${libraryStageDir}/WebServerModule/Apache"
+    nginxStageDir = "${libraryStageDir}/WebServerModule/Nginx"
 
     coverageCompilerFlags = '-g -fprofile-arcs -ftest-coverage'
     coverageLinkerFlags = '-lgcov --coverage'
@@ -352,6 +351,107 @@ task assembleApacheModule(type: Tar) {
     description = 'Assemble the Apache Web Server module artifact (tgz)'
 
     dependsOn stripApacheModule
+
+    from libraryStageDir
+    baseName "opentelemetry-webserver-sdk-${osArch}-${osName}"
+    into 'opentelemetry-webserver-sdk'
+    destinationDir file(buildDir)
+    compression Compression.GZIP
+}
+
+// NGINX
+task extractNginx(type: Copy) {
+    from "build-dependencies"
+    into buildDir
+}
+
+task configureNginx(type: Exec){
+    group = 'OpenTelemetry module for Nginx'
+    description = 'Run configure to generate the build files for OpenTelemetry Module for Nginx'
+
+    dependsOn extractNginx
+
+    workingDir "${buildDir}/nginx-${nginxVersion}"
+    commandLine './configure', "--with-compat", "--with-cc-opt=-Wno-error -Wno-unused-variable -Wno-unused-but-set-variable", "--with-ld-opt=-L${libraryStageDir}/sdk_lib/lib", "--add-dynamic-module=${projectDir}/src/nginx"
+}
+
+task delMakefile(type: Exec){
+    group = 'OpenTelemetry module for Nginx'
+    description = 'Deleting old Makefile'
+
+    workingDir "${buildDir}/nginx-${nginxVersion}/objs"
+    commandLine 'rm', '-rf', 'Makefile'
+}
+
+task copyMakefile(type: Copy){
+    group = 'OpenTelemetry module for Nginx'
+    description = 'Copying Makefile for compiling Nginx Web Server Agent'
+
+    dependsOn delMakefile
+
+    from "src/nginx/Makefile"
+    into "${buildDir}/nginx-${nginxVersion}/objs/"
+}
+
+task buildNginxModule(type: Exec) {
+    group = 'OpenTelemetry module for Nginx'
+    description = 'Build the Nginx Web Server Agent'
+
+    dependsOn configureNginx
+    dependsOn stageLibrary
+    dependsOn copyMakefile
+
+    outputs.file "${buildDir}/nginx-${nginxVersion}/objs/ngx_http_opentelemetry_module.so"
+
+    workingDir "${buildDir}/nginx-${nginxVersion}"
+    commandLine 'make', 'modules'
+}
+
+task stageNginxModule(type: Copy) {
+    group = 'OpenTelemetry module for Nginx'
+    description = 'Stage the Nginx Web Server Agent distribution directory'
+
+//    dependsOn stageLibrary
+
+    from buildNginxModule
+    into nginxStageDir
+}
+
+task stripNginxModule(type: Exec){
+    group = 'OpenTelemetry module for Nginx'
+    description = 'Strip the production Nginx Web Server Agent'
+
+    dependsOn stageNginxModule
+
+    onlyIf { !debug }
+
+    inputs.dir stageNginxModule
+    outputs.file "${nginxStageDir}/ngx_http_opentelemetry_module.${sharedLibraryExt}"
+
+    workingDir nginxStageDir
+    commandLine 'strip', '-x', "ngx_http_opentelemetry_module.${sharedLibraryExt}"
+}
+
+task assembleNginxModule(type: Tar) {
+    group = 'Nginx Web Server Module'
+    description = 'Assemble the Nginx Web Server module artifact (tgz)'
+
+    dependsOn stripNginxModule
+
+    from libraryStageDir
+    baseName "opentelemetry-webserver-sdk-${osArch}-${osName}"
+    into 'opentelemetry-webserver-sdk'
+    destinationDir file(buildDir)
+    compression Compression.GZIP
+}
+
+// Packages the complete Web Server Agent
+task assembleWebServerModule(type: Tar) {
+    group = 'Web Server Agent'
+    description = 'Assemble the Web Server agent artifact (tgz)'
+
+    dependsOn stripApacheModule
+    dependsOn stripNginxModule
 
     from libraryStageDir
     baseName "opentelemetry-webserver-sdk-${osArch}-${osName}"

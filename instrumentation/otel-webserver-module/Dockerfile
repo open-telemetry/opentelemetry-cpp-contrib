@@ -23,6 +23,8 @@ ARG LIBTOOL_VERSION="2.4.6"
 ARG LOG4CXX_VERSION="0.11.0"
 ARG GTEST_VERSION="1.10.0"
 ARG AUTOMAKE_VERSION="1.16.3"
+ARG PCRE_VERSION="8.44"
+ARG NGINX_VERSION="1.18.0"
 
 
 # create default non-root user
@@ -46,9 +48,9 @@ RUN yum update -y \
 
 # install lcov package
 RUN wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
-	&& yum install ./epel-release-latest-*.noarch.rpm -y \
-	&& yum install lcov -y \
-	&& yum clean all
+    && yum install ./epel-release-latest-*.noarch.rpm -y \
+    && yum install lcov -y \
+    && yum clean all
 
 # install devtoolset toolchain
 RUN curl https://www.getpagespeed.com/files/centos6-eol.repo --output /etc/yum.repos.d/CentOS-Base.repo \
@@ -64,11 +66,11 @@ ENV PATH="/opt/rh/devtoolset-7/root/usr/bin:${PATH}"
 
 # install python 
 RUN wget http://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tar.xz \
-	&& unxz Python-${PYTHON_VERSION}.tar.xz \
-	&& tar -xf Python-${PYTHON_VERSION}.tar \
-	&& cd Python-${PYTHON_VERSION} && ./configure --prefix=/usr/local && make && make install \
-	&& cd .. \
-	&& rm -rf Python-${PYTHON_VERSION}.tar.xz && rm -rf Python-${PYTHON_VERSION}.tar
+    && unxz Python-${PYTHON_VERSION}.tar.xz \
+    && tar -xf Python-${PYTHON_VERSION}.tar \
+    && cd Python-${PYTHON_VERSION} && ./configure --prefix=/usr/local && make && make install \
+    && cd .. \
+    && rm -rf Python-${PYTHON_VERSION}.tar.xz && rm -rf Python-${PYTHON_VERSION}.tar
 
 # install gosu for easy step-down from root (from https://github.com/tianon/gosu/blob/master/INSTALL.md#from-centos)
 ENV GOSU_VERSION=1.10
@@ -172,8 +174,10 @@ RUN wget --no-check-certificate https://ftpmirror.gnu.org/libtool/libtool-${LIBT
     && libtool --version \
     && cd .. && rm -rf libtool--${LIBTOOL_VERSION}.tar.gz
 
+RUN ls
+
 #install log4cxx
-RUN mkdir -p dependencies/apache-log4cxx/-${LOG4CXX_VERSION} \
+RUN mkdir -p dependencies/apache-log4cxx/${LOG4CXX_VERSION} \
     && wget https://archive.apache.org/dist/logging/log4cxx/${LOG4CXX_VERSION}/apache-log4cxx-${LOG4CXX_VERSION}.tar.gz --no-check-certificate \
     && tar -xf apache-log4cxx-${LOG4CXX_VERSION}.tar.gz \
     && cd apache-log4cxx-${LOG4CXX_VERSION} \
@@ -214,6 +218,14 @@ RUN mkdir -p dependencies/googletest/${GTEST_VERSION}/ \
     && make install \
     && cd ../.. && rm -rf release-${GTEST_VERSION}.tar.gz && rm -rf googletest-release-${GTEST_VERSION}/
 
+# install pcre
+RUN mkdir -p dependencies/pcre/${PCRE_VERSION}/ \
+    && wget https://ftp.exim.org/pub/pcre/pcre-${PCRE_VERSION}.tar.gz --no-check-certificate \
+    && tar -xvf pcre-${PCRE_VERSION}.tar.gz \
+    && cd pcre-${PCRE_VERSION} \
+    && ./configure --prefix=/dependencies/pcre/${PCRE_VERSION} --enable-jit \
+    && make && make install \
+    && cd .. && rm -rf ${PCRE_VERSION}.tar.gz && rm -rf pcre-${PCRE_VERSION}
 
 #Installing Apache and apr source code
 RUN mkdir build-dependencies \
@@ -230,15 +242,26 @@ RUN mkdir build-dependencies \
     && tar -xf httpd-2.4.23.tar.gz \
     && mv -f httpd-2.4.23 build-dependencies
 
+# install nginx
+RUN wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
+    && tar -xvf nginx-${NGINX_VERSION}.tar.gz -C /build-dependencies \
+    && rm -rf nginx-${NGINX_VERSION}.tar.gz
+
 # Build Webserver Module
 COPY . /otel-webserver-module
 
 RUN cp -r /dependencies /otel-webserver-module/ \
     && cp -r /build-dependencies /otel-webserver-module/ \
     && cd otel-webserver-module \
-    && ./gradlew assembleApacheModule 
+    && ./gradlew assembleWebServerModule 
 
-# install webserver module
+RUN echo '[nginx]' >> /etc/yum.repos.d/nginx.repo \
+    && echo 'name=nginx repo' >> /etc/yum.repos.d/nginx.repo \
+    && echo 'baseurl=https://nginx.org/packages/centos/6/x86_64' >> /etc/yum.repos.d/nginx.repo \
+    && echo 'gpgcheck=0' >> /etc/yum.repos.d/nginx.repo \ 
+    && echo 'enabled=1' >> /etc/yum.repos.d/nginx.repo \
+    && yum install nginx -y 
+
 RUN cd /otel-webserver-module/build \
     && tar -xf opentelemetry-webserver-sdk-x64-linux.tgz \
     && mv -f opentelemetry-webserver-sdk /opt/ \
@@ -247,6 +270,11 @@ RUN cd /otel-webserver-module/build \
     && echo 'Include conf/opentelemetry_module.conf' >> /etc/httpd/conf/httpd.conf \
     && cd /opt/opentelemetry-webserver-sdk \
     && ./install.sh \
+    && cd /
+
+RUN cp /otel-webserver-module/conf/nginx/opentelemetry_module.conf /opt/ \
+    && sed -i '8i load_module /opt/opentelemetry-webserver-sdk/WebServerModule/Nginx/ngx_http_opentelemetry_module.so;' /etc/nginx/nginx.conf \
+    && sed -i '33i include /opt/opentelemetry_module.conf;' /etc/nginx/nginx.conf \ 
     && cd /
 
 # Remove unwanted files
