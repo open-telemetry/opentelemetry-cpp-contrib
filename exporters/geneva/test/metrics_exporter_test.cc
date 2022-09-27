@@ -199,21 +199,19 @@ TEST(GenevaMetricsExporter, BasicTests) {
   exporter.Export(metric_data);
   yield_for(std::chrono::milliseconds(500));
 
-#if 0
-    //export sum aggregation - long
+  // export sum aggregation - long
   metric_data = GenerateSumDataLongMetrics();
   exporter.Export(metric_data);
   yield_for(std::chrono::milliseconds(500));
 
   // export histogram aggregation - long
-  auto metric_data = GenerateHistogramDataLongMetrics();
+  metric_data = GenerateHistogramDataLongMetrics();
   exporter.Export(metric_data);
 
   yield_for(std::chrono::milliseconds(5000));
   // EXPECT_EQ(testServer.count_counter_double, 2);
   // EXPECT_EQ(testServer.count_counter_long, 1);
   EXPECT_EQ(testServer.count_histogram_long, 1);
-#endif
 
   testServer.Stop();
 }
