@@ -194,18 +194,17 @@ TEST(GenevaMetricsExporter, BasicTests) {
   ExporterOptions options{conn_string};
   opentelemetry::exporter::geneva::metrics::Exporter exporter(options);
 
-#if 0
-  //export sum aggregation - double
+  // export sum aggregation - double
   auto metric_data = GenerateSumDataDoubleMetrics();
   exporter.Export(metric_data);
   yield_for(std::chrono::milliseconds(500));
 
+#if 0
     //export sum aggregation - long
   metric_data = GenerateSumDataLongMetrics();
   exporter.Export(metric_data);
   yield_for(std::chrono::milliseconds(500));
 
-#endif
   // export histogram aggregation - long
   auto metric_data = GenerateHistogramDataLongMetrics();
   exporter.Export(metric_data);
@@ -214,5 +213,7 @@ TEST(GenevaMetricsExporter, BasicTests) {
   // EXPECT_EQ(testServer.count_counter_double, 2);
   // EXPECT_EQ(testServer.count_counter_long, 1);
   EXPECT_EQ(testServer.count_histogram_long, 1);
+#endif
+
   testServer.Stop();
 }

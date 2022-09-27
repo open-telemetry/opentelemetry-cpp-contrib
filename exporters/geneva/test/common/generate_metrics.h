@@ -48,8 +48,8 @@ GenerateSumDataDoubleMetrics() {
           opentelemetry::sdk::metrics::InstrumentType::kCounter,
           opentelemetry::sdk::metrics::InstrumentValueType::kDouble},
       opentelemetry::sdk::metrics::AggregationTemporality::kDelta,
-      opentelemetry::common::SystemTimestamp{},
-      opentelemetry::common::SystemTimestamp{},
+      opentelemetry::common::SystemTimestamp{std::chrono::system_clock::now()},
+      opentelemetry::common::SystemTimestamp{std::chrono::system_clock::now()},
       std::vector<opentelemetry::sdk::metrics::PointDataAttributes>{
           {opentelemetry::sdk::metrics::PointAttributes{
                {kCounterDoubleAttributeKey1, kCounterDoubleAttributeValue1}},
@@ -98,8 +98,8 @@ GenerateSumDataLongMetrics() {
           opentelemetry::sdk::metrics::InstrumentType::kCounter,
           opentelemetry::sdk::metrics::InstrumentValueType::kLong},
       opentelemetry::sdk::metrics::AggregationTemporality::kDelta,
-      opentelemetry::common::SystemTimestamp{},
-      opentelemetry::common::SystemTimestamp{},
+      opentelemetry::common::SystemTimestamp{std::chrono::system_clock::now()},
+      opentelemetry::common::SystemTimestamp{std::chrono::system_clock::now()},
       std::vector<opentelemetry::sdk::metrics::PointDataAttributes>{
           {opentelemetry::sdk::metrics::PointAttributes{
                {kCounterLongAttributeKey1, kCounterLongAttributeValue1}},
@@ -161,8 +161,8 @@ GenerateHistogramDataLongMetrics() {
           opentelemetry::sdk::metrics::InstrumentType::kHistogram,
           opentelemetry::sdk::metrics::InstrumentValueType::kLong},
       opentelemetry::sdk::metrics::AggregationTemporality::kDelta,
-      opentelemetry::common::SystemTimestamp{},
-      opentelemetry::common::SystemTimestamp{},
+      opentelemetry::common::SystemTimestamp{std::chrono::system_clock::now()},
+      opentelemetry::common::SystemTimestamp{std::chrono::system_clock::now()},
       std::vector<opentelemetry::sdk::metrics::PointDataAttributes>{
           {opentelemetry::sdk::metrics::PointAttributes{
                {kHistogramLongAttributeKey1, kHistogramLongAttributeValue1}},
