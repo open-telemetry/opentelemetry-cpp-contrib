@@ -10,18 +10,18 @@
 #    include <unistd.h>  // NOLINT
 #  endif
 
-#  include <prometheus/gateway.h>
-
-#  include <opentelemetry/exporters/prometheus/collector.h>
-#  include <opentelemetry/nostd/span.h>
-#  include <opentelemetry/sdk/common/env_variables.h>
-#  include <opentelemetry/sdk/metrics/metric_exporter.h>
-#  include <opentelemetry/version.h>
-
 #  include <chrono>
 #  include <memory>
 #  include <string>
 #  include <vector>
+
+#  include "prometheus/gateway.h"
+
+#  include "opentelemetry/exporters/prometheus/collector.h"
+#  include "opentelemetry/nostd/span.h"
+#  include "opentelemetry/sdk/common/env_variables.h"
+#  include "opentelemetry/sdk/metrics/metric_exporter.h"
+#  include "opentelemetry/version.h"
 
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter {

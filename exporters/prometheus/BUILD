@@ -46,5 +46,9 @@ cc_test(
         ":prometheus_push_exporter",
         ":prometheus_test_helper",
         "@com_google_googletest//:gtest_main",
+        "@io_opentelemetry_cpp//api",
+        "@io_opentelemetry_cpp//exporters/prometheus:prometheus_collector",
+        "@io_opentelemetry_cpp//exporters/prometheus:prometheus_exporter_utils",
+        "@io_opentelemetry_cpp//sdk:headers",
     ],
 )

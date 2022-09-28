@@ -16,9 +16,26 @@ cmake_minimum_required(VERSION 3.12)
 
 project(
   opentelemetry-cpp-contrib
-  VERSION "1.6.0" # opentelemetry-cpp-contrib 1.6.0
+  VERSION "1.6.1" # opentelemetry-cpp-contrib 1.6.1
   HOMEPAGE_URL "https://github.com/open-telemetry/opentelemetry-cpp-contrib"
   LANGUAGES CXX)
+
+if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
+  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
+      "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}")
+endif()
+
+if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY
+      "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}")
+endif()
+
+if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
+      "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}")
+endif()
+
+link_directories(${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 
 find_package(opentelemetry-cpp REQUIRED)
 find_package(prometheus-cpp CONFIG REQUIRED)
@@ -44,6 +61,22 @@ if(BUILD_TESTING)
   add_definitions(-DENABLE_TEST)
   find_package(GTest)
   include(GoogleTest)
+
+  if(TARGET GTest::gtest)
+    set(OPENTELEMETRY_CPP_CONTRIB_GTEST_LINK_LIB_NAME GTest::gtest)
+  elseif(TARGET GTest::GTest)
+    set(OPENTELEMETRY_CPP_CONTRIB_GTEST_LINK_LIB_NAME GTest::GTest)
+  else()
+    set(OPENTELEMETRY_CPP_CONTRIB_GTEST_LINK_LIB_NAME ${GTEST_LIBRARIES})
+  endif()
+
+  if(TARGET GTest::gtest_main)
+    set(OPENTELEMETRY_CPP_CONTRIB_GTEST_LINK_MAIN_NAME GTest::gtest_main)
+  elseif(TARGET GTest::Main)
+    set(OPENTELEMETRY_CPP_CONTRIB_GTEST_LINK_MAIN_NAME GTest::Main)
+  else()
+    set(OPENTELEMETRY_CPP_CONTRIB_GTEST_LINK_MAIN_NAME ${GTEST_MAIN_LIBRARIES})
+  endif()
 endif()
 
 add_library(opentelemetry_prometheus_push_exporter src/push_exporter.cc)

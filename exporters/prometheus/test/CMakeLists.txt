@@ -2,8 +2,8 @@ foreach(testname push_exporter_test)
   add_executable(${testname} "${testname}.cc")
   target_link_libraries(
     ${testname}
-    GTest::gtest
-    GTest::gtest_main
+    ${OPENTELEMETRY_CPP_CONTRIB_GTEST_LINK_LIB_NAME}
+    ${OPENTELEMETRY_CPP_CONTRIB_GTEST_LINK_MAIN_NAME}
     opentelemetry_prometheus_push_exporter
     prometheus-cpp::push
     ${CMAKE_THREAD_LIBS_INIT}

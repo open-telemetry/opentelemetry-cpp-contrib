@@ -19,12 +19,12 @@ def io_opentelemetry_cpp_contrib_deps():
     maybe(
         http_archive,
         name = "io_opentelemetry_cpp",
-        sha256 = "802cf9132ee847bd1c72b72bd8116055fd7e78f60a44bb9c10225b41f5e35bff",
-        strip_prefix = "opentelemetry-cpp-1.6.0",
+        sha256 = "1fc371be049b3220b8b9571c8b713f03e9a84f3c5684363f64ccc814638391a5",
+        strip_prefix = "opentelemetry-cpp-1.6.1",
         # patches = ["@opentelemetry_cpp_ecosystem//bazel:opentelemetry-cpp-v1.5.0.patch"],
         # patch_args = ["-p1"],
         urls = [
-            "https://github.com/open-telemetry/opentelemetry-cpp/archive/v1.6.0.tar.gz",
+            "https://github.com/open-telemetry/opentelemetry-cpp/archive/v1.6.1.tar.gz",
         ],
     )
 
@@ -44,14 +44,14 @@ def io_opentelemetry_cpp_contrib_deps():
     maybe(
         http_archive,
         name = "com_google_absl",
-        sha256 = "dcf71b9cba8dc0ca9940c4b316a0c796be8fab42b070bb6b7cab62b48f0e66c4",
-        strip_prefix = "abseil-cpp-20211102.0",
+        sha256 = "91ac87d30cc6d79f9ab974c51874a704de9c2647c40f6932597329a282217ba8",
+        strip_prefix = "abseil-cpp-20220623.1",
         # sha256 = "66d4d009050f39c104b03f79bdca9d930c4964016f74bf24867a43fbdbd00d23",
         # strip_prefix = "abseil-cpp-20200225.3",
         # patches = ["@opentelemetry_cpp_ecosystem//bazel:abseil-cpp.patch"],
         # patch_args = ["-p1"],
         urls = [
-            "https://github.com/abseil/abseil-cpp/archive/20211102.0.tar.gz",
+            "https://github.com/abseil/abseil-cpp/archive/20220623.1.tar.gz",
             # "https://github.com/abseil/abseil-cpp/archive/20200225.3.tar.gz",
         ],
     )

@@ -19,12 +19,12 @@ load("//:repository.bzl", "io_opentelemetry_cpp_contrib_deps")
 
 io_opentelemetry_cpp_contrib_deps()
 
-# Load prometheus C++ dependencies.
-load("@com_github_jupp0r_prometheus_cpp//bazel:repositories.bzl", "prometheus_cpp_repositories")
-
-prometheus_cpp_repositories()
-
 load("@io_opentelemetry_cpp//bazel:repository.bzl", "opentelemetry_cpp_deps")
 
 # Load dependencies of opentelemetry-cpp
 opentelemetry_cpp_deps()
+
+# Load prometheus C++ dependencies.
+load("@com_github_jupp0r_prometheus_cpp//bazel:repositories.bzl", "prometheus_cpp_repositories")
+
+prometheus_cpp_repositories()

@@ -3,12 +3,12 @@
 
 #  include <gtest/gtest.h>
 
-#  include <opentelemetry/exporters/prometheus/collector.h>
-
 #  include <chrono>
 #  include <cstddef>
 #  include <memory>
 #  include <thread>
+
+#  include "opentelemetry/exporters/prometheus/collector.h"
 
 #  include "opentelemetry/exporters/prometheus/push_exporter.h"
 #  include "prometheus_test_helper.h"

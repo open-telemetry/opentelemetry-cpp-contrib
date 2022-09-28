@@ -3,10 +3,10 @@
 
 #pragma once
 
-#  include <opentelemetry/version.h>
-
 #  include <list>
 #  include <vector>
+
+#  include "opentelemetry/version.h"
 
 namespace metric_sdk = opentelemetry::sdk::metrics;
 namespace nostd = opentelemetry::nostd;
