@@ -66,10 +66,11 @@ jobs:
         run: |
           New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" `
             -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
+          $RUNNER_ROOT_PATH = Split-Path (Split-Path (Get-Location))
           Set-Location otel_cpp_contrib/exporters/prometheus
-          & bazel --windows_enable_symlinks "--output_user_root=$ENV:USERPROFILE/bazel_build" `
+          & bazel --windows_enable_symlinks "--output_user_root=$RUNNER_ROOT_PATH/bazel_build" `
             build --copt=-DENABLE_TEST --copt=/utf-8 --sandbox_debug --@io_opentelemetry_cpp//api:with_abseil //...
-          & bazel --windows_enable_symlinks "--output_user_root=$ENV:USERPROFILE/bazel_build" `
+          & bazel --windows_enable_symlinks "--output_user_root=$RUNNER_ROOT_PATH/bazel_build" `
             test --copt=-DENABLE_TEST --copt=/utf-8 --sandbox_debug --@io_opentelemetry_cpp//api:with_abseil //...
   prometheus_cmake_linux:
     name: CMake on Linux
