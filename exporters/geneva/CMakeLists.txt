@@ -54,3 +54,9 @@ if(BUILD_TESTING)
     TEST_PREFIX exporter.
     TEST_LIST geneva_metrics_exporter_test)
 endif()
+
+if(BUILD_EXAMPLE)
+  add_executable(example_metrics example/example_metrics.cc example/foo_library.cc)
+  target_link_libraries(example_metrics opentelemetry_exporter_geneva_metrics)
+endif()
+
