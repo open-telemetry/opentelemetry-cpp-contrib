@@ -47,7 +47,7 @@ void ApacheTracing::writeTrace(server_rec* s, const char* funcName, const char* 
 
     if (m_state == TRACE_AS_ERROR && s)
     {
-        ap_log_error(APLOG_MARK, APLOG_ERR, 0, s, "mod_opentelemetry_wbserver_sdk: %s: %s", funcName, note);
+        ap_log_error(APLOG_MARK, APLOG_ERR, 0, s, "mod_opentelemetry_webserver_sdk: %s: %s", funcName, note);
     }
     else if (m_state == UNINITIALIZED)
     {
@@ -69,7 +69,7 @@ void ApacheTracing::writeError(server_rec* s, const char* funcName, const char* 
 
     if (s && funcName)
     {
-        ap_log_error(APLOG_MARK, APLOG_ERR, 0, s, "mod_opentelemetry_wbserver_sdk: %s: %s", funcName, note);
+        ap_log_error(APLOG_MARK, APLOG_ERR, 0, s, "mod_opentelemetry_webserver_sdk: %s: %s", funcName, note);
     }
 }
 
