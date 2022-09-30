@@ -18,7 +18,7 @@
 namespace metric_sdk      = opentelemetry::sdk::metrics;
 namespace nostd           = opentelemetry::nostd;
 namespace common          = opentelemetry::common;
-namespace exportermetrics = opentelemetry::exporter::metrics;
+namespace geneva_exporter = opentelemetry::exporter::geneva::metrics;
 namespace metrics_api     = opentelemetry::metrics;
 
 namespace
@@ -27,20 +27,23 @@ namespace
 const std::string kUnixDomainPath = "/tmp/ifx_unix_socket";
 const std::string kNamespaceName = "test_ns";
 
-void initMetrics(const std::string &name)
+void initMetrics(const std::string &name, const std::string &account_name)
 {
-
-  std::unique_ptr<metric_sdk::MetricExporter> exporter{new exportermetrics::OStreamMetricExporter};
+  std::string conn_string = "Endpoint=unix://" + kUnixDomainPath +
+                            ";Account=" + account_name +
+                            ";Namespace=" + kNamespaceName;
+  geneva_exporter::ExporterOptions options{conn_string};
+  std::unique_ptr<metric_sdk::MetricExporter> exporter{new geneva_exporter::Exporter(options)};
 
   std::string version{"1.2.0"};
   std::string schema{"https://opentelemetry.io/schemas/1.2.0"};
 
   // Initialize and set the global MeterProvider
-  metric_sdk::PeriodicExportingMetricReaderOptions options;
-  options.export_interval_millis = std::chrono::milliseconds(1000);
-  options.export_timeout_millis  = std::chrono::milliseconds(500);
+  metric_sdk::PeriodicExportingMetricReaderOptions reader_options;
+  reader_options.export_interval_millis = std::chrono::milliseconds(1000);
+  reader_options.export_timeout_millis  = std::chrono::milliseconds(500);
   std::unique_ptr<metric_sdk::MetricReader> reader{
-      new metric_sdk::PeriodicExportingMetricReader(std::move(exporter), options)};
+      new metric_sdk::PeriodicExportingMetricReader(std::move(exporter), reader_options)};
   auto provider = std::shared_ptr<metrics_api::MeterProvider>(new metric_sdk::MeterProvider());
   auto p        = std::static_pointer_cast<metric_sdk::MeterProvider>(provider);
   p->AddMetricReader(std::move(reader));
@@ -100,17 +103,8 @@ int main(int argc, char **argv)
     }
   }
 
-  // conn_string:
-  // `Endpoint=unix:{udsPath};Account={MetricAccount};Namespace={MetricNamespace}`
-  std::string conn_string = "Endpoint=unix://" + kUnixDomainPath +
-                            ";Account=" + account_name +
-                            ";Namespace=" + kNamespaceName; 
-  ExporterOptions options{conn_string};
-  opentelemetry::exporter::geneva::metrics::Exporter exporter(options);
-
-
   std::string name{"ostream_metric_example"};
-  initMetrics(name);
+  initMetrics(name, account_name);
 
   if (example_type == "counter")
   {
