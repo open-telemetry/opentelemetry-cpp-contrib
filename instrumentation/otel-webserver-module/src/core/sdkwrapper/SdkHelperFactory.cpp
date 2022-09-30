@@ -75,7 +75,7 @@ SdkHelperFactory::SdkHelperFactory(
     attributes[kOtelWebEngineName] = config->getOtelLibraryName();
     attributes[kOtelWebEngineVersion] = libraryVersion;
 
-    attributes[kOtelWebEngineDescription] = config->getOtelLibraryName + " Instrumentation";
+    attributes[kOtelWebEngineDescription] = config->getOtelLibraryName() + " Instrumentation";
 
     auto exporter = GetExporter(config);
     auto processor = GetSpanProcessor(config, std::move(exporter));
