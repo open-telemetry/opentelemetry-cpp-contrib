@@ -22,8 +22,9 @@ namespace sdkwrapper {
 const std::string kServiceName = "service.name";
 const std::string kServiceNamespace = "service.namespace";
 const std::string kServiceInstanceId = "service.instance.id";
-const std::string kOtelLibraryName = "telemetry.sdk.language";
-const std::string kOtelLibraryVersion = "telemetry.sdk.version";
+const std::string kOtelWebEngineName = "webengine.name";
+const std::string kOtelWebEngineVersion = "webengine.version";
+const std::string kOtelWebEngineDescription = "webengine.description";
 const std::string kHttpErrorCode = "HTTP ERROR CODE:";
 const std::string kAttrHTTPServerName         = "http.server_name";
 const std::string kAttrHTTPMethod             = "http.method";
