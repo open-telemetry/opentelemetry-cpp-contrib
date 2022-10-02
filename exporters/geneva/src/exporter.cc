@@ -39,7 +39,7 @@ Exporter::Exporter(const ExporterOptions &options)
 
 sdk::metrics::AggregationTemporality Exporter::GetAggregationTemporality(
     sdk::metrics::InstrumentType instrument_type) const noexcept {
-  return aggregation_temporality_selector_(instrument_type);
+  return sdk::metrics::AggregationTemporality::kCumulative;
 }
 
 opentelemetry::sdk::common::ExportResult Exporter::Export(
