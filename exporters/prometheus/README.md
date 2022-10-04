@@ -1,4 +1,4 @@
-# Prometheus Pusg Exporter for OpenTelemetry C++
+# Prometheus Push Exporter for OpenTelemetry C++
 
 ## Installation
 
