@@ -22,7 +22,6 @@ class ProcessCpuTime
    // returns user and system time separately since last call to Last*Time()
     void LastElapsedSystemAndUserTime(double &system_time, double &user_time);
 
-
     private:
         static long clock_ticks_per_sec_;
         struct tms start_time_;
