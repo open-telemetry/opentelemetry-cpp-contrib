@@ -6,6 +6,7 @@
 #include "../../include/process_metrics_factory.h"
 #include "opentelemetry/nostd/variant.h"
 #include "opentelemetry/sdk/metrics/observer_result.h"
+#include "process_cpu_time.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -52,8 +53,6 @@ namespace {
         self_status.close();
     }
 
-
- 
     static void ReadNetworkIOStats(long &total_read_bytes, long &total_write_bytes) {
         std::string ret;
 	    const unsigned initial_headers_idx = 2; // to be ignored
@@ -90,10 +89,18 @@ namespace {
     }
 }
     void ProcessMetricsFactory::GetProcessCpuTime(opentelemetry::metrics::ObserverResult observer_result, void * /*state*/)
-    {}
+    {
+        static ProcessCpuTime cputime;
+        long system_time = 0, user_time = 0;
+        cputime.TotalElapsedSystemAndUserTime(system_time, user_time);
+        opentelemetry::nostd::get<opentelemetry::metrics::ObserverResultT<long>>(observer_result).Observe(system_time, {{"state", "system"}});
+        opentelemetry::nostd::get<opentelemetry::metrics::ObserverResultT<long>>(observer_result).Observe(user_time, {{"state", "user"}});
+    }
 
     void ProcessMetricsFactory::GetProcessCpuUtilization(opentelemetry::metrics::ObserverResult observer_result, void * /*state*/)
-    {}
+    {
+        //TODO
+    }
 
     void ProcessMetricsFactory::GetProcessMemoryUsage(opentelemetry::metrics::ObserverResult observer_result, void * /*state*/)
     {

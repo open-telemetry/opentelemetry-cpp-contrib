@@ -11,16 +11,16 @@ class ProcessCpuTime
     ProcessCpuTime();
 
     // returns cpu time (user + system) from beginning
-    double TotalElapsedTime();
+    long TotalElapsedTime();
 
     // returns user and system time separately from beginning
-    void TotalElapsedSystemAndUserTime(double &system_time, double &user_time);
+    void TotalElapsedSystemAndUserTime(long &system_time, long &user_time);
 
     // returns cpu time (user + system) since last call to Last*Time()
     double LastElapsedTime();
 
    // returns user and system time separately since last call to Last*Time()
-    void LastElapsedSystemAndUserTime(double &system_time, double &user_time);
+    void LastElapsedSystemAndUserTime(long &system_time, long &user_time);
 
     private:
         static long clock_ticks_per_sec_;

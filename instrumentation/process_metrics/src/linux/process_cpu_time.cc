@@ -13,13 +13,13 @@ ProcessCpuTime::ProcessCpuTime()
     last_time_ = start_time_;
 }
 
-double ProcessCpuTime::TotalElapsedTime()
+long ProcessCpuTime::TotalElapsedTime()
 {
     times(&last_time_);
     return ((last_time_.tms_utime + last_time_.tms_stime)  - (start_time_.tms_utime + start_time_.tms_stime)) / clock_ticks_per_sec_;
 }
 
-void ProcessCpuTime::TotalElapsedSystemAndUserTime(double &system_time, double &user_time)
+void ProcessCpuTime::TotalElapsedSystemAndUserTime(long &system_time, long &user_time)
 {
     times(&last_time_);
     user_time = (last_time_.tms_utime - start_time_.tms_utime ) / clock_ticks_per_sec_;
@@ -35,7 +35,7 @@ double ProcessCpuTime::LastElapsedTime()
     return elapsed_time;
 }
 
-void ProcessCpuTime::LastElapsedSystemAndUserTime(double &system_time, double &user_time)
+void ProcessCpuTime::LastElapsedSystemAndUserTime(long &system_time, long &user_time)
 {
     struct tms current_time_;
     times(&current_time_);
