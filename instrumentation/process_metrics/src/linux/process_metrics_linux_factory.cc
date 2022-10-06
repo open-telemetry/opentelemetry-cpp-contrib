@@ -23,6 +23,8 @@
 #include <sys/syscall.h>
 #include <linux/perf_event.h>
 
+using namespace opentelemetry;
+
 namespace {
 
     static void ReadProcSelfFileForKey(std::string file_name, std::string key, long &value) {
@@ -93,8 +95,8 @@ namespace {
         static ProcessCpuTime cputime;
         long system_time = 0, user_time = 0;
         cputime.TotalElapsedSystemAndUserTime(system_time, user_time);
-        opentelemetry::nostd::get<opentelemetry::metrics::ObserverResultT<long>>(observer_result).Observe(system_time, {{"state", "system"}});
-        opentelemetry::nostd::get<opentelemetry::metrics::ObserverResultT<long>>(observer_result).Observe(user_time, {{"state", "user"}});
+        nostd::get<nostd::shared_ptr<metrics::ObserverResultT<long>>>(observer_result)->Observe(system_time, {{"state", "system"}});
+        nostd::get<nostd::shared_ptr<metrics::ObserverResultT<long>>>(observer_result)->Observe(user_time, {{"state", "user"}});
     }
 
     void ProcessMetricsFactory::GetProcessCpuUtilization(opentelemetry::metrics::ObserverResult observer_result, void * /*state*/)
@@ -108,7 +110,7 @@ namespace {
         ReadProcSelfFileForKey("/proc/self/status", "VmRSS", rss_bytes);
         if (rss_bytes >= 0) {
             rss_bytes = rss_bytes * 1024 ; //bytes
-            opentelemetry::nostd::get<opentelemetry::metrics::ObserverResultT<long>>(observer_result).Observe(rss_bytes);
+            nostd::get<nostd::shared_ptr<opentelemetry::metrics::ObserverResultT<long>>>(observer_result)->Observe(rss_bytes);
         }
     }
 
@@ -118,7 +120,7 @@ namespace {
         ReadProcSelfFileForKey("/proc/self/status", "VmSize", vm_bytes);
         if (vm_bytes >= 0) {
             vm_bytes = vm_bytes * 1024 ; //bytes
-            opentelemetry::nostd::get<opentelemetry::metrics::ObserverResultT<long>>(observer_result).Observe(vm_bytes);
+            nostd::get<nostd::shared_ptr<opentelemetry::metrics::ObserverResultT<long>>>(observer_result)->Observe(vm_bytes);
         }
     }
 
@@ -127,11 +129,11 @@ namespace {
         long read_bytes = 0, write_bytes = 0;
         ReadProcSelfFileForKey("/proc/self/io", "read_bytes", read_bytes);
         if (read_bytes >= 0 ){
-            opentelemetry::nostd::get<opentelemetry::metrics::ObserverResultT<long>>(observer_result).Observe(read_bytes, {{"direction", "read"}});
+            nostd::get<nostd::shared_ptr<opentelemetry::metrics::ObserverResultT<long>>>(observer_result)->Observe(read_bytes, {{"direction", "read"}});
         }
         ReadProcSelfFileForKey("/proc/self/io", "write_bytes", write_bytes);
         if (write_bytes >= 0 ){
-            opentelemetry::nostd::get<opentelemetry::metrics::ObserverResultT<long>>(observer_result).Observe(write_bytes, {{"direction", "read"}});
+            nostd::get<nostd::shared_ptr<opentelemetry::metrics::ObserverResultT<long>>>(observer_result)->Observe(write_bytes, {{"direction", "write"}});
         }
     }
 
@@ -140,10 +142,10 @@ namespace {
         long read_bytes = 0, write_bytes = 0;
         ReadNetworkIOStats(read_bytes, write_bytes);
         if (read_bytes > 0 ) {
-            opentelemetry::nostd::get<opentelemetry::metrics::ObserverResultT<long>>(observer_result).Observe(read_bytes, {{"direction", "receive"}});
+            nostd::get<nostd::shared_ptr<opentelemetry::metrics::ObserverResultT<long>>>(observer_result)->Observe(read_bytes, {{"direction", "receive"}});
         }
         if (write_bytes > 0){
-            opentelemetry::nostd::get<opentelemetry::metrics::ObserverResultT<long>>(observer_result).Observe(write_bytes, {{"direction", "transmit"}});
+            nostd::get<nostd::shared_ptr<opentelemetry::metrics::ObserverResultT<long>>>(observer_result)->Observe(write_bytes, {{"direction", "transmit"}});
         }
     }
 
@@ -152,7 +154,7 @@ namespace {
         long threads_count = 0;
         ReadProcSelfFileForKey("/proc/self/status", "Threads", threads_count);
         if (threads_count > 0){
-            opentelemetry::nostd::get<opentelemetry::metrics::ObserverResultT<long>>(observer_result).Observe(threads_count);
+            opentelemetry::nostd::get<nostd::shared_ptr<opentelemetry::metrics::ObserverResultT<long>>>(observer_result)->Observe(threads_count);
         }
     }
 
@@ -169,10 +171,13 @@ namespace {
             count_fds ++;
         }
         closedir(dir);
-        opentelemetry::nostd::get<opentelemetry::metrics::ObserverResultT<long>>(observer_result).Observe(count_fds);
+        opentelemetry::nostd::get<nostd::shared_ptr<opentelemetry::metrics::ObserverResultT<long>>>(observer_result)->Observe(count_fds);
     }
 
     void ProcessMetricsFactory::GetProcessContextSwitches(opentelemetry::metrics::ObserverResult observer_result, void * /*state*/)
     {}
+
+
+
 
 #endif
