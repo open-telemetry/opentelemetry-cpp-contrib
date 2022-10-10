@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-project(opentelemetry-fluentd)
+project(opentelemetry-geneva-metrics)
 
 add_definitions(-DHAVE_CONSOLE_LOG)
 
@@ -20,7 +20,6 @@ set_target_properties(opentelemetry_exporter_geneva_metrics
 
 if(BUILD_TESTING)
   if(EXISTS ${CMAKE_BINARY_DIR}/lib/libgtest.a)
-    message("Exits")
     # Prefer GTest from build tree. GTest is not always working with
     # CMAKE_PREFIX_PATH
     set(GTEST_INCLUDE_DIRS
@@ -31,7 +30,6 @@ if(BUILD_TESTING)
         ${CMAKE_BINARY_DIR}/lib/libgtest_main.a
         ${CMAKE_BINARY_DIR}/lib/libgmock.a)
   else()
-    message("finding gtest")
     find_package(GTest REQUIRED)
   endif()
   include_directories(SYSTEM ${GTEST_INCLUDE_DIRS})
@@ -44,7 +42,6 @@ if(BUILD_TESTING)
     geneva_metrics_exporter_test
     test/metrics_exporter_test.cc test/decoder/ifx_metrics_bin.cpp
     test/decoder/kaitai/kaitaistream.cpp)
-  message("Building test now")
   target_link_libraries(
     geneva_metrics_exporter_test ${GTEST_BOTH_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT} opentelemetry_exporter_geneva_metrics)
@@ -56,7 +53,7 @@ if(BUILD_TESTING)
 endif()
 
 if(BUILD_EXAMPLE)
-  add_executable(example_metrics example/example_metrics.cc example/foo_library.cc)
+  add_executable(example_metrics example/example_metrics.cc
+                                 example/foo_library.cc)
   target_link_libraries(example_metrics opentelemetry_exporter_geneva_metrics)
 endif()
-
