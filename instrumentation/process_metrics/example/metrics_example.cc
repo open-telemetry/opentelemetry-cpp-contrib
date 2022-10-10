@@ -20,6 +20,7 @@ namespace
 
 void initMetrics()
 {
+    std::cout << "\n LALIT->Init metrics\n";
   std::unique_ptr<metric_sdk::MetricExporter> exporter{new exportermetrics::OStreamMetricExporter};
 
   std::string version{"1.2.0"};
@@ -35,7 +36,21 @@ void initMetrics()
   auto p        = std::static_pointer_cast<metric_sdk::MeterProvider>(provider);
   p->AddMetricReader(std::move(reader));
 
+  //process.cpu.time view
+  std::unique_ptr<metric_sdk::InstrumentSelector> observable_instrument_selector{
+      new metric_sdk::InstrumentSelector(metric_sdk::InstrumentType::kObservableCounter,
+                                         "process.cpu.time")};
+  std::unique_ptr<metric_sdk::MeterSelector> observable_meter_selector{
+      new metric_sdk::MeterSelector("process.cpu.time", "1.2.0", "schema")};
+  std::unique_ptr<metric_sdk::View> observable_sum_view{
+      new metric_sdk::View{"process.metrics", "des", metric_sdk::AggregationType::kSum}};
+  p->AddView(std::move(observable_instrument_selector), std::move(observable_meter_selector),
+             std::move(observable_sum_view));
+
+
   metrics_api::Provider::SetMeterProvider(provider);
+      std::cout << "\n LALIT->Init metrics done\n";
+
 }
 }  // namespace
 

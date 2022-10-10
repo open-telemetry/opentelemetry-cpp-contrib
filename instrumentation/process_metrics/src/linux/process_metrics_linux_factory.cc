@@ -95,6 +95,7 @@ namespace {
         static ProcessCpuTime cputime;
         long system_time = 0, user_time = 0;
         cputime.TotalElapsedSystemAndUserTime(system_time, user_time);
+        std::cout << " CPU TIME: "<< system_time << "  :  " << user_time << "\n";
         nostd::get<nostd::shared_ptr<metrics::ObserverResultT<long>>>(observer_result)->Observe(system_time, {{"state", "system"}});
         nostd::get<nostd::shared_ptr<metrics::ObserverResultT<long>>>(observer_result)->Observe(user_time, {{"state", "user"}});
     }

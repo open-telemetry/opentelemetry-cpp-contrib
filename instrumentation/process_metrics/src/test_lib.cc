@@ -10,14 +10,14 @@ namespace nostd       = opentelemetry::nostd;
 namespace metrics_api = opentelemetry::metrics;
 
 opentelemetry::nostd::shared_ptr<opentelemetry::metrics::ObservableInstrument> TestLib::cpu_time_obserable_counter_;
-opentelemetry::nostd::shared_ptr<opentelemetry::metrics::ObservableInstrument> cpu_utilization_obserable_gauge_;
-opentelemetry::nostd::shared_ptr<opentelemetry::metrics::ObservableInstrument> memory_usage_obserable_gauge_;
-opentelemetry::nostd::shared_ptr<opentelemetry::metrics::ObservableInstrument> memory_virtual_obserable_gauge_;
-opentelemetry::nostd::shared_ptr<opentelemetry::metrics::ObservableInstrument> disk_io_obserable_gauge_;
-opentelemetry::nostd::shared_ptr<opentelemetry::metrics::ObservableInstrument> network_io_obserable_gauge_;
-opentelemetry::nostd::shared_ptr<opentelemetry::metrics::ObservableInstrument> threads_obserable_gauge_;
-opentelemetry::nostd::shared_ptr<opentelemetry::metrics::ObservableInstrument> open_files_obserable_gauge_;
-opentelemetry::nostd::shared_ptr<opentelemetry::metrics::ObservableInstrument> context_switches_obserable_gauge_;
+opentelemetry::nostd::shared_ptr<opentelemetry::metrics::ObservableInstrument> TestLib::cpu_utilization_obserable_gauge_;
+opentelemetry::nostd::shared_ptr<opentelemetry::metrics::ObservableInstrument> TestLib::memory_usage_obserable_gauge_;
+opentelemetry::nostd::shared_ptr<opentelemetry::metrics::ObservableInstrument> TestLib::memory_virtual_obserable_gauge_;
+opentelemetry::nostd::shared_ptr<opentelemetry::metrics::ObservableInstrument> TestLib::disk_io_obserable_gauge_;
+opentelemetry::nostd::shared_ptr<opentelemetry::metrics::ObservableInstrument> TestLib::network_io_obserable_gauge_;
+opentelemetry::nostd::shared_ptr<opentelemetry::metrics::ObservableInstrument> TestLib::threads_obserable_gauge_;
+opentelemetry::nostd::shared_ptr<opentelemetry::metrics::ObservableInstrument> TestLib::open_files_obserable_gauge_;
+opentelemetry::nostd::shared_ptr<opentelemetry::metrics::ObservableInstrument> TestLib::context_switches_obserable_gauge_;
 
 void TestLib::create_process_cpu_time_observable_counter()
 {
