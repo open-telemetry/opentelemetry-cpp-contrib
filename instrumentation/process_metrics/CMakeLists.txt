@@ -1,19 +1,21 @@
 cmake_minimum_required(VERSION 3.12)
 
-project(opentelemetry-fluentd)
+project(opentelemetry-process-metrics)
 
 add_definitions(-DHAVE_CONSOLE_LOG)
 
 find_package(opentelemetry-cpp REQUIRED)
 find_package(CURL REQUIRED)
 
-option(WITH_EXAMPLES "Whether to build example code" ON)
+option(WITH_EXAMPLE "Whether to build example code" ON)
 
 
 include_directories(include)
-if(LINUX)
+if(UNIX AND NOT APPLE)
+    message("LINUX...")
     add_library(opentelemetry_process_metrics src/linux/process_cpu_time.cc src/linux/process_metrics_linux_factory.cc  src/test_lib.cc)
 else()
+    message("SOMETHIG ELSE...")
     add_library(opentelemetry_process_metrics src/noop/process_metrics_noop_factory.cc src/test_lib.cc)
 endif()
 

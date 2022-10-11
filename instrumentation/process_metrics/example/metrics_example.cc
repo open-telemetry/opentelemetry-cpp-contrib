@@ -1,5 +1,3 @@
-#  include <memory>
-#  include <thread>
 #  include "opentelemetry/exporters/ostream/metric_exporter.h"
 #  include "opentelemetry/metrics/provider.h"
 #  include "opentelemetry/sdk/metrics/aggregation/default_aggregation.h"
@@ -8,6 +6,9 @@
 #  include "opentelemetry/sdk/metrics/meter_provider.h"
 
 #include "../include/test_lib.h"
+
+#  include <memory>
+#  include <thread>
 
 namespace metric_sdk      = opentelemetry::sdk::metrics;
 namespace nostd           = opentelemetry::nostd;
@@ -36,6 +37,7 @@ void initMetrics()
   auto p        = std::static_pointer_cast<metric_sdk::MeterProvider>(provider);
   p->AddMetricReader(std::move(reader));
 
+#if 0
   //process.cpu.time view
   std::unique_ptr<metric_sdk::InstrumentSelector> observable_instrument_selector{
       new metric_sdk::InstrumentSelector(metric_sdk::InstrumentType::kObservableCounter,
@@ -47,7 +49,7 @@ void initMetrics()
   p->AddView(std::move(observable_instrument_selector), std::move(observable_meter_selector),
              std::move(observable_sum_view));
 
-
+#endif
   metrics_api::Provider::SetMeterProvider(provider);
       std::cout << "\n LALIT->Init metrics done\n";
 
@@ -56,21 +58,61 @@ void initMetrics()
 
 int main(int argc, char **argv)
 {
-    initMetrics();
+  std::vector<std::string> args(argv + 1, argv + argc);
   std::string example_type;
-  if (argc >= 2)
-  {
-    example_type = argv[1];
+  if (args.size() == 0) {
+      std::cout <<  "Options -- \n" ;
+      std::cout <<  "\t --process.cpu.time --process.cpu.utilization --process.memory.usage --process.memory.virtual\n" ;
+      std::cout <<  "\t --process.disk.io --process.network.io --process.threads --process.open.files --process.context.switches\n";
+      exit(1); 
   }
-  if (example_type == "process.cpu.time")
-  {
-    TestLib::create_process_cpu_time_observable_counter();
+  initMetrics();  
+  for (auto &arg: args) {
+    if (arg == "--process.cpu.time") {
+      TestLib::create_process_cpu_time_observable_counter();
+    }
+    else if (arg == "--process.cpu.utilization")
+    {
+      TestLib::create_process_cpu_utilization_observable_gauge();
+    }
+    else if (arg == "--process.memory.usage")
+    {
+      TestLib::create_process_memory_usage_observable_gauge();
+    }
+    else if (arg == "--process.memory.virtual")
+    {
+      TestLib::create_process_memory_virtual_observable_gauge();
+    }
+    else if (arg == "--process.disk.io")
+    {
+      TestLib::create_process_disk_io_observable_gauge();
+    }
+    else if (arg == "--process.network.io")
+    {
+      TestLib::create_process_network_io_observable_gauge();
+    }
+    else if (arg == "--process.threads")
+    {
+      TestLib::create_process_threads_observable_gauge();
+    }
+    else if(arg == "--process.open.files")
+    {
+      TestLib::create_process_open_files_observable_gauge();
+    }
+    else if (arg == "--process.context.switches")
+    {
+      TestLib::create_process_context_switches_observable_gauge();
+    }
+    else {
+      std::cout << " Invalid command, exiting..";
+      std::cout <<  "\tOptions -- \n" ;
+      std::cout <<  "\t\t --process.cpu.time --process.cpu.utilization --process.memory.usage --process.memory.virtual" ;
+      std::cout <<  "\t\t --process.disk.io --process.network.io --process.threads --process.open.files --process.context.switches";
+      exit(1);
+    }
   }
+
   while(true){
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
   }
-  }
-
-
-
-
+}
