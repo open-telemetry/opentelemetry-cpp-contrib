@@ -100,6 +100,7 @@ schedule_delay_millis = 5000
 max_export_batch_size = 512
 
 [service]
+# Can also be set by the OTEL_SERVICE_NAME environment variable.
 name = "nginx-proxy" # Opentelemetry resource name
 
 [sampler]
