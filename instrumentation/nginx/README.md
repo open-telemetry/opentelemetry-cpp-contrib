@@ -109,6 +109,22 @@ ratio = 0.1
 parent_based = false
 ```
 
+Here's what it would look like if you used the OTLP exporter, but only set the endpoint with an environment variables (e.g. `OTEL_EXPORTER_OTLP_ENDPOINT="localhost:4317"`).
+```toml
+exporter = "otlp"
+processor = "batch"
+
+[exporters.otlp]
+
+[processors.batch]
+max_queue_size = 2048
+schedule_delay_millis = 5000
+max_export_batch_size = 512
+
+[service]
+name = "nginx-proxy" # Opentelemetry resource name
+```
+
 To use other environment variables defined in the [specification](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/exporter.md), must add the "env" directive.
 
 ```
