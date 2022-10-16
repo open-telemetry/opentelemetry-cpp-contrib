@@ -232,7 +232,7 @@ size_t Exporter::SerializeHistogramMetrics(
     sdk::metrics::AggregationType agg_type, MetricsEventType event_type,
     uint64_t count, const sdk::metrics::ValueType &sum,
     const sdk::metrics::ValueType &min, const sdk::metrics::ValueType &max,
-    const sdk::metrics::ListType &boundaries,
+    const std::list<double> &boundaries,
     const std::vector<uint64_t> &counts, common::SystemTimestamp ts,
     std::string metric_name, const sdk::metrics::PointAttributes &attributes) {
 
@@ -275,7 +275,7 @@ size_t Exporter::SerializeHistogramMetrics(
   uint16_t bucket_count = 0;
   if (event_type ==
       MetricsEventType::ExternallyAggregatedULongDistributionMetric) {
-    for (auto boundary : nostd::get<std::list<long>>(boundaries)) {
+    for (auto boundary : boundaries) {
       if (counts[index] > 0) {
         SerializeInt<uint64_t>(buffer_histogram_, bufferIndex,
                                static_cast<uint64_t>(boundary));

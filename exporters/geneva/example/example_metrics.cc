@@ -112,16 +112,16 @@ int main(int argc, char **argv) {
   initMetrics(name, account_name);
 
   if (example_type == "counter") {
-    foo_library::counter_example(name);
+    FooLibrary::counter_example(name);
   } else if (example_type == "observable_counter") {
-    foo_library::observable_counter_example(name);
+    FooLibrary::observable_counter_example(name);
   } else if (example_type == "histogram") {
-    foo_library::histogram_example(name);
+    FooLibrary::histogram_example(name);
   } else {
-    std::thread counter_example{&foo_library::counter_example, name};
+    std::thread counter_example{&FooLibrary::counter_example, name};
     std::thread observable_counter_example{
-        &foo_library::observable_counter_example, name};
-    std::thread histogram_example{&foo_library::histogram_example, name};
+        &FooLibrary::observable_counter_example, name};
+    std::thread histogram_example{&FooLibrary::histogram_example, name};
 
     counter_example.join();
     observable_counter_example.join();

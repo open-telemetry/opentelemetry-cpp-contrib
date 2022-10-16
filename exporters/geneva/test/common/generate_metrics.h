@@ -127,8 +127,8 @@ const uint16_t kHistogramLongBucketSize = 10;
 const uint16_t kHistogramLongNonEmptyBucketSize = 8;
 const std::vector<uint64_t> kHistogramLongCounts = {1, 2, 1, 0, 0,
                                                     1, 2, 3, 4, 1};
-const std::list<long> kHistogramLongBoundaries =
-    std::list<long>{0, 5, 10, 25, 50, 75, 100, 250, 500, 1000};
+const std::list<double> kHistogramLongBoundaries =
+    std::list<double>{0.0, 5.0, 10.0, 25.0, 50.0, 75.0, 100.0, 250.0, 500.0, 1000.0};
 
 const std::string kHistogramLongAttributeKey1 = "histogram_long_key1";
 const std::string kHistogramLongAttributeValue1 = "histogram_long_value1";
