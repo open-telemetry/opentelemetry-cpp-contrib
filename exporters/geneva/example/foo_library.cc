@@ -48,7 +48,7 @@ public:
 };
 }  // namespace
 
-void foo_library::counter_example(const std::string &name)
+void FooLibrary::counter_example(const std::string &name)
 {
   std::string counter_name                    = name + "_counter";
   auto provider                               = metrics_api::Provider::GetMeterProvider();
@@ -63,7 +63,7 @@ void foo_library::counter_example(const std::string &name)
   }
 }
 
-void foo_library::observable_counter_example(const std::string &name)
+void FooLibrary::observable_counter_example(const std::string &name)
 {
   std::string counter_name                    = name + "_observable_counter";
   auto provider                               = metrics_api::Provider::GetMeterProvider();
@@ -76,7 +76,7 @@ void foo_library::observable_counter_example(const std::string &name)
   }
 }
 
-void foo_library::histogram_example(const std::string &name)
+void FooLibrary::histogram_example(const std::string &name)
 {
   std::string histogram_name                  = name + "_histogram";
   auto provider                               = metrics_api::Provider::GetMeterProvider();

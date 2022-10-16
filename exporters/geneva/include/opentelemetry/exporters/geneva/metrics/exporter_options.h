@@ -12,14 +12,15 @@ namespace geneva {
 namespace metrics {
 
 struct ExporterOptions {
+// clang-format off
   /*
   Format -
     Windows:
         Account={MetricAccount};NameSpace={MetricNamespace}
     Linux:
-        Endpoint=unix://{UDS
-  Path};Account={MetricAccount};Namespace={MetricNamespace}
+        Endpoint=unix://{UDS Path};Account={MetricAccount};Namespace={MetricNamespace}
   */
+// clang-format off
   std::string connection_string;
 };
 } // namespace metrics

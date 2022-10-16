@@ -5,7 +5,7 @@
 #ifndef ENABLE_METRICS_PREVIEW
 #  include <string>
 
-class foo_library
+class FooLibrary
 {
 public:
   static void counter_example(const std::string &name);

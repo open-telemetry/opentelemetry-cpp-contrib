@@ -29,6 +29,8 @@ Exporter::Exporter(const ExporterOptions &options)
   auto status = data_transport_->Connect();
   if (!status) {
     LOG_ERROR("Exporter::Exporter Connect failed. No data would be sent.");
+    is_shutdown_ = true;
+    return;
   }
   // Initialize non-histogram buffer
   buffer_index_non_histogram_ = InitializeBufferForNonHistogramData();

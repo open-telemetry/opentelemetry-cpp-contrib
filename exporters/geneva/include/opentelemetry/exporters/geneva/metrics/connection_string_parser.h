@@ -5,6 +5,7 @@
 
 #include "opentelemetry/exporters/geneva/metrics/socket_tools.h"
 #include "opentelemetry/ext/http/common/url_parser.h"
+#include "opentelemetry/exporters/geneva/metrics/macros.h"
 #include "opentelemetry/version.h"
 #include <memory>
 #include <string>
@@ -58,6 +59,10 @@ public:
           if (url_->scheme_ == "unix") {
             transport_protocol_ = TransportProtocol::kUNIX;
           }
+#else
+          if (url_->scheme_ == "unix") {
+            LOG_ERROR("Unix domain socket not supported on this platform")
+          }      
 #endif
           if (url_->scheme_ == "tcp") {
             transport_protocol_ = TransportProtocol::kTCP;
