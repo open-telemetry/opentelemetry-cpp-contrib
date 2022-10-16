@@ -70,10 +70,9 @@ void FooLibrary::observable_counter_example(const std::string &name)
   nostd::shared_ptr<metrics_api::Meter> meter = provider->GetMeter(name, "1.2.0");
   auto counter                                = meter->CreateDoubleObservableCounter(counter_name);
   counter->AddCallback(MeasurementFetcher::Fetcher, nullptr);
-  while (true)
-  {
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-  }
+  std::this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::hours(std::numeric_limits<int>::max()));
+
+
 }
 
 void FooLibrary::histogram_example(const std::string &name)
