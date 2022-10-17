@@ -28,7 +28,7 @@ Exporter::Exporter(const ExporterOptions &options)
   // Connect transport at initialization
   auto status = data_transport_->Connect();
   if (!status) {
-    LOG_ERROR("Exporter::Exporter Connect failed. No data would be sent.");
+    LOG_ERROR("[Geneva Exporter] Connect failed. No data would be sent.");
     is_shutdown_ = true;
     return;
   }
@@ -53,7 +53,7 @@ opentelemetry::sdk::common::ExportResult Exporter::Export(
   }
 
   if (shutdown) {
-    OTEL_INTERNAL_LOG_ERROR("[OTLP METRICS gRPC] Exporting "
+    OTEL_INTERNAL_LOG_ERROR("[Genava Exporter] Exporting "
                             << data.scope_metric_data_.size()
                             << " metric(s) failed, exporter is shutdown");
     return sdk::common::ExportResult::kFailure;
