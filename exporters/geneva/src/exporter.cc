@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "opentelemetry/exporters/geneva/metrics/exporter.h"
+#include "opentelemetry/exporters/geneva/metrics/macros.h"
 #include "opentelemetry/exporters/geneva/metrics/unix_domain_socket_data_transport.h"
 #include "opentelemetry/metrics/meter_provider.h"
 #include "opentelemetry/sdk_config.h"
@@ -105,7 +106,8 @@ opentelemetry::sdk::common::ExportResult Exporter::Export(
           MetricsEventType event_type =
               MetricsEventType::ExternallyAggregatedULongDistributionMetric;
           if (nostd::holds_alternative<double>(value.sum_)) {
-            // TBD -- Not supported
+            LOG_ERROR("Geneva Exporter::Export- Double value is not supported "
+                      "for Histogram");
             continue;
           }
           body_length = SerializeHistogramMetrics(
@@ -171,7 +173,7 @@ size_t Exporter::InitiaizeBufferForHistogramData() {
 size_t Exporter::SerializeNonHistogramMetrics(
     sdk::metrics::AggregationType agg_type, MetricsEventType event_type,
     const sdk::metrics::ValueType &value, common::SystemTimestamp ts,
-    std::string metric_name, const sdk::metrics::PointAttributes &attributes) {
+    const std::string& metric_name, const sdk::metrics::PointAttributes &attributes) {
   auto bufferIndex = buffer_index_non_histogram_;
   SerializeString(buffer_non_histogram_, bufferIndex, metric_name);
   for (const auto &kv : attributes) {
@@ -234,9 +236,9 @@ size_t Exporter::SerializeHistogramMetrics(
     sdk::metrics::AggregationType agg_type, MetricsEventType event_type,
     uint64_t count, const sdk::metrics::ValueType &sum,
     const sdk::metrics::ValueType &min, const sdk::metrics::ValueType &max,
-    const std::list<double> &boundaries,
-    const std::vector<uint64_t> &counts, common::SystemTimestamp ts,
-    std::string metric_name, const sdk::metrics::PointAttributes &attributes) {
+    const std::list<double> &boundaries, const std::vector<uint64_t> &counts,
+    common::SystemTimestamp ts, const std::string &metric_name,
+    const sdk::metrics::PointAttributes &attributes) {
 
   auto bufferIndex = buffer_index_histogram_;
   // metric name

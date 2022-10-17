@@ -3,10 +3,9 @@
 
 #pragma once
 #ifndef ENABLE_METRICS_PREVIEW
-#  include <string>
+#include <string>
 
-class FooLibrary
-{
+class FooLibrary {
 public:
   static void counter_example(const std::string &name);
   static void histogram_example(const std::string &name);

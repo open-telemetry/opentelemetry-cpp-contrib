@@ -12,7 +12,7 @@ namespace geneva {
 namespace metrics {
 
 struct ExporterOptions {
-// clang-format off
+  // clang-format off
   /*
   Format -
     Windows:

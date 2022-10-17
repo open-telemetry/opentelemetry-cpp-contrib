@@ -1,18 +1,18 @@
 cmake_minimum_required(VERSION 3.12)
 
-# MAIN_PROJECT CHECK
-## determine if fluentd exporter is built as a subproject (using add_subdirectory) or if it is the main project
-##
+# MAIN_PROJECT CHECK determine if fluentd exporter is built as a subproject
+# (using add_subdirectory) or if it is the main project
+#
 set(MAIN_PROJECT OFF)
 
 set(MAIN_PROJECT OFF)
-if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   project(opentelemetry-geneva-metrics)
   set(MAIN_PROJECT ON)
 endif()
 
 add_definitions(-DHAVE_CONSOLE_LOG)
-if (MAIN_PROJECT)
+if(MAIN_PROJECT)
   find_package(opentelemetry-cpp REQUIRED)
 endif()
 
@@ -75,7 +75,7 @@ install(
   DESTINATION include/opentelemetry/exporters
   FILES_MATCHING
   PATTERN "*.h")
-  
+
 if(BUILD_EXAMPLE)
   add_executable(example_metrics example/example_metrics.cc
                                  example/foo_library.cc)

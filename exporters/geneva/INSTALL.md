@@ -107,8 +107,8 @@ copy the script and patch file from to the `tools` directory.
     ```
     # <project-repo-root>
     #    |
-    #     -  tools 
-    #         | 
+    #     -  tools
+    #         |
     #           - build_geneva_metrics_exporter.sh
     #           - 001-geneva-metrics-exporter.patch
     #     -  deps

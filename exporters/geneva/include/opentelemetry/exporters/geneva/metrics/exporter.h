@@ -79,14 +79,15 @@ private:
   size_t SerializeNonHistogramMetrics(sdk::metrics::AggregationType,
                                       MetricsEventType,
                                       const sdk::metrics::ValueType &,
-                                      common::SystemTimestamp, std::string,
+                                      common::SystemTimestamp,
+                                      const std::string &,
                                       const sdk::metrics::PointAttributes &);
   size_t SerializeHistogramMetrics(
       sdk::metrics::AggregationType, MetricsEventType, uint64_t,
       const sdk::metrics::ValueType &, const sdk::metrics::ValueType &,
       const sdk::metrics::ValueType &, const std::list<double> &boundaries,
-      const std::vector<uint64_t> &counts, common::SystemTimestamp, std::string,
-      const sdk::metrics::PointAttributes &);
+      const std::vector<uint64_t> &counts, common::SystemTimestamp,
+      const std::string &, const sdk::metrics::PointAttributes &);
 };
 
 template <class T>
