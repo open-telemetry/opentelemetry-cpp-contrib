@@ -73,10 +73,7 @@ for instructions.
 
    ```console
    $ ctest
-   Test project /tmp/opentelemetry-cpp/build
-        Start   1: trace.SystemTimestampTest.Construction
-   ...
-        Start 380: ext.http.urlparser.UrlParserTests.BasicTests
+   Test project /tmp/opentelemetry-cpp-contrib/exporters/geneva/build
    ...
    100% tests passed, 0 tests failed out of 380
    $
