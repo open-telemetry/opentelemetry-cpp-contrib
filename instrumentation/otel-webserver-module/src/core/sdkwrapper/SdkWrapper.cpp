@@ -26,7 +26,6 @@ namespace sdkwrapper {
 
 namespace {
 
-constexpr const char* BAGGAGE_HEADER_NAME = "baggage";
 constexpr const char* TRACEPARENT_HEADER_NAME = "traceparent";
 constexpr const char* TRACESTATE_HEADER_NAME = "tracestate";
 
@@ -81,7 +80,6 @@ void SdkWrapper::PopulatePropagationHeaders(
 	}
 
   // copy all relevant kv pairs into carrier
-  carrier[BAGGAGE_HEADER_NAME] = otelCarrier.Get(BAGGAGE_HEADER_NAME).data();
   carrier[TRACEPARENT_HEADER_NAME] = otelCarrier.Get(TRACEPARENT_HEADER_NAME).data();
   carrier[TRACESTATE_HEADER_NAME] = otelCarrier.Get(TRACESTATE_HEADER_NAME).data();
 }

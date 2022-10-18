@@ -45,8 +45,8 @@ class RequestPayload
     std::string target;
     std::string flavor;
     std::string client_ip;
-    long port;
-    long status_code;
+    long port = 80;
+    long status_code = 200;
 
 public:
 	void set_http_headers(const std::string& key, const std::string& value)

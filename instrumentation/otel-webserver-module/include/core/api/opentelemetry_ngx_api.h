@@ -25,11 +25,8 @@
 extern "C" {
 #endif
 
-#define BAGGAGE "baggage"
-#define TRACEPARENT "traceparent"
-#define TRACESTATE "tracestate"
-
-const char* httpHeaders[] = {"baggage", "traceparent", "tracestate"};
+const char* httpHeaders[] = {"traceparent", "tracestate"};
+const size_t headers_len = sizeof(httpHeaders)/sizeof(httpHeaders[0]);
 
 typedef struct{
     char* name;
