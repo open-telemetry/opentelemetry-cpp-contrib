@@ -178,7 +178,7 @@ size_t Exporter::SerializeNonHistogramMetrics(
   SerializeString(buffer_non_histogram_, bufferIndex, metric_name);
   for (const auto &kv : attributes) {
     if (kv.first.size() > kMaxDimensionNameSize) {
-      LOG_WARN("Dimension name limit overflow: %s", kv.first.c_str());
+      LOG_WARN("Dimension name limit overflow: %s Limit %d", kv.first.c_str(), kMaxDimensionNameSize);
       continue;
     }
     SerializeString(buffer_non_histogram_, bufferIndex, kv.first);
@@ -247,7 +247,7 @@ size_t Exporter::SerializeHistogramMetrics(
   // dimentions - name
   for (const auto &kv : attributes) {
     if (kv.first.size() > kMaxDimensionNameSize) {
-      LOG_WARN("Dimension name limit overflow: %s", kv.first.c_str());
+      LOG_WARN("Dimension name limit overflow: %s Limit: %d", kv.first.c_str(), kMaxDimensionNameSize);
       continue;
     }
     SerializeString(buffer_histogram_, bufferIndex, kv.first);
