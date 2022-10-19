@@ -93,11 +93,6 @@ SdkHelperFactory::SdkHelperFactory(
     using MapHttpTraceCtx = opentelemetry::trace::propagation::HttpTraceContext;
     mPropagators.push_back(
         std::unique_ptr<MapHttpTraceCtx>(new MapHttpTraceCtx()));
-
-    // Adding Baggage Propagator
-    using BaggagePropagator = opentelemetry::baggage::propagation::BaggagePropagator;
-    mPropagators.push_back(
-        std::unique_ptr<BaggagePropagator>(new BaggagePropagator()));
 }
 
 OtelTracer SdkHelperFactory::GetTracer()
