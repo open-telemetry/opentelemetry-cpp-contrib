@@ -468,7 +468,7 @@ TEST(WSAgent, end_request_returns_success)
 		}));
 
 	APPD_SDK_STATUS_CODE res1 = APPD_SUCCESS;
-	EXPECT_CALL(mockProcessor, endRequest(_,_))
+	EXPECT_CALL(mockProcessor, endRequest(_,_,_))
 		.Times(1)
 		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
 			return res1;
