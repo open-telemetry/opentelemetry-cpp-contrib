@@ -73,6 +73,13 @@ APPD_SDK_STATUS_CODE RequestProcessingEngine::startRequest(
     keyValueMap[kAttrHTTPFlavor] = payload->get_flavor();
     keyValueMap[kAttrHTTPStatusCode] = payload->get_status_code();
     keyValueMap[kAttrHTTPClientIP] = payload->get_client_ip();
+
+    auto& request_headers = payload->get_request_headers();
+    for (auto itr = request_headers.begin(); itr != request_headers.end(); itr++) {
+        std::string key = "http.request.header." +
+                std::string(itr->first);
+        keyValueMap[key] = itr->second;
+    }
     auto span = m_sdkWrapper->CreateSpan(spanName, sdkwrapper::SpanKind::SERVER, keyValueMap, payload->get_http_headers());
 
     LOG4CXX_TRACE(mLogger, "Span started for context: [" << wscontext
@@ -89,7 +96,8 @@ APPD_SDK_STATUS_CODE RequestProcessingEngine::startRequest(
 
 APPD_SDK_STATUS_CODE RequestProcessingEngine::endRequest(
     APPD_SDK_HANDLE_REQ reqHandle,
-    const char* error) {
+    const char* error,
+    const ResponsePayload* payload) {
 
     if (!reqHandle) {
         LOG4CXX_ERROR(mLogger, "Invalid request, can't end request");
@@ -138,6 +146,14 @@ APPD_SDK_STATUS_CODE RequestProcessingEngine::endRequest(
 
     } else {
         rootSpan->SetStatus(StatusCode::Ok);
+    }
+    if (payload != nullptr) {
+        for (auto itr = payload->response_headers.begin();
+            itr != payload->response_headers.end(); itr++) {
+            std::string key = "http.response.header." +
+                std::string(itr->first);
+            rootSpan->AddAttribute(key, itr->second);
+        }
     }
 
     LOG4CXX_TRACE(mLogger, "Ending root span with id: " << rootSpan.get());

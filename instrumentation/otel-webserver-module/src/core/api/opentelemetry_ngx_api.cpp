@@ -22,7 +22,7 @@
 
 appd::core::WSAgent wsAgent; // global variable for interface between Hooks and Core Logic
 
-void populatePayload(request_payload* req_payload, void* load, int count)
+void populatePayload(request_payload* req_payload, void* load)
 {
     appd::core::RequestPayload* payload = (appd::core::RequestPayload*)load;
     payload->set_uri(req_payload->uri);
@@ -31,8 +31,13 @@ void populatePayload(request_payload* req_payload, void* load, int count)
     payload->set_http_get_parameter(req_payload->http_get_param);
     payload->set_http_request_method(req_payload->request_method);
 
-    for(int i=0; i<count; i++){
-        payload->set_http_headers(req_payload->headers[i].name, req_payload->headers[i].value);
+    for(int i=0; i<req_payload->propagation_count; i++){
+        payload->set_http_headers(req_payload->propagation_headers[i].name, req_payload->propagation_headers[i].value);
+    }
+
+    for (int i = 0; i < req_payload->request_headers_count; i++) {
+        payload->set_request_headers(req_payload->request_headers[i].name,
+            req_payload->request_headers[i].value);
     }
 }
 
@@ -60,21 +65,32 @@ APPD_SDK_STATUS_CODE opentelemetry_core_init(APPD_SDK_ENV_RECORD* env, unsigned 
     return res;
 }
 
-APPD_SDK_STATUS_CODE startRequest(const char* wscontext, request_payload* req_payload, APPD_SDK_HANDLE_REQ* reqHandle, int count)
+APPD_SDK_STATUS_CODE startRequest(const char* wscontext, request_payload* req_payload, APPD_SDK_HANDLE_REQ* reqHandle)
 {
     APPD_SDK_STATUS_CODE res = APPD_SUCCESS;
 
     std::unique_ptr<appd::core::RequestPayload> requestPayload(new appd::core::RequestPayload);
-    populatePayload(req_payload, requestPayload.get(), count);
+    populatePayload(req_payload, requestPayload.get());
     res = wsAgent.startRequest(wscontext, requestPayload.get(), reqHandle);
 
     return res;
 }
 
-APPD_SDK_STATUS_CODE endRequest(APPD_SDK_HANDLE_REQ req_handle_key, const char* errMsg)
+APPD_SDK_STATUS_CODE endRequest(APPD_SDK_HANDLE_REQ req_handle_key, const char* errMsg,
+    response_payload* payload)
 {
     APPD_SDK_STATUS_CODE res = APPD_SUCCESS;
-    res = wsAgent.endRequest(req_handle_key, errMsg);
+
+    std::unique_ptr<appd::core::ResponsePayload>
+        responsePayload(new appd::core::ResponsePayload);
+    if (payload != NULL) {
+        for (int i = 0; i < payload->response_headers_count; i++) {
+            responsePayload->response_headers[payload->response_headers[i].name]
+                = payload->response_headers[i].value;
+        }
+    }
+
+    res = wsAgent.endRequest(req_handle_key, errMsg, responsePayload.get());
 
     return res;
 }
