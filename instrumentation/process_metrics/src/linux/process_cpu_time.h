@@ -19,6 +19,9 @@ class ProcessCpuTime
     // returns cpu time (user + system) since last call to Last*Time()
     double LastElapsedTime();
 
+    // returns cpu utilization
+    double CpuUtilization();
+
    // returns user and system time separately since last call to Last*Time()
     void LastElapsedSystemAndUserTime(long &system_time, long &user_time);
 
@@ -26,6 +29,7 @@ class ProcessCpuTime
         static long clock_ticks_per_sec_;
         struct tms start_time_;
         mutable struct tms last_time_;
+        const unsigned int number_of_cpus_;
 };
 
 #endif

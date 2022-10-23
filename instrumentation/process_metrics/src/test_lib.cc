@@ -32,7 +32,7 @@ void TestLib::create_process_cpu_utilization_observable_gauge()
 {
   auto provider                               = metrics_api::Provider::GetMeterProvider();
   nostd::shared_ptr<metrics_api::Meter> meter = provider->GetMeter("process.metrics", "1.2.0");
-  cpu_utilization_obserable_gauge_ = meter->CreateLongObservableGauge("process.cpu.utilization", "des", "unit");
+  cpu_utilization_obserable_gauge_ = meter->CreateDoubleObservableGauge("process.cpu.utilization", "des", "unit");
   cpu_utilization_obserable_gauge_->AddCallback(ProcessMetricsFactory::GetProcessCpuUtilization, nullptr);
 }
 

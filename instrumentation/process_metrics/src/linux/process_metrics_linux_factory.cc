@@ -102,6 +102,11 @@ namespace {
 
     void ProcessMetricsFactory::GetProcessCpuUtilization(opentelemetry::metrics::ObserverResult observer_result, void * /*state*/)
     {
+        static ProcessCpuTime cputime;
+        double cpu_utilization = cputime.CpuUtilization();
+        std::cout << "\n CPU TIME: " << cpu_utilization;
+        nostd::get<nostd::shared_ptr<metrics::ObserverResultT<double>>>(observer_result)->Observe(cpu_utilization, {{"state", "system"}});
+
         //TODO
     }
 
