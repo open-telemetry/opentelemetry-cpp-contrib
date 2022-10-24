@@ -182,7 +182,8 @@ namespace {
         ReadProcSelfFileForKey("/proc/self/status", "voluntary_ctxt_switches", voluntary_ctxt_switches);
         ReadProcSelfFileForKey("/proc/self/status", "nonvoluntary_ctxt_switches", nonvoluntary_ctxt_switches);
         auto total_ctxt_switches = voluntary_ctxt_switches + nonvoluntary_ctxt_switches;
-        opentelemetry::nostd::get<nostd::shared_ptr<opentelemetry::metrics::ObserverResultT<long>>>(observer_result)->Observe(total_ctxt_switches);
+        opentelemetry::nostd::get<nostd::shared_ptr<opentelemetry::metrics::ObserverResultT<long>>>(observer_result)->Observe(voluntary_ctxt_switches, {{"type", "voluntary_ctxt_switches"}});
+        opentelemetry::nostd::get<nostd::shared_ptr<opentelemetry::metrics::ObserverResultT<long>>>(observer_result)->Observe(nonvoluntary_ctxt_switches, {{"type", "nonvoluntary_ctxt_switches"}});
     }
 
 
