@@ -7,7 +7,7 @@
 #include "opentelemetry/exporters/geneva/metrics/connection_string_parser.h"
 #include "opentelemetry/exporters/geneva/metrics/data_transport.h"
 #include "opentelemetry/exporters/geneva/metrics/exporter_options.h"
-#include "opentelemetry/sdk/metrics/metric_exporter.h"
+#include "opentelemetry/sdk/metrics/push_metric_exporter.h"
 
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter {
@@ -42,7 +42,7 @@ enum class MetricsEventType : uint16_t {
 /**
  * The Geneva metrics exporter exports metrics data to Geneva
  */
-class Exporter final : public opentelemetry::sdk::metrics::MetricExporter {
+class Exporter final : public opentelemetry::sdk::metrics::PushMetricExporter {
 public:
   Exporter(const ExporterOptions &options);
 
