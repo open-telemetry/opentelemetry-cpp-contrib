@@ -5,7 +5,7 @@ for the build
 
 # Prerequisite
 
- - The exporter requires opentelemetry-cpp already installed.
+ - The exporter requires opentelemetry-cpp (version v1.7.0 or higher) already installed.
 
  - [GoogleTest](https://github.com/google/googletest) framework to build and run
   the unittests.

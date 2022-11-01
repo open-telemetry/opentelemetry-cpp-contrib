@@ -30,7 +30,7 @@ void initMetrics(const std::string &name, const std::string &account_name) {
                             ";Account=" + account_name +
                             ";Namespace=" + kNamespaceName;
   geneva_exporter::ExporterOptions options{conn_string};
-  std::unique_ptr<metric_sdk::MetricExporter> exporter{
+  std::unique_ptr<metric_sdk::PushMetricExporter> exporter{
       new geneva_exporter::Exporter(options)};
 
   std::string version{"1.2.0"};
@@ -83,9 +83,9 @@ void initMetrics(const std::string &name, const std::string &account_name) {
       new metric_sdk::MeterSelector(name, version, schema)};
   std::shared_ptr<opentelemetry::sdk::metrics::AggregationConfig>
       aggregation_config{
-          new opentelemetry::sdk::metrics::HistogramAggregationConfig<double>};
+          new opentelemetry::sdk::metrics::HistogramAggregationConfig()};
   static_cast<
-      opentelemetry::sdk::metrics::HistogramAggregationConfig<double> *>(
+      opentelemetry::sdk::metrics::HistogramAggregationConfig*>(
       aggregation_config.get())
       ->boundaries_ = std::list<double>{0.0,   50.0,   100.0,  250.0,  500.0,
                                         750.0, 1000.0, 2500.0, 5000.0, 10000.0};
