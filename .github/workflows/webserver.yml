@@ -117,9 +117,11 @@ jobs:
       - name: run integrationtest
         run: |
           docker rm -f apache_centos7_container
-          git clone https://github.com/debasis9dash/opentelemetry-cpp-contrib.git
-          cd opentelemetry-cpp-contrib/instrumentation/otel-webserver-module
-          git pull origin tests/zipkin
+          pwd
+          ls
+          git branch
+          git log
+          cd instrumentation/otel-webserver-module
           docker-compose --profile centos7 up -d
           docker ps -a
           sleep 30
