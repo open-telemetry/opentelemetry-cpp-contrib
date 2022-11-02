@@ -1,0 +1,20 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index a1b69340..bf347198 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -442,3 +442,5 @@ install(
+   EXPORT "${PROJECT_NAME}-target"
+   NAMESPACE "${PROJECT_NAME}::"
+   DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
++
++
+diff --git a/exporters/CMakeLists.txt b/exporters/CMakeLists.txt
+index 862d2c77..354bfef4 100644
+--- a/exporters/CMakeLists.txt
++++ b/exporters/CMakeLists.txt
+@@ -38,3 +38,5 @@ endif()
+ if(WITH_JAEGER)
+   add_subdirectory(jaeger)
+ endif()
++
++add_subdirectory(geneva)

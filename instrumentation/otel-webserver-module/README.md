@@ -149,7 +149,7 @@ Currently, Nginx Webserver module monitores some fixed set of modules, which get
 
 | Library                                        | Present Version |
 | ---------------------------------------------- | -----------     |
-| Nginx                                          | 1.18.0          |
+| Nginx                                          | 1.22.0, 1.23.0,1.23.1          |
 | Apr                                            | 1.7.0           |
 | Apr-util                                       | 1.6.1           |
 
@@ -179,7 +179,8 @@ Currently, Nginx Webserver module monitores some fixed set of modules, which get
 - Docker Desktop should be installed on the system
 
 #### Platform Supported
-- Supports only Nginx v1.18.0.
+- Supports both stable(1.22.0) and mainline(1.23.1).
+- Earlier support of v1.18.0 is deprecated.
 - The build is supported for **x86-64** platforms.
 - OS support: **Centos6**, **Centos7, ubuntu20.04**.
 
@@ -235,7 +236,7 @@ Make sure to edit the directives values according to your need e.g NginxModuleOt
 Edit the nginx.conf to provide the reference to opentelemetry_module.conf and shared library.
 Please mind the order and location of the below entries by referring to ```conf/nginx/nginx.conf```.
 ```
-load_module /opt/opentelemetry-webserver-sdk/WebServerModule/Nginx/ngx_http_opentelemetry_module.so;
+load_module /opt/opentelemetry-webserver-sdk/WebServerModule/Nginx/<nginx-version>/ngx_http_opentelemetry_module.so;
 include /opt/opentelemetry_module.conf;
 ```
 

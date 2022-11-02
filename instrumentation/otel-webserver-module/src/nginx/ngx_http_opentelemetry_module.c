@@ -14,12 +14,11 @@
 * limitations under the License.
 */
 
+#include "ngx_http_opentelemetry_module.h"
+#include "ngx_http_opentelemetry_log.h"
 #include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
-
-#include "ngx_http_opentelemetry_module.h"
-#include "ngx_http_opentelemetry_log.h"
 
 ngx_http_opentelemetry_worker_conf_t *worker_conf;
 static contextNode contexts[5];
@@ -701,6 +700,7 @@ static APPD_SDK_STATUS_CODE otel_startInteraction(ngx_http_request_t* r, const c
 
         if (APPD_ISSUCCESS(res))
         {
+            removeUnwantedHeader(r);
             otel_payload_decorator(r, propagationHeaders, ix);
             ngx_writeTrace(r->connection->log, __func__, "Interaction begin successful");
         }
@@ -721,15 +721,42 @@ static APPD_SDK_STATUS_CODE otel_startInteraction(ngx_http_request_t* r, const c
 
 static void otel_payload_decorator(ngx_http_request_t* r, APPD_SDK_ENV_RECORD* propagationHeaders, int count)
 {
+   ngx_list_part_t  *part;
+   ngx_table_elt_t  *header;
    ngx_table_elt_t            *h;
    ngx_http_header_t          *hh;
    ngx_http_core_main_conf_t  *cmcf;
+   ngx_uint_t       nelts;
+
+   part = &r->headers_in.headers.part;
+   header = (ngx_table_elt_t*)part->elts;
+   nelts = part->nelts;
 
    for(int i=0; i<count; i++){
-       h = ngx_list_push(&r->headers_in.headers);
-       if(h == NULL){
-           return;
+
+       int header_found=0;
+       for(ngx_uint_t j = 0; j<nelts; j++){
+           h = &header[j];
+           if(strcmp(httpHeaders[i], h->key.data)==0){
+               
+               header_found=1;
+
+               if(h->key.data)
+                    ngx_pfree(r->pool, h->key.data);
+               if(h->value.data)
+                    ngx_pfree(r->pool, h->value.data);
+               
+               break;
+           }
        }
+       if(header_found==0)
+       {
+           h = ngx_list_push(&r->headers_in.headers);
+       }
+
+       if(h == NULL )
+            return;
+
        h->key.len = strlen(propagationHeaders[i].name);
        h->key.data = ngx_pcalloc(r->pool, sizeof(char)*((h->key.len)+1));
        strcpy(h->key.data, propagationHeaders[i].name);
@@ -750,6 +777,7 @@ static void otel_payload_decorator(ngx_http_request_t* r, APPD_SDK_ENV_RECORD* p
        }
 
        ngx_writeTrace(r->connection->log, __func__, "Value : %s", propagationHeaders[i].value);
+
    }
    
    ngx_http_otel_handles_t* ctx = ngx_http_get_module_ctx(r, ngx_http_opentelemetry_module);
@@ -1434,6 +1462,47 @@ static void traceConfig(ngx_http_request_t *r, ngx_http_opentelemetry_loc_conf_t
                                                       (conf->nginxModuleSegmentParameter).data);
 }
 
+static void removeUnwantedHeader(ngx_http_request_t* r)
+{
+  ngx_list_part_t  *part;
+  ngx_table_elt_t  *header;
+  ngx_table_elt_t            *h;
+  ngx_http_header_t          *hh;
+  ngx_http_core_main_conf_t  *cmcf;
+  ngx_uint_t       nelts;
+
+  part = &r->headers_in.headers.part;
+  header = (ngx_table_elt_t*)part->elts;
+  nelts = part->nelts;
+
+  for(ngx_uint_t j = 0; j<nelts; j++){
+    h = &header[j];
+    if(strcmp("singularityheader", h->key.data)==0){
+      if (h->value.len == 0) {
+        break;
+      }
+      if(h->value.data)
+        ngx_pfree(r->pool, h->value.data);
+
+      char str[] = "";
+      h->hash = ngx_hash_key(h->key.data, h->key.len);
+
+      h->value.len = 0;
+      h->value.data = ngx_pcalloc(r->pool, sizeof(char)*((h->value.len)+1));
+      strcpy(h->value.data, str);
+      h->lowcase_key = h->key.data;
+
+      cmcf = ngx_http_get_module_main_conf(r, ngx_http_core_module);
+      hh = ngx_hash_find(&cmcf->headers_in_hash, h->hash,h->lowcase_key, h->key.len);
+      if (hh && hh->handler(r, h, hh->offset) != NGX_OK) {
+       return;
+      }
+
+      break;
+    }
+  }
+}
+
 static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t* r, int* count){
     ngx_list_part_t  *part;
     ngx_table_elt_t  *header;
@@ -1475,8 +1544,8 @@ static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t*
    header = (ngx_table_elt_t*)part->elts;
    nelts = part->nelts;
 
-   req_payload->headers = ngx_pcalloc(r->pool, 3 * sizeof(http_headers));
-   for(int i=0; i<3; i++){
+   req_payload->headers = ngx_pcalloc(r->pool, headers_len * sizeof(http_headers));
+   for(int i=0; i<headers_len; i++){
        char* c = httpHeaders[i];
        req_payload->headers[*count].name = c;
        for(ngx_uint_t j = 0; j<nelts; j++){
