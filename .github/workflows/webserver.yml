@@ -117,6 +117,10 @@ jobs:
       - name: run integrationtest
         run: |
           docker rm -f apache_centos7_container
+          pwd
+          ls
+          git branch
+          git log
           cd instrumentation/otel-webserver-module
           docker-compose --profile centos7 up -d
           docker ps -a
