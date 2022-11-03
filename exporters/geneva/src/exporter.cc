@@ -4,6 +4,9 @@
 #include "opentelemetry/exporters/geneva/metrics/exporter.h"
 #include "opentelemetry/exporters/geneva/metrics/macros.h"
 #include "opentelemetry/exporters/geneva/metrics/unix_domain_socket_data_transport.h"
+#ifdef _WIN32
+#include "opentelemetry/exporters/geneva/metrics/etw_data_transport.h"
+#endif
 #include "opentelemetry/metrics/meter_provider.h"
 #include "opentelemetry/sdk_config.h"
 
@@ -81,7 +84,7 @@ opentelemetry::sdk::common::ExportResult Exporter::Export(
               sdk::metrics::AggregationType::kSum, event_type, value.value_,
               metric_data.end_ts, metric_data.instrument_descriptor.name_,
               point_data_with_attributes.attributes);
-          data_transport_->Send(buffer_non_histogram_,
+          data_transport_->Send(event_type, buffer_non_histogram_,
                                 body_length + kBinaryHeaderSize);
 
         } else if (nostd::holds_alternative<sdk::metrics::LastValuePointData>(
@@ -97,7 +100,7 @@ opentelemetry::sdk::common::ExportResult Exporter::Export(
               value.value_, metric_data.end_ts,
               metric_data.instrument_descriptor.name_,
               point_data_with_attributes.attributes);
-          data_transport_->Send(buffer_non_histogram_,
+          data_transport_->Send(event_type, buffer_non_histogram_,
                                 body_length + kBinaryHeaderSize);
         } else if (nostd::holds_alternative<sdk::metrics::HistogramPointData>(
                        point_data_with_attributes.point_data)) {
@@ -121,7 +124,7 @@ opentelemetry::sdk::common::ExportResult Exporter::Export(
                   .counts_,
               metric_data.end_ts, metric_data.instrument_descriptor.name_,
               point_data_with_attributes.attributes);
-          data_transport_->Send(buffer_histogram_,
+          data_transport_->Send(event_type, buffer_histogram_,
                                 body_length + kBinaryHeaderSize);
         }
       }

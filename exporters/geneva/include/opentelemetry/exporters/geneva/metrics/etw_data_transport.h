@@ -14,12 +14,15 @@ OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter {
 namespace geneva {
 namespace metrics {
+static const REGHANDLE INVALID_HANDLE = _UI64_MAX;
+
 class ETWDataTransport : public DataTransport {
 public:
   ETWDataTransport(const std::string &etw_provider);
-  bool Connect() noexcept override;
-  bool Send(const char *data, uint16_t length) noexcept override;
+  bool Connect() noexcept override {}
+  bool Send(MetricsEventType event_type, const char *data, uint16_t length) noexcept override {}
   bool Disconnect() noexcept override;
+  ~ETWDataTransport();
 
 private:
   REGHANDLE provider_handle_ ;

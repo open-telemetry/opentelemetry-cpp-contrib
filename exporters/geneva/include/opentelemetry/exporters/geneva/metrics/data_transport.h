@@ -16,7 +16,7 @@ using ByteVector = std::vector<unsigned char>;
 class DataTransport {
 public:
   virtual bool Connect() noexcept = 0;
-  virtual bool Send(const char *data, uint16_t length) noexcept = 0;
+  virtual bool Send(MetricsEventType event_type, const char *data, uint16_t length) noexcept = 0;
   virtual bool Disconnect() noexcept = 0;
 };
 } // namespace metrics
