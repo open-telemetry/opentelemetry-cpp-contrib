@@ -355,11 +355,18 @@ static ngx_command_t ngx_http_opentelemetry_commands[] = {
       offsetof(ngx_http_opentelemetry_loc_conf_t, nginxModuleSegmentParameter),
       NULL},
 
-    { ngx_string("NginxModuleCaptureHeaders"),
-      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_FLAG,
-      ngx_conf_set_flag_slot,
+    { ngx_string("NginxModuleRequestHeaders"),
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
+      ngx_conf_set_str_slot,
       NGX_HTTP_LOC_CONF_OFFSET,
-      offsetof(ngx_http_opentelemetry_loc_conf_t, nginxModuleCaptureHeaders),
+      offsetof(ngx_http_opentelemetry_loc_conf_t, nginxModuleRequestHeaders),
+      NULL},
+
+    { ngx_string("NginxModuleResponseHeaders"),
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
+      ngx_conf_set_str_slot,
+      NGX_HTTP_LOC_CONF_OFFSET,
+      offsetof(ngx_http_opentelemetry_loc_conf_t, nginxModuleResponseHeaders),
       NULL},
 
     ngx_null_command	/* command termination */
@@ -422,7 +429,6 @@ static void* ngx_http_opentelemetry_create_loc_conf(ngx_conf_t *cf)
     conf->nginxModuleTraceAsError              = NGX_CONF_UNSET;
     conf->nginxModuleOtelMaxQueueSize          = NGX_CONF_UNSET;
     conf->nginxModuleOtelSslEnabled            = NGX_CONF_UNSET;
-    conf->nginxModuleCaptureHeaders            = NGX_CONF_UNSET;
 
     return conf;
 }
@@ -462,7 +468,8 @@ static char* ngx_http_opentelemetry_merge_loc_conf(ngx_conf_t *cf, void *parent,
 
     ngx_conf_merge_str_value(conf->nginxModuleSegmentType, prev->nginxModuleSegmentType, "First");
     ngx_conf_merge_str_value(conf->nginxModuleSegmentParameter, prev->nginxModuleSegmentParameter, "2");
-    ngx_conf_merge_value(conf->nginxModuleCaptureHeaders, prev->nginxModuleCaptureHeaders, 0);
+    ngx_conf_merge_str_value(conf->nginxModuleRequestHeaders, prev->nginxModuleRequestHeaders, "");
+    ngx_conf_merge_str_value(conf->nginxModuleResponseHeaders, prev->nginxModuleResponseHeaders, "");
 
     return NGX_CONF_OK;
 }
@@ -1022,7 +1029,8 @@ static ngx_flag_t ngx_initialize_opentelemetry(ngx_http_request_t *r)
               cn = cn->next;
             }
         }
-
+        setRequestResponseHeaders((const char*)(conf->nginxModuleRequestHeaders).data,
+           (const char*)(conf->nginxModuleResponseHeaders).data);
         res = opentelemetry_core_init(env_config, ix, rootCN);
         free(qs);
         free(sd);
@@ -1561,34 +1569,32 @@ static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t*
     header = (ngx_table_elt_t*)part->elts;
     nelts = part->nelts;
 
-    req_payload->propagation_headers = ngx_pcalloc(r->pool, headers_len * sizeof(http_headers));
+    req_payload->propagation_headers = ngx_pcalloc(r->pool, nelts * sizeof(http_headers));
     req_payload->request_headers = ngx_pcalloc(r->pool, nelts * sizeof(http_headers));
     int request_headers_idx = 0;
     int propagation_headers_idx = 0;
     for (ngx_uint_t j = 0; j < nelts; j++) {
 
-      h = &header[j];
-      for (int i = 0; i < headers_len; i++) {
+        h = &header[j];
+        for (int i = 0; i < headers_len; i++) {
 
-        if (strcmp(h->key.data, httpHeaders[i]) == 0 && propagation_headers_idx < headers_len) {
-          req_payload->propagation_headers[propagation_headers_idx].name = httpHeaders[i];
-          req_payload->propagation_headers[propagation_headers_idx].value = (const char*)(h->value).data;
-          if (req_payload->propagation_headers[propagation_headers_idx].value == NULL) {
-            req_payload->propagation_headers[propagation_headers_idx].value = "";
-          }
-          propagation_headers_idx++;
-          break;
+            if (strcmp(h->key.data, httpHeaders[i]) == 0) {
+                req_payload->propagation_headers[propagation_headers_idx].name = httpHeaders[i];
+                req_payload->propagation_headers[propagation_headers_idx].value = (const char*)(h->value).data;
+                if (req_payload->propagation_headers[propagation_headers_idx].value == NULL) {
+                    req_payload->propagation_headers[propagation_headers_idx].value = "";
+                }
+                propagation_headers_idx++;
+                break;
+            }
         }
-      }
 
-      if (conf->nginxModuleCaptureHeaders && request_headers_idx < nelts) {
         req_payload->request_headers[request_headers_idx].name = (const char*)(h->key).data;
         req_payload->request_headers[request_headers_idx].value = (const char*)(h->value).data;
         if (req_payload->request_headers[request_headers_idx].value == NULL) {
-          req_payload->request_headers[request_headers_idx].value = "";
+            req_payload->request_headers[request_headers_idx].value = "";
         }
         request_headers_idx++;
-      }
     }
     req_payload->propagation_count = propagation_headers_idx;
     req_payload->request_headers_count = request_headers_idx;
@@ -1599,34 +1605,30 @@ static void fillResponsePayload(response_payload* res_payload, ngx_http_request_
     if (!r->pool) {
         return;
     }
-    ngx_http_opentelemetry_loc_conf_t *conf =
-        ngx_http_get_module_loc_conf(r, ngx_http_opentelemetry_module);
 
-    if (conf->nginxModuleCaptureHeaders) {
-        ngx_list_part_t  *part;
-        ngx_table_elt_t  *header;
-        ngx_uint_t       nelts;
-        ngx_table_elt_t  *h;
+    ngx_list_part_t  *part;
+    ngx_table_elt_t  *header;
+    ngx_uint_t       nelts;
+    ngx_table_elt_t  *h;
 
-        part = &r->headers_out.headers.part;
-        header = (ngx_table_elt_t*)part->elts;
-        nelts = part->nelts;
+    part = &r->headers_out.headers.part;
+    header = (ngx_table_elt_t*)part->elts;
+    nelts = part->nelts;
 
-        res_payload->response_headers = ngx_pcalloc(r->pool, nelts * sizeof(http_headers));
-        ngx_uint_t headers_count = 0;
+    res_payload->response_headers = ngx_pcalloc(r->pool, nelts * sizeof(http_headers));
+    ngx_uint_t headers_count = 0;
 
-        for (ngx_uint_t j = 0; j < nelts; j++) {
-            h = &header[j];
+    for (ngx_uint_t j = 0; j < nelts; j++) {
+        h = &header[j];
 
-            if (headers_count < nelts) {
-                res_payload->response_headers[headers_count].name = (const char*)(h->key).data;
-                res_payload->response_headers[headers_count].value = (const char*)(h->value).data;
-                if (res_payload->response_headers[headers_count].value == NULL) {
-                    res_payload->response_headers[headers_count].value = "";
-                }
-                headers_count++;
+        if (headers_count < nelts) {
+            res_payload->response_headers[headers_count].name = (const char*)(h->key).data;
+            res_payload->response_headers[headers_count].value = (const char*)(h->value).data;
+            if (res_payload->response_headers[headers_count].value == NULL) {
+                res_payload->response_headers[headers_count].value = "";
             }
+            headers_count++;
         }
-        res_payload->response_headers_count = headers_count;
     }
+    res_payload->response_headers_count = headers_count;
 }

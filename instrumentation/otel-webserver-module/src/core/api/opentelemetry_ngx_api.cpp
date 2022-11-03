@@ -18,9 +18,13 @@
 #include "api/WSAgent.h"
 #include "api/Payload.h"
 #include <cstring>
-
+#include <sstream>
+#include <unordered_set>
+#include <algorithm>
 
 appd::core::WSAgent wsAgent; // global variable for interface between Hooks and Core Logic
+std::unordered_set<std::string> requestHeadersToCapture;
+std::unordered_set<std::string> responseHeadersToCapture;
 
 void populatePayload(request_payload* req_payload, void* load)
 {
@@ -36,8 +40,30 @@ void populatePayload(request_payload* req_payload, void* load)
     }
 
     for (int i = 0; i < req_payload->request_headers_count; i++) {
-        payload->set_request_headers(req_payload->request_headers[i].name,
-            req_payload->request_headers[i].value);
+        std::string key(req_payload->request_headers[i].name);
+        if (requestHeadersToCapture.find(key)
+            != requestHeadersToCapture.end()) {
+            payload->set_request_headers(key,
+                req_payload->request_headers[i].value);
+        }
+    }
+}
+
+void setRequestResponseHeaders(const char* request, const char* response)
+{
+    std::string token;
+    std::stringstream ss;
+
+    ss.str(std::string(request));
+    while(getline(ss, token, ' ')) {
+        requestHeadersToCapture.insert(token);
+    }
+
+    token.clear();
+    ss.clear();
+    ss.str(std::string(response));
+    while(getline(ss, token, ' ')) {
+        responseHeadersToCapture.insert(token);
     }
 }
 
@@ -85,8 +111,12 @@ APPD_SDK_STATUS_CODE endRequest(APPD_SDK_HANDLE_REQ req_handle_key, const char* 
         responsePayload(new appd::core::ResponsePayload);
     if (payload != NULL) {
         for (int i = 0; i < payload->response_headers_count; i++) {
-            responsePayload->response_headers[payload->response_headers[i].name]
-                = payload->response_headers[i].value;
+            std::string key(payload->response_headers[i].name);
+            if (responseHeadersToCapture.find(key)
+            != responseHeadersToCapture.end()) {
+                responsePayload->response_headers[key]
+                    = payload->response_headers[i].value;
+            }
         }
     }
 

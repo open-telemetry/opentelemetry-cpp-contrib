@@ -98,7 +98,8 @@ typedef struct {
     ngx_str_t   nginxModuleMatchpattern;
     ngx_str_t   nginxModuleSegmentType;
     ngx_str_t   nginxModuleSegmentParameter;
-    ngx_flag_t  nginxModuleCaptureHeaders;
+    ngx_str_t   nginxModuleRequestHeaders;
+    ngx_str_t   nginxModuleResponseHeaders;
 } ngx_http_opentelemetry_loc_conf_t;
 
 /*

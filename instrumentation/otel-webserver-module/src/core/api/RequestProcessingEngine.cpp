@@ -35,6 +35,9 @@ namespace core {
 
 using namespace sdkwrapper;
 
+constexpr const char* http_request_header = "http.request.header.";
+constexpr const char* http_response_header = "http.response.header.";
+
 RequestProcessingEngine::RequestProcessingEngine()
     : mLogger(getLogger(std::string(LogContext::AGENT) + ".RequestProcessingEngine"))
 {
@@ -76,7 +79,7 @@ APPD_SDK_STATUS_CODE RequestProcessingEngine::startRequest(
 
     auto& request_headers = payload->get_request_headers();
     for (auto itr = request_headers.begin(); itr != request_headers.end(); itr++) {
-        std::string key = "http.request.header." +
+        std::string key = std::string(http_request_header) +
                 std::string(itr->first);
         keyValueMap[key] = itr->second;
     }
@@ -150,7 +153,7 @@ APPD_SDK_STATUS_CODE RequestProcessingEngine::endRequest(
     if (payload != nullptr) {
         for (auto itr = payload->response_headers.begin();
             itr != payload->response_headers.end(); itr++) {
-            std::string key = "http.response.header." +
+            std::string key = std::string(http_response_header) +
                 std::string(itr->first);
             rootSpan->AddAttribute(key, itr->second);
         }
