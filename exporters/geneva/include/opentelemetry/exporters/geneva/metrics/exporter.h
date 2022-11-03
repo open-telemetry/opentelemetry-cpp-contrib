@@ -33,12 +33,6 @@ constexpr uint64_t kSecondsToUnixTime =
                   // 1601-01-01T00:00:00Z and UNIX/Linux epoch
                   // (1970-01-01T00:00:00Z)
 
-enum class MetricsEventType : uint16_t {
-  ULongMetric = 50,
-  DoubleMetric = 55,
-  ExternallyAggregatedULongDistributionMetric = 56
-};
-
 /**
  * The Geneva metrics exporter exports metrics data to Geneva
  */

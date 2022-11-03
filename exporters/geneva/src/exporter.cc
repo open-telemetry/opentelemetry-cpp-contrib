@@ -28,6 +28,14 @@ Exporter::Exporter(const ExporterOptions &options)
           std::unique_ptr<DataTransport>(new UnixDomainSocketDataTransport(
               connection_string_parser_.url_->path_));
     }
+#ifdef _WIN32
+    else if (connection_string_parser_.transport_protocol_ ==
+             TransportProtocol::TransportProtocol::kETW) {
+        data_transport_ =
+          std::unique_ptr<DataTransport>(new (ETWDataTransport(
+              connection_string_parser_.etwprovider_));
+    }
+#endif
   }
   // Connect transport at initialization
   auto status = data_transport_->Connect();
@@ -176,12 +184,14 @@ size_t Exporter::InitiaizeBufferForHistogramData() {
 size_t Exporter::SerializeNonHistogramMetrics(
     sdk::metrics::AggregationType agg_type, MetricsEventType event_type,
     const sdk::metrics::ValueType &value, common::SystemTimestamp ts,
-    const std::string& metric_name, const sdk::metrics::PointAttributes &attributes) {
+    const std::string &metric_name,
+    const sdk::metrics::PointAttributes &attributes) {
   auto bufferIndex = buffer_index_non_histogram_;
   SerializeString(buffer_non_histogram_, bufferIndex, metric_name);
   for (const auto &kv : attributes) {
     if (kv.first.size() > kMaxDimensionNameSize) {
-      LOG_WARN("Dimension name limit overflow: %s Limit %d", kv.first.c_str(), kMaxDimensionNameSize);
+      LOG_WARN("Dimension name limit overflow: %s Limit %d", kv.first.c_str(),
+               kMaxDimensionNameSize);
       continue;
     }
     SerializeString(buffer_non_histogram_, bufferIndex, kv.first);
@@ -250,7 +260,8 @@ size_t Exporter::SerializeHistogramMetrics(
   // dimentions - name
   for (const auto &kv : attributes) {
     if (kv.first.size() > kMaxDimensionNameSize) {
-      LOG_WARN("Dimension name limit overflow: %s Limit: %d", kv.first.c_str(), kMaxDimensionNameSize);
+      LOG_WARN("Dimension name limit overflow: %s Limit: %d", kv.first.c_str(),
+               kMaxDimensionNameSize);
       continue;
     }
     SerializeString(buffer_histogram_, bufferIndex, kv.first);

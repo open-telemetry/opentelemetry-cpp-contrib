@@ -76,14 +76,14 @@ public:
         }
       }
 #ifdef _WIN32
-      else if (key == kETWProvider)
-      {
+      else if (key == kETWProvider) {
         etwprovider_ = value;
       }
 #endif
     }
 #ifdef _WIN32
-    if (account_.size() && namespace_.size() && etwprovider_.size() && !is_endpoint_found) {
+    if (account_.size() && namespace_.size() && etwprovider_.size() &&
+        !is_endpoint_found) {
       transport_protocol_ = TransportProtocol::kETW;
     }
 #endif

@@ -84,8 +84,7 @@ void initMetrics(const std::string &name, const std::string &account_name) {
   std::shared_ptr<opentelemetry::sdk::metrics::AggregationConfig>
       aggregation_config{
           new opentelemetry::sdk::metrics::HistogramAggregationConfig()};
-  static_cast<
-      opentelemetry::sdk::metrics::HistogramAggregationConfig*>(
+  static_cast<opentelemetry::sdk::metrics::HistogramAggregationConfig *>(
       aggregation_config.get())
       ->boundaries_ = std::list<double>{0.0,   50.0,   100.0,  250.0,  500.0,
                                         750.0, 1000.0, 2500.0, 5000.0, 10000.0};

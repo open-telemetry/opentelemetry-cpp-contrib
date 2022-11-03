@@ -27,7 +27,7 @@ bool UnixDomainSocketDataTransport::Connect() noexcept {
 }
 
 bool UnixDomainSocketDataTransport::Send(MetricsEventType event_type,
-                                          char const *data,
+                                         char const *data,
                                          uint16_t length) noexcept {
   int error_code = 0;
   if (connected_) {

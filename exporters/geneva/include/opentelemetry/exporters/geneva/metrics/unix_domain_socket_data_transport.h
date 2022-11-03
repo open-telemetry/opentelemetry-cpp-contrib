@@ -18,7 +18,8 @@ class UnixDomainSocketDataTransport : public DataTransport {
 public:
   UnixDomainSocketDataTransport(const std::string &connection_string);
   bool Connect() noexcept override;
-  bool Send(MetricsEventType event_type, const char *data, uint16_t length) noexcept override;
+  bool Send(MetricsEventType event_type, const char *data,
+            uint16_t length) noexcept override;
   bool Disconnect() noexcept override;
 
 private:
