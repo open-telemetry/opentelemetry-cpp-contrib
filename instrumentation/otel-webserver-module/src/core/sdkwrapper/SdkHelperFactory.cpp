@@ -73,9 +73,9 @@ SdkHelperFactory::SdkHelperFactory(
     
     //Library was changed to webengine to comply with specs https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/resource/semantic_conventions/webengine.md
     attributes[kOtelWebEngineName] = config->getOtelLibraryName();
-    attributes[kOtelWebEngineVersion] = libraryVersion;
+    //attributes[kOtelWebEngineVersion] = libraryVersion;
 
-    attributes[kOtelWebEngineDescription] = config->getOtelLibraryName() + " Instrumentation";
+    //attributes[kOtelWebEngineDescription] = config->getOtelLibraryName() + " Instrumentation";
 
     auto exporter = GetExporter(config);
     auto processor = GetSpanProcessor(config, std::move(exporter));
@@ -88,9 +88,9 @@ SdkHelperFactory::SdkHelperFactory(
             std::move(sampler)
             ));
 
-    mTracer = mTracerProvider->GetTracer(config->getOtelLibraryName(), libraryVersion);
+    mTracer = mTracerProvider->GetTracer("C++", libraryVersion);
     LOG4CXX_INFO(mLogger,
-        "Tracer created with LibraryName: " << config->getOtelLibraryName() <<
+        "Tracer created with LibraryName: " << "C++" <<
         " and LibraryVersion " << libraryVersion);
 
     // Adding trace propagator
