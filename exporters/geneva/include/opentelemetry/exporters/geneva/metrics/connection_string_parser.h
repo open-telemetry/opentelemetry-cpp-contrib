@@ -20,7 +20,7 @@ constexpr char kEndpoint[] = "Endpoint";
 constexpr char kAccount[] = "Account";
 constexpr char kNamespace[] = "Namespace";
 #ifdef _MSC_VER
-constexpre char kETWProvider[] = "ETWProvider";
+constexpr char kETWProvider[] = "ETWProvider";
 #endif
 
 enum class TransportProtocol { kETW, kTCP, kUDP, kUNIX, kUnknown };

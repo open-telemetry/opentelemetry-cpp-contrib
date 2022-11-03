@@ -7,6 +7,11 @@
 
 #include "opentelemetry/exporters/geneva/metrics/macros.h"
 
+OPENTELEMETRY_BEGIN_NAMESPACE
+namespace exporter {
+namespace geneva {
+namespace metrics {
+
 ETWDataTransport::ETWDataTransport(const std::string &etw_provider) {
   UUID guid =
       (etw_provider.rfind("{", 0) == 0)
@@ -22,7 +27,8 @@ ETWDataTransport::ETWDataTransport(const std::string &etw_provider) {
   }
 }
 
-bool ETWDataTransport::Connect() {
+bool ETWDataTransport::Connect() noexcept 
+{
   // connection is already established in constructor. Check if it is still
   // valid.
   if (provider_handle_ == INVALID_HANDLE) {
@@ -34,7 +40,8 @@ bool ETWDataTransport::Connect() {
 }
 
 bool ETWDataTransport::Send(MetricsEventType event_type, const char *data,
-                            uint16_t length) {
+                            uint16_t length) noexcept
+{
   if (provider_handle_ == INVALID_HANDLE) {
     LOG_ERROR("ETWDataTransport:: ETW Provider Handle is not valid. Metrics is "
               "dropped");
@@ -49,7 +56,7 @@ bool ETWDataTransport::Send(MetricsEventType event_type, const char *data,
   ::ZeroMemory(&evtDescriptor, sizeof(EVENT_DESCRIPTOR));
   evtDescriptor.Version = 1;
   evtDescriptor.Version = 0;
-  evtDescriptor.Id = static_cast<unsigned short>(eventType);
+  evtDescriptor.Id = static_cast<unsigned short>(event_type);
   auto result = ::EventWrite(provider_handle_, &evtDescriptor, descriptorSize,
                              dataDescriptor);
   if (result != ERROR_SUCCESS) {
@@ -60,7 +67,7 @@ bool ETWDataTransport::Send(MetricsEventType event_type, const char *data,
   return true;
 }
 
-bool ETWDataTransport::Disconnect() {
+bool ETWDataTransport::Disconnect() noexcept {
   // provider is deregistered in destructor.
   return true;
 }
@@ -70,3 +77,8 @@ ETWDataTransport::~ETWDataTransport() {
     ::EventUnregister(provider_handle_);
   }
 }
+
+} // namespace metrics
+} // namespace geneva
+} // namespace exporter
+OPENTELEMETRY_END_NAMESPACE

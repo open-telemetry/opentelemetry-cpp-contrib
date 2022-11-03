@@ -16,12 +16,19 @@ if(MAIN_PROJECT)
   find_package(opentelemetry-cpp REQUIRED)
 endif()
 
-find_package(CURL REQUIRED)
+#find_package(CURL REQUIRED)
 
 include_directories(include)
+
 # create geneva metrics exporter
+if(WIN32)
+add_library(opentelemetry_exporter_geneva_metrics
+            src/exporter.cc src/etw_data_transport.cc)
+else()
 add_library(opentelemetry_exporter_geneva_metrics
             src/exporter.cc src/unix_domain_socket_data_transport.cc)
+endif()
+
 target_include_directories(opentelemetry_exporter_geneva_metrics
                            PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
 target_link_libraries(opentelemetry_exporter_geneva_metrics

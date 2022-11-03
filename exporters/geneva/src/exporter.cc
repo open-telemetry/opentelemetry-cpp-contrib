@@ -30,7 +30,7 @@ Exporter::Exporter(const ExporterOptions &options)
     }
 #ifdef _WIN32
     else if (connection_string_parser_.transport_protocol_ ==
-             TransportProtocol::TransportProtocol::kETW) {
+             TransportProtocol::kETW) {
       data_transport_ = std::unique_ptr<DataTransport>(
           new ETWDataTransport(connection_string_parser_.etwprovider_));
     }
@@ -217,7 +217,7 @@ size_t Exporter::SerializeNonHistogramMetrics(
                          static_cast<uint16_t>(body_length));
 
   // count of dimensions.
-  SerializeInt<u_int16_t>(buffer_non_histogram_, bufferIndex,
+  SerializeInt<uint16_t>(buffer_non_histogram_, bufferIndex,
                           static_cast<uint16_t>(attributes.size()));
 
   // reserverd word (2 bytes)
@@ -235,7 +235,7 @@ size_t Exporter::SerializeNonHistogramMetrics(
   SerializeInt<uint64_t>(buffer_non_histogram_, bufferIndex, windows_ticks);
   if (event_type == MetricsEventType::ULongMetric) {
     SerializeInt<uint64_t>(buffer_non_histogram_, bufferIndex,
-                           static_cast<uint64_t>(nostd::get<long>(value)));
+                           static_cast<uint64_t>(nostd::get<int64_t>(value)));
   } else {
     SerializeInt<uint64_t>(
         buffer_non_histogram_, bufferIndex,
@@ -322,7 +322,7 @@ size_t Exporter::SerializeHistogramMetrics(
                          static_cast<uint16_t>(body_length));
 
   // count of dimensions.
-  SerializeInt<u_int16_t>(buffer_histogram_, bufferIndex,
+  SerializeInt<uint16_t>(buffer_histogram_, bufferIndex,
                           static_cast<uint16_t>(attributes.size()));
 
   // reserverd word (2 bytes)
@@ -344,13 +344,13 @@ size_t Exporter::SerializeHistogramMetrics(
       MetricsEventType::ExternallyAggregatedULongDistributionMetric) {
     // sum
     SerializeInt<uint64_t>(buffer_histogram_, bufferIndex,
-                           static_cast<uint64_t>(nostd::get<long>(sum)));
+                           static_cast<uint64_t>(nostd::get<int64_t>(sum)));
     // min
     SerializeInt<uint64_t>(buffer_histogram_, bufferIndex,
-                           static_cast<uint64_t>(nostd::get<long>(min)));
+                           static_cast<uint64_t>(nostd::get<int64_t>(min)));
     // max
     SerializeInt<uint64_t>(buffer_histogram_, bufferIndex,
-                           static_cast<uint64_t>(nostd::get<long>(max)));
+                           static_cast<uint64_t>(nostd::get<int64_t>(max)));
   } else {
     // sum
     SerializeInt<uint64_t>(
