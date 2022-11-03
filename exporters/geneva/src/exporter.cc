@@ -31,9 +31,8 @@ Exporter::Exporter(const ExporterOptions &options)
 #ifdef _WIN32
     else if (connection_string_parser_.transport_protocol_ ==
              TransportProtocol::TransportProtocol::kETW) {
-        data_transport_ =
-          std::unique_ptr<DataTransport>(new (ETWDataTransport(
-              connection_string_parser_.etwprovider_));
+      data_transport_ = std::unique_ptr<DataTransport>(
+          new ETWDataTransport(connection_string_parser_.etwprovider_));
     }
 #endif
   }
