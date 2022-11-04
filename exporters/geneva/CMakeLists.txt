@@ -23,7 +23,7 @@ include_directories(include)
 # create geneva metrics exporter
 if(WIN32)
 add_library(opentelemetry_exporter_geneva_metrics
-            src/exporter.cc src/etw_data_transport.cc)
+            src/exporter.cc src/etw_data_transport.cc src/unix_domain_socket_data_transport.cc)
 else()
 add_library(opentelemetry_exporter_geneva_metrics
             src/exporter.cc src/unix_domain_socket_data_transport.cc)
