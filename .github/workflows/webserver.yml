@@ -114,6 +114,14 @@ jobs:
         with:
           name: opentelemetry-webserver-sdk-x64-linux.tgz
           path: /tmp/apache_centos7/opentelemetry-webserver-sdk-x64-linux.tgz
+      - name: run integrationtest
+        run: |
+          docker rm -f apache_centos7_container
+          cd instrumentation/otel-webserver-module
+          docker-compose --profile centos7 up -d
+          docker ps -a
+          sleep 30
+          ./gradlew :test:integration:integrationTests -i
 
   webserver-build-test-centos6:
     name: webserver-centos6-build
