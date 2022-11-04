@@ -264,6 +264,8 @@ APPD_SDK_STATUS_CODE ApacheHooks::appd_startInteraction(
 
         if (APPD_ISSUCCESS(res))
         {
+            // remove the singularity header if any
+            apr_table_unset(r->headers_in, APPD_CORRELATION_HEADER_KEY);
             if (!propagationHeaders.empty())
             {
                 appd_payload_decorator(r, propagationHeaders);
@@ -625,7 +627,6 @@ int ApacheHooks::appd_hook_header_parser_begin(request_rec *r)
     else if (res == APPD_STATUS(cfg_channel_uninitialized) || res == APPD_STATUS(bt_detection_disabled))
     {
         ApacheTracing::writeTrace(r->server, __func__, "request begin detection disabled, result code: %d", res);
-        apr_table_set(r->headers_in, "singularityheader", "notxdetect=true");
     }
     else
     {

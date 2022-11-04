@@ -18,11 +18,16 @@
 #include "api/WSAgent.h"
 #include "api/Payload.h"
 #include <cstring>
-
+#include <sstream>
+#include <unordered_set>
+#include <algorithm>
 
 appd::core::WSAgent wsAgent; // global variable for interface between Hooks and Core Logic
+std::unordered_set<std::string> requestHeadersToCapture;
+std::unordered_set<std::string> responseHeadersToCapture;
+constexpr char delimiter = ',';
 
-void populatePayload(request_payload* req_payload, void* load, int count)
+void populatePayload(request_payload* req_payload, void* load)
 {
     appd::core::RequestPayload* payload = (appd::core::RequestPayload*)load;
     payload->set_uri(req_payload->uri);
@@ -31,8 +36,35 @@ void populatePayload(request_payload* req_payload, void* load, int count)
     payload->set_http_get_parameter(req_payload->http_get_param);
     payload->set_http_request_method(req_payload->request_method);
 
-    for(int i=0; i<count; i++){
-        payload->set_http_headers(req_payload->headers[i].name, req_payload->headers[i].value);
+    for(int i=0; i<req_payload->propagation_count; i++){
+        payload->set_http_headers(req_payload->propagation_headers[i].name, req_payload->propagation_headers[i].value);
+    }
+
+    for (int i = 0; i < req_payload->request_headers_count; i++) {
+        std::string key(req_payload->request_headers[i].name);
+        if (requestHeadersToCapture.find(key)
+            != requestHeadersToCapture.end()) {
+            payload->set_request_headers(key,
+                req_payload->request_headers[i].value);
+        }
+    }
+}
+
+void setRequestResponseHeaders(const char* request, const char* response)
+{
+    std::string token;
+    std::stringstream ss;
+
+    ss.str(std::string(request));
+    while(getline(ss, token, delimiter)) {
+        requestHeadersToCapture.insert(token);
+    }
+
+    token.clear();
+    ss.clear();
+    ss.str(std::string(response));
+    while(getline(ss, token, delimiter)) {
+        responseHeadersToCapture.insert(token);
     }
 }
 
@@ -60,21 +92,36 @@ APPD_SDK_STATUS_CODE opentelemetry_core_init(APPD_SDK_ENV_RECORD* env, unsigned 
     return res;
 }
 
-APPD_SDK_STATUS_CODE startRequest(const char* wscontext, request_payload* req_payload, APPD_SDK_HANDLE_REQ* reqHandle, int count)
+APPD_SDK_STATUS_CODE startRequest(const char* wscontext, request_payload* req_payload, APPD_SDK_HANDLE_REQ* reqHandle)
 {
     APPD_SDK_STATUS_CODE res = APPD_SUCCESS;
 
     std::unique_ptr<appd::core::RequestPayload> requestPayload(new appd::core::RequestPayload);
-    populatePayload(req_payload, requestPayload.get(), count);
+    populatePayload(req_payload, requestPayload.get());
     res = wsAgent.startRequest(wscontext, requestPayload.get(), reqHandle);
 
     return res;
 }
 
-APPD_SDK_STATUS_CODE endRequest(APPD_SDK_HANDLE_REQ req_handle_key, const char* errMsg)
+APPD_SDK_STATUS_CODE endRequest(APPD_SDK_HANDLE_REQ req_handle_key, const char* errMsg,
+    response_payload* payload)
 {
     APPD_SDK_STATUS_CODE res = APPD_SUCCESS;
-    res = wsAgent.endRequest(req_handle_key, errMsg);
+
+    std::unique_ptr<appd::core::ResponsePayload>
+        responsePayload(new appd::core::ResponsePayload);
+    if (payload != NULL) {
+        for (int i = 0; i < payload->response_headers_count; i++) {
+            std::string key(payload->response_headers[i].name);
+            if (responseHeadersToCapture.find(key)
+            != responseHeadersToCapture.end()) {
+                responsePayload->response_headers[key]
+                    = payload->response_headers[i].value;
+            }
+        }
+    }
+
+    res = wsAgent.endRequest(req_handle_key, errMsg, responsePayload.get());
 
     return res;
 }

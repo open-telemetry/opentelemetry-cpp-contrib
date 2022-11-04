@@ -110,7 +110,7 @@ WSAgent::startRequest(
 APPD_SDK_STATUS_CODE
 WSAgent::endRequest(
     APPD_SDK_HANDLE_REQ reqHandle,
-    const char* error)
+    const char* error, const ResponsePayload* payload)
 {
     // TODO: How to get the context here?
     // one solution is get it from reqHandle.
@@ -121,7 +121,7 @@ WSAgent::endRequest(
     auto *engine = mAgentCore->getRequestProcessor(context);
     if (nullptr != engine)
     {
-        return engine->endRequest(reqHandle, error);
+        return engine->endRequest(reqHandle, error, payload);
     }
     return APPD_STATUS(fail);
 }

@@ -32,7 +32,8 @@ public:
 
     MOCK_METHOD(APPD_SDK_STATUS_CODE, endRequest, (
         APPD_SDK_HANDLE_REQ reqHandle,
-        const char* error), (override));
+        const char* error,
+        const appd::core::ResponsePayload* payload), (override));
 
     APPD_SDK_STATUS_CODE startInteraction(
         APPD_SDK_HANDLE_REQ reqHandle,

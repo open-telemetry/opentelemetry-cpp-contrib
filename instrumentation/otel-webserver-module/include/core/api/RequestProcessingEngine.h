@@ -29,6 +29,7 @@ namespace core {
 
 class TenantConfig;
 class RequestPayload;
+class ResponsePayload;
 class InteractionPayload;
 class EndInteractionPayload;
 
@@ -50,7 +51,8 @@ public:
         APPD_SDK_HANDLE_REQ* reqHandle) = 0;
     virtual APPD_SDK_STATUS_CODE endRequest(
         APPD_SDK_HANDLE_REQ reqHandle,
-        const char* error) = 0;
+        const char* error,
+        const ResponsePayload* payload = nullptr) = 0;
     virtual APPD_SDK_STATUS_CODE startInteraction(
         APPD_SDK_HANDLE_REQ reqHandle,
         const InteractionPayload* payload,
@@ -75,7 +77,8 @@ public:
         APPD_SDK_HANDLE_REQ* reqHandle) override;
     APPD_SDK_STATUS_CODE endRequest(
         APPD_SDK_HANDLE_REQ reqHandle,
-        const char* error) override;
+        const char* error,
+        const ResponsePayload* payload = nullptr) override;
     APPD_SDK_STATUS_CODE startInteraction(
         APPD_SDK_HANDLE_REQ reqHandle,
         const InteractionPayload* payload,

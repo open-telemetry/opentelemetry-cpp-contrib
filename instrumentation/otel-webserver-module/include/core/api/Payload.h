@@ -38,6 +38,7 @@ class RequestPayload
 	std::string http_request_method;			/* Request method (eg. GET, HEAD, POST, etc.) */
 
 	std::unordered_map<std::string, std::string> http_headers; /* HTTP Request headers: Cookie, Referer, SM_USER*/
+	std::unordered_map<std::string, std::string> request_headers;
 
 	std::string server_name;
     std::string scheme;
@@ -45,13 +46,17 @@ class RequestPayload
     std::string target;
     std::string flavor;
     std::string client_ip;
-    long port;
-    long status_code;
+    long port = 80;
+    long status_code = 200;
 
 public:
 	void set_http_headers(const std::string& key, const std::string& value)
     {
         http_headers[key] = value;
+    }
+    void set_request_headers(const std::string& key, const std::string& value)
+    {
+    	request_headers[key] = value;
     }
     void set_uri(const char* URI) { uri = URI; }
     void set_request_protocol(const char* requestProtocol) {request_protocol = requestProtocol; }
@@ -82,6 +87,14 @@ public:
     std::string get_client_ip() {return client_ip; }
     long get_port() {return port; }
     long get_status_code() {return status_code; }
+    std::unordered_map<std::string, std::string>& get_request_headers() {
+    	return request_headers;
+    }
+};
+
+struct ResponsePayload
+{
+	std::unordered_map<std::string, std::string> response_headers;
 };
 
 struct InteractionPayload
