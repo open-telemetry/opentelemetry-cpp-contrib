@@ -40,8 +40,17 @@ typedef struct {
     const char* http_get_param;
     const char* http_post_param;
     const char* request_method;
-    http_headers* headers;
+    http_headers* propagation_headers;
+    http_headers* request_headers;
+
+    int propagation_count;
+    int request_headers_count;
 }request_payload;
+
+typedef struct {
+    http_headers* response_headers;
+    int response_headers_count;
+}response_payload;
 
 typedef struct{
     const char* cName;
@@ -56,12 +65,13 @@ struct cNode{
 };
 
 void initDependency();
-void populatePayload(request_payload* req_payload, void* payload, int count);
+void populatePayload(request_payload* req_payload, void* payload);
+void setRequestResponseHeaders(const char* request, const char* response);
 APPD_SDK_STATUS_CODE opentelemetry_core_init(APPD_SDK_ENV_RECORD* env, unsigned numberOfRecords, struct cNode *rootCN);
-APPD_SDK_STATUS_CODE startRequest(const char* wscontext, request_payload* req_payload, APPD_SDK_HANDLE_REQ* reqHandle, int count);
+APPD_SDK_STATUS_CODE startRequest(const char* wscontext, request_payload* req_payload, APPD_SDK_HANDLE_REQ* reqHandle);
 APPD_SDK_STATUS_CODE startModuleInteraction(APPD_SDK_HANDLE_REQ req_handle_key, const char* module_name, const char* stage, bool resolveBackends, APPD_SDK_ENV_RECORD* propagationHeaders, int* ix);
 APPD_SDK_STATUS_CODE stopModuleInteraction(APPD_SDK_HANDLE_REQ req_handle_key, const char* backendName, const char* backendType, unsigned int err_code, const char* msg);
-APPD_SDK_STATUS_CODE endRequest(APPD_SDK_HANDLE_REQ req_handle_key, const char* errMsg);
+APPD_SDK_STATUS_CODE endRequest(APPD_SDK_HANDLE_REQ req_handle_key, const char* errMsg, response_payload* payload);
 
 #ifdef	__cplusplus
 }

@@ -355,6 +355,20 @@ static ngx_command_t ngx_http_opentelemetry_commands[] = {
       offsetof(ngx_http_opentelemetry_loc_conf_t, nginxModuleSegmentParameter),
       NULL},
 
+    { ngx_string("NginxModuleRequestHeaders"),
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
+      ngx_conf_set_str_slot,
+      NGX_HTTP_LOC_CONF_OFFSET,
+      offsetof(ngx_http_opentelemetry_loc_conf_t, nginxModuleRequestHeaders),
+      NULL},
+
+    { ngx_string("NginxModuleResponseHeaders"),
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
+      ngx_conf_set_str_slot,
+      NGX_HTTP_LOC_CONF_OFFSET,
+      offsetof(ngx_http_opentelemetry_loc_conf_t, nginxModuleResponseHeaders),
+      NULL},
+
     ngx_null_command	/* command termination */
 };
 
@@ -454,6 +468,8 @@ static char* ngx_http_opentelemetry_merge_loc_conf(ngx_conf_t *cf, void *parent,
 
     ngx_conf_merge_str_value(conf->nginxModuleSegmentType, prev->nginxModuleSegmentType, "First");
     ngx_conf_merge_str_value(conf->nginxModuleSegmentParameter, prev->nginxModuleSegmentParameter, "2");
+    ngx_conf_merge_str_value(conf->nginxModuleRequestHeaders, prev->nginxModuleRequestHeaders, "");
+    ngx_conf_merge_str_value(conf->nginxModuleResponseHeaders, prev->nginxModuleResponseHeaders, "");
 
     return NGX_CONF_OK;
 }
@@ -1013,7 +1029,8 @@ static ngx_flag_t ngx_initialize_opentelemetry(ngx_http_request_t *r)
               cn = cn->next;
             }
         }
-
+        setRequestResponseHeaders((const char*)(conf->nginxModuleRequestHeaders).data,
+           (const char*)(conf->nginxModuleResponseHeaders).data);
         res = opentelemetry_core_init(env_config, ix, rootCN);
         free(qs);
         free(sd);
@@ -1071,6 +1088,13 @@ static void stopMonitoringRequest(ngx_http_request_t* r,
 
     ngx_writeTrace(r->connection->log, __func__, "Stopping the Request Monitoring");
 
+    response_payload* res_payload = NULL;
+    if (r->pool) {
+        res_payload = ngx_pcalloc(r->pool, sizeof(response_payload));
+        res_payload->response_headers_count = 0;
+        fillResponsePayload(res_payload, r);
+    }
+
     APPD_SDK_STATUS_CODE res;
     unsigned int errCode=0;
     char* msg = NULL;
@@ -1080,11 +1104,11 @@ static void stopMonitoringRequest(ngx_http_request_t* r,
         errCode=(unsigned int)otel_getErrorCode(r);
         msg = (char*)malloc(6);
         sprintf(msg, "%d", errCode);
-        res = endRequest(otel_req_handle_key, msg);
+        res = endRequest(otel_req_handle_key, msg, res_payload);
     }
     else
     {
-            res = endRequest(otel_req_handle_key, msg);
+        res = endRequest(otel_req_handle_key, msg, res_payload);
     }
 
     if (APPD_ISSUCCESS(res))
@@ -1152,10 +1176,9 @@ static void startMonitoringRequest(ngx_http_request_t* r){
     {
         ngx_writeError(r->connection->log, __func__, "Not able to get memory for request payload");
     }
-    int header_count = 0;
-    fillRequestPayload(req_payload, r, &header_count);
+    fillRequestPayload(req_payload, r);
 
-    res = startRequest(wscontext, req_payload, &reqHandle, header_count);
+    res = startRequest(wscontext, req_payload, &reqHandle);
 
     if (APPD_ISSUCCESS(res))
     {
@@ -1503,7 +1526,7 @@ static void removeUnwantedHeader(ngx_http_request_t* r)
   }
 }
 
-static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t* r, int* count){
+static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t* r){
     ngx_list_part_t  *part;
     ngx_table_elt_t  *header;
     ngx_uint_t       nelts;
@@ -1540,23 +1563,72 @@ static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t*
         }
     }
 
-   part = &r->headers_in.headers.part;
-   header = (ngx_table_elt_t*)part->elts;
-   nelts = part->nelts;
+    ngx_http_opentelemetry_loc_conf_t *conf =
+      ngx_http_get_module_loc_conf(r, ngx_http_opentelemetry_module);
+    part = &r->headers_in.headers.part;
+    header = (ngx_table_elt_t*)part->elts;
+    nelts = part->nelts;
 
-   req_payload->headers = ngx_pcalloc(r->pool, headers_len * sizeof(http_headers));
-   for(int i=0; i<headers_len; i++){
-       char* c = httpHeaders[i];
-       req_payload->headers[*count].name = c;
-       for(ngx_uint_t j = 0; j<nelts; j++){
-           h = &header[j];
-           if(strcmp(httpHeaders[i], h->key.data)==0){
-               req_payload->headers[*count].value = (const char*)(h->value).data;
-           }
-       }
-       if(!req_payload->headers[*count].value){
-           req_payload->headers[*count].value = "No Param";
-       }
-       ++(*count);
-   }
+    req_payload->propagation_headers = ngx_pcalloc(r->pool, nelts * sizeof(http_headers));
+    req_payload->request_headers = ngx_pcalloc(r->pool, nelts * sizeof(http_headers));
+    int request_headers_idx = 0;
+    int propagation_headers_idx = 0;
+    for (ngx_uint_t j = 0; j < nelts; j++) {
+
+        h = &header[j];
+        for (int i = 0; i < headers_len; i++) {
+
+            if (strcmp(h->key.data, httpHeaders[i]) == 0) {
+                req_payload->propagation_headers[propagation_headers_idx].name = httpHeaders[i];
+                req_payload->propagation_headers[propagation_headers_idx].value = (const char*)(h->value).data;
+                if (req_payload->propagation_headers[propagation_headers_idx].value == NULL) {
+                    req_payload->propagation_headers[propagation_headers_idx].value = "";
+                }
+                propagation_headers_idx++;
+                break;
+            }
+        }
+
+        req_payload->request_headers[request_headers_idx].name = (const char*)(h->key).data;
+        req_payload->request_headers[request_headers_idx].value = (const char*)(h->value).data;
+        if (req_payload->request_headers[request_headers_idx].value == NULL) {
+            req_payload->request_headers[request_headers_idx].value = "";
+        }
+        request_headers_idx++;
+    }
+    req_payload->propagation_count = propagation_headers_idx;
+    req_payload->request_headers_count = request_headers_idx;
+}
+
+static void fillResponsePayload(response_payload* res_payload, ngx_http_request_t* r)
+{
+    if (!r->pool) {
+        return;
+    }
+
+    ngx_list_part_t  *part;
+    ngx_table_elt_t  *header;
+    ngx_uint_t       nelts;
+    ngx_table_elt_t  *h;
+
+    part = &r->headers_out.headers.part;
+    header = (ngx_table_elt_t*)part->elts;
+    nelts = part->nelts;
+
+    res_payload->response_headers = ngx_pcalloc(r->pool, nelts * sizeof(http_headers));
+    ngx_uint_t headers_count = 0;
+
+    for (ngx_uint_t j = 0; j < nelts; j++) {
+        h = &header[j];
+
+        if (headers_count < nelts) {
+            res_payload->response_headers[headers_count].name = (const char*)(h->key).data;
+            res_payload->response_headers[headers_count].value = (const char*)(h->value).data;
+            if (res_payload->response_headers[headers_count].value == NULL) {
+                res_payload->response_headers[headers_count].value = "";
+            }
+            headers_count++;
+        }
+    }
+    res_payload->response_headers_count = headers_count;
 }

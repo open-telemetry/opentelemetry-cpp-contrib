@@ -62,7 +62,8 @@ public:
 
     APPD_SDK_STATUS_CODE endRequest(
         APPD_SDK_HANDLE_REQ reqHandle,
-        const char* error);
+        const char* error,
+        const ResponsePayload* payload = nullptr );
 
     APPD_SDK_STATUS_CODE startInteraction(
         APPD_SDK_HANDLE_REQ reqHandle,
