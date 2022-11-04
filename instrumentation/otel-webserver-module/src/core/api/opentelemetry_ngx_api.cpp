@@ -25,6 +25,7 @@
 appd::core::WSAgent wsAgent; // global variable for interface between Hooks and Core Logic
 std::unordered_set<std::string> requestHeadersToCapture;
 std::unordered_set<std::string> responseHeadersToCapture;
+constexpr char delimiter = ',';
 
 void populatePayload(request_payload* req_payload, void* load)
 {
@@ -55,14 +56,14 @@ void setRequestResponseHeaders(const char* request, const char* response)
     std::stringstream ss;
 
     ss.str(std::string(request));
-    while(getline(ss, token, ' ')) {
+    while(getline(ss, token, delimiter)) {
         requestHeadersToCapture.insert(token);
     }
 
     token.clear();
     ss.clear();
     ss.str(std::string(response));
-    while(getline(ss, token, ' ')) {
+    while(getline(ss, token, delimiter)) {
         responseHeadersToCapture.insert(token);
     }
 }
