@@ -66,6 +66,7 @@ SdkHelperFactory::SdkHelperFactory(
 
     // NOTE : resource attribute values are nostd::variant and so we need to explicitely set it to std::string
     std::string libraryVersion = MODULE_VERSION;
+    std::string cppSDKVersion = CPP_SDK_VERSION;
 
     // NOTE : InstrumentationLibrary code is incomplete for the otlp exporter in sdk.
     // So, we need to pass libraryName and libraryVersion as resource attributes.
@@ -88,7 +89,7 @@ SdkHelperFactory::SdkHelperFactory(
             std::move(sampler)
             ));
 
-    mTracer = mTracerProvider->GetTracer("C++", libraryVersion);
+    mTracer = mTracerProvider->GetTracer("C++", cppSDKVersion);
     LOG4CXX_INFO(mLogger,
         "Tracer created with LibraryName: " << "C++" <<
         " and LibraryVersion " << libraryVersion);
