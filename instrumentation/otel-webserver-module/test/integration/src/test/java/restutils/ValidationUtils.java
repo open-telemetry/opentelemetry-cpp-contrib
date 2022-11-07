@@ -33,7 +33,7 @@ public class ValidationUtils extends BaseTest{
                 }
                 Assert.assertTrue(span.getJSONObject("tags").get("service.namespace").toString().contentEquals("sample_namespace"));
                 Assert.assertTrue(span.getJSONObject("localEndpoint").get("serviceName").toString().contentEquals("demoservice"));
-                Assert.assertTrue(span.getJSONObject("tags").get("telemetry.sdk.language").toString().contentEquals("Apache"));
+                Assert.assertTrue(span.getJSONObject("tags").get("telemetry.sdk.language").toString().contentEquals("C++"));
             }
         }
 
