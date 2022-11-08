@@ -16,7 +16,7 @@ struct ExporterOptions {
   /*
   Format -
     Windows:
-        ProviderName={ProviderName};Account={MetricAccount};NameSpace={MetricNamespace}
+        Account={MetricAccount};NameSpace={MetricNamespace}
     Linux:
         Endpoint=unix://{UDS Path};Account={MetricAccount};Namespace={MetricNamespace}
   */
