@@ -16,8 +16,6 @@ if(MAIN_PROJECT)
   find_package(opentelemetry-cpp REQUIRED)
 endif()
 
-#find_package(CURL REQUIRED)
-
 include_directories(include)
 
 # create geneva metrics exporter
