@@ -3,9 +3,6 @@
 
 #include "opentelemetry/exporters/geneva/metrics/etw_data_transport.h"
 #include "opentelemetry/exporters/geneva/metrics/macros.h"
-#include "opentelemetry/exporters/geneva/metrics/uuid.h"
-
-#include "opentelemetry/exporters/geneva/metrics/macros.h"
 
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter {
