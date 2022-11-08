@@ -32,7 +32,7 @@ Exporter::Exporter(const ExporterOptions &options)
     else if (connection_string_parser_.transport_protocol_ ==
              TransportProtocol::kETW) {
       data_transport_ = std::unique_ptr<DataTransport>(
-          new ETWDataTransport(connection_string_parser_.etwprovider_));
+          new ETWDataTransport());
     }
 #endif
   }
@@ -62,7 +62,6 @@ opentelemetry::sdk::common::ExportResult Exporter::Export(
     const std::lock_guard<opentelemetry::common::SpinLockMutex> locked(lock_);
     shutdown = is_shutdown_;
   }
-
   if (shutdown) {
     OTEL_INTERNAL_LOG_ERROR("[Genava Exporter] Exporting "
                             << data.scope_metric_data_.size()

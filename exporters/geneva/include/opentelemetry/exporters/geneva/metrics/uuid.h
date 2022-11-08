@@ -21,6 +21,8 @@
 typedef unsigned char BYTE;
 #endif
 
+#include<iostream>
+
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter {
 namespace geneva {
@@ -464,6 +466,7 @@ CleanUp:
 /// <param name="providerName"></param>
 /// <returns></returns>
 static inline GUID GetProviderGuid(const char *providerName) {
+  std::cout << "\n GEt provider guid from :" << providerName;
   std::string name(providerName);
   std::transform(name.begin(), name.end(), name.begin(),
                  [](unsigned char c) { return (char)::toupper(c); });

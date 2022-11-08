@@ -11,18 +11,15 @@ OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter {
 namespace geneva {
 namespace metrics {
+#define GUID_FORMAT "%08lX-%04hX-%04hX-%02hhX%02hhX-%02hhX%02hhX%02hhX%02hhX%02hhX%02hhX"
+#define GUID_ARG(guid) (guid).Data1, (guid).Data2, (guid).Data3, (guid).Data4[0], (guid).Data4[1], (guid).Data4[2], (guid).Data4[3], (guid).Data4[4], (guid).Data4[5], (guid).Data4[6], (guid).Data4[7]
 
-ETWDataTransport::ETWDataTransport(const std::string &etw_provider) {
-  UUID guid =
-      (etw_provider.rfind("{", 0) == 0)
-          ? UUID(etw_provider.c_str())             /// It's a ProviderGUID
-          : GetProviderGuid(etw_provider.c_str()); // It's a ProviderName
-
-  auto provider_guid = guid.to_GUID();
-  auto status = ::EventRegister(&provider_guid, NULL, NULL, &provider_handle_);
+ETWDataTransport::ETWDataTransport() 
+{
+  auto status = ::EventRegister(&kMDMProviderGUID, NULL, NULL, &provider_handle_);
   if (status != ERROR_SUCCESS) {
     LOG_ERROR("ETWDataTransport:: Failed to initialize the ETW provider.  "
-              "Metrics will not be published");
+              "Metrics will not be published, Provider ID: {" GUID_FORMAT "}", GUID_ARG(kMDMProviderGUID));
     provider_handle_ = INVALID_HANDLE;
   }
 }
@@ -34,7 +31,7 @@ bool ETWDataTransport::Connect() noexcept
   if (provider_handle_ == INVALID_HANDLE) {
     LOG_ERROR("ETWDataTransport:: Failed to initialize the ETW provider.  "
               "Metrics will not be published");
-    return true;
+    return false;
   }
   return true;
 }

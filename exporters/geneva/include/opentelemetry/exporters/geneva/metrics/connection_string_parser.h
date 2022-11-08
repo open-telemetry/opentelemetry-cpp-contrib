@@ -19,9 +19,6 @@ constexpr char kEqual = '=';
 constexpr char kEndpoint[] = "Endpoint";
 constexpr char kAccount[] = "Account";
 constexpr char kNamespace[] = "Namespace";
-#ifdef _MSC_VER
-constexpr char kETWProvider[] = "ETWProvider";
-#endif
 
 enum class TransportProtocol { kETW, kTCP, kUDP, kUNIX, kUnknown };
 
@@ -75,14 +72,9 @@ public:
           }
         }
       }
-#ifdef _WIN32
-      else if (key == kETWProvider) {
-        etwprovider_ = value;
-      }
-#endif
     }
 #ifdef _WIN32
-    if (account_.size() && namespace_.size() && etwprovider_.size() &&
+    if (account_.size() && namespace_.size() &&
         !is_endpoint_found) {
       transport_protocol_ = TransportProtocol::kETW;
     }
@@ -95,9 +87,6 @@ public:
   std::string namespace_;
   std::unique_ptr<ext::http::common::UrlParser> url_;
   TransportProtocol transport_protocol_;
-#ifdef _WIN32
-  std::string etwprovider_;
-#endif
 };
 } // namespace metrics
 } // namespace geneva
