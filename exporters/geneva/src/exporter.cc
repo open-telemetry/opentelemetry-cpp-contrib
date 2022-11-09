@@ -32,7 +32,7 @@ Exporter::Exporter(const ExporterOptions &options)
     else if (connection_string_parser_.transport_protocol_ ==
              TransportProtocol::kETW) {
       data_transport_ = std::unique_ptr<DataTransport>(
-          new ETWDataTransport());
+          new ETWDataTransport(kBinaryHeaderSize));
     }
 #endif
   }

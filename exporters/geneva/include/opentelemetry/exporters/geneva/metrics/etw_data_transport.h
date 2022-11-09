@@ -20,7 +20,7 @@ static const GUID kMDMProviderGUID = { 0xedc24920, 0xe004, 0x40f6, 0xa8, 0xe1, 0
 
 class ETWDataTransport : public DataTransport {
 public:
-  ETWDataTransport();
+  ETWDataTransport(const size_t offset_to_skip_);
   bool Connect() noexcept override;
   bool Send(MetricsEventType event_type, const char *data,
             uint16_t length) noexcept override;
@@ -30,6 +30,7 @@ public:
 private:
   REGHANDLE provider_handle_;
   bool connected_{false};
+  const size_t offset_to_skip_;
 };
 } // namespace metrics
 } // namespace geneva

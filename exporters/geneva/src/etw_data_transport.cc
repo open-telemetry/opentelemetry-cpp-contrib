@@ -11,7 +11,7 @@ namespace metrics {
 #define GUID_FORMAT "%08lX-%04hX-%04hX-%02hhX%02hhX-%02hhX%02hhX%02hhX%02hhX%02hhX%02hhX"
 #define GUID_ARG(guid) (guid).Data1, (guid).Data2, (guid).Data3, (guid).Data4[0], (guid).Data4[1], (guid).Data4[2], (guid).Data4[3], (guid).Data4[4], (guid).Data4[5], (guid).Data4[6], (guid).Data4[7]
 
-ETWDataTransport::ETWDataTransport() 
+ETWDataTransport::ETWDataTransport(const size_t offset_to_skip): offset_to_skip_{offset_to_skip} 
 {
   auto status = ::EventRegister(&kMDMProviderGUID, NULL, NULL, &provider_handle_);
   if (status != ERROR_SUCCESS) {
@@ -44,7 +44,8 @@ bool ETWDataTransport::Send(MetricsEventType event_type, const char *data,
   const unsigned int descriptorSize = 1;
   EVENT_DATA_DESCRIPTOR dataDescriptor[descriptorSize];
   ::ZeroMemory(&dataDescriptor, sizeof(dataDescriptor));
-  ::EventDataDescCreate(&dataDescriptor[0], data, length);
+  // skip the event_id and the payload length (as expected by the ETW listener)
+  ::EventDataDescCreate(&dataDescriptor[0], data + offset_to_skip_, length - offset_to_skip_);
 
   EVENT_DESCRIPTOR evtDescriptor;
   ::ZeroMemory(&evtDescriptor, sizeof(EVENT_DESCRIPTOR));
