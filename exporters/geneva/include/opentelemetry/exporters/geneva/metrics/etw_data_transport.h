@@ -8,15 +8,16 @@
 #include "opentelemetry/version.h"
 
 #include <evntprov.h>
-#include <memory>
 #include <guiddef.h>
+#include <memory>
 
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter {
 namespace geneva {
 namespace metrics {
 static const REGHANDLE INVALID_HANDLE = _UI64_MAX;
-static const GUID kMDMProviderGUID = { 0xedc24920, 0xe004, 0x40f6, 0xa8, 0xe1, 0x0e, 0x6e, 0x48, 0xf3, 0x9d, 0x84 };
+static const GUID kMDMProviderGUID = {
+    0xedc24920, 0xe004, 0x40f6, 0xa8, 0xe1, 0x0e, 0x6e, 0x48, 0xf3, 0x9d, 0x84};
 
 class ETWDataTransport : public DataTransport {
 public:

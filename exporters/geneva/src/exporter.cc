@@ -217,7 +217,7 @@ size_t Exporter::SerializeNonHistogramMetrics(
 
   // count of dimensions.
   SerializeInt<uint16_t>(buffer_non_histogram_, bufferIndex,
-                          static_cast<uint16_t>(attributes.size()));
+                         static_cast<uint16_t>(attributes.size()));
 
   // reserverd word (2 bytes)
   SerializeInt<uint16_t>(buffer_non_histogram_, bufferIndex, 0);
@@ -322,7 +322,7 @@ size_t Exporter::SerializeHistogramMetrics(
 
   // count of dimensions.
   SerializeInt<uint16_t>(buffer_histogram_, bufferIndex,
-                          static_cast<uint16_t>(attributes.size()));
+                         static_cast<uint16_t>(attributes.size()));
 
   // reserverd word (2 bytes)
   SerializeInt<uint16_t>(buffer_histogram_, bufferIndex, 0);
