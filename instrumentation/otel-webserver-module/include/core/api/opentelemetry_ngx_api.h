@@ -36,6 +36,7 @@ typedef struct{
 /* Structure for the request payload */
 typedef struct {
     const char* uri;
+    const char* server_name;
     const char* protocol;
     const char* http_get_param;
     const char* http_post_param;
