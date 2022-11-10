@@ -6,16 +6,15 @@ endif()
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
-    REPO open-telemetry/opentelemetry-cpp-contrib
-    HEAD_REF main
+    REPO lalitb/opentelemetry-cpp-contrib
+    HEAD_REF geneva-windows
 )
 
 vcpkg_cmake_configure(
-    SOURCE_PATH "${SOURCE_PATH}/exporters/geneva"
+    SOURCE_PATH "${SOURCE_PATH}/exporters/geneva/"
     OPTIONS
         -DBUILD_TESTING=OFF
         -DBUILD_EXAMPLE=OFF
-        -DCMAKE_TOOLCHAIN_FILE=/tmp/vcpkg/scripts/buildsystems/vcpkg.cmake
 )
 
 vcpkg_cmake_install()
