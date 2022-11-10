@@ -37,6 +37,7 @@ typedef struct{
 typedef struct {
     const char* uri;
     const char* server_name;
+    const char* scheme;
     const char* protocol;
     const char* http_get_param;
     const char* http_post_param;

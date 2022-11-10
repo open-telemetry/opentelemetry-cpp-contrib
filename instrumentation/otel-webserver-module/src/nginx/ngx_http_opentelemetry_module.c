@@ -1544,6 +1544,23 @@ static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t*
     ngx_http_core_srv_conf_t* cscf = (ngx_http_core_srv_conf_t*)ngx_http_get_module_srv_conf(r, ngx_http_core_module);
     req_payload->server_name = (const char*)(cscf->server_name).data;
 
+    #if (NGX_HTTP_SSL)
+
+      if(r->connection->ssl)
+      {
+        req_payload->scheme = "https";
+      }
+      else
+      {
+        req_payload->scheme = "http";
+      }
+
+    #else
+
+      req_payload->scheme = "http";
+
+    #endif
+
     req_payload->protocol = (const char*)(r->http_protocol).data;
     req_payload->request_method = (const char*)(r->method_name).data;
 
