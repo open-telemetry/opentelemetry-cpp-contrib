@@ -1,7 +1,6 @@
 // Copyright The OpenTelemetry Authors
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef ENABLE_METRICS_PREVIEW
 #include "opentelemetry/exporters/geneva/metrics/exporter.h"
 #include "opentelemetry/metrics/provider.h"
 #include "opentelemetry/sdk/metrics/aggregation/default_aggregation.h"
@@ -129,6 +128,3 @@ int main(int argc, char **argv) {
     histogram_example.join();
   }
 }
-#else
-int main() {}
-#endif
