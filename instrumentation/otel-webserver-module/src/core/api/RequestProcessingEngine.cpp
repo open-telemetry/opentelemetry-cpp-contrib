@@ -157,6 +157,9 @@ APPD_SDK_STATUS_CODE RequestProcessingEngine::endRequest(
                 std::string(itr->first);
             rootSpan->AddAttribute(key, itr->second);
         }
+        if (payload->status_code != 0) {
+            rootSpan->AddAttribute(kAttrHTTPStatusCode, payload->status_code);
+        }
     }
 
     LOG4CXX_TRACE(mLogger, "Ending root span with id: " << rootSpan.get());

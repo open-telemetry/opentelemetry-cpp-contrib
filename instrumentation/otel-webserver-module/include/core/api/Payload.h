@@ -95,6 +95,7 @@ public:
 struct ResponsePayload
 {
 	std::unordered_map<std::string, std::string> response_headers;
+	long status_code{0};
 };
 
 struct InteractionPayload

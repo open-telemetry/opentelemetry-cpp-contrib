@@ -1101,6 +1101,7 @@ static void stopMonitoringRequest(ngx_http_request_t* r,
 
     if (otel_requestHasErrors(r))
     {
+        res_payload->status_code = (unsigned int)otel_getErrorCode(r);
         errCode=(unsigned int)otel_getErrorCode(r);
         msg = (char*)malloc(6);
         sprintf(msg, "%d", errCode);
@@ -1108,6 +1109,7 @@ static void stopMonitoringRequest(ngx_http_request_t* r,
     }
     else
     {
+        res_payload->status_code = r->headers_out.status;
         res = endRequest(otel_req_handle_key, msg, res_payload);
     }
 
