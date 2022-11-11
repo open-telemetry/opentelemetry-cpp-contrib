@@ -522,9 +522,6 @@ void fillRequestPayload(request_rec* request, appd::core::RequestPayload* payloa
     val = request->method ? request->method: " ";
     payload->set_http_request_method(val);
 
-    // websrv-698 Setting server span attributes
-    payload->set_status_code(request->status);
-
     if (request->server)
     {
         payload->set_server_name(request->server->server_hostname);
