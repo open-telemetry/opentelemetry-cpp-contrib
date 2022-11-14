@@ -1564,6 +1564,9 @@ static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t*
     req_payload->protocol = (const char*)(r->http_protocol).data;
     req_payload->request_method = (const char*)(r->method_name).data;
 
+    // flavor has to be scraped from protocol in future
+    req_payload->flavor = (const char*)(r->http_protocol).data;
+
     req_payload->http_post_param = ngx_pcalloc(r->pool, sizeof(u_char*));
     req_payload->http_get_param = ngx_pcalloc(r->pool, sizeof(u_char*));
 
@@ -1582,6 +1585,8 @@ static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t*
             req_payload->http_post_param = "No param";
         }
     }
+
+    req_payload->client_ip = (const char*)(r->connection->addr_text).data;
 
     ngx_http_opentelemetry_loc_conf_t *conf =
       ngx_http_get_module_loc_conf(r, ngx_http_opentelemetry_module);
