@@ -34,6 +34,7 @@ void populatePayload(request_payload* req_payload, void* load)
     payload->set_scheme(req_payload->scheme);
     payload->set_flavor(req_payload->flavor);
     payload->set_target(req_payload->uri);
+    payload->set_host(req_payload->hostname);
     payload->set_server_name(req_payload->server_name);
     payload->set_request_protocol(req_payload->protocol);
     payload->set_http_post_parameter(req_payload->http_post_param);

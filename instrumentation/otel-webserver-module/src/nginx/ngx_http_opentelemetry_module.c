@@ -24,6 +24,7 @@ ngx_http_opentelemetry_worker_conf_t *worker_conf;
 static contextNode contexts[5];
 static unsigned int c_count = 0;
 static unsigned int isGlobalContextSet = 0;
+static ngx_str_t hostname;
 
 /*
 List of modules being monitored
@@ -612,6 +613,7 @@ static ngx_int_t ngx_http_opentelemetry_init(ngx_conf_t *cf)
     /* Register body_filter */
     // ngx_http_next_body_filter = ngx_http_top_body_filter;
     // ngx_http_top_body_filter = ngx_http_opentelemetry_body_filter;
+    hostname = cf->cycle->hostname;
 
     ngx_writeError(cf->cycle->log, __func__, "Opentelemetry Modlue init completed !");
 
@@ -1566,6 +1568,11 @@ static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t*
 
     // flavor has to be scraped from protocol in future
     req_payload->flavor = (const char*)(r->http_protocol).data;
+
+    char *temp_hostname = ngx_pcalloc(r->pool, (strlen(hostname.data))+1);
+    strcpy(temp_hostname,(const char*)hostname.data);
+    temp_hostname[hostname.len]='\0';
+    req_payload->hostname = temp_hostname;
 
     req_payload->http_post_param = ngx_pcalloc(r->pool, sizeof(u_char*));
     req_payload->http_get_param = ngx_pcalloc(r->pool, sizeof(u_char*));
