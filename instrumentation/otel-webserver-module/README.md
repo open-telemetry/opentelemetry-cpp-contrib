@@ -182,7 +182,7 @@ the response headers to be captured in the span attributes. The headers are Case
 ```
 NginxModuleResponseHeaders     Content-Length,Content-Type;
 ```
-
+|
 
 ### Build and Installation
 #### Prerequisites
