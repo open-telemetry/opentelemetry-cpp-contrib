@@ -24,6 +24,7 @@ ngx_http_opentelemetry_worker_conf_t *worker_conf;
 static contextNode contexts[5];
 static unsigned int c_count = 0;
 static unsigned int isGlobalContextSet = 0;
+static ngx_str_t hostname;
 
 /*
 List of modules being monitored
@@ -613,6 +614,10 @@ static ngx_int_t ngx_http_opentelemetry_init(ngx_conf_t *cf)
     // ngx_http_next_body_filter = ngx_http_top_body_filter;
     // ngx_http_top_body_filter = ngx_http_opentelemetry_body_filter;
 
+    hostname = cf->cycle->hostname;
+    /* hostname is extracted from the nginx cycle. The attribute hostname is needed
+    for OTEL spec and the only place it is available is cf->cycle
+    */
     ngx_writeError(cf->cycle->log, __func__, "Opentelemetry Modlue init completed !");
 
   return NGX_OK;
@@ -1541,8 +1546,36 @@ static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t*
     temp_uri[(r->uri).len]='\0';
     req_payload->uri = temp_uri;
 
+    ngx_http_core_srv_conf_t* cscf = (ngx_http_core_srv_conf_t*)ngx_http_get_module_srv_conf(r, ngx_http_core_module);
+    req_payload->server_name = (const char*)(cscf->server_name).data;
+
+    #if (NGX_HTTP_SSL)
+
+      if(r->connection->ssl)
+      {
+        req_payload->scheme = "https";
+      }
+      else
+      {
+        req_payload->scheme = "http";
+      }
+
+    #else
+
+      req_payload->scheme = "http";
+
+    #endif
+
     req_payload->protocol = (const char*)(r->http_protocol).data;
     req_payload->request_method = (const char*)(r->method_name).data;
+
+    // flavor has to be scraped from protocol in future
+    req_payload->flavor = (const char*)(r->http_protocol).data;
+
+    char *temp_hostname = ngx_pcalloc(r->pool, (strlen(hostname.data))+1);
+    strcpy(temp_hostname,(const char*)hostname.data);
+    temp_hostname[hostname.len]='\0';
+    req_payload->hostname = temp_hostname;
 
     req_payload->http_post_param = ngx_pcalloc(r->pool, sizeof(u_char*));
     req_payload->http_get_param = ngx_pcalloc(r->pool, sizeof(u_char*));
@@ -1562,6 +1595,8 @@ static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t*
             req_payload->http_post_param = "No param";
         }
     }
+
+    req_payload->client_ip = (const char*)(r->connection->addr_text).data;
 
     ngx_http_opentelemetry_loc_conf_t *conf =
       ngx_http_get_module_loc_conf(r, ngx_http_opentelemetry_module);
