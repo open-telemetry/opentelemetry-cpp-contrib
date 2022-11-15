@@ -31,10 +31,16 @@ void populatePayload(request_payload* req_payload, void* load)
 {
     appd::core::RequestPayload* payload = (appd::core::RequestPayload*)load;
     payload->set_uri(req_payload->uri);
+    payload->set_scheme(req_payload->scheme);
+    payload->set_flavor(req_payload->flavor);
+    payload->set_target(req_payload->uri);
+    payload->set_host(req_payload->hostname);
+    payload->set_server_name(req_payload->server_name);
     payload->set_request_protocol(req_payload->protocol);
     payload->set_http_post_parameter(req_payload->http_post_param);
     payload->set_http_get_parameter(req_payload->http_get_param);
     payload->set_http_request_method(req_payload->request_method);
+    payload->set_client_ip(req_payload->client_ip);
 
     for(int i=0; i<req_payload->propagation_count; i++){
         payload->set_http_headers(req_payload->propagation_headers[i].name, req_payload->propagation_headers[i].value);
