@@ -172,17 +172,9 @@ Currently, Nginx Webserver module monitores some fixed set of modules, which get
 |*NginxModuleWebserverContext*                  |                 | OPTIONAL: Takes 3 values(space-seperated) ServiceName, ServiceNamespace and ServiceInstanceId|
 |*NginxModuleSegmentType*                       |                 | OPTIONAL: Specify the string (FIRST/LAST/CUSTOM) to be filtered for Span Name Creation|
 |*NginxModuleSegmentParameter*                  |                 | OPTIONAL: Specify the segment count or segment numbers that you want to display for Span Creation|
-|*NginxModuleRequestHeaders*                    |                 | OPTIONAL: Specify the request headers to be captured in the span attributes. The headers are Case-Sensitive and should be comma-separated. e.g.
-```
-NginxModuleRequestHeaders     Accept-Charset,Accept-Encoding,User-Agent;
-```
-|
+|*NginxModuleRequestHeaders*                    |                 | OPTIONAL: Specify the request headers to be captured in the span attributes. The headers are Case-Sensitive and should be comma-separated. e.g.```NginxModuleRequestHeaders     Accept-Charset,Accept-Encoding,User-Agent;```|
 |*NginxModuleResponseHeaders*                   |                  | OPTIONAL: Specify
-the response headers to be captured in the span attributes. The headers are Case-Sensitive and should be comma-separated. e.g.
-```
-NginxModuleResponseHeaders     Content-Length,Content-Type;
-```
-|
+the response headers to be captured in the span attributes. The headers are Case-Sensitive and should be comma-separated. e.g.```NginxModuleResponseHeaders     Content-Length,Content-Type;```|
 
 ### Build and Installation
 #### Prerequisites
