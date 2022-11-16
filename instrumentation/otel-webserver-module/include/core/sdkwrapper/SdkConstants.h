@@ -46,6 +46,8 @@ constexpr int HTTP_ERROR_5XX = 500;
 constexpr int HTTP_PROTO_1000 = 1000;
 constexpr int HTTP_PROTO_1001 = 1001;
 
+constexpr unsigned int kStatusCodeInit = 0;
+
 } // sdkwrapper
 } // core
 } // appd

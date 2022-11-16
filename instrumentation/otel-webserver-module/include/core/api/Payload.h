@@ -18,10 +18,10 @@
 #define __PAYLOAD_H
 
 #include <unordered_map>
+#include "sdkwrapper/SdkConstants.h"
 
 namespace appd {
 namespace core {
-
 
 //-----------------------------------------------------------------------------------------
 // RequestPayload
@@ -92,7 +92,7 @@ public:
 struct ResponsePayload
 {
 	std::unordered_map<std::string, std::string> response_headers;
-	unsigned int status_code{0};
+	unsigned int status_code{sdkwrapper::kStatusCodeInit};
 };
 
 struct InteractionPayload
