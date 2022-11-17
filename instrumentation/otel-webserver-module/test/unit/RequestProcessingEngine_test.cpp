@@ -113,6 +113,11 @@ MATCHER_P(HasLongIntValue, value, "") {
 	return opentelemetry::nostd::get<int64_t>(arg) == value;
 }
 
+MATCHER_P(HasUnsignedIntValue, value, "") {
+
+	return opentelemetry::nostd::get<uint32_t>(arg) == value;
+}
+
 MATCHER_P(HasBoolValue, value, "") {
   return opentelemetry::nostd::get<bool>(arg) == value;
 }
@@ -131,7 +136,6 @@ TEST(TestRequestProcessingEngine, StartRequest)
 	payload.set_request_protocol("GET");
 	payload.set_uri("dummy_span");
 	payload.set_server_name("localhost");
-	payload.set_status_code(200);
 	payload.set_host("host");
   payload.set_http_request_method("GET");
   payload.set_scheme("http");
@@ -146,7 +150,6 @@ TEST(TestRequestProcessingEngine, StartRequest)
   keyValueMap[kAttrHTTPServerName] = (opentelemetry::nostd::string_view)"localhost";
   keyValueMap[kAttrHTTPMethod] = (opentelemetry::nostd::string_view)"GET";
   keyValueMap[kAttrNetHostName] =(opentelemetry::nostd::string_view)"host";
-  keyValueMap[kAttrHTTPStatusCode] = (long) 200;
   keyValueMap[kAttrNETHostPort] = (long)80;
   keyValueMap[kAttrHTTPScheme] = (opentelemetry::nostd::string_view)"http";
   keyValueMap[kAttrHTTPTarget] = (opentelemetry::nostd::string_view)"target";
@@ -229,12 +232,19 @@ TEST(TestRequestProcessingEngine, EndRequest)
 	EXPECT_CALL(*getMockSpan(interactionSpan1), End()).
 	Times(1);
 
+	unsigned int status_code = 403;
 	EXPECT_CALL(*getMockSpan(rootSpan), SetStatus(appd::core::sdkwrapper::StatusCode::Error, "HTTP ERROR CODE:403")).Times(1);
+	EXPECT_CALL(*getMockSpan(rootSpan),
+		AddAttribute(kAttrHTTPStatusCode,
+			HasUnsignedIntValue(status_code))).Times(1);
 	
 	EXPECT_CALL(*getMockSpan(rootSpan), End()).
 	Times(1);
 
-	auto res = engine.endRequest(rContext, "403");
+	std::unique_ptr<appd::core::ResponsePayload> responsePayload
+        (new appd::core::ResponsePayload);
+    responsePayload->status_code = status_code;
+	auto res = engine.endRequest(rContext, "403", responsePayload.get());
 	EXPECT_EQ(res, APPD_SUCCESS);
 }
 

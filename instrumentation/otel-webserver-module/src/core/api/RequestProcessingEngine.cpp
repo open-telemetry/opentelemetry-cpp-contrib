@@ -74,7 +74,6 @@ APPD_SDK_STATUS_CODE RequestProcessingEngine::startRequest(
     keyValueMap[kAttrNETHostPort] = payload->get_port();
     keyValueMap[kAttrHTTPTarget] =payload->get_target();
     keyValueMap[kAttrHTTPFlavor] = payload->get_flavor();
-    keyValueMap[kAttrHTTPStatusCode] = payload->get_status_code();
     keyValueMap[kAttrHTTPClientIP] = payload->get_client_ip();
 
     auto& request_headers = payload->get_request_headers();
@@ -157,6 +156,8 @@ APPD_SDK_STATUS_CODE RequestProcessingEngine::endRequest(
                 std::string(itr->first);
             rootSpan->AddAttribute(key, itr->second);
         }
+
+        rootSpan->AddAttribute(kAttrHTTPStatusCode, payload->status_code);
     }
 
     LOG4CXX_TRACE(mLogger, "Ending root span with id: " << rootSpan.get());

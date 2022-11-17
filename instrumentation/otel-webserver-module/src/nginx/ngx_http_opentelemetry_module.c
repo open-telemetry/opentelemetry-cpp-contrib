@@ -1101,18 +1101,18 @@ static void stopMonitoringRequest(ngx_http_request_t* r,
     }
 
     APPD_SDK_STATUS_CODE res;
-    unsigned int errCode=0;
     char* msg = NULL;
 
     if (otel_requestHasErrors(r))
     {
-        errCode=(unsigned int)otel_getErrorCode(r);
-        msg = (char*)malloc(6);
-        sprintf(msg, "%d", errCode);
+        res_payload->status_code = (unsigned int)otel_getErrorCode(r);
+        msg = (char*)malloc(STATUS_CODE_BYTE_COUNT * sizeof(char));
+        sprintf(msg, "%d", res_payload->status_code);
         res = endRequest(otel_req_handle_key, msg, res_payload);
     }
     else
     {
+        res_payload->status_code = r->headers_out.status;
         res = endRequest(otel_req_handle_key, msg, res_payload);
     }
 

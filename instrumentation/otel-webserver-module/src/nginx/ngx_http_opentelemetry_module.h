@@ -22,6 +22,7 @@
 #include "../../include/core/api/opentelemetry_ngx_api.h"
 
 #define LOWEST_HTTP_ERROR_CODE 400
+#define STATUS_CODE_BYTE_COUNT 6
 
 /*  The following enum has one-to-one mapping with
     otel_monitored_modules[] defined in .c file.

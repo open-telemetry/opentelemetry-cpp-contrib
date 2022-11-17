@@ -125,6 +125,7 @@ APPD_SDK_STATUS_CODE endRequest(APPD_SDK_HANDLE_REQ req_handle_key, const char* 
                     = payload->response_headers[i].value;
             }
         }
+        responsePayload->status_code = payload->status_code;
     }
 
     res = wsAgent.endRequest(req_handle_key, errMsg, responsePayload.get());

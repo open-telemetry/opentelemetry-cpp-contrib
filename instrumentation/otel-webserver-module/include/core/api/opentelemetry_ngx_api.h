@@ -55,6 +55,8 @@ typedef struct {
 typedef struct {
     http_headers* response_headers;
     int response_headers_count;
+
+    unsigned int status_code;
 }response_payload;
 
 typedef struct{

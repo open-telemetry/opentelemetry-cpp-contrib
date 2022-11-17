@@ -522,9 +522,6 @@ void fillRequestPayload(request_rec* request, appd::core::RequestPayload* payloa
     val = request->method ? request->method: " ";
     payload->set_http_request_method(val);
 
-    // websrv-698 Setting server span attributes
-    payload->set_status_code(request->status);
-
     if (request->server)
     {
         payload->set_server_name(request->server->server_hostname);
@@ -675,16 +672,21 @@ int ApacheHooks::appd_hook_log_transaction_end(request_rec* r)
     apr_table_unset(r->notes, APPD_REQ_HANDLE_KEY);
 
     APPD_SDK_STATUS_CODE res;
+    std::unique_ptr<appd::core::ResponsePayload> responsePayload
+        (new appd::core::ResponsePayload);
+    responsePayload->status_code = r->status;
 
     if (appd_requestHasErrors(r))
     {
         std::ostringstream oss;
         oss << r->status;
-        res = wsAgent.endRequest(reqHandle, oss.str().c_str());
+        res = wsAgent.endRequest
+            (reqHandle, oss.str().c_str(), responsePayload.get());
     }
     else
     {
-        res = wsAgent.endRequest(reqHandle, NULL);
+        res = wsAgent.endRequest(
+            reqHandle, NULL, responsePayload.get());
     }
 
     if (APPD_ISSUCCESS(res))

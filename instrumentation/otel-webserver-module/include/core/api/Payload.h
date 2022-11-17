@@ -18,10 +18,10 @@
 #define __PAYLOAD_H
 
 #include <unordered_map>
+#include "sdkwrapper/SdkConstants.h"
 
 namespace appd {
 namespace core {
-
 
 //-----------------------------------------------------------------------------------------
 // RequestPayload
@@ -47,7 +47,6 @@ class RequestPayload
     std::string flavor;
     std::string client_ip;
     long port = 80;
-    long status_code = 200;
 
 public:
 	void set_http_headers(const std::string& key, const std::string& value)
@@ -70,7 +69,6 @@ public:
     void set_flavor(const char* aflavor) {flavor = aflavor; }
     void set_client_ip(const char* clientIp) {client_ip = clientIp; }
     void set_port(long aPort) {port = aPort; }
-    void set_status_code(long statusCode) {status_code = statusCode; }
 
 
 	std::string get_uri() {	return uri; }
@@ -86,7 +84,6 @@ public:
     std::string get_flavor() {return flavor; }
     std::string get_client_ip() {return client_ip; }
     long get_port() {return port; }
-    long get_status_code() {return status_code; }
     std::unordered_map<std::string, std::string>& get_request_headers() {
     	return request_headers;
     }
@@ -95,6 +92,7 @@ public:
 struct ResponsePayload
 {
 	std::unordered_map<std::string, std::string> response_headers;
+	unsigned int status_code{sdkwrapper::kStatusCodeInit};
 };
 
 struct InteractionPayload
