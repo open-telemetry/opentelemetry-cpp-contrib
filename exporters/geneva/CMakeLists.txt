@@ -4,7 +4,6 @@ cmake_minimum_required(VERSION 3.12)
 # (using add_subdirectory) or if it is the main project
 #
 set(MAIN_PROJECT OFF)
-message("STARTED.....................")
 set(MAIN_PROJECT OFF)
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   project(opentelemetry-geneva-metrics)
