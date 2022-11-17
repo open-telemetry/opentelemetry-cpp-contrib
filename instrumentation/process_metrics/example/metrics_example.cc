@@ -22,7 +22,7 @@ namespace
 void initMetrics()
 {
     std::cout << "\n LALIT->Init metrics\n";
-  std::unique_ptr<metric_sdk::MetricExporter> exporter{new exportermetrics::OStreamMetricExporter};
+  std::unique_ptr<metric_sdk::PushMetricExporter> exporter{new exportermetrics::OStreamMetricExporter};
 
   std::string version{"1.2.0"};
   std::string schema{"https://opentelemetry.io/schemas/1.2.0"};
