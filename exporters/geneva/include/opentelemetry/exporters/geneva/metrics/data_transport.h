@@ -12,6 +12,8 @@ namespace exporter {
 namespace geneva {
 namespace metrics {
 
+// These enums are defined in 
+// file: test/decoder/ifx_metrics_bin.ksy (enum metric_event_type)
 enum class MetricsEventType : uint16_t {
   ULongMetric = 50,
   DoubleMetric = 55,
