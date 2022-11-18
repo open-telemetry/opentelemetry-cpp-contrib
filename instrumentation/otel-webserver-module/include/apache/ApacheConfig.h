@@ -39,6 +39,9 @@ public:
     const char* getOtelExporterEndpoint() { return otelExporterEndpoint; }
     int getOtelExporterEndpointInitialized() { return otelExporterEndpoint_initialized; }
 
+    const char* getOtelExporterOtlpHeaders() { return otelExporterOtlpHeaders; }
+    int otelExporterOtlpHeadersInitialized() { return otelExporterOtlpHeaders_initialized; }
+
     int getOtelSslEnabled() { return otelSslEnabled; }
     int getOtelSslEnabledInitialized() { return otelSslEnabled_initialized; }
 
@@ -122,6 +125,9 @@ private:
 
     const char *otelExporterEndpoint;   // REQUIRED: AppDynamics endpoint where the OpenTelemetry Exporter inside OTel SDK sends traces
     int otelExporterEndpoint_initialized;
+
+    const char *otelExporterOtlpHeaders;   // OPTIONAL: AppDynamics  Custom metadata for OTEL Exporter EX: OTEL_EXPORTER_OTLP_HEADERS="api-key=key,other-config-value=value"
+    int otelExporterOtlpHeaders_initialized;
 
     int otelSslEnabled;      // OPTIONAL: Decision whether connection to the Exporter endpoint is secured
     int otelSslEnabled_initialized;
@@ -224,6 +230,7 @@ public:
     static const char* appd_set_enabled(cmd_parms *cmd, void *conf, const char *arg);
     static const char* appd_set_otelExporterType(cmd_parms *cmd, void *conf, const char *arg);
     static const char* appd_set_otelExporterEndpoint(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* appd_set_otelExporterOtlpHeaders(cmd_parms *cmd, void *conf, const char *arg);
     static const char* appd_set_otelSslEnabled(cmd_parms *cmd, void *conf, const char *arg);
     static const char* appd_set_otelSslCertificatePath(cmd_parms *cmd, void *conf, const char *arg);
     static const char* appd_set_otelProcessorType(cmd_parms *cmd, void *conf, const char *arg);
