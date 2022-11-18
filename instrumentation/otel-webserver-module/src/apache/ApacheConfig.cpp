@@ -779,6 +779,9 @@ appd_cfg* ApacheConfigHandlers::getProcessConfig(const request_rec* r)
     process_cfg->otelExporterEndpoint = apr_pstrdup(r->server->process->pool, our_config->otelExporterEndpoint);
     process_cfg->otelExporterEndpoint_initialized = our_config->otelExporterEndpoint_initialized;
 
+    process_cfg->otelExporterOtlpHeaders = apr_pstrdup(r->server->process->pool, our_config->otelExporterEndpoint);
+    process_cfg->otelExporterOtlpHeaders_initialized = our_config->otelExporterOtlpHeaders_initialized;
+
     process_cfg->otelSslEnabled = our_config->otelSslEnabled;
     process_cfg->otelSslEnabled_initialized = our_config->otelSslEnabled_initialized;
 
