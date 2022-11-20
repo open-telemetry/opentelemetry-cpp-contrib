@@ -69,50 +69,85 @@ opentelemetry::sdk::common::ExportResult Exporter::Export(
       for (auto &point_data_with_attributes : metric_data.point_data_attr_) {
         size_t body_length = 0;
         if (nostd::holds_alternative<sdk::metrics::SumPointData>(
-                point_data_with_attributes.point_data)) {
+                point_data_with_attributes.point_data)) 
+        {
           auto value = nostd::get<sdk::metrics::SumPointData>(
               point_data_with_attributes.point_data);
-          MetricsEventType event_type = MetricsEventType::ULongMetric;
-          if (nostd::holds_alternative<double>(value.value_)) {
+          ValueType new_value = value.value_;
+
+          MetricsEventType event_type = MetricsEventType::Undefined;
+
+          if (nostd::holds_alternative<double>(value.value_)) 
+          {
             event_type = MetricsEventType::DoubleMetric;
           }
+          else 
+          {
+            if (!value.is_monotonic_) 
+            {
+              // NOTE - Potential for minor precision loss implicitly going from int64_t to double -
+              //   - A 64-bit integer can hold more significant decimal digits than a standard 
+              //     IEEE (64-bit) double precision floating-point representation
+              new_value = static_cast<double>(nostd::get<int64_t>(new_value));
+              event_type = MetricsEventType::DoubleMetric;
 
+            } 
+            else 
+            {
+              event_type = MetricsEventType::Uint64Metric;
+            }
+          }
           body_length = SerializeNonHistogramMetrics(
-              sdk::metrics::AggregationType::kSum, event_type, value.value_,
+              sdk::metrics::AggregationType::kSum, event_type, new_value,
               metric_data.end_ts, metric_data.instrument_descriptor.name_,
               point_data_with_attributes.attributes);
           data_transport_->Send(buffer_non_histogram_,
                                 body_length + kBinaryHeaderSize);
 
-        } else if (nostd::holds_alternative<sdk::metrics::LastValuePointData>(
-                       point_data_with_attributes.point_data)) {
+        } 
+        else if (nostd::holds_alternative<sdk::metrics::LastValuePointData>(
+                       point_data_with_attributes.point_data)) 
+        {
           auto value = nostd::get<sdk::metrics::SumPointData>(
               point_data_with_attributes.point_data);
-          MetricsEventType event_type = MetricsEventType::ULongMetric;
-          if (nostd::holds_alternative<double>(value.value_)) {
-            event_type = MetricsEventType::DoubleMetric;
+          ValueType new_value = value.value_;
+          if (nostd::holds_alternative<int64_t>(value.value_)) 
+          {
+              // NOTE - Potential for minor precision loss implicitly going from int64_t to double -
+              //   - A 64-bit integer can hold more significant decimal digits than a standard 
+              //     IEEE (64-bit) double precision floating-point representation
+              new_value = static_cast<double>(nostd::get<int64_t>(new_value));
           }
+          MetricsEventType event_type = MetricsEventType::DoubleMetric;
           body_length = SerializeNonHistogramMetrics(
               sdk::metrics::AggregationType::kLastValue, event_type,
-              value.value_, metric_data.end_ts,
+              new_value, metric_data.end_ts,
               metric_data.instrument_descriptor.name_,
               point_data_with_attributes.attributes);
           data_transport_->Send(buffer_non_histogram_,
                                 body_length + kBinaryHeaderSize);
-        } else if (nostd::holds_alternative<sdk::metrics::HistogramPointData>(
-                       point_data_with_attributes.point_data)) {
+        } 
+        else if (nostd::holds_alternative<sdk::metrics::HistogramPointData>(
+                       point_data_with_attributes.point_data)) 
+        {
           auto value = nostd::get<sdk::metrics::HistogramPointData>(
               point_data_with_attributes.point_data);
-          MetricsEventType event_type =
-              MetricsEventType::ExternallyAggregatedULongDistributionMetric;
-          if (nostd::holds_alternative<double>(value.sum_)) {
-            LOG_ERROR("Geneva Exporter::Export- Double value is not supported "
-                      "for Histogram");
-            continue;
+          ValueType new_sum = value.sum_;
+          ValueType new_min = value.min_;
+          ValueType new_max = value.max_;
+
+          if (nostd::holds_alternative<double>(value.sum_)) 
+          {
+            // Double is not supported by Geneva, convert it to int64_t
+            new_sum = static_cast<int64_t>(nostd::get<double>(new_sum));
+            new_min = static_cast<int64_t>(nostd::get<double>(new_min));
+            new_max = static_cast<int64_t>(nostd::get<double>(new_max));
           }
+          MetricsEventType event_type =
+              MetricsEventType::ExternallyAggregatedUlongDistributionMetric;
           body_length = SerializeHistogramMetrics(
               sdk::metrics::AggregationType::kHistogram, event_type,
-              value.count_, value.sum_, value.min_, value.max_,
+              value.count_, new_sum, new_min, new_max,
               nostd::get<sdk::metrics::HistogramPointData>(
                   point_data_with_attributes.point_data)
                   .boundaries_,
@@ -221,13 +256,17 @@ size_t Exporter::SerializeNonHistogramMetrics(
           .count());
 
   SerializeInt<uint64_t>(buffer_non_histogram_, bufferIndex, windows_ticks);
-  if (event_type == MetricsEventType::ULongMetric) {
+  if (event_type == MetricsEventType::Uint64Metric) {
     SerializeInt<uint64_t>(buffer_non_histogram_, bufferIndex,
-                           static_cast<uint64_t>(nostd::get<long>(value)));
-  } else {
+                           static_cast<uint64_t>(nostd::get<int64_t>(value)));
+  } else if (event_type == MetricsEventType::DoubleMetric)
+  {
     SerializeInt<uint64_t>(
         buffer_non_histogram_, bufferIndex,
         *(reinterpret_cast<const uint64_t *>(&(nostd::get<double>(value)))));
+  }
+  else {
+    // Won't reach here.
   }
   return body_length;
 }
@@ -278,7 +317,7 @@ size_t Exporter::SerializeHistogramMetrics(
   size_t index = 0;
   uint16_t bucket_count = 0;
   if (event_type ==
-      MetricsEventType::ExternallyAggregatedULongDistributionMetric) {
+      MetricsEventType::ExternallyAggregatedUlongDistributionMetric) {
     for (auto boundary : boundaries) {
       if (counts[index] > 0) {
         SerializeInt<uint64_t>(buffer_histogram_, bufferIndex,
@@ -328,29 +367,18 @@ size_t Exporter::SerializeHistogramMetrics(
   // sum, min, max
 
   if (event_type ==
-      MetricsEventType::ExternallyAggregatedULongDistributionMetric) {
+      MetricsEventType::ExternallyAggregatedUlongDistributionMetric) {
     // sum
     SerializeInt<uint64_t>(buffer_histogram_, bufferIndex,
-                           static_cast<uint64_t>(nostd::get<long>(sum)));
+                           static_cast<uint64_t>(nostd::get<int64_t>(sum)));
     // min
     SerializeInt<uint64_t>(buffer_histogram_, bufferIndex,
-                           static_cast<uint64_t>(nostd::get<long>(min)));
+                           static_cast<uint64_t>(nostd::get<int64_t>(min)));
     // max
     SerializeInt<uint64_t>(buffer_histogram_, bufferIndex,
-                           static_cast<uint64_t>(nostd::get<long>(max)));
+                           static_cast<uint64_t>(nostd::get<int64_t>(max)));
   } else {
-    // sum
-    SerializeInt<uint64_t>(
-        buffer_histogram_, bufferIndex,
-        *(reinterpret_cast<const uint64_t *>(&(nostd::get<double>(sum)))));
-    // min
-    SerializeInt<uint64_t>(
-        buffer_histogram_, bufferIndex,
-        *(reinterpret_cast<const uint64_t *>(&(nostd::get<double>(min)))));
-    // max
-    SerializeInt<uint64_t>(
-        buffer_histogram_, bufferIndex,
-        *(reinterpret_cast<const uint64_t *>(&(nostd::get<double>(max)))));
+    // won't reach here.
   }
   return body_length;
 }

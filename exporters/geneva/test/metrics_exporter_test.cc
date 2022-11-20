@@ -36,6 +36,8 @@ struct TestServer {
   std::atomic<uint32_t> count{0};
   size_t count_counter_double = 0;
   size_t count_counter_long = 0;
+  size_t count_up_down_counter_long = 0;
+  size_t count_up_down_counter_double = 0;
   size_t count_histogram_long = 0;
 
   TestServer(SocketServer &server) : server(server) {
@@ -45,6 +47,7 @@ struct TestServer {
         kaitai::kstream ks(&ss);
         try {
           ifx_metrics_bin_t event_bin = ifx_metrics_bin_t(&ks);
+
           if (event_bin.event_id() == kCounterDoubleEventId) {
             EXPECT_EQ(event_bin.event_id(), kCounterDoubleEventId);
             auto event_body = event_bin.body();
@@ -57,6 +60,9 @@ struct TestServer {
                         kCounterDoubleAttributeValue1);
               EXPECT_EQ(event_body->dimensions_names()->at(0)->value(),
                         kCounterDoubleAttributeKey1);
+              EXPECT_EQ(event_body->metric_name()->value(),
+                      kCounterDoubleInstrumentName);
+              count_counter_double++;
             }
             if (static_cast<ifx_metrics_bin_t::single_double_value_t *>(
                     event_body->value_section())
@@ -71,12 +77,36 @@ struct TestServer {
                         kCounterDoubleAttributeValue3);
               EXPECT_EQ(event_body->dimensions_names()->at(1)->value(),
                         kCounterDoubleAttributeKey3);
+              EXPECT_EQ(event_body->metric_name()->value(),
+                      kCounterDoubleInstrumentName);
+              count_counter_double++;
+            }
+            if (static_cast<ifx_metrics_bin_t::single_double_value_t *>(
+                    event_body->value_section())
+                    ->value() == kUpDownCounterLongValue) 
+            {
+              EXPECT_EQ(event_body->num_dimensions(),
+                      kUpDownCounterLongCountDimensions);
+              EXPECT_EQ(event_body->dimensions_values()->at(0)->value(),
+                      kUpDownCounterLongAttributeValue1);
+              EXPECT_EQ(event_body->dimensions_names()->at(0)->value(),
+                      kUpDownCounterLongAttributeKey1);
+              count_up_down_counter_long++;
+            }
+            if (static_cast<ifx_metrics_bin_t::single_double_value_t *>(
+                    event_body->value_section())
+                    ->value() == kUpDownCounterDoubleValue) 
+            {
+              EXPECT_EQ(event_body->num_dimensions(),
+                      kUpDownCounterDoubleCountDimensions);
+              EXPECT_EQ(event_body->dimensions_values()->at(0)->value(),
+                      kUpDownCounterDoubleAttributeValue1);
+              EXPECT_EQ(event_body->dimensions_names()->at(0)->value(),
+                      kUpDownCounterDoubleAttributeKey1);
+              count_up_down_counter_double++;
             }
             EXPECT_EQ(event_body->metric_account()->value(), kAccountName);
             EXPECT_EQ(event_body->metric_namespace()->value(), kNamespaceName);
-            EXPECT_EQ(event_body->metric_name()->value(),
-                      kCounterDoubleInstrumentName);
-            count_counter_double++;
           } else if (event_bin.event_id() == kCounterLongEventId) {
             EXPECT_EQ(event_bin.event_id(), kCounterLongEventId);
             auto event_body = event_bin.body();
@@ -147,7 +177,6 @@ struct TestServer {
               }
               index_all_buckets++;
             }
-
             count_histogram_long++;
           }
 
@@ -197,21 +226,35 @@ TEST(GenevaMetricsExporter, BasicTests) {
   // export sum aggregation - double
   auto metric_data = GenerateSumDataDoubleMetrics();
   exporter.Export(metric_data);
-  yield_for(std::chrono::milliseconds(500));
+  yield_for(std::chrono::milliseconds(1000));
 
   // export sum aggregation - long
   metric_data = GenerateSumDataLongMetrics();
   exporter.Export(metric_data);
-  yield_for(std::chrono::milliseconds(500));
+  yield_for(std::chrono::milliseconds(1000));
+
+  // export sum aggregation - long - non monotonic
+  metric_data = GenerateSumDataLongMetricsNonMonotonic();
+  exporter.Export(metric_data);
+  yield_for(std::chrono::milliseconds(1000));
+
+  // export sum aggregation - double - non monotonic
+  metric_data = GenerateSumDataDoubleMetricsNonMonotonic();
+  exporter.Export(metric_data);
+  yield_for(std::chrono::milliseconds(1000)); 
 
   // export histogram aggregation - long
   metric_data = GenerateHistogramDataLongMetrics();
   exporter.Export(metric_data);
+  yield_for(std::chrono::milliseconds(1000));
 
-  yield_for(std::chrono::milliseconds(5000));
-  // EXPECT_EQ(testServer.count_counter_double, 2);
-  // EXPECT_EQ(testServer.count_counter_long, 1);
+  EXPECT_EQ(testServer.count_counter_double, 1);
+  EXPECT_EQ(testServer.count_counter_long, 1);
+  EXPECT_EQ(testServer.count_up_down_counter_long, 1);
+  EXPECT_EQ(testServer.count_up_down_counter_double, 1);
+
   EXPECT_EQ(testServer.count_histogram_long, 1);
+
 
   testServer.Stop();
 }

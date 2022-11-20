@@ -33,10 +33,19 @@ constexpr uint64_t kSecondsToUnixTime =
                   // 1601-01-01T00:00:00Z and UNIX/Linux epoch
                   // (1970-01-01T00:00:00Z)
 
+using ValueType = nostd::variant<int64_t, double>;
+
 enum class MetricsEventType : uint16_t {
-  ULongMetric = 50,
+  Uint64Metric = 50,
+  DoubleScaledToLongMetric = 51,
+  BatchMetric = 52,
+  ExternallyAggregatedUlongMetric = 53,
+  ExternallyAggregatedDoubleMetric = 54,
   DoubleMetric = 55,
-  ExternallyAggregatedULongDistributionMetric = 56
+  ExternallyAggregatedUlongDistributionMetric = 56,
+  ExternallyAggregatedDoubleDistributionMetric = 57,
+  ExternallyAggregatedDoubleScaledToLongDistributionMetric = 58,
+  Undefined = 100
 };
 
 /**
