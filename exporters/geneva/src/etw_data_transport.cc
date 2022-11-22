@@ -75,6 +75,7 @@ bool ETWDataTransport::Disconnect() noexcept {
 ETWDataTransport::~ETWDataTransport() {
   if (provider_handle_ != INVALID_HANDLE) {
     ::EventUnregister(provider_handle_);
+    provider_handle_ = INVALID_HANDLE;
   }
 }
 
