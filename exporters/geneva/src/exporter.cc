@@ -4,6 +4,9 @@
 #include "opentelemetry/exporters/geneva/metrics/exporter.h"
 #include "opentelemetry/exporters/geneva/metrics/macros.h"
 #include "opentelemetry/exporters/geneva/metrics/unix_domain_socket_data_transport.h"
+#ifdef _WIN32
+#include "opentelemetry/exporters/geneva/metrics/etw_data_transport.h"
+#endif
 #include "opentelemetry/metrics/meter_provider.h"
 #include "opentelemetry/sdk_config.h"
 
@@ -25,6 +28,13 @@ Exporter::Exporter(const ExporterOptions &options)
           std::unique_ptr<DataTransport>(new UnixDomainSocketDataTransport(
               connection_string_parser_.url_->path_));
     }
+#ifdef _WIN32
+    else if (connection_string_parser_.transport_protocol_ ==
+             TransportProtocol::kETW) {
+      data_transport_ = std::unique_ptr<DataTransport>(
+          new ETWDataTransport(kBinaryHeaderSize));
+    }
+#endif
   }
   // Connect transport at initialization
   auto status = data_transport_->Connect();
@@ -52,7 +62,6 @@ opentelemetry::sdk::common::ExportResult Exporter::Export(
     const std::lock_guard<opentelemetry::common::SpinLockMutex> locked(lock_);
     shutdown = is_shutdown_;
   }
-
   if (shutdown) {
     OTEL_INTERNAL_LOG_ERROR("[Genava Exporter] Exporting "
                             << data.scope_metric_data_.size()
@@ -81,7 +90,7 @@ opentelemetry::sdk::common::ExportResult Exporter::Export(
               sdk::metrics::AggregationType::kSum, event_type, value.value_,
               metric_data.end_ts, metric_data.instrument_descriptor.name_,
               point_data_with_attributes.attributes);
-          data_transport_->Send(buffer_non_histogram_,
+          data_transport_->Send(event_type, buffer_non_histogram_,
                                 body_length + kBinaryHeaderSize);
 
         } else if (nostd::holds_alternative<sdk::metrics::LastValuePointData>(
@@ -97,7 +106,7 @@ opentelemetry::sdk::common::ExportResult Exporter::Export(
               value.value_, metric_data.end_ts,
               metric_data.instrument_descriptor.name_,
               point_data_with_attributes.attributes);
-          data_transport_->Send(buffer_non_histogram_,
+          data_transport_->Send(event_type, buffer_non_histogram_,
                                 body_length + kBinaryHeaderSize);
         } else if (nostd::holds_alternative<sdk::metrics::HistogramPointData>(
                        point_data_with_attributes.point_data)) {
@@ -121,7 +130,7 @@ opentelemetry::sdk::common::ExportResult Exporter::Export(
                   .counts_,
               metric_data.end_ts, metric_data.instrument_descriptor.name_,
               point_data_with_attributes.attributes);
-          data_transport_->Send(buffer_histogram_,
+          data_transport_->Send(event_type, buffer_histogram_,
                                 body_length + kBinaryHeaderSize);
         }
       }
@@ -173,12 +182,14 @@ size_t Exporter::InitiaizeBufferForHistogramData() {
 size_t Exporter::SerializeNonHistogramMetrics(
     sdk::metrics::AggregationType agg_type, MetricsEventType event_type,
     const sdk::metrics::ValueType &value, common::SystemTimestamp ts,
-    const std::string& metric_name, const sdk::metrics::PointAttributes &attributes) {
+    const std::string &metric_name,
+    const sdk::metrics::PointAttributes &attributes) {
   auto bufferIndex = buffer_index_non_histogram_;
   SerializeString(buffer_non_histogram_, bufferIndex, metric_name);
   for (const auto &kv : attributes) {
     if (kv.first.size() > kMaxDimensionNameSize) {
-      LOG_WARN("Dimension name limit overflow: %s Limit %d", kv.first.c_str(), kMaxDimensionNameSize);
+      LOG_WARN("Dimension name limit overflow: %s Limit %d", kv.first.c_str(),
+               kMaxDimensionNameSize);
       continue;
     }
     SerializeString(buffer_non_histogram_, bufferIndex, kv.first);
@@ -205,8 +216,8 @@ size_t Exporter::SerializeNonHistogramMetrics(
                          static_cast<uint16_t>(body_length));
 
   // count of dimensions.
-  SerializeInt<u_int16_t>(buffer_non_histogram_, bufferIndex,
-                          static_cast<uint16_t>(attributes.size()));
+  SerializeInt<uint16_t>(buffer_non_histogram_, bufferIndex,
+                         static_cast<uint16_t>(attributes.size()));
 
   // reserverd word (2 bytes)
   SerializeInt<uint16_t>(buffer_non_histogram_, bufferIndex, 0);
@@ -223,7 +234,7 @@ size_t Exporter::SerializeNonHistogramMetrics(
   SerializeInt<uint64_t>(buffer_non_histogram_, bufferIndex, windows_ticks);
   if (event_type == MetricsEventType::ULongMetric) {
     SerializeInt<uint64_t>(buffer_non_histogram_, bufferIndex,
-                           static_cast<uint64_t>(nostd::get<long>(value)));
+                           static_cast<uint64_t>(nostd::get<int64_t>(value)));
   } else {
     SerializeInt<uint64_t>(
         buffer_non_histogram_, bufferIndex,
@@ -247,7 +258,8 @@ size_t Exporter::SerializeHistogramMetrics(
   // dimentions - name
   for (const auto &kv : attributes) {
     if (kv.first.size() > kMaxDimensionNameSize) {
-      LOG_WARN("Dimension name limit overflow: %s Limit: %d", kv.first.c_str(), kMaxDimensionNameSize);
+      LOG_WARN("Dimension name limit overflow: %s Limit: %d", kv.first.c_str(),
+               kMaxDimensionNameSize);
       continue;
     }
     SerializeString(buffer_histogram_, bufferIndex, kv.first);
@@ -309,8 +321,8 @@ size_t Exporter::SerializeHistogramMetrics(
                          static_cast<uint16_t>(body_length));
 
   // count of dimensions.
-  SerializeInt<u_int16_t>(buffer_histogram_, bufferIndex,
-                          static_cast<uint16_t>(attributes.size()));
+  SerializeInt<uint16_t>(buffer_histogram_, bufferIndex,
+                         static_cast<uint16_t>(attributes.size()));
 
   // reserverd word (2 bytes)
   SerializeInt<uint16_t>(buffer_histogram_, bufferIndex, 0);
@@ -331,13 +343,13 @@ size_t Exporter::SerializeHistogramMetrics(
       MetricsEventType::ExternallyAggregatedULongDistributionMetric) {
     // sum
     SerializeInt<uint64_t>(buffer_histogram_, bufferIndex,
-                           static_cast<uint64_t>(nostd::get<long>(sum)));
+                           static_cast<uint64_t>(nostd::get<int64_t>(sum)));
     // min
     SerializeInt<uint64_t>(buffer_histogram_, bufferIndex,
-                           static_cast<uint64_t>(nostd::get<long>(min)));
+                           static_cast<uint64_t>(nostd::get<int64_t>(min)));
     // max
     SerializeInt<uint64_t>(buffer_histogram_, bufferIndex,
-                           static_cast<uint64_t>(nostd::get<long>(max)));
+                           static_cast<uint64_t>(nostd::get<int64_t>(max)));
   } else {
     // sum
     SerializeInt<uint64_t>(

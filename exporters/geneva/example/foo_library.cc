@@ -1,7 +1,6 @@
 // Copyright The OpenTelemetry Authors
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef ENABLE_METRICS_PREVIEW
 #include "foo_library.h"
 #include "opentelemetry/context/context.h"
 #include "opentelemetry/metrics/provider.h"
@@ -92,5 +91,3 @@ void FooLibrary::histogram_example(const std::string &name) {
     std::this_thread::sleep_for(std::chrono::milliseconds(250));
   }
 }
-
-#endif

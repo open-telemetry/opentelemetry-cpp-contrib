@@ -1,0 +1,24 @@
+{
+    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+    "name": "opentelemetry-etw-metrics-exporter",
+    "version-semver": "0.0.1",
+    "description": [
+      "OpenTelemetry ETW Exporter uses OpenTelemetry API/SDK to export the metrics data to ETW."
+    ],
+    "homepage": "https://github.com/open-telemetry/opentelemetry-cpp-contrib",
+    "license": "Apache-2.0",
+    "dependencies": [
+      {
+        "name": "opentelemetry-cpp",
+        "host": true
+      },
+      {
+        "name": "vcpkg-cmake",
+        "host": true
+      },
+      {
+        "name": "vcpkg-cmake-config",
+        "host": true
+      }
+    ]
+  }
