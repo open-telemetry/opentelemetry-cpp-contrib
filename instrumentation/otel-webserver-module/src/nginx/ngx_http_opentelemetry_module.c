@@ -514,7 +514,7 @@ static ngx_int_t ngx_http_opentelemetry_init(ngx_conf_t *cf)
     ngx_uint_t                   phase_index;
     ngx_int_t                    res;
 
-    ngx_writeError(cf->cycle->log, __func__, "Starting Opentelemetry Modlue init");
+    ngx_writeError(cf->cycle->log, __func__, "Starting Opentelemetry Module init");
 
     cp = ap = pap = srp = prp = rp = lp = pcp = 0;
 
@@ -618,7 +618,7 @@ static ngx_int_t ngx_http_opentelemetry_init(ngx_conf_t *cf)
     /* hostname is extracted from the nginx cycle. The attribute hostname is needed
     for OTEL spec and the only place it is available is cf->cycle
     */
-    ngx_writeError(cf->cycle->log, __func__, "Opentelemetry Modlue init completed !");
+    ngx_writeError(cf->cycle->log, __func__, "Opentelemetry Module init completed!");
 
   return NGX_OK;
 }
