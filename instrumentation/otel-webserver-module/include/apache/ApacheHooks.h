@@ -33,6 +33,7 @@ public:
     static const char* APPD_INTERACTION_HANDLE_KEY;
     static const char* APPD_REQ_HANDLE_KEY;
     static const int LOWEST_HTTP_ERROR_CODE = 400;
+    static const int CONFIG_COUNT = 17; // Number of key value pairs in config
     static const std::initializer_list<const char*> httpHeaders;
     static void registerHooks(apr_pool_t *p);
 

@@ -53,6 +53,9 @@
 #define APPD_SDK_ENV_SEGMENT_TYPE "APPD_SDK_ENV_SEGMENT_TYPE"
 #define APPD_SDK_ENV_SEGMENT_PARAMETER "APPD_SDK_ENV_SEGMENT_PARAMETER"
 
+//OTEL HTTP HEADERS
+#define APPD_SDK_ENV_OTEL_HTTP_HEADERS  "APPD_SDK_ENV_OTEL_HTTP_HEADERS"             /*optional*/
+
 /* {{{ For API user: API User logger */
 #define APPD_LOG_API_USER_LOGGER  "api_user"    /*logging at the level of sdk function call*/
 #define APPD_LOG_API_LOGGER  "api"              /*logging at the level of sdk core functionality*/

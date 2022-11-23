@@ -340,9 +340,9 @@ bool ApacheHooks::initialize_appdynamics(const request_rec *r)
 
         // ENV RECORDS SIZE TO INCLUDE THE LOG PATH AND THE AGGREGATOR DIRECTORY
         //
-        // Update the apr_pcalloc if we add another parameter to the input array!
+        // Update the CONFIG_COUNT in apr_pcalloc if we add another parameter to the input array!
         APPD_SDK_ENV_RECORD* env_config =
-                (APPD_SDK_ENV_RECORD*) apr_pcalloc(r->pool, 16 * sizeof(APPD_SDK_ENV_RECORD));
+                (APPD_SDK_ENV_RECORD*) apr_pcalloc(r->pool, CONFIG_COUNT * sizeof(APPD_SDK_ENV_RECORD));
         int ix = 0;
 
         // Otel Exporter Type
@@ -423,6 +423,11 @@ bool ApacheHooks::initialize_appdynamics(const request_rec *r)
         // Segment Parameter
         env_config[ix].name = APPD_SDK_ENV_SEGMENT_PARAMETER;
         env_config[ix].value = our_config->getSegmentParameter();
+        ++ix;
+
+        // Segment Parameter
+        env_config[ix].name = APPD_SDK_ENV_OTEL_HTTP_HEADERS;
+        env_config[ix].value = our_config->getOtelExporterOtlpHeaders();
         ++ix;
 
         // !!!
