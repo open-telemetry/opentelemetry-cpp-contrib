@@ -61,24 +61,24 @@ TEST(WSAgent, initialise_WSAgent_returns_success)
 	bool isInit = agent.isInitialised();
 	EXPECT_EQ(isInit, false);
 
-	APPD_SDK_ENV_RECORD* env = (APPD_SDK_ENV_RECORD*)calloc(2, sizeof(APPD_SDK_ENV_RECORD));
+	OTEL_SDK_ENV_RECORD* env = (OTEL_SDK_ENV_RECORD*)calloc(2, sizeof(OTEL_SDK_ENV_RECORD));
 	env[0].name = "Key1";
 	env[0].value = "Value1";
 
 	env[1].name = "Key2";
 	env[1].value = "Value2";
 
-	APPD_SDK_STATUS_CODE res = APPD_SUCCESS;
+	OTEL_SDK_STATUS_CODE res = OTEL_SUCCESS;
 
 	using testing::_;
 	using ::testing::InvokeWithoutArgs;
 	EXPECT_CALL(*apiUtils, init_boilerplate())
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res;
 		}));
 
 	EXPECT_CALL(*apiUtils, ReadFromPassedSettings(_,_,_,_))
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res;
 		}));
 	EXPECT_CALL(*agentCore, start(_,_,_))
@@ -86,7 +86,7 @@ TEST(WSAgent, initialise_WSAgent_returns_success)
 		.WillOnce(Return(true));
 
 	res = agent.init(env, 2);
-	EXPECT_EQ(res, APPD_SUCCESS);
+	EXPECT_EQ(res, OTEL_SUCCESS);
 
 	isInit = agent.isInitialised();
 	EXPECT_EQ(isInit, true);
@@ -104,24 +104,24 @@ TEST(WSAgent, initialise_WSAgent_returns_success_if_already_initialised)
 	testing::Mock::AllowLeak(agentCore);
 	testing::Mock::AllowLeak(apiUtils);
 
-	APPD_SDK_ENV_RECORD* env = (APPD_SDK_ENV_RECORD*)calloc(2, sizeof(APPD_SDK_ENV_RECORD));
+	OTEL_SDK_ENV_RECORD* env = (OTEL_SDK_ENV_RECORD*)calloc(2, sizeof(OTEL_SDK_ENV_RECORD));
 	env[0].name = "Key1";
 	env[0].value = "Value1";
 
 	env[1].name = "Key2";
 	env[1].value = "Value2";
 
-	APPD_SDK_STATUS_CODE res = APPD_SUCCESS;
+	OTEL_SDK_STATUS_CODE res = OTEL_SUCCESS;
 
 	using testing::_;
 	using ::testing::InvokeWithoutArgs;
 	EXPECT_CALL(*apiUtils, init_boilerplate())
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res;
 		}));
 
 	EXPECT_CALL(*apiUtils, ReadFromPassedSettings(_,_,_,_))
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res;
 		}));
 	EXPECT_CALL(*agentCore, start(_,_,_))
@@ -129,13 +129,13 @@ TEST(WSAgent, initialise_WSAgent_returns_success_if_already_initialised)
 		.WillOnce(Return(true));
 
 	res = agent.init(env, 2);
-	EXPECT_EQ(res, APPD_SUCCESS);
+	EXPECT_EQ(res, OTEL_SUCCESS);
 
 	bool isInit = agent.isInitialised();
 	EXPECT_EQ(isInit, true);
 
 	res = agent.init(env, 2);
-	EXPECT_EQ(res, APPD_STATUS(already_initialized));
+	EXPECT_EQ(res, OTEL_STATUS(already_initialized));
 
 	isInit = agent.isInitialised();
 	EXPECT_EQ(isInit, true);
@@ -153,24 +153,24 @@ TEST(WSAgent, initialise_WSAgent_returns_fail_on_init_boilerplate_failure)
 	testing::Mock::AllowLeak(agentCore);
 	testing::Mock::AllowLeak(apiUtils);
 
-	APPD_SDK_ENV_RECORD* env = (APPD_SDK_ENV_RECORD*)calloc(2, sizeof(APPD_SDK_ENV_RECORD));
+	OTEL_SDK_ENV_RECORD* env = (OTEL_SDK_ENV_RECORD*)calloc(2, sizeof(OTEL_SDK_ENV_RECORD));
 	env[0].name = "Key1";
 	env[0].value = "Value1";
 
 	env[1].name = "Key2";
 	env[1].value = "Value2";
 
-	APPD_SDK_STATUS_CODE res = APPD_STATUS(fail);
+	OTEL_SDK_STATUS_CODE res = OTEL_STATUS(fail);
 
 	using testing::_;
 	using ::testing::InvokeWithoutArgs;
 	EXPECT_CALL(*apiUtils, init_boilerplate())
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res;
 		}));
 
 	res = agent.init(env, 2);
-	EXPECT_EQ(res, APPD_STATUS(fail));
+	EXPECT_EQ(res, OTEL_STATUS(fail));
 
 	free(env);
 }
@@ -185,29 +185,29 @@ TEST(WSAgent, initialise_WSAgent_returns_fail_on_agentcore_start_failure)
 	testing::Mock::AllowLeak(agentCore);
 	testing::Mock::AllowLeak(apiUtils);
 
-	APPD_SDK_ENV_RECORD* env = (APPD_SDK_ENV_RECORD*)calloc(2, sizeof(APPD_SDK_ENV_RECORD));
+	OTEL_SDK_ENV_RECORD* env = (OTEL_SDK_ENV_RECORD*)calloc(2, sizeof(OTEL_SDK_ENV_RECORD));
 	env[0].name = "Key1";
 	env[0].value = "Value1";
 
 	env[1].name = "Key2";
 	env[1].value = "Value2";
 
-	APPD_SDK_STATUS_CODE res1 = APPD_SUCCESS;
-	APPD_SDK_STATUS_CODE res2 = APPD_STATUS(fail);
+	OTEL_SDK_STATUS_CODE res1 = OTEL_SUCCESS;
+	OTEL_SDK_STATUS_CODE res2 = OTEL_STATUS(fail);
 
 	using testing::_;
 	using ::testing::InvokeWithoutArgs;
 	EXPECT_CALL(*apiUtils, init_boilerplate())
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res1;
 		}));
 	EXPECT_CALL(*apiUtils, ReadFromPassedSettings(_,_,_,_))
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res2;
 		}));
 
-	APPD_SDK_STATUS_CODE res = agent.init(env, 2);
-	EXPECT_EQ(res, APPD_STATUS(fail));
+	OTEL_SDK_STATUS_CODE res = agent.init(env, 2);
+	EXPECT_EQ(res, OTEL_STATUS(fail));
 
 	free(env);
 }
@@ -222,31 +222,31 @@ TEST(WSAgent, initialise_WSAgent_returns_agent_failed_to_start_on_read_config_fa
 	testing::Mock::AllowLeak(agentCore);
 	testing::Mock::AllowLeak(apiUtils);
 
-	APPD_SDK_ENV_RECORD* env = (APPD_SDK_ENV_RECORD*)calloc(2, sizeof(APPD_SDK_ENV_RECORD));
+	OTEL_SDK_ENV_RECORD* env = (OTEL_SDK_ENV_RECORD*)calloc(2, sizeof(OTEL_SDK_ENV_RECORD));
 	env[0].name = "Key1";
 	env[0].value = "Value1";
 
 	env[1].name = "Key2";
 	env[1].value = "Value2";
 
-	APPD_SDK_STATUS_CODE res1 = APPD_SUCCESS;
+	OTEL_SDK_STATUS_CODE res1 = OTEL_SUCCESS;
 
 	using testing::_;
 	using ::testing::InvokeWithoutArgs;
 	EXPECT_CALL(*apiUtils, init_boilerplate())
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res1;
 		}));
 	EXPECT_CALL(*apiUtils, ReadFromPassedSettings(_,_,_,_))
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res1;
 		}));
 	EXPECT_CALL(*agentCore, start(_,_,_))
 		.Times(1)
 		.WillOnce(Return(false));
 
-	APPD_SDK_STATUS_CODE res = agent.init(env, 2);
-	EXPECT_EQ(res, APPD_STATUS(agent_failed_to_start));
+	OTEL_SDK_STATUS_CODE res = agent.init(env, 2);
+	EXPECT_EQ(res, OTEL_STATUS(agent_failed_to_start));
 
 	free(env);
 }
@@ -261,26 +261,26 @@ TEST(WSAgent, initialise_WSAgent_returns_agent_failed_to_start_on_read_config_fa
 	testing::Mock::AllowLeak(agentCore);
 	testing::Mock::AllowLeak(apiUtils);
 
-	APPD_SDK_ENV_RECORD* env = NULL;
+	OTEL_SDK_ENV_RECORD* env = NULL;
 
-	APPD_SDK_STATUS_CODE res1 = APPD_SUCCESS;
+	OTEL_SDK_STATUS_CODE res1 = OTEL_SUCCESS;
 
 	using testing::_;
 	using ::testing::InvokeWithoutArgs;
 	EXPECT_CALL(*apiUtils, init_boilerplate())
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res1;
 		}));
 	EXPECT_CALL(*apiUtils, ReadFromEnvinronment(_))
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res1;
 		}));
 	EXPECT_CALL(*agentCore, start(_,_,_))
 		.Times(1)
 		.WillOnce(Return(true));
 
-	APPD_SDK_STATUS_CODE res = agent.init(env, 0);
-	EXPECT_EQ(res, APPD_STATUS(success));
+	OTEL_SDK_STATUS_CODE res = agent.init(env, 0);
+	EXPECT_EQ(res, OTEL_STATUS(success));
 }*/
 
 TEST(WSAgent, start_request_executes_successfully)
@@ -293,21 +293,21 @@ TEST(WSAgent, start_request_executes_successfully)
 	testing::Mock::AllowLeak(agentCore);
 	testing::Mock::AllowLeak(apiUtils);
 
-	APPD_SDK_ENV_RECORD* env = (APPD_SDK_ENV_RECORD*)calloc(1, sizeof(APPD_SDK_ENV_RECORD));
+	OTEL_SDK_ENV_RECORD* env = (OTEL_SDK_ENV_RECORD*)calloc(1, sizeof(OTEL_SDK_ENV_RECORD));
 	env[0].name = "Key1";
 	env[0].value = "Value1";
 
-	APPD_SDK_STATUS_CODE res = APPD_SUCCESS;
+	OTEL_SDK_STATUS_CODE res = OTEL_SUCCESS;
 
 	using testing::_;
 	using ::testing::InvokeWithoutArgs;
 	EXPECT_CALL(*apiUtils, init_boilerplate())
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res;
 		}));
 
 	EXPECT_CALL(*apiUtils, ReadFromPassedSettings(_,_,_,_))
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res;
 		}));
 	EXPECT_CALL(*agentCore, start(_,_,_))
@@ -315,7 +315,7 @@ TEST(WSAgent, start_request_executes_successfully)
 		.WillOnce(Return(true));
 
 	res = agent.init(env, 1);
-	EXPECT_EQ(res, APPD_SUCCESS);
+	EXPECT_EQ(res, OTEL_SUCCESS);
 
 	bool isInit = agent.isInitialised();
 	EXPECT_EQ(isInit, true);
@@ -332,14 +332,14 @@ TEST(WSAgent, start_request_executes_successfully)
 
 	EXPECT_CALL(mockProcessor, startRequest(_,_,_))
 		.Times(1)
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res;
 		}));
 
 	void* reqHandle = nullptr;
 	const char* wscontext = "contextName";
 	res = agent.startRequest(wscontext, payload.get(), &reqHandle);
-	EXPECT_EQ(res, APPD_SUCCESS);
+	EXPECT_EQ(res, OTEL_SUCCESS);
 
 	free(env);
 }
@@ -354,21 +354,21 @@ TEST(WSAgent, start_request_returns_fail)
 	testing::Mock::AllowLeak(agentCore);
 	testing::Mock::AllowLeak(apiUtils);
 
-	APPD_SDK_ENV_RECORD* env = (APPD_SDK_ENV_RECORD*)calloc(1, sizeof(APPD_SDK_ENV_RECORD));
+	OTEL_SDK_ENV_RECORD* env = (OTEL_SDK_ENV_RECORD*)calloc(1, sizeof(OTEL_SDK_ENV_RECORD));
 	env[0].name = "Key1";
 	env[0].value = "Value1";
 
-	APPD_SDK_STATUS_CODE res = APPD_SUCCESS;
+	OTEL_SDK_STATUS_CODE res = OTEL_SUCCESS;
 
 	using testing::_;
 	using ::testing::InvokeWithoutArgs;
 	EXPECT_CALL(*apiUtils, init_boilerplate())
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res;
 		}));
 
 	EXPECT_CALL(*apiUtils, ReadFromPassedSettings(_,_,_,_))
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res;
 		}));
 	EXPECT_CALL(*agentCore, start(_,_,_))
@@ -376,7 +376,7 @@ TEST(WSAgent, start_request_returns_fail)
 		.WillOnce(Return(true));
 
 	res = agent.init(env, 1);
-	EXPECT_EQ(res, APPD_SUCCESS);
+	EXPECT_EQ(res, OTEL_SUCCESS);
 
 	bool isInit = agent.isInitialised();
 	EXPECT_EQ(isInit, true);
@@ -394,7 +394,7 @@ TEST(WSAgent, start_request_returns_fail)
 	void* reqHandle = nullptr;
 	const char* wscontext = "contextName";
 	res = agent.startRequest(wscontext, payload.get(), &reqHandle);
-	EXPECT_EQ(res, APPD_STATUS(fail));
+	EXPECT_EQ(res, OTEL_STATUS(fail));
 
 
 
@@ -405,16 +405,16 @@ TEST(WSAgent, start_request_returns_fail)
 			return &mockProcessor;
 		}));
 
-	APPD_SDK_STATUS_CODE res1 = APPD_STATUS(fail);
+	OTEL_SDK_STATUS_CODE res1 = OTEL_STATUS(fail);
 	EXPECT_CALL(mockProcessor, startRequest(_,_,_))
 		.Times(1)
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res1;
 		}));
 
 	const char* wscontext1 = "contextName1";
 	res = agent.startRequest(wscontext1, payload.get(), &reqHandle);
-	EXPECT_EQ(res, APPD_STATUS(fail));
+	EXPECT_EQ(res, OTEL_STATUS(fail));
 
 	free(env);
 }
@@ -430,21 +430,21 @@ TEST(WSAgent, end_request_returns_success)
 	testing::Mock::AllowLeak(agentCore);
 	testing::Mock::AllowLeak(apiUtils);
 
-	APPD_SDK_ENV_RECORD* env = (APPD_SDK_ENV_RECORD*)calloc(1, sizeof(APPD_SDK_ENV_RECORD));
+	OTEL_SDK_ENV_RECORD* env = (OTEL_SDK_ENV_RECORD*)calloc(1, sizeof(OTEL_SDK_ENV_RECORD));
 	env[0].name = "Key1";
 	env[0].value = "Value1";
 
-	APPD_SDK_STATUS_CODE res = APPD_SUCCESS;
+	OTEL_SDK_STATUS_CODE res = OTEL_SUCCESS;
 
 	using testing::_;
 	using ::testing::InvokeWithoutArgs;
 	EXPECT_CALL(*apiUtils, init_boilerplate())
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res;
 		}));
 
 	EXPECT_CALL(*apiUtils, ReadFromPassedSettings(_,_,_,_))
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res;
 		}));
 	EXPECT_CALL(*agentCore, start(_,_,_))
@@ -452,7 +452,7 @@ TEST(WSAgent, end_request_returns_success)
 		.WillOnce(Return(true));
 
 	res = agent.init(env, 1);
-	EXPECT_EQ(res, APPD_SUCCESS);
+	EXPECT_EQ(res, OTEL_SUCCESS);
 
 	bool isInit = agent.isInitialised();
 	EXPECT_EQ(isInit, true);
@@ -467,10 +467,10 @@ TEST(WSAgent, end_request_returns_success)
 			return &mockProcessor;
 		}));
 
-	APPD_SDK_STATUS_CODE res1 = APPD_SUCCESS;
+	OTEL_SDK_STATUS_CODE res1 = OTEL_SUCCESS;
 	EXPECT_CALL(mockProcessor, endRequest(_,_,_))
 		.Times(1)
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res1;
 		}));
 
@@ -479,7 +479,7 @@ TEST(WSAgent, end_request_returns_success)
 	reqHandle = static_cast<void*>(reqCtx);
 	const char* err = nullptr;
 	res = agent.endRequest(reqHandle, err);
-	EXPECT_EQ(res, APPD_SUCCESS);
+	EXPECT_EQ(res, OTEL_SUCCESS);
 
 	free(env);
 	delete reqCtx;
@@ -495,21 +495,21 @@ TEST(WSAgent, start_interaction_returns_success)
 	testing::Mock::AllowLeak(agentCore);
 	testing::Mock::AllowLeak(apiUtils);
 
-	APPD_SDK_ENV_RECORD* env = (APPD_SDK_ENV_RECORD*)calloc(1, sizeof(APPD_SDK_ENV_RECORD));
+	OTEL_SDK_ENV_RECORD* env = (OTEL_SDK_ENV_RECORD*)calloc(1, sizeof(OTEL_SDK_ENV_RECORD));
 	env[0].name = "Key1";
 	env[0].value = "Value1";
 
-	APPD_SDK_STATUS_CODE res = APPD_SUCCESS;
+	OTEL_SDK_STATUS_CODE res = OTEL_SUCCESS;
 
 	using testing::_;
 	using ::testing::InvokeWithoutArgs;
 	EXPECT_CALL(*apiUtils, init_boilerplate())
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res;
 		}));
 
 	EXPECT_CALL(*apiUtils, ReadFromPassedSettings(_,_,_,_))
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res;
 		}));
 	EXPECT_CALL(*agentCore, start(_,_,_))
@@ -517,7 +517,7 @@ TEST(WSAgent, start_interaction_returns_success)
 		.WillOnce(Return(true));
 
 	res = agent.init(env, 1);
-	EXPECT_EQ(res, APPD_SUCCESS);
+	EXPECT_EQ(res, OTEL_SUCCESS);
 
 	bool isInit = agent.isInitialised();
 	EXPECT_EQ(isInit, true);
@@ -532,10 +532,10 @@ TEST(WSAgent, start_interaction_returns_success)
 			return &mockProcessor;
 		}));
 
-	APPD_SDK_STATUS_CODE res1 = APPD_SUCCESS;
+	OTEL_SDK_STATUS_CODE res1 = OTEL_SUCCESS;
 	EXPECT_CALL(mockProcessor, startInteractionImpl(_,_))
 		.Times(1)
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res1;
 		}));
 
@@ -547,7 +547,7 @@ TEST(WSAgent, start_interaction_returns_success)
 	reqHandle = static_cast<void*>(reqCtx);
 
 	res = agent.startInteraction(reqHandle, payload, propagationHeaders);
-	EXPECT_EQ(res, APPD_SUCCESS);
+	EXPECT_EQ(res, OTEL_SUCCESS);
 
 	free(env);
 	delete reqCtx;
@@ -563,21 +563,21 @@ TEST(WSAgent, end_interaction_returns_success)
 	testing::Mock::AllowLeak(agentCore);
 	testing::Mock::AllowLeak(apiUtils);
 
-	APPD_SDK_ENV_RECORD* env = (APPD_SDK_ENV_RECORD*)calloc(1, sizeof(APPD_SDK_ENV_RECORD));
+	OTEL_SDK_ENV_RECORD* env = (OTEL_SDK_ENV_RECORD*)calloc(1, sizeof(OTEL_SDK_ENV_RECORD));
 	env[0].name = "Key1";
 	env[0].value = "Value1";
 
-	APPD_SDK_STATUS_CODE res = APPD_SUCCESS;
+	OTEL_SDK_STATUS_CODE res = OTEL_SUCCESS;
 
 	using testing::_;
 	using ::testing::InvokeWithoutArgs;
 	EXPECT_CALL(*apiUtils, init_boilerplate())
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res;
 		}));
 
 	EXPECT_CALL(*apiUtils, ReadFromPassedSettings(_,_,_,_))
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res;
 		}));
 	EXPECT_CALL(*agentCore, start(_,_,_))
@@ -585,7 +585,7 @@ TEST(WSAgent, end_interaction_returns_success)
 		.WillOnce(Return(true));
 
 	res = agent.init(env, 1);
-	EXPECT_EQ(res, APPD_SUCCESS);
+	EXPECT_EQ(res, OTEL_SUCCESS);
 
 	bool isInit = agent.isInitialised();
 	EXPECT_EQ(isInit, true);
@@ -600,10 +600,10 @@ TEST(WSAgent, end_interaction_returns_success)
 			return &mockProcessor;
 		}));
 
-	APPD_SDK_STATUS_CODE res1 = APPD_SUCCESS;
+	OTEL_SDK_STATUS_CODE res1 = OTEL_SUCCESS;
 	EXPECT_CALL(mockProcessor, endInteraction(_,_,_))
 		.Times(1)
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res1;
 		}));
 
@@ -614,7 +614,7 @@ TEST(WSAgent, end_interaction_returns_success)
 	reqHandle = static_cast<void*>(reqCtx);
 
 	res = agent.endInteraction(reqHandle, true, payload);
-	EXPECT_EQ(res, APPD_SUCCESS);
+	EXPECT_EQ(res, OTEL_SUCCESS);
 
 	free(env);
 	delete reqCtx;
@@ -630,21 +630,21 @@ TEST(WSAgent, end_interaction_returns_failure)
 	testing::Mock::AllowLeak(agentCore);
 	testing::Mock::AllowLeak(apiUtils);
 
-	APPD_SDK_ENV_RECORD* env = (APPD_SDK_ENV_RECORD*)calloc(1, sizeof(APPD_SDK_ENV_RECORD));
+	OTEL_SDK_ENV_RECORD* env = (OTEL_SDK_ENV_RECORD*)calloc(1, sizeof(OTEL_SDK_ENV_RECORD));
 	env[0].name = "Key1";
 	env[0].value = "Value1";
 
-	APPD_SDK_STATUS_CODE res = APPD_SUCCESS;
+	OTEL_SDK_STATUS_CODE res = OTEL_SUCCESS;
 
 	using testing::_;
 	using ::testing::InvokeWithoutArgs;
 	EXPECT_CALL(*apiUtils, init_boilerplate())
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res;
 		}));
 
 	EXPECT_CALL(*apiUtils, ReadFromPassedSettings(_,_,_,_))
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res;
 		}));
 	EXPECT_CALL(*agentCore, start(_,_,_))
@@ -652,7 +652,7 @@ TEST(WSAgent, end_interaction_returns_failure)
 		.WillOnce(Return(true));
 
 	res = agent.init(env, 1);
-	EXPECT_EQ(res, APPD_SUCCESS);
+	EXPECT_EQ(res, OTEL_SUCCESS);
 
 	bool isInit = agent.isInitialised();
 	EXPECT_EQ(isInit, true);
@@ -673,7 +673,7 @@ TEST(WSAgent, end_interaction_returns_failure)
 	reqHandle = static_cast<void*>(reqCtx);
 
 	res = agent.endInteraction(reqHandle, true, payload);
-	EXPECT_EQ(res, APPD_STATUS(fail));
+	EXPECT_EQ(res, OTEL_STATUS(fail));
 	delete reqCtx;
 
 	std::string contextName2 {"contextName2"};
@@ -683,10 +683,10 @@ TEST(WSAgent, end_interaction_returns_failure)
 			return &mockProcessor;
 		}));
 
-	APPD_SDK_STATUS_CODE res2 = APPD_STATUS(fail);
+	OTEL_SDK_STATUS_CODE res2 = OTEL_STATUS(fail);
 	EXPECT_CALL(mockProcessor, endInteraction(_,_,_))
 		.Times(1)
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res2;
 		}));
 
@@ -694,7 +694,7 @@ TEST(WSAgent, end_interaction_returns_failure)
 	reqCtx->setContextName(contextName2);
 	reqHandle = static_cast<void*>(reqCtx);
 	res = agent.endInteraction(reqHandle, true, payload);
-	EXPECT_EQ(res, APPD_STATUS(fail));
+	EXPECT_EQ(res, OTEL_STATUS(fail));
 
 	free(env);
 
@@ -769,21 +769,21 @@ TEST(WSAgent, add_wscontext_to_core_returns_failure_with_core_initialised)
 	testing::Mock::AllowLeak(agentCore);
 	testing::Mock::AllowLeak(apiUtils);
 
-	APPD_SDK_ENV_RECORD* env = (APPD_SDK_ENV_RECORD*)calloc(1, sizeof(APPD_SDK_ENV_RECORD));
+	OTEL_SDK_ENV_RECORD* env = (OTEL_SDK_ENV_RECORD*)calloc(1, sizeof(OTEL_SDK_ENV_RECORD));
 	env[0].name = "Key1";
 	env[0].value = "Value1";
 
-	APPD_SDK_STATUS_CODE res = APPD_SUCCESS;
+	OTEL_SDK_STATUS_CODE res = OTEL_SUCCESS;
 
 	using testing::_;
 	using ::testing::InvokeWithoutArgs;
 	EXPECT_CALL(*apiUtils, init_boilerplate())
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res;
 		}));
 
 	EXPECT_CALL(*apiUtils, ReadFromPassedSettings(_,_,_,_))
-		.WillOnce(InvokeWithoutArgs([&]()->APPD_SDK_STATUS_CODE{
+		.WillOnce(InvokeWithoutArgs([&]()->OTEL_SDK_STATUS_CODE{
 			return res;
 		}));
 	EXPECT_CALL(*agentCore, start(_,_,_))
@@ -791,7 +791,7 @@ TEST(WSAgent, add_wscontext_to_core_returns_failure_with_core_initialised)
 		.WillOnce(Return(true));
 
 	res = agent.init(env, 1);
-	EXPECT_EQ(res, APPD_SUCCESS);
+	EXPECT_EQ(res, OTEL_SUCCESS);
 
 	bool isInit = agent.isInitialised();
 	EXPECT_EQ(isInit, true);

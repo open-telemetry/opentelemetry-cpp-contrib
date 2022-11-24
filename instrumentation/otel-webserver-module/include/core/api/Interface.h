@@ -28,9 +28,9 @@ class IRequestProcessingEngine;
 class IEnvReader
 {
 public:
-    virtual APPD_SDK_STATUS_CODE ReadMandatory(
+    virtual OTEL_SDK_STATUS_CODE ReadMandatory(
     	const std::string& varName, std::string& result) = 0;
-    virtual APPD_SDK_STATUS_CODE ReadOptional(
+    virtual OTEL_SDK_STATUS_CODE ReadOptional(
     	const std::string& varName, std::string& result) = 0;
 };
 
@@ -39,22 +39,22 @@ class IApiUtils
 public:
     virtual ~IApiUtils() = default;
 
-    virtual APPD_SDK_STATUS_CODE init_boilerplate() = 0; // initializes agentLogging
+    virtual OTEL_SDK_STATUS_CODE init_boilerplate() = 0; // initializes agentLogging
 
-    virtual APPD_SDK_STATUS_CODE ReadFromPassedSettings(
-            APPD_SDK_ENV_RECORD* env,
+    virtual OTEL_SDK_STATUS_CODE ReadFromPassedSettings(
+            OTEL_SDK_ENV_RECORD* env,
             unsigned numberOfRecords,
             TenantConfig& tenantConfig,
             SpanNamer& spanNamer) = 0;
 protected:
-    //virtual APPD_SDK_STATUS_CODE ReadFromEnvinronment(TenantConfig&) = 0;
-    virtual APPD_SDK_STATUS_CODE ReadSettingsFromReader(
+    //virtual OTEL_SDK_STATUS_CODE ReadFromEnvinronment(TenantConfig&) = 0;
+    virtual OTEL_SDK_STATUS_CODE ReadSettingsFromReader(
         IEnvReader& reader, TenantConfig&, SpanNamer&) = 0;
-    /*virtual APPD_SDK_STATUS_CODE ReadMandatoryFromReader(
+    /*virtual OTEL_SDK_STATUS_CODE ReadMandatoryFromReader(
         IEnvReader& reader, const std::string& varName, unsigned short& result) = 0;*/
-    virtual APPD_SDK_STATUS_CODE ReadOptionalFromReader(
+    virtual OTEL_SDK_STATUS_CODE ReadOptionalFromReader(
         IEnvReader& reader, const std::string& varName, bool& result) = 0;
-    virtual APPD_SDK_STATUS_CODE ReadOptionalFromReader(
+    virtual OTEL_SDK_STATUS_CODE ReadOptionalFromReader(
         IEnvReader& reader, const std::string& varName, unsigned int& result) = 0;
 };
 

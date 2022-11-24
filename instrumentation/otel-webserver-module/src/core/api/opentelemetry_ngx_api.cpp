@@ -79,9 +79,9 @@ void initDependency()
     wsAgent.initDependency();
 }
 
-APPD_SDK_STATUS_CODE opentelemetry_core_init(APPD_SDK_ENV_RECORD* env, unsigned numberOfRecords, struct cNode *rootCN)
+OTEL_SDK_STATUS_CODE opentelemetry_core_init(OTEL_SDK_ENV_RECORD* env, unsigned numberOfRecords, struct cNode *rootCN)
 {
-    APPD_SDK_STATUS_CODE res = APPD_SUCCESS;
+    OTEL_SDK_STATUS_CODE res = OTEL_SUCCESS;
     struct cNode *curCN = rootCN;
 
     while(curCN){
@@ -98,9 +98,9 @@ APPD_SDK_STATUS_CODE opentelemetry_core_init(APPD_SDK_ENV_RECORD* env, unsigned 
     return res;
 }
 
-APPD_SDK_STATUS_CODE startRequest(const char* wscontext, request_payload* req_payload, APPD_SDK_HANDLE_REQ* reqHandle)
+OTEL_SDK_STATUS_CODE startRequest(const char* wscontext, request_payload* req_payload, OTEL_SDK_HANDLE_REQ* reqHandle)
 {
-    APPD_SDK_STATUS_CODE res = APPD_SUCCESS;
+    OTEL_SDK_STATUS_CODE res = OTEL_SUCCESS;
 
     std::unique_ptr<appd::core::RequestPayload> requestPayload(new appd::core::RequestPayload);
     populatePayload(req_payload, requestPayload.get());
@@ -109,10 +109,10 @@ APPD_SDK_STATUS_CODE startRequest(const char* wscontext, request_payload* req_pa
     return res;
 }
 
-APPD_SDK_STATUS_CODE endRequest(APPD_SDK_HANDLE_REQ req_handle_key, const char* errMsg,
+OTEL_SDK_STATUS_CODE endRequest(OTEL_SDK_HANDLE_REQ req_handle_key, const char* errMsg,
     response_payload* payload)
 {
-    APPD_SDK_STATUS_CODE res = APPD_SUCCESS;
+    OTEL_SDK_STATUS_CODE res = OTEL_SUCCESS;
 
     std::unique_ptr<appd::core::ResponsePayload>
         responsePayload(new appd::core::ResponsePayload);
@@ -133,9 +133,9 @@ APPD_SDK_STATUS_CODE endRequest(APPD_SDK_HANDLE_REQ req_handle_key, const char* 
     return res;
 }
 
-APPD_SDK_STATUS_CODE startModuleInteraction(APPD_SDK_HANDLE_REQ req_handle_key, const char* module_name, const char* stage, bool resolveBackends, APPD_SDK_ENV_RECORD* propagationHeaders, int *ix)
+OTEL_SDK_STATUS_CODE startModuleInteraction(OTEL_SDK_HANDLE_REQ req_handle_key, const char* module_name, const char* stage, bool resolveBackends, OTEL_SDK_ENV_RECORD* propagationHeaders, int *ix)
 {
-    APPD_SDK_STATUS_CODE res = APPD_SUCCESS;
+    OTEL_SDK_STATUS_CODE res = OTEL_SUCCESS;
     std::unordered_map<std::string, std::string> pHeaders;
     std::string module(module_name);
     std::string m_stage(stage);
@@ -143,7 +143,7 @@ APPD_SDK_STATUS_CODE startModuleInteraction(APPD_SDK_HANDLE_REQ req_handle_key, 
     std::unique_ptr<appd::core::InteractionPayload> payload(new appd::core::InteractionPayload(module, m_stage, resolveBackends)); 
     res = wsAgent.startInteraction(req_handle_key, payload.get(), pHeaders);
 
-    if (APPD_ISSUCCESS(res))
+    if (OTEL_ISSUCCESS(res))
     {
         if (!pHeaders.empty())
         {
@@ -162,10 +162,10 @@ APPD_SDK_STATUS_CODE startModuleInteraction(APPD_SDK_HANDLE_REQ req_handle_key, 
     return res;
 }
 
-APPD_SDK_STATUS_CODE stopModuleInteraction(APPD_SDK_HANDLE_REQ req_handle_key, const char* backendName, const char* backendType, unsigned int err_code, const char* msg)
+OTEL_SDK_STATUS_CODE stopModuleInteraction(OTEL_SDK_HANDLE_REQ req_handle_key, const char* backendName, const char* backendType, unsigned int err_code, const char* msg)
 {
     std::unique_ptr<appd::core::EndInteractionPayload> payload(new appd::core::EndInteractionPayload(backendName, backendType, err_code, msg));
-    APPD_SDK_STATUS_CODE res = wsAgent.endInteraction(req_handle_key, false, payload.get());
+    OTEL_SDK_STATUS_CODE res = wsAgent.endInteraction(req_handle_key, false, payload.get());
 
     return res;
 }

@@ -14,8 +14,8 @@
 * limitations under the License.
 */
 
-#ifndef APPD_WS_AGENT_H
-#define APPD_WS_AGENT_H
+#ifndef OTEL_WS_AGENT_H
+#define OTEL_WS_AGENT_H
 
 #include "api/AppdynamicsSdk.h"
 #include <string>
@@ -49,29 +49,29 @@ public:
 
     bool isInitialised();
 
-    APPD_SDK_STATUS_CODE init(
-        APPD_SDK_ENV_RECORD* env,
+    OTEL_SDK_STATUS_CODE init(
+        OTEL_SDK_ENV_RECORD* env,
         unsigned numberOfRecords);
 
-    APPD_SDK_STATUS_CODE term();
+    OTEL_SDK_STATUS_CODE term();
 
-    APPD_SDK_STATUS_CODE startRequest(
+    OTEL_SDK_STATUS_CODE startRequest(
         const char* wscontext,
         RequestPayload* payload,
-        APPD_SDK_HANDLE_REQ* reqHandle);
+        OTEL_SDK_HANDLE_REQ* reqHandle);
 
-    APPD_SDK_STATUS_CODE endRequest(
-        APPD_SDK_HANDLE_REQ reqHandle,
+    OTEL_SDK_STATUS_CODE endRequest(
+        OTEL_SDK_HANDLE_REQ reqHandle,
         const char* error,
         const ResponsePayload* payload = nullptr );
 
-    APPD_SDK_STATUS_CODE startInteraction(
-        APPD_SDK_HANDLE_REQ reqHandle,
+    OTEL_SDK_STATUS_CODE startInteraction(
+        OTEL_SDK_HANDLE_REQ reqHandle,
         const InteractionPayload* payload,
         std::unordered_map<std::string, std::string>& propagationHeaders);
 
-    APPD_SDK_STATUS_CODE endInteraction(
-        APPD_SDK_HANDLE_REQ reqHandle,
+    OTEL_SDK_STATUS_CODE endInteraction(
+        OTEL_SDK_HANDLE_REQ reqHandle,
         bool ignoreBackend,
         EndInteractionPayload *payload);
 
@@ -83,7 +83,7 @@ public:
     * @param contextConfig
     *     AppDynamics context configuration object
     */
-    APPD_SDK_API int addWSContextToCore(
+    OTEL_SDK_API int addWSContextToCore(
         const char* wscontext,
         WSContextConfig* contextConfig);
 
@@ -92,10 +92,10 @@ private:
     unsigned long long initPid;
     std::mutex initMutex;
 
-    APPD_SDK_STATUS_CODE checkPID();
+    OTEL_SDK_STATUS_CODE checkPID();
     void initialisePid();
-    APPD_SDK_STATUS_CODE validateAndInitialise();
-    APPD_SDK_STATUS_CODE readConfig(APPD_SDK_ENV_RECORD* env,
+    OTEL_SDK_STATUS_CODE validateAndInitialise();
+    OTEL_SDK_STATUS_CODE readConfig(OTEL_SDK_ENV_RECORD* env,
         unsigned numberOfRecords, std::shared_ptr<TenantConfig> tenantConfig,
         std::shared_ptr<SpanNamer> spanNamer);
 

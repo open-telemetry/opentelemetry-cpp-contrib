@@ -197,7 +197,7 @@ void ApacheHooks::otel_stopInteraction(request_rec *r, bool isAlwaysRunStage, bo
     {
         return;
     }
-    APPD_SDK_HANDLE_REQ reqHandlePtr = (APPD_SDK_HANDLE_REQ)apr_table_get(r->notes, OTEL_REQ_HANDLE_KEY);
+    OTEL_SDK_HANDLE_REQ reqHandlePtr = (OTEL_SDK_HANDLE_REQ)apr_table_get(r->notes, OTEL_REQ_HANDLE_KEY);
     if (reqHandlePtr)
     {
         // TODO: Work on backend naming and type
@@ -213,9 +213,9 @@ void ApacheHooks::otel_stopInteraction(request_rec *r, bool isAlwaysRunStage, bo
 
         std::unique_ptr<appd::core::EndInteractionPayload> payload(new
             appd::core::EndInteractionPayload(backendName, backendType, errorCode, oss.str()));
-        APPD_SDK_STATUS_CODE res = wsAgent.endInteraction(reqHandlePtr, ignoreBackend, payload.get());
+        OTEL_SDK_STATUS_CODE res = wsAgent.endInteraction(reqHandlePtr, ignoreBackend, payload.get());
 
-        if (APPD_ISFAIL(res))
+        if (OTEL_ISFAIL(res))
         {
             ApacheTracing::writeTrace(r->server, __func__, "result code: %d", res);
         }
@@ -224,7 +224,7 @@ void ApacheHooks::otel_stopInteraction(request_rec *r, bool isAlwaysRunStage, bo
 
 // stop endpoint interaction if one currently is running
 // begin the new interaction
-APPD_SDK_STATUS_CODE ApacheHooks::otel_startInteraction(
+OTEL_SDK_STATUS_CODE ApacheHooks::otel_startInteraction(
         request_rec* r,
         HookContainer::otel_endpoint_indexes endpointIndex,
         bool isAlwaysRunStage,
@@ -233,7 +233,7 @@ APPD_SDK_STATUS_CODE ApacheHooks::otel_startInteraction(
     /*
         Retrieve the stage and module name from endpointIndex and start an interaction to module.
     */
-    APPD_SDK_STATUS_CODE res = APPD_SUCCESS;
+    OTEL_SDK_STATUS_CODE res = OTEL_SUCCESS;
     if ((!isAlwaysRunStage && !m_reportAllStages) || !r || !r->notes || !ap_is_initial_req(r))
     {
         return res;
@@ -242,7 +242,7 @@ APPD_SDK_STATUS_CODE ApacheHooks::otel_startInteraction(
     const std::string& stage = HookContainer::getInstance().getStage(endpointIndex);
     const std::string& module = HookContainer::getInstance().getModule(endpointIndex);
 
-    APPD_SDK_HANDLE_REQ reqHandlePtr = (APPD_SDK_HANDLE_REQ)apr_table_get(r->notes, OTEL_REQ_HANDLE_KEY);
+    OTEL_SDK_HANDLE_REQ reqHandlePtr = (OTEL_SDK_HANDLE_REQ)apr_table_get(r->notes, OTEL_REQ_HANDLE_KEY);
     if (reqHandlePtr)
     {
         // In case a previous "end hook" is never called. End current interaction before starting new one
@@ -262,7 +262,7 @@ APPD_SDK_STATUS_CODE ApacheHooks::otel_startInteraction(
         std::unordered_map<std::string, std::string> propagationHeaders;
         res = wsAgent.startInteraction(reqHandlePtr, payload.get(), propagationHeaders);
 
-        if (APPD_ISSUCCESS(res))
+        if (OTEL_ISSUCCESS(res))
         {
             // remove the singularity header if any
             apr_table_unset(r->headers_in, OTEL_CORRELATION_HEADER_KEY);
@@ -305,7 +305,7 @@ void ApacheHooks::otel_payload_decorator(request_rec* request, std::unordered_ma
 }
 
 // Utility routine for initializing the SDK based on configuration parameters
-bool ApacheHooks::initialize_appdynamics(const request_rec *r)
+bool ApacheHooks::initialize_opentelemetry(const request_rec *r)
 {
     // check to see if we have already been initialized by getting user data from the process pool
     void* config_data = NULL;
@@ -334,94 +334,94 @@ bool ApacheHooks::initialize_appdynamics(const request_rec *r)
     if (our_config->getOtelEnabled() == 1)
     {
         // Intialize the SDK with our configuration information
-        APPD_SDK_STATUS_CODE res = APPD_SUCCESS;
+        OTEL_SDK_STATUS_CODE res = OTEL_SUCCESS;
 
         wsAgent.initDependency();
 
         // ENV RECORDS SIZE TO INCLUDE THE LOG PATH AND THE AGGREGATOR DIRECTORY
         //
         // Update the apr_pcalloc if we add another parameter to the input array!
-        APPD_SDK_ENV_RECORD* env_config =
-                (APPD_SDK_ENV_RECORD*) apr_pcalloc(r->pool, 16 * sizeof(APPD_SDK_ENV_RECORD));
+        OTEL_SDK_ENV_RECORD* env_config =
+                (OTEL_SDK_ENV_RECORD*) apr_pcalloc(r->pool, 16 * sizeof(OTEL_SDK_ENV_RECORD));
         int ix = 0;
 
         // Otel Exporter Type
-        env_config[ix].name = APPD_SDK_ENV_OTEL_EXPORTER_TYPE;
+        env_config[ix].name = OTEL_SDK_ENV_OTEL_EXPORTER_TYPE;
         env_config[ix].value = our_config->getOtelExporterType();
         ++ix;
 
         // Otel Exporter Endpoint
-        env_config[ix].name = APPD_SDK_ENV_OTEL_EXPORTER_ENDPOINT;
+        env_config[ix].name = OTEL_SDK_ENV_OTEL_EXPORTER_ENDPOINT;
         env_config[ix].value = our_config->getOtelExporterEndpoint();
         ++ix;
 
         // Otel SSL Enabled
-        env_config[ix].name = APPD_SDK_ENV_OTEL_SSL_ENABLED;
+        env_config[ix].name = OTEL_SDK_ENV_OTEL_SSL_ENABLED;
         env_config[ix].value = our_config->getOtelSslEnabled() == 1 ? "1" : "0";
         ++ix;
 
         // Otel Certificate Path
-        env_config[ix].name = APPD_SDK_ENV_OTEL_SSL_CERTIFICATE_PATH;
+        env_config[ix].name = OTEL_SDK_ENV_OTEL_SSL_CERTIFICATE_PATH;
         env_config[ix].value = our_config->getOtelSslCertificatePath();
         ++ix;
 
         // sdk libaray name
-        env_config[ix].name = APPD_SDK_ENV_OTEL_LIBRARY_NAME;
+        env_config[ix].name = OTEL_SDK_ENV_OTEL_LIBRARY_NAME;
         env_config[ix].value = "Apache";
         ++ix;
 
         // Otel Processor Type
-        env_config[ix].name = APPD_SDK_ENV_OTEL_PROCESSOR_TYPE;
+        env_config[ix].name = OTEL_SDK_ENV_OTEL_PROCESSOR_TYPE;
         env_config[ix].value = our_config->getOtelProcessorType();
         ++ix;
 
         // Otel Sampler Type
-        env_config[ix].name = APPD_SDK_ENV_OTEL_SAMPLER_TYPE;
+        env_config[ix].name = OTEL_SDK_ENV_OTEL_SAMPLER_TYPE;
         env_config[ix].value = our_config->getOtelSamplerType();
         ++ix;
 
         // Service Namespace
-        env_config[ix].name = APPD_SDK_ENV_SERVICE_NAMESPACE;
+        env_config[ix].name = OTEL_SDK_ENV_SERVICE_NAMESPACE;
         env_config[ix].value = our_config->getServiceNamespace();
         ++ix;
 
         // Service Name
-        env_config[ix].name = APPD_SDK_ENV_SERVICE_NAME;
+        env_config[ix].name = OTEL_SDK_ENV_SERVICE_NAME;
         env_config[ix].value = our_config->getServiceName();
         ++ix;
 
         // Service Instance ID
-        env_config[ix].name = APPD_SDK_ENV_SERVICE_INSTANCE_ID;
+        env_config[ix].name = OTEL_SDK_ENV_SERVICE_INSTANCE_ID;
         env_config[ix].value = our_config->getServiceInstanceId();
         ++ix;
 
         // Otel Max Queue Size
-        env_config[ix].name = APPD_SDK_ENV_MAX_QUEUE_SIZE;
+        env_config[ix].name = OTEL_SDK_ENV_MAX_QUEUE_SIZE;
         env_config[ix].value = our_config->getOtelMaxQueueSize();
         ++ix;
 
         // Otel Scheduled Delay
-        env_config[ix].name = APPD_SDK_ENV_SCHEDULED_DELAY;
+        env_config[ix].name = OTEL_SDK_ENV_SCHEDULED_DELAY;
         env_config[ix].value = our_config->getOtelScheduledDelay();
         ++ix;
 
         // Otel Max Export Batch Size
-        env_config[ix].name = APPD_SDK_ENV_EXPORT_BATCH_SIZE;
+        env_config[ix].name = OTEL_SDK_ENV_EXPORT_BATCH_SIZE;
         env_config[ix].value = our_config->getOtelMaxExportBatchSize();
         ++ix;
 
         // Otel Export Timeout
-        env_config[ix].name = APPD_SDK_ENV_EXPORT_TIMEOUT;
+        env_config[ix].name = OTEL_SDK_ENV_EXPORT_TIMEOUT;
         env_config[ix].value = our_config->getOtelExportTimeout();
         ++ix;
 
         // Segment Type
-        env_config[ix].name = APPD_SDK_ENV_SEGMENT_TYPE;
+        env_config[ix].name = OTEL_SDK_ENV_SEGMENT_TYPE;
         env_config[ix].value = our_config->getSegmentType();
         ++ix;
 
         // Segment Parameter
-        env_config[ix].name = APPD_SDK_ENV_SEGMENT_PARAMETER;
+        env_config[ix].name = OTEL_SDK_ENV_SEGMENT_PARAMETER;
         env_config[ix].value = our_config->getSegmentParameter();
         ++ix;
 
@@ -445,7 +445,7 @@ bool ApacheHooks::initialize_appdynamics(const request_rec *r)
         }
 
         res = wsAgent.init(env_config, ix);
-        if (APPD_ISSUCCESS(res))
+        if (OTEL_ISSUCCESS(res))
         {
             ApacheTracing::writeTrace(r->server, __func__, "initializing SDK succceeded");
 
@@ -571,7 +571,7 @@ int ApacheHooks::otel_hook_header_parser_begin(request_rec *r)
     {
         return DECLINED;
     }
-    else if (!initialize_appdynamics(r))
+    else if (!initialize_opentelemetry(r))
     {
         ApacheTracing::writeTrace(r->server, __func__, "appdynamics did not get initialized");
         return DECLINED;
@@ -581,8 +581,8 @@ int ApacheHooks::otel_hook_header_parser_begin(request_rec *r)
 
     HookContainer::getInstance().traceHooks(r);
 
-    APPD_SDK_STATUS_CODE res = APPD_SUCCESS;
-    APPD_SDK_HANDLE_REQ reqHandle = APPD_SDK_NO_HANDLE;
+    OTEL_SDK_STATUS_CODE res = OTEL_SUCCESS;
+    OTEL_SDK_HANDLE_REQ reqHandle = OTEL_SDK_NO_HANDLE;
 
     const char* wscontext = NULL;
     otel_cfg* cfg = ApacheConfigHandlers::getConfig(r);
@@ -608,10 +608,10 @@ int ApacheHooks::otel_hook_header_parser_begin(request_rec *r)
     res = wsAgent.startRequest(wscontext, requestPayload.get(), &reqHandle);
 
     // Store the request data into pool
-    if (APPD_ISSUCCESS(res))
+    if (OTEL_ISSUCCESS(res))
     {
         // Store the Request Handle on the request object
-        APPD_SDK_HANDLE_REQ reqHandleValue = (APPD_SDK_HANDLE_REQ)apr_palloc(r->pool, sizeof(APPD_SDK_HANDLE_REQ));
+        OTEL_SDK_HANDLE_REQ reqHandleValue = (OTEL_SDK_HANDLE_REQ)apr_palloc(r->pool, sizeof(OTEL_SDK_HANDLE_REQ));
 
         if (reqHandleValue)
         {
@@ -621,7 +621,7 @@ int ApacheHooks::otel_hook_header_parser_begin(request_rec *r)
 
         ApacheTracing::writeTrace(r->server, __func__, "request begin successful");
     }
-    else if (res == APPD_STATUS(cfg_channel_uninitialized) || res == APPD_STATUS(bt_detection_disabled))
+    else if (res == OTEL_STATUS(cfg_channel_uninitialized) || res == OTEL_STATUS(bt_detection_disabled))
     {
         ApacheTracing::writeTrace(r->server, __func__, "request begin detection disabled, result code: %d", res);
     }
@@ -662,7 +662,7 @@ int ApacheHooks::otel_hook_log_transaction_end(request_rec* r)
 
     otel_stopInteraction(r);
 
-    APPD_SDK_HANDLE_REQ reqHandle = (APPD_SDK_HANDLE_REQ) apr_table_get(r->notes, OTEL_REQ_HANDLE_KEY);
+    OTEL_SDK_HANDLE_REQ reqHandle = (OTEL_SDK_HANDLE_REQ) apr_table_get(r->notes, OTEL_REQ_HANDLE_KEY);
 
     if (!reqHandle)
     {
@@ -671,7 +671,7 @@ int ApacheHooks::otel_hook_log_transaction_end(request_rec* r)
 
     apr_table_unset(r->notes, OTEL_REQ_HANDLE_KEY);
 
-    APPD_SDK_STATUS_CODE res;
+    OTEL_SDK_STATUS_CODE res;
     std::unique_ptr<appd::core::ResponsePayload> responsePayload
         (new appd::core::ResponsePayload);
     responsePayload->status_code = r->status;
@@ -689,7 +689,7 @@ int ApacheHooks::otel_hook_log_transaction_end(request_rec* r)
             reqHandle, NULL, responsePayload.get());
     }
 
-    if (APPD_ISSUCCESS(res))
+    if (OTEL_ISSUCCESS(res))
     {
         ApacheTracing::writeTrace(r->server, __func__, "request end successful (HTTP status=%d)", r->status);
     }

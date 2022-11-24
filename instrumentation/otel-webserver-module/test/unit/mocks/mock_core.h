@@ -44,25 +44,25 @@ public:
 class MockApiUtils : public appd::core::IApiUtils
 {
 public:
-	MOCK_METHOD(APPD_SDK_STATUS_CODE, init_boilerplate, (), (override));
+	MOCK_METHOD(OTEL_SDK_STATUS_CODE, init_boilerplate, (), (override));
 
-    MOCK_METHOD(APPD_SDK_STATUS_CODE, ReadFromPassedSettings,
-    	(APPD_SDK_ENV_RECORD* env,
+    MOCK_METHOD(OTEL_SDK_STATUS_CODE, ReadFromPassedSettings,
+    	(OTEL_SDK_ENV_RECORD* env,
         unsigned numberOfRecords,
         appd::core::TenantConfig& tenantConfig,
         appd::core::SpanNamer& spanNamer),  (override));
-    /*MOCK_METHOD(APPD_SDK_STATUS_CODE, ReadFromEnvinronment,
+    /*MOCK_METHOD(OTEL_SDK_STATUS_CODE, ReadFromEnvinronment,
     	(appd::core::TenantConfig& tenantConfig), (override));*/
-    MOCK_METHOD(APPD_SDK_STATUS_CODE, ReadSettingsFromReader,
+    MOCK_METHOD(OTEL_SDK_STATUS_CODE, ReadSettingsFromReader,
     	(appd::core::IEnvReader& reader, appd::core::TenantConfig& tenantConfig,
         appd::core::SpanNamer& spanNamer),  (override));
-    /*MOCK_METHOD(APPD_SDK_STATUS_CODE, ReadMandatoryFromReader,
+    /*MOCK_METHOD(OTEL_SDK_STATUS_CODE, ReadMandatoryFromReader,
     	(appd::core::IEnvReader& reader, const std::string& varName, unsigned short& result),
     	(override));*/
-    MOCK_METHOD(APPD_SDK_STATUS_CODE, ReadOptionalFromReader,
+    MOCK_METHOD(OTEL_SDK_STATUS_CODE, ReadOptionalFromReader,
     	(appd::core::IEnvReader& reader, const std::string& varName, bool& result),
     	(override));
-    MOCK_METHOD(APPD_SDK_STATUS_CODE, ReadOptionalFromReader,
+    MOCK_METHOD(OTEL_SDK_STATUS_CODE, ReadOptionalFromReader,
     	(appd::core::IEnvReader& reader, const std::string& varName, unsigned int& result),
     	(override));
 };

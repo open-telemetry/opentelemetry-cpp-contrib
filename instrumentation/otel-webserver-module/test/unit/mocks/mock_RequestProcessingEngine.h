@@ -25,29 +25,29 @@ public:
     MOCK_METHOD(void, init, (std::shared_ptr<appd::core::TenantConfig>& config,
         std::shared_ptr<appd::core::SpanNamer> spanNamer), (override));
 
-    MOCK_METHOD(APPD_SDK_STATUS_CODE, startRequest, (
+    MOCK_METHOD(OTEL_SDK_STATUS_CODE, startRequest, (
         const std::string& wscontext,
         appd::core::RequestPayload* payload,
-        APPD_SDK_HANDLE_REQ* reqHandle), (override));
+        OTEL_SDK_HANDLE_REQ* reqHandle), (override));
 
-    MOCK_METHOD(APPD_SDK_STATUS_CODE, endRequest, (
-        APPD_SDK_HANDLE_REQ reqHandle,
+    MOCK_METHOD(OTEL_SDK_STATUS_CODE, endRequest, (
+        OTEL_SDK_HANDLE_REQ reqHandle,
         const char* error,
         const appd::core::ResponsePayload* payload), (override));
 
-    APPD_SDK_STATUS_CODE startInteraction(
-        APPD_SDK_HANDLE_REQ reqHandle,
+    OTEL_SDK_STATUS_CODE startInteraction(
+        OTEL_SDK_HANDLE_REQ reqHandle,
         const appd::core::InteractionPayload* payload,
         std::unordered_map<std::string, std::string>& propagationHeaders) override {
     	return startInteractionImpl(reqHandle, payload);
     };
 
-    MOCK_METHOD(APPD_SDK_STATUS_CODE, startInteractionImpl, (
-        APPD_SDK_HANDLE_REQ reqHandle,
+    MOCK_METHOD(OTEL_SDK_STATUS_CODE, startInteractionImpl, (
+        OTEL_SDK_HANDLE_REQ reqHandle,
         const appd::core::InteractionPayload* payload));
 
-    MOCK_METHOD(APPD_SDK_STATUS_CODE, endInteraction, (
-        APPD_SDK_HANDLE_REQ reqHandle,
+    MOCK_METHOD(OTEL_SDK_STATUS_CODE, endInteraction, (
+        OTEL_SDK_HANDLE_REQ reqHandle,
         bool ignoreBackend,
         appd::core::EndInteractionPayload *payload), (override));
 };

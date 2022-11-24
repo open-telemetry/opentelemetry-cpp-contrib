@@ -42,7 +42,7 @@ private:
     static void otel_child_init(apr_pool_t *p, server_rec *s);
     static apr_status_t otel_child_exit(void* data);
 
-    static bool initialize_appdynamics(const request_rec *r);
+    static bool initialize_opentelemetry(const request_rec *r);
     static int otel_hook_header_parser_begin(request_rec *r);
     static int otel_hook_log_transaction_end(request_rec *r);
 
@@ -54,7 +54,7 @@ private:
     // we ignore that backend call in the SDK.
     //
     // ASSUMPTION: if a module returns DECLINED, it does not go out to another tier.
-    static APPD_SDK_STATUS_CODE otel_startInteraction(
+    static OTEL_SDK_STATUS_CODE otel_startInteraction(
             request_rec *r,
             HookContainer::otel_endpoint_indexes,
             bool isAlwaysRunStage = false,

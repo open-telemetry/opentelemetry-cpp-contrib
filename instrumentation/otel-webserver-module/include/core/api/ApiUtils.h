@@ -31,17 +31,17 @@ class TenantConfig;
 /*class RealEnvinronmentReader : public IEnvReader
 {
 public:
-    virtual APPD_SDK_STATUS_CODE ReadMandatory(const std::string& varName, std::string& result);
-    virtual APPD_SDK_STATUS_CODE ReadOptional(const std::string& varName, std::string& result);
+    virtual OTEL_SDK_STATUS_CODE ReadMandatory(const std::string& varName, std::string& result);
+    virtual OTEL_SDK_STATUS_CODE ReadOptional(const std::string& varName, std::string& result);
 };*/
 
 class PassedEnvinronmentReader : public IEnvReader
 {
 public:
-    APPD_SDK_STATUS_CODE Init(APPD_SDK_ENV_RECORD* env, unsigned numberOfRecords);
+    OTEL_SDK_STATUS_CODE Init(OTEL_SDK_ENV_RECORD* env, unsigned numberOfRecords);
 
-    virtual APPD_SDK_STATUS_CODE ReadMandatory(const std::string& varName, std::string& result);
-    virtual APPD_SDK_STATUS_CODE ReadOptional(const std::string& varName, std::string& result);
+    virtual OTEL_SDK_STATUS_CODE ReadMandatory(const std::string& varName, std::string& result);
+    virtual OTEL_SDK_STATUS_CODE ReadOptional(const std::string& varName, std::string& result);
 
 private:
     std::map<std::string, std::string> env;
@@ -58,24 +58,24 @@ public:
     /*
     *   TODO: Following functions will be implemented while doing agent init and term
     */
-    APPD_SDK_STATUS_CODE init_boilerplate() override; // initializes agentLogging
+    OTEL_SDK_STATUS_CODE init_boilerplate() override; // initializes agentLogging
 
 
-    APPD_SDK_STATUS_CODE ReadFromPassedSettings(
-            APPD_SDK_ENV_RECORD* env,
+    OTEL_SDK_STATUS_CODE ReadFromPassedSettings(
+            OTEL_SDK_ENV_RECORD* env,
             unsigned numberOfRecords,
             TenantConfig& tenantConfig,
             SpanNamer& spanNamer) override;
-    //APPD_SDK_STATUS_CODE ReadFromEnvinronment(TenantConfig&) override;
+    //OTEL_SDK_STATUS_CODE ReadFromEnvinronment(TenantConfig&) override;
 
 protected:
-    APPD_SDK_STATUS_CODE ReadSettingsFromReader(
+    OTEL_SDK_STATUS_CODE ReadSettingsFromReader(
         IEnvReader& reader, TenantConfig&, SpanNamer&) override;
-    /*APPD_SDK_STATUS_CODE ReadMandatoryFromReader(
+    /*OTEL_SDK_STATUS_CODE ReadMandatoryFromReader(
         IEnvReader& reader, const std::string& varName, unsigned short& result) override;*/
-    APPD_SDK_STATUS_CODE ReadOptionalFromReader(
+    OTEL_SDK_STATUS_CODE ReadOptionalFromReader(
         IEnvReader& reader, const std::string& varName, bool& result) override;
-    APPD_SDK_STATUS_CODE ReadOptionalFromReader(
+    OTEL_SDK_STATUS_CODE ReadOptionalFromReader(
         IEnvReader& reader, const std::string& varName, unsigned int& result) override;
 };
 

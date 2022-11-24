@@ -168,7 +168,7 @@ TEST(TestRequestProcessingEngine, StartRequest)
 	int* dummy = new int(2);
 	void* reqHandle = dummy;
 	auto res = engine.startRequest("ws_context", &payload, &reqHandle);
-	EXPECT_EQ(res, APPD_SUCCESS);
+	EXPECT_EQ(res, OTEL_SUCCESS);
 
 	auto* reqContext = (appd::core::RequestContext*)(reqHandle);
 	ASSERT_TRUE(reqContext);
@@ -192,12 +192,12 @@ TEST(TestRequestProcessingEngine, StartRequestInvalidParams)
 	appd::core::RequestPayload payload;
 
 	auto res = engine.startRequest("ws_context", &payload, nullptr);
-	EXPECT_EQ(res, APPD_STATUS(handle_pointer_is_null));
+	EXPECT_EQ(res, OTEL_STATUS(handle_pointer_is_null));
 
 	int* intPtr = new int(2);
 	void* reqHandle = intPtr;
 	res = engine.startRequest("ws_context", nullptr, &reqHandle);
-	EXPECT_EQ(res, APPD_STATUS(payload_reflector_is_null));
+	EXPECT_EQ(res, OTEL_STATUS(payload_reflector_is_null));
 	delete(intPtr);
 }
 
@@ -245,7 +245,7 @@ TEST(TestRequestProcessingEngine, EndRequest)
         (new appd::core::ResponsePayload);
     responsePayload->status_code = status_code;
 	auto res = engine.endRequest(rContext, "403", responsePayload.get());
-	EXPECT_EQ(res, APPD_SUCCESS);
+	EXPECT_EQ(res, OTEL_SUCCESS);
 }
 
 TEST(TestRequestProcessingEngine, EndRequestInvalidParams)
@@ -257,7 +257,7 @@ TEST(TestRequestProcessingEngine, EndRequestInvalidParams)
 	auto* sdkWrapper = engine.getMockSdkWrapper();
 	ASSERT_TRUE(sdkWrapper);
 	auto res = engine.endRequest(nullptr, "403");
-	EXPECT_EQ(res, APPD_STATUS(fail));
+	EXPECT_EQ(res, OTEL_STATUS(fail));
 }
 
 
@@ -299,7 +299,7 @@ TEST(TestRequestProcessingEngine, StartInteraction)
 	auto* rContext = new appd::core::RequestContext(rootSpan);
 
 	auto res = engine.startInteraction((void*)(rContext), &payload, propagationHeaders);
-	EXPECT_EQ(res, APPD_SUCCESS);
+	EXPECT_EQ(res, OTEL_SUCCESS);
 
 	// Interaction will be added in requestContext
 	EXPECT_TRUE(rContext->hasActiveInteraction());
@@ -319,7 +319,7 @@ TEST(TestRequestProcessingEngine, StartInteractionInvalidParams)
 
 	// invalid request context
 	auto res = engine.startInteraction(nullptr, &payload, propagationHeaders);
-	EXPECT_EQ(res, APPD_STATUS(handle_pointer_is_null));
+	EXPECT_EQ(res, OTEL_STATUS(handle_pointer_is_null));
 
 	std::shared_ptr<appd::core::sdkwrapper::IScopedSpan> rootSpan;
   	rootSpan.reset(new MockScopedSpan);
@@ -327,7 +327,7 @@ TEST(TestRequestProcessingEngine, StartInteractionInvalidParams)
 
 	// invalid payload
 	res = engine.startInteraction((void*)(rContext), nullptr, propagationHeaders);
-	EXPECT_EQ(res, APPD_STATUS(payload_reflector_is_null));
+	EXPECT_EQ(res, OTEL_STATUS(payload_reflector_is_null));
 }
 
 TEST(TestRequestProcessingEngine, EndInteraction)
@@ -370,7 +370,7 @@ TEST(TestRequestProcessingEngine, EndInteraction)
 	Times(1);
 
 	auto res = engine.endInteraction(rContext, false, &payload);
-	EXPECT_EQ(res, APPD_SUCCESS);
+	EXPECT_EQ(res, OTEL_SUCCESS);
 }
 
 TEST(TestRequestProcessingEngine, EndInteractionInvalidParams)
@@ -384,7 +384,7 @@ TEST(TestRequestProcessingEngine, EndInteractionInvalidParams)
 
 	// invalid handle
 	auto res = engine.endInteraction(nullptr, true, nullptr);
-	EXPECT_EQ(res, APPD_STATUS(handle_pointer_is_null));
+	EXPECT_EQ(res, OTEL_STATUS(handle_pointer_is_null));
 
 	// invalid payload case
 	std::shared_ptr<appd::core::sdkwrapper::IScopedSpan> rootSpan;
@@ -392,11 +392,11 @@ TEST(TestRequestProcessingEngine, EndInteractionInvalidParams)
 	auto* rContext = new appd::core::RequestContext(rootSpan);
 
 	res = engine.endInteraction((void*)(rContext), true, nullptr);
-	EXPECT_EQ(res, APPD_STATUS(payload_reflector_is_null));
+	EXPECT_EQ(res, OTEL_STATUS(payload_reflector_is_null));
 
 	// no interaction in the context
 	appd::core::EndInteractionPayload payload;
 	res = engine.endInteraction(rContext, true, &payload);
-	EXPECT_EQ(res, APPD_STATUS(invalid_context));
+	EXPECT_EQ(res, OTEL_STATUS(invalid_context));
 }
 

@@ -56,7 +56,7 @@ TEST(IntegrationTest, StartRequest)
   std::cout << "calling startReq" << std::endl;
   for (int i = 0; i < 20; i++) {
 	  auto res = engine.startRequest("ws_context", &payload, &reqHandle);
-	  EXPECT_EQ(res, APPD_SUCCESS);
+	  EXPECT_EQ(res, OTEL_SUCCESS);
     appd::core::InteractionPayload iPayload;
     iPayload.moduleName = "module";
     iPayload.phaseName = "phase";

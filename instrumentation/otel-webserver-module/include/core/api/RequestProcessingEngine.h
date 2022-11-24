@@ -45,20 +45,20 @@ public:
     virtual ~IRequestProcessingEngine() {}
     virtual void init(std::shared_ptr<TenantConfig>& config,
         std::shared_ptr<SpanNamer> spanNamer) = 0;
-    virtual APPD_SDK_STATUS_CODE startRequest(
+    virtual OTEL_SDK_STATUS_CODE startRequest(
         const std::string& wscontext,
         RequestPayload* payload,
-        APPD_SDK_HANDLE_REQ* reqHandle) = 0;
-    virtual APPD_SDK_STATUS_CODE endRequest(
-        APPD_SDK_HANDLE_REQ reqHandle,
+        OTEL_SDK_HANDLE_REQ* reqHandle) = 0;
+    virtual OTEL_SDK_STATUS_CODE endRequest(
+        OTEL_SDK_HANDLE_REQ reqHandle,
         const char* error,
         const ResponsePayload* payload = nullptr) = 0;
-    virtual APPD_SDK_STATUS_CODE startInteraction(
-        APPD_SDK_HANDLE_REQ reqHandle,
+    virtual OTEL_SDK_STATUS_CODE startInteraction(
+        OTEL_SDK_HANDLE_REQ reqHandle,
         const InteractionPayload* payload,
         std::unordered_map<std::string, std::string>& propagationHeaders) = 0;
-    virtual APPD_SDK_STATUS_CODE endInteraction(
-        APPD_SDK_HANDLE_REQ reqHandle,
+    virtual OTEL_SDK_STATUS_CODE endInteraction(
+        OTEL_SDK_HANDLE_REQ reqHandle,
         bool ignoreBackend,
         EndInteractionPayload *payload) = 0;
 };
@@ -71,20 +71,20 @@ public:
 
     void init(std::shared_ptr<TenantConfig>& config,
         std::shared_ptr<SpanNamer> spanNamer) override;
-    APPD_SDK_STATUS_CODE startRequest(
+    OTEL_SDK_STATUS_CODE startRequest(
         const std::string& wscontext,
         RequestPayload* payload,
-        APPD_SDK_HANDLE_REQ* reqHandle) override;
-    APPD_SDK_STATUS_CODE endRequest(
-        APPD_SDK_HANDLE_REQ reqHandle,
+        OTEL_SDK_HANDLE_REQ* reqHandle) override;
+    OTEL_SDK_STATUS_CODE endRequest(
+        OTEL_SDK_HANDLE_REQ reqHandle,
         const char* error,
         const ResponsePayload* payload = nullptr) override;
-    APPD_SDK_STATUS_CODE startInteraction(
-        APPD_SDK_HANDLE_REQ reqHandle,
+    OTEL_SDK_STATUS_CODE startInteraction(
+        OTEL_SDK_HANDLE_REQ reqHandle,
         const InteractionPayload* payload,
         std::unordered_map<std::string, std::string>& propagationHeaders) override;
-    APPD_SDK_API APPD_SDK_STATUS_CODE endInteraction(
-        APPD_SDK_HANDLE_REQ reqHandle,
+    OTEL_SDK_API OTEL_SDK_STATUS_CODE endInteraction(
+        OTEL_SDK_HANDLE_REQ reqHandle,
         bool ignoreBackend,
         EndInteractionPayload *payload) override;
 

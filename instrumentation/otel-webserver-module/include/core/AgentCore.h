@@ -28,7 +28,7 @@
 
 // Contexts did not exist in the beginning. Users put in the serviceNamespace/serviceName/serviceInstanceId
 //  in the init config structure.
-#define COREINIT_CONTEXT "APPD_COREINIT_CONTEXT"
+#define COREINIT_CONTEXT "OTEL_COREINIT_CONTEXT"
 
 namespace appd {
 namespace core {
