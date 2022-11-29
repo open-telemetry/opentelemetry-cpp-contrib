@@ -4,24 +4,33 @@ cmake_minimum_required(VERSION 3.12)
 # (using add_subdirectory) or if it is the main project
 #
 set(MAIN_PROJECT OFF)
-
 set(MAIN_PROJECT OFF)
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   project(opentelemetry-geneva-metrics)
   set(MAIN_PROJECT ON)
 endif()
 
+if(NOT WIN32)
+  find_package(CURL REQUIRED)
+endif()
 add_definitions(-DHAVE_CONSOLE_LOG)
 if(MAIN_PROJECT)
   find_package(opentelemetry-cpp REQUIRED)
 endif()
 
-find_package(CURL REQUIRED)
-
 include_directories(include)
+
 # create geneva metrics exporter
-add_library(opentelemetry_exporter_geneva_metrics
-            src/exporter.cc src/unix_domain_socket_data_transport.cc)
+if(WIN32)
+  add_library(
+    opentelemetry_exporter_geneva_metrics
+    src/exporter.cc src/etw_data_transport.cc
+    src/unix_domain_socket_data_transport.cc)
+else()
+  add_library(opentelemetry_exporter_geneva_metrics
+              src/exporter.cc src/unix_domain_socket_data_transport.cc)
+endif()
+
 target_include_directories(opentelemetry_exporter_geneva_metrics
                            PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
 target_link_libraries(opentelemetry_exporter_geneva_metrics

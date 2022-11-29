@@ -73,7 +73,7 @@ public:
         }
       }
     }
-#if defined(_MSC_VER)
+#ifdef _WIN32
     if (account_.size() && namespace_.size() && !is_endpoint_found) {
       transport_protocol_ = TransportProtocol::kETW;
     }
