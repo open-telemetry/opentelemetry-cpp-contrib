@@ -75,7 +75,7 @@ opentelemetry::sdk::common::ExportResult Exporter::Export(
               point_data_with_attributes.point_data);
           ValueType new_value = value.value_;
 
-          MetricsEventType event_type = MetricsEventType::Undefined;
+          MetricsEventType event_type;
 
           if (nostd::holds_alternative<double>(value.value_)) 
           {
@@ -138,7 +138,7 @@ opentelemetry::sdk::common::ExportResult Exporter::Export(
 
           if (nostd::holds_alternative<double>(value.sum_)) 
           {
-            // Double is not supported by Geneva, convert it to int64_t
+            //TODO: Double is not supported by Geneva, convert it to int64_t
             new_sum = static_cast<int64_t>(nostd::get<double>(new_sum));
             new_min = static_cast<int64_t>(nostd::get<double>(new_min));
             new_max = static_cast<int64_t>(nostd::get<double>(new_max));
