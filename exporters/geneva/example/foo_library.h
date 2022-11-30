@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
-#ifndef ENABLE_METRICS_PREVIEW
 #include <string>
 
 class FooLibrary {
@@ -11,4 +10,3 @@ public:
   static void histogram_example(const std::string &name);
   static void observable_counter_example(const std::string &name);
 };
-#endif

@@ -5,29 +5,33 @@
 
 #include "opentelemetry/exporters/geneva/metrics/connection_string_parser.h"
 #include "opentelemetry/exporters/geneva/metrics/data_transport.h"
-#include "opentelemetry/exporters/geneva/metrics/socket_tools.h"
 #include "opentelemetry/version.h"
 
+#include <evntprov.h>
+#include <guiddef.h>
 #include <memory>
 
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter {
 namespace geneva {
 namespace metrics {
-class UnixDomainSocketDataTransport : public DataTransport {
+static const REGHANDLE INVALID_HANDLE = _UI64_MAX;
+static const GUID kMDMProviderGUID = {
+    0xedc24920, 0xe004, 0x40f6, 0xa8, 0xe1, 0x0e, 0x6e, 0x48, 0xf3, 0x9d, 0x84};
+
+class ETWDataTransport : public DataTransport {
 public:
-  UnixDomainSocketDataTransport(const std::string &connection_string);
+  ETWDataTransport(const size_t offset_to_skip_);
   bool Connect() noexcept override;
   bool Send(MetricsEventType event_type, const char *data,
             uint16_t length) noexcept override;
   bool Disconnect() noexcept override;
+  ~ETWDataTransport();
 
 private:
-  // Socket connection is re-established for every batch of events
-  const SocketTools::SocketParams socketparams_{AF_UNIX, SOCK_STREAM, 0};
-  SocketTools::Socket socket_;
-  std::unique_ptr<SocketTools::SocketAddr> addr_;
+  REGHANDLE provider_handle_;
   bool connected_{false};
+  const size_t offset_to_skip_;
 };
 } // namespace metrics
 } // namespace geneva

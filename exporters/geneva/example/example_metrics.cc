@@ -1,7 +1,6 @@
 // Copyright The OpenTelemetry Authors
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef ENABLE_METRICS_PREVIEW
 #include "opentelemetry/exporters/geneva/metrics/exporter.h"
 #include "opentelemetry/metrics/provider.h"
 #include "opentelemetry/sdk/metrics/aggregation/default_aggregation.h"
@@ -26,9 +25,13 @@ const std::string kUnixDomainPath = "/tmp/ifx_unix_socket";
 const std::string kNamespaceName = "test_ns";
 
 void initMetrics(const std::string &name, const std::string &account_name) {
-  std::string conn_string = "Endpoint=unix://" + kUnixDomainPath +
-                            ";Account=" + account_name +
-                            ";Namespace=" + kNamespaceName;
+
+#ifndef _WIN32
+  conn_string = "Endpoint=unix://" + kUnixDomainPath + ";" + conn_string;
+#else
+  std::string conn_string =
+      "Account=" + account_name + ";Namespace=" + kNamespaceName;
+#endif
   geneva_exporter::ExporterOptions options{conn_string};
   std::unique_ptr<metric_sdk::PushMetricExporter> exporter{
       new geneva_exporter::Exporter(options)};
@@ -84,8 +87,7 @@ void initMetrics(const std::string &name, const std::string &account_name) {
   std::shared_ptr<opentelemetry::sdk::metrics::AggregationConfig>
       aggregation_config{
           new opentelemetry::sdk::metrics::HistogramAggregationConfig()};
-  static_cast<
-      opentelemetry::sdk::metrics::HistogramAggregationConfig*>(
+  static_cast<opentelemetry::sdk::metrics::HistogramAggregationConfig *>(
       aggregation_config.get())
       ->boundaries_ = std::list<double>{0.0,   50.0,   100.0,  250.0,  500.0,
                                         750.0, 1000.0, 2500.0, 5000.0, 10000.0};
@@ -128,6 +130,3 @@ int main(int argc, char **argv) {
     histogram_example.join();
   }
 }
-#else
-int main() {}
-#endif
