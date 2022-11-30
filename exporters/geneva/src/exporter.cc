@@ -117,7 +117,7 @@ opentelemetry::sdk::common::ExportResult Exporter::Export(
         else if (nostd::holds_alternative<sdk::metrics::LastValuePointData>(
                        point_data_with_attributes.point_data)) 
         {
-          auto value = nostd::get<sdk::metrics::SumPointData>(
+          auto value = nostd::get<sdk::metrics::LastValuePointData>(
               point_data_with_attributes.point_data);
           ValueType new_value = value.value_;
           if (nostd::holds_alternative<int64_t>(value.value_)) 
