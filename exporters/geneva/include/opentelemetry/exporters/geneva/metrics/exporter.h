@@ -35,6 +35,8 @@ constexpr uint64_t kSecondsToUnixTime =
 
 using ValueType = nostd::variant<int64_t, double>;
 
+// These enums are defined in 
+// file: test/decoder/ifx_metrics_bin.ksy (enum metric_event_type)
 enum class MetricsEventType : uint16_t {
   Uint64Metric = 50,
   DoubleScaledToLongMetric = 51,
