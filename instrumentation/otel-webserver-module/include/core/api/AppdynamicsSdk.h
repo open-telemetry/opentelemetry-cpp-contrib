@@ -63,7 +63,7 @@
 /* }}} */
 
 /* {{{ For API user: Status code and error helper */
-#define OTEL_STATUS(name) OTEL_PREFIXED_NAME(appd_sdk_status_,name)
+#define OTEL_STATUS(name) OTEL_PREFIXED_NAME(otel_sdk_status_,name)
 #define OTEL_SUCCESS OTEL_STATUS(success)
 #define OTEL_ISFAIL(value) ((value) != OTEL_SUCCESS)
 #define OTEL_ISSUCCESS(value) ((value) == OTEL_SUCCESS)

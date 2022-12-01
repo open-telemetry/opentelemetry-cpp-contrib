@@ -265,15 +265,15 @@ WSAgent::checkPID()
 {
     if (!initPid)
     {
-        return appd_sdk_status_uninitialized;
+        return otel_sdk_status_uninitialized;
     }
     else if (initPid != getpid())
     {
-        return appd_sdk_status_wrong_process_id;
+        return otel_sdk_status_wrong_process_id;
     }
     else
     {
-        return appd_sdk_status_success;
+        return otel_sdk_status_success;
     }
 }
 
@@ -287,16 +287,16 @@ OTEL_SDK_STATUS_CODE
 WSAgent::validateAndInitialise()
 {
     OTEL_SDK_STATUS_CODE res = checkPID();
-    if (res == appd_sdk_status_uninitialized)
+    if (res == otel_sdk_status_uninitialized)
     {
         // this is expected and means it is a valid sdk_init call.
-        res = appd_sdk_status_success;
+        res = otel_sdk_status_success;
     }
-    else if (res == appd_sdk_status_success)
+    else if (res == otel_sdk_status_success)
     {
         // this means sdk_init was already called
-        apiFuncTraceError(BOOST_CURRENT_FUNCTION, appd_sdk_status_already_initialized);
-        return(appd_sdk_status_already_initialized);
+        apiFuncTraceError(BOOST_CURRENT_FUNCTION, otel_sdk_status_already_initialized);
+        return(otel_sdk_status_already_initialized);
     }
     else if(OTEL_ISFAIL(res))
     {

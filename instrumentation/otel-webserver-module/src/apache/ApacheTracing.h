@@ -14,8 +14,8 @@
 * limitations under the License.
 */
 
-#ifndef APPD_APACHETRACING_H
-#define APPD_APACHETRACING_H
+#ifndef APACHETRACING_H
+#define APACHETRACING_H
 
 #include <string>
 #include <vector>
