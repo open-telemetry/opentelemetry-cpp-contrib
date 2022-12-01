@@ -23,7 +23,7 @@
 #include "AgentLogger.h"
 #include <api/Interface.h>
 
-namespace appd {
+namespace otel {
 namespace core {
 
 class TenantConfig;

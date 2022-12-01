@@ -30,7 +30,7 @@
 #include <sstream>
 
 
-namespace appd {
+namespace otel {
 namespace core {
 
 using namespace sdkwrapper;
@@ -65,7 +65,7 @@ OTEL_SDK_STATUS_CODE RequestProcessingEngine::startRequest(
     }
 
     std::string spanName = m_spanNamer->getSpanName(payload->get_uri());
-    appd::core::sdkwrapper::OtelKeyValueMap keyValueMap;
+    otel::core::sdkwrapper::OtelKeyValueMap keyValueMap;
     keyValueMap[kAttrRequestProtocol] = payload->get_request_protocol();
     keyValueMap[kAttrHTTPServerName] = payload->get_server_name();
     keyValueMap[kAttrHTTPMethod] = payload->get_http_request_method();
@@ -187,7 +187,7 @@ OTEL_SDK_STATUS_CODE RequestProcessingEngine::startInteraction(
     // TODO : Add internal spans for virtual hosts post MVP
 
     // Create client span for this interaction. And set it in RequestContext object.
-    appd::core::sdkwrapper::OtelKeyValueMap keyValueMap;
+    otel::core::sdkwrapper::OtelKeyValueMap keyValueMap;
 
     // TODO : confirm and update name later
     std::string spanName = payload->moduleName + "_" + payload->phaseName;
@@ -265,4 +265,4 @@ OTEL_SDK_API OTEL_SDK_STATUS_CODE RequestProcessingEngine::endInteraction(
 }
 
 } // core
-} // appd
+} // otel

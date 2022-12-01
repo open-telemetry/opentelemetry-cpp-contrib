@@ -24,7 +24,7 @@
 #include <unordered_map>
 
 
-namespace appd {
+namespace otel {
 namespace core {
 
 class TenantConfig;
@@ -89,13 +89,13 @@ public:
         EndInteractionPayload *payload) override;
 
 protected:
-    std::shared_ptr<appd::core::sdkwrapper::ISdkWrapper> m_sdkWrapper;
-    std::shared_ptr<appd::core::SpanNamer> m_spanNamer;
+    std::shared_ptr<otel::core::sdkwrapper::ISdkWrapper> m_sdkWrapper;
+    std::shared_ptr<otel::core::SpanNamer> m_spanNamer;
 private:
     AgentLogger mLogger;
 };
 
 } // core
-} // appd
+} // otel
 
 #endif

@@ -22,14 +22,14 @@
 #include <unordered_set>
 #include <algorithm>
 
-appd::core::WSAgent wsAgent; // global variable for interface between Hooks and Core Logic
+otel::core::WSAgent wsAgent; // global variable for interface between Hooks and Core Logic
 std::unordered_set<std::string> requestHeadersToCapture;
 std::unordered_set<std::string> responseHeadersToCapture;
 constexpr char delimiter = ',';
 
 void populatePayload(request_payload* req_payload, void* load)
 {
-    appd::core::RequestPayload* payload = (appd::core::RequestPayload*)load;
+    otel::core::RequestPayload* payload = (otel::core::RequestPayload*)load;
     payload->set_uri(req_payload->uri);
     payload->set_scheme(req_payload->scheme);
     payload->set_flavor(req_payload->flavor);
@@ -85,7 +85,7 @@ OTEL_SDK_STATUS_CODE opentelemetry_core_init(OTEL_SDK_ENV_RECORD* env, unsigned 
     struct cNode *curCN = rootCN;
 
     while(curCN){
-        appd::core::WSContextConfig cfg;
+        otel::core::WSContextConfig cfg;
         cfg.serviceNamespace = (curCN->cInfo).sNamespace;
         cfg.serviceName = (curCN->cInfo).sName;
         cfg.serviceInstanceId = (curCN->cInfo).sInstanceId;
@@ -102,7 +102,7 @@ OTEL_SDK_STATUS_CODE startRequest(const char* wscontext, request_payload* req_pa
 {
     OTEL_SDK_STATUS_CODE res = OTEL_SUCCESS;
 
-    std::unique_ptr<appd::core::RequestPayload> requestPayload(new appd::core::RequestPayload);
+    std::unique_ptr<otel::core::RequestPayload> requestPayload(new otel::core::RequestPayload);
     populatePayload(req_payload, requestPayload.get());
     res = wsAgent.startRequest(wscontext, requestPayload.get(), reqHandle);
 
@@ -114,8 +114,8 @@ OTEL_SDK_STATUS_CODE endRequest(OTEL_SDK_HANDLE_REQ req_handle_key, const char* 
 {
     OTEL_SDK_STATUS_CODE res = OTEL_SUCCESS;
 
-    std::unique_ptr<appd::core::ResponsePayload>
-        responsePayload(new appd::core::ResponsePayload);
+    std::unique_ptr<otel::core::ResponsePayload>
+        responsePayload(new otel::core::ResponsePayload);
     if (payload != NULL) {
         for (int i = 0; i < payload->response_headers_count; i++) {
             std::string key(payload->response_headers[i].name);
@@ -140,7 +140,7 @@ OTEL_SDK_STATUS_CODE startModuleInteraction(OTEL_SDK_HANDLE_REQ req_handle_key, 
     std::string module(module_name);
     std::string m_stage(stage);
 
-    std::unique_ptr<appd::core::InteractionPayload> payload(new appd::core::InteractionPayload(module, m_stage, resolveBackends)); 
+    std::unique_ptr<otel::core::InteractionPayload> payload(new otel::core::InteractionPayload(module, m_stage, resolveBackends));
     res = wsAgent.startInteraction(req_handle_key, payload.get(), pHeaders);
 
     if (OTEL_ISSUCCESS(res))
@@ -164,7 +164,7 @@ OTEL_SDK_STATUS_CODE startModuleInteraction(OTEL_SDK_HANDLE_REQ req_handle_key, 
 
 OTEL_SDK_STATUS_CODE stopModuleInteraction(OTEL_SDK_HANDLE_REQ req_handle_key, const char* backendName, const char* backendType, unsigned int err_code, const char* msg)
 {
-    std::unique_ptr<appd::core::EndInteractionPayload> payload(new appd::core::EndInteractionPayload(backendName, backendType, err_code, msg));
+    std::unique_ptr<otel::core::EndInteractionPayload> payload(new otel::core::EndInteractionPayload(backendName, backendType, err_code, msg));
     OTEL_SDK_STATUS_CODE res = wsAgent.endInteraction(req_handle_key, false, payload.get());
 
     return res;

@@ -18,7 +18,7 @@
 #include <string>
 #include <iostream>
 
-namespace appd {
+namespace otel {
 namespace core {
 
 class TenantConfig
@@ -95,7 +95,7 @@ private:
     //: configuration options have not been added for these; as of now they will have their default vaules
 };
 
-inline std::ostream& operator<< (std::ostream &os, const appd::core::TenantConfig &config)
+inline std::ostream& operator<< (std::ostream &os, const otel::core::TenantConfig &config)
 {
     os  << "\n ServiceNamespace:                " << config.getServiceNamespace()
         << "\n ServiceName:                     " << config.getServiceName()
@@ -113,6 +113,6 @@ inline std::ostream& operator<< (std::ostream &os, const appd::core::TenantConfi
 }
 
 } // core
-} // appd
+} // otel
 
 

@@ -20,7 +20,7 @@
 #include <api/TenantConfig.h>
 #include <api/SpanNamer.h>
 
-namespace appd {
+namespace otel {
 namespace core {
 
 class IRequestProcessingEngine;
@@ -63,8 +63,8 @@ class IKernel
 public:
     virtual ~IKernel() = default;
 
-    virtual void initKernel(std::shared_ptr<appd::core::TenantConfig> config,
-        std::shared_ptr<appd::core::SpanNamer> spanNamer) = 0;
+    virtual void initKernel(std::shared_ptr<otel::core::TenantConfig> config,
+        std::shared_ptr<otel::core::SpanNamer> spanNamer) = 0;
 
     virtual IRequestProcessingEngine* getRequestProcessingEngine() = 0;
 };
@@ -74,11 +74,11 @@ class IContext
 public:
     virtual ~IContext() = default;
 
-    virtual void initContext(std::shared_ptr<appd::core::SpanNamer> spanNamer) = 0;
+    virtual void initContext(std::shared_ptr<otel::core::SpanNamer> spanNamer) = 0;
 
     virtual IKernel* getKernel() const = 0;
 
-    virtual std::shared_ptr<appd::core::TenantConfig> getConfig() = 0;
+    virtual std::shared_ptr<otel::core::TenantConfig> getConfig() = 0;
 };
 
 class ICore
@@ -90,8 +90,8 @@ public:
     virtual ~ICore() = default;
 
     virtual bool start(
-        std::shared_ptr<appd::core::TenantConfig> initConfig,
-        std::shared_ptr<appd::core::SpanNamer> spanNamer,
+        std::shared_ptr<otel::core::TenantConfig> initConfig,
+        std::shared_ptr<otel::core::SpanNamer> spanNamer,
         userAddedTenantMap& userAddedTenants) = 0;
 
     virtual void stop() = 0;

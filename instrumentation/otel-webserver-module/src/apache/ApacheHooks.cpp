@@ -49,9 +49,9 @@ const char* ApacheHooks::OTEL_INTERACTION_HANDLE_KEY = "otel_interaction_handle_
 const char* ApacheHooks::OTEL_REQ_HANDLE_KEY = "otel_req_handle_key";
 const char* OTEL_OUTPUT_FILTER_NAME = "OTEL_EUM_AUTOINJECT";
 
-appd::core::WSAgent wsAgent; // global variable for interface between Hooks and Core Logic
+otel::core::WSAgent wsAgent; // global variable for interface between Hooks and Core Logic
 
-using namespace appd::core::sdkwrapper;
+using namespace otel::core::sdkwrapper;
 
 void ApacheHooks::registerHooks(apr_pool_t *p)
 {
@@ -211,8 +211,8 @@ void ApacheHooks::otel_stopInteraction(request_rec *r, bool isAlwaysRunStage, bo
             oss << "HTTP ERROR CODE:" << r->status;
         }
 
-        std::unique_ptr<appd::core::EndInteractionPayload> payload(new
-            appd::core::EndInteractionPayload(backendName, backendType, errorCode, oss.str()));
+        std::unique_ptr<otel::core::EndInteractionPayload> payload(new
+            otel::core::EndInteractionPayload(backendName, backendType, errorCode, oss.str()));
         OTEL_SDK_STATUS_CODE res = wsAgent.endInteraction(reqHandlePtr, ignoreBackend, payload.get());
 
         if (OTEL_ISFAIL(res))
@@ -255,8 +255,8 @@ OTEL_SDK_STATUS_CODE ApacheHooks::otel_startInteraction(
             resolveBackends = cfg->getResolveBackends();
         }
 
-        std::unique_ptr<appd::core::InteractionPayload> payload(new
-            appd::core::InteractionPayload(module, stage, resolveBackends));
+        std::unique_ptr<otel::core::InteractionPayload> payload(new
+            otel::core::InteractionPayload(module, stage, resolveBackends));
 
         // Create propagationHeaders to be populated in startInteraction.
         std::unordered_map<std::string, std::string> propagationHeaders;
@@ -431,7 +431,7 @@ bool ApacheHooks::initialize_opentelemetry(const request_rec *r)
 
         for (auto it = ApacheConfigHandlers::m_webServerContexts.begin(); it != ApacheConfigHandlers::m_webServerContexts.end(); ++it)
         {
-            appd::core::WSContextConfig cfg;
+            otel::core::WSContextConfig cfg;
             cfg.serviceNamespace = it->second->m_serviceNamespace;
             cfg.serviceName = it->second->m_serviceName;
             cfg.serviceInstanceId = it->second->m_serviceInstanceId;
@@ -474,7 +474,7 @@ bool ApacheHooks::otel_requestHasErrors(request_rec* r)
     return r->status >= LOWEST_HTTP_ERROR_CODE;
 }
 
-void fillRequestPayload(request_rec* request, appd::core::RequestPayload* payload)
+void fillRequestPayload(request_rec* request, otel::core::RequestPayload* payload)
 {
     const char* val;
 
@@ -573,7 +573,7 @@ int ApacheHooks::otel_hook_header_parser_begin(request_rec *r)
     }
     else if (!initialize_opentelemetry(r))
     {
-        ApacheTracing::writeTrace(r->server, __func__, "appdynamics did not get initialized");
+        ApacheTracing::writeTrace(r->server, __func__, "opentelemetry did not get initialized");
         return DECLINED;
     }
 
@@ -601,7 +601,7 @@ int ApacheHooks::otel_hook_header_parser_begin(request_rec *r)
     ApacheTracing::writeTrace(r->server, __func__, "%s", (wscontext ? wscontext : "using default context"));
 
     // Fill the Request payload information
-    std::unique_ptr<appd::core::RequestPayload> requestPayload(new appd::core::RequestPayload);
+    std::unique_ptr<otel::core::RequestPayload> requestPayload(new otel::core::RequestPayload);
     fillRequestPayload(r, requestPayload.get());
 
     // Start Request
@@ -672,8 +672,8 @@ int ApacheHooks::otel_hook_log_transaction_end(request_rec* r)
     apr_table_unset(r->notes, OTEL_REQ_HANDLE_KEY);
 
     OTEL_SDK_STATUS_CODE res;
-    std::unique_ptr<appd::core::ResponsePayload> responsePayload
-        (new appd::core::ResponsePayload);
+    std::unique_ptr<otel::core::ResponsePayload> responsePayload
+        (new otel::core::ResponsePayload);
     responsePayload->status_code = r->status;
 
     if (otel_requestHasErrors(r))
@@ -710,7 +710,7 @@ int ApacheHooks::otel_hook_log_transaction_end(request_rec* r)
 // declaration near the bottom of this file.)  Note that these may be
 // called for situations that don't relate primarily to our function - in
 // other words, the fixup handler shouldn't assume that the request has
-// to do with "appdynamics" stuff.
+// to do with "opentelemetry" stuff.
 //
 // With the exception of the content handler, all of our routines will be
 // called for each request, unless an earlier handler from another module

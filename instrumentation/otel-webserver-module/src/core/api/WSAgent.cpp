@@ -23,7 +23,7 @@
 #include "AgentCore.h"
 #include "api/SpanNamer.h"
 
-namespace appd {
+namespace otel {
 namespace core {
 
 inline void apiFuncTraceError(const char* funcName, OTEL_SDK_STATUS_CODE ret)

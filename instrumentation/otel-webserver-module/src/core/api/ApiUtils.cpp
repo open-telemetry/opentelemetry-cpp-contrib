@@ -24,7 +24,7 @@
 #include <dlfcn.h>
 #endif
 
-namespace appd {
+namespace otel {
 namespace core {
 
 AgentLogger ApiUtils::apiLogger = 0;

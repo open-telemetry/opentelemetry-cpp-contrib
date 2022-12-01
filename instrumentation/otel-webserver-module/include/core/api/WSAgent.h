@@ -26,7 +26,7 @@
 #include "api/Payload.h"
 #include <mutex>
 
-namespace appd {
+namespace otel {
 namespace core {
 
 /**

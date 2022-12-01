@@ -20,7 +20,7 @@
 
 TEST(PassedEnvironmentReader, Init_Invalid_env_records)
 {
-	appd::core::PassedEnvinronmentReader reader;
+	otel::core::PassedEnvinronmentReader reader;
 	auto status = reader.Init(nullptr, 0);
 	EXPECT_EQ(status, OTEL_STATUS(environment_records_are_invalid));
 
@@ -46,7 +46,7 @@ TEST(PassedEnvironmentReader, Init_Invalid_env_records)
 
 TEST(PassedEnvironmentReader, Init_Valid_env_records)
 {
-	appd::core::PassedEnvinronmentReader reader;
+	otel::core::PassedEnvinronmentReader reader;
 	OTEL_SDK_ENV_RECORD* env_config =
                 new OTEL_SDK_ENV_RECORD[1] ;
 	env_config[0] = OTEL_SDK_ENV_RECORD{"dummy_key", ""};
@@ -63,8 +63,8 @@ TEST(PassedEnvironmentReader, Init_Valid_env_records)
 
 TEST(PassedEnvironmentReader, ReadMandatory)
 {
-	appd::core::ApiUtils::apiLogger = getLogger("api");
-	appd::core::PassedEnvinronmentReader reader;
+	otel::core::ApiUtils::apiLogger = getLogger("api");
+	otel::core::PassedEnvinronmentReader reader;
 	OTEL_SDK_ENV_RECORD* env_config = new OTEL_SDK_ENV_RECORD[1] ;
 	env_config[0] = OTEL_SDK_ENV_RECORD{"dummy_key", "dummy_value"};
 	auto status = reader.Init(env_config, 1);
@@ -82,7 +82,7 @@ TEST(PassedEnvironmentReader, ReadMandatory)
 	EXPECT_EQ(status, OTEL_STATUS(unspecified_environment_variable));
 	delete env_config;
 
-	appd::core::PassedEnvinronmentReader reader2;
+	otel::core::PassedEnvinronmentReader reader2;
 	env_config = new OTEL_SDK_ENV_RECORD[1];
 	env_config[0] = OTEL_SDK_ENV_RECORD{"dummy_key", ""};
 	status = reader2.Init(env_config, 1);
@@ -95,8 +95,8 @@ TEST(PassedEnvironmentReader, ReadMandatory)
 
 TEST(PassedEnvironmentReader, ReadOptional)
 {
-	appd::core::ApiUtils::apiLogger = getLogger("api");
-	appd::core::PassedEnvinronmentReader reader;
+	otel::core::ApiUtils::apiLogger = getLogger("api");
+	otel::core::PassedEnvinronmentReader reader;
 	OTEL_SDK_ENV_RECORD* env_config = new OTEL_SDK_ENV_RECORD[1] ;
 	env_config[0] = OTEL_SDK_ENV_RECORD{"dummy_key", "dummy_value"};
 	auto status = reader.Init(env_config, 1);
@@ -114,7 +114,7 @@ TEST(PassedEnvironmentReader, ReadOptional)
 	EXPECT_EQ(status, OTEL_SUCCESS);
 	delete env_config;
 
-	appd::core::PassedEnvinronmentReader reader2;
+	otel::core::PassedEnvinronmentReader reader2;
 	env_config = new OTEL_SDK_ENV_RECORD[1];
 	env_config[0] = OTEL_SDK_ENV_RECORD{"dummy_key", ""};
 	status = reader2.Init(env_config, 1);
@@ -211,9 +211,9 @@ TEST(ApiUtils, ReadFromPassedSettings_Success)
     env_config[ix].value = "2";
     ++ix;
 
-    appd::core::SpanNamer spanNamer;
-	appd::core::TenantConfig tenantConfig;
-	appd::core::ApiUtils apiUtils;
+    otel::core::SpanNamer spanNamer;
+	otel::core::TenantConfig tenantConfig;
+	otel::core::ApiUtils apiUtils;
 
 	auto status = apiUtils.ReadFromPassedSettings(env_config, 16, tenantConfig, spanNamer);
 	EXPECT_EQ(status, OTEL_SUCCESS);
@@ -222,9 +222,9 @@ TEST(ApiUtils, ReadFromPassedSettings_Success)
 
 TEST(ApiUtils, ReadFromPassedSettings_Fails_On_null_env)
 {
-	appd::core::SpanNamer spanNamer;
-	appd::core::TenantConfig tenantConfig;
-	appd::core::ApiUtils apiUtils;
+	otel::core::SpanNamer spanNamer;
+	otel::core::TenantConfig tenantConfig;
+	otel::core::ApiUtils apiUtils;
 	auto status = apiUtils.ReadFromPassedSettings(nullptr, 0, tenantConfig, spanNamer);
 	EXPECT_NE(status, OTEL_SUCCESS);
 }
@@ -314,9 +314,9 @@ TEST(ApiUtils, ReadFromPassedSettings_Failure_On_Invalid_Int)
     env_config[ix].value = "2";
     ++ix;
 
-    appd::core::SpanNamer spanNamer;
-	appd::core::TenantConfig tenantConfig;
-	appd::core::ApiUtils apiUtils;
+    otel::core::SpanNamer spanNamer;
+	otel::core::TenantConfig tenantConfig;
+	otel::core::ApiUtils apiUtils;
 
 	auto status = apiUtils.ReadFromPassedSettings(env_config, 16, tenantConfig, spanNamer);
 	EXPECT_EQ(status, OTEL_STATUS(environment_variable_invalid_value));
@@ -408,9 +408,9 @@ TEST(ApiUtils, ReadFromPassedSettings_Failure_On_Invalid_Bool)
     env_config[ix].value = "2";
     ++ix;
 
-    appd::core::SpanNamer spanNamer;
-	appd::core::TenantConfig tenantConfig;
-	appd::core::ApiUtils apiUtils;
+    otel::core::SpanNamer spanNamer;
+	otel::core::TenantConfig tenantConfig;
+	otel::core::ApiUtils apiUtils;
 
 	auto status = apiUtils.ReadFromPassedSettings(env_config, 16, tenantConfig, spanNamer);
 	EXPECT_EQ(status, OTEL_STATUS(environment_variable_invalid_value));
@@ -419,7 +419,7 @@ TEST(ApiUtils, ReadFromPassedSettings_Failure_On_Invalid_Bool)
 
 TEST(ApiUtils, getSDKInstallPath)
 {
-	appd::core::ApiUtils apiUtils;
+	otel::core::ApiUtils apiUtils;
 	auto path = apiUtils.getSDKInstallPath();
 	EXPECT_THAT(path.string(), testing::EndsWith("build/linux-x64/opentelemetry-webserver-sdk"));
 }

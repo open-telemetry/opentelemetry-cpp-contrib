@@ -23,7 +23,7 @@
 #include "api/Payload.h"
 #include <unordered_map>
 
-class FakeWSAgent : public appd::core::WSAgent
+class FakeWSAgent : public otel::core::WSAgent
 {
 public:
 	MockAgentCore* getMockAgentCore() { return dynamic_cast<MockAgentCore*>(mAgentCore.get());}
@@ -40,7 +40,7 @@ public:
 	}
 
 	void addUserTenant(
-        const std::string& context, std::shared_ptr<appd::core::TenantConfig> tenantConfig)
+        const std::string& context, std::shared_ptr<otel::core::TenantConfig> tenantConfig)
 	{
 		mUserAddedTenant[context] = tenantConfig;
 	}
@@ -321,12 +321,12 @@ TEST(WSAgent, start_request_executes_successfully)
 	EXPECT_EQ(isInit, true);
 
 	MockRequestProcessingEngine mockProcessor;
-	auto payload = std::unique_ptr<appd::core::RequestPayload>(new appd::core::RequestPayload());
+	auto payload = std::unique_ptr<otel::core::RequestPayload>(new otel::core::RequestPayload());
 
 	std::string contextName {"contextName"};
 	EXPECT_CALL(*agentCore, getRequestProcessor(contextName))
 		.Times(1)
-		.WillOnce(InvokeWithoutArgs([&]()->appd::core::IRequestProcessingEngine*{
+		.WillOnce(InvokeWithoutArgs([&]()->otel::core::IRequestProcessingEngine*{
 			return &mockProcessor;
 		}));
 
@@ -382,12 +382,12 @@ TEST(WSAgent, start_request_returns_fail)
 	EXPECT_EQ(isInit, true);
 
 	MockRequestProcessingEngine mockProcessor;
-	auto payload = std::unique_ptr<appd::core::RequestPayload>(new appd::core::RequestPayload());
+	auto payload = std::unique_ptr<otel::core::RequestPayload>(new otel::core::RequestPayload());
 
 	std::string contextName {"contextName"};
 	EXPECT_CALL(*agentCore, getRequestProcessor(contextName))
 		.Times(1)
-		.WillOnce(InvokeWithoutArgs([&]()->appd::core::IRequestProcessingEngine*{
+		.WillOnce(InvokeWithoutArgs([&]()->otel::core::IRequestProcessingEngine*{
 			return nullptr;
 		}));
 
@@ -401,7 +401,7 @@ TEST(WSAgent, start_request_returns_fail)
 	std::string contextName1 {"contextName1"};
 	EXPECT_CALL(*agentCore, getRequestProcessor(contextName1))
 		.Times(1)
-		.WillOnce(InvokeWithoutArgs([&]()->appd::core::IRequestProcessingEngine*{
+		.WillOnce(InvokeWithoutArgs([&]()->otel::core::IRequestProcessingEngine*{
 			return &mockProcessor;
 		}));
 
@@ -463,7 +463,7 @@ TEST(WSAgent, end_request_returns_success)
 	std::string contextName1 {"contextName1"};
 	EXPECT_CALL(*agentCore, getRequestProcessor(contextName1))
 		.Times(1)
-		.WillOnce(InvokeWithoutArgs([&]()->appd::core::IRequestProcessingEngine*{
+		.WillOnce(InvokeWithoutArgs([&]()->otel::core::IRequestProcessingEngine*{
 			return &mockProcessor;
 		}));
 
@@ -474,7 +474,7 @@ TEST(WSAgent, end_request_returns_success)
 			return res1;
 		}));
 
-	auto reqCtx = new appd::core::RequestContext();
+	auto reqCtx = new otel::core::RequestContext();
 	reqCtx->setContextName(contextName1);
 	reqHandle = static_cast<void*>(reqCtx);
 	const char* err = nullptr;
@@ -528,7 +528,7 @@ TEST(WSAgent, start_interaction_returns_success)
 	std::string contextName1 {"contextName1"};
 	EXPECT_CALL(*agentCore, getRequestProcessor(contextName1))
 		.Times(1)
-		.WillOnce(InvokeWithoutArgs([&]()->appd::core::IRequestProcessingEngine*{
+		.WillOnce(InvokeWithoutArgs([&]()->otel::core::IRequestProcessingEngine*{
 			return &mockProcessor;
 		}));
 
@@ -539,10 +539,10 @@ TEST(WSAgent, start_interaction_returns_success)
 			return res1;
 		}));
 
-	appd::core::InteractionPayload* payload = nullptr;
+	otel::core::InteractionPayload* payload = nullptr;
     std::unordered_map<std::string, std::string> propagationHeaders;
 
-	auto reqCtx = new appd::core::RequestContext();
+	auto reqCtx = new otel::core::RequestContext();
 	reqCtx->setContextName(contextName1);
 	reqHandle = static_cast<void*>(reqCtx);
 
@@ -596,7 +596,7 @@ TEST(WSAgent, end_interaction_returns_success)
 	std::string contextName1 {"contextName1"};
 	EXPECT_CALL(*agentCore, getRequestProcessor(contextName1))
 		.Times(1)
-		.WillOnce(InvokeWithoutArgs([&]()->appd::core::IRequestProcessingEngine*{
+		.WillOnce(InvokeWithoutArgs([&]()->otel::core::IRequestProcessingEngine*{
 			return &mockProcessor;
 		}));
 
@@ -607,9 +607,9 @@ TEST(WSAgent, end_interaction_returns_success)
 			return res1;
 		}));
 
-	appd::core::EndInteractionPayload* payload = nullptr;
+	otel::core::EndInteractionPayload* payload = nullptr;
 
-	auto reqCtx = new appd::core::RequestContext();
+	auto reqCtx = new otel::core::RequestContext();
 	reqCtx->setContextName(contextName1);
 	reqHandle = static_cast<void*>(reqCtx);
 
@@ -663,12 +663,12 @@ TEST(WSAgent, end_interaction_returns_failure)
 	std::string contextName1 {"contextName1"};
 	EXPECT_CALL(*agentCore, getRequestProcessor(contextName1))
 		.Times(1)
-		.WillOnce(InvokeWithoutArgs([&]()->appd::core::IRequestProcessingEngine*{
+		.WillOnce(InvokeWithoutArgs([&]()->otel::core::IRequestProcessingEngine*{
 			return nullptr;
 		}));
 
-	appd::core::EndInteractionPayload* payload = nullptr;
-	auto reqCtx = new appd::core::RequestContext();
+	otel::core::EndInteractionPayload* payload = nullptr;
+	auto reqCtx = new otel::core::RequestContext();
 	reqCtx->setContextName(contextName1);
 	reqHandle = static_cast<void*>(reqCtx);
 
@@ -679,7 +679,7 @@ TEST(WSAgent, end_interaction_returns_failure)
 	std::string contextName2 {"contextName2"};
 	EXPECT_CALL(*agentCore, getRequestProcessor(contextName2))
 		.Times(1)
-		.WillOnce(InvokeWithoutArgs([&]()->appd::core::IRequestProcessingEngine*{
+		.WillOnce(InvokeWithoutArgs([&]()->otel::core::IRequestProcessingEngine*{
 			return &mockProcessor;
 		}));
 
@@ -690,7 +690,7 @@ TEST(WSAgent, end_interaction_returns_failure)
 			return res2;
 		}));
 
-	reqCtx = new appd::core::RequestContext();
+	reqCtx = new otel::core::RequestContext();
 	reqCtx->setContextName(contextName2);
 	reqHandle = static_cast<void*>(reqCtx);
 	res = agent.endInteraction(reqHandle, true, payload);
@@ -712,7 +712,7 @@ TEST(WSAgent, add_wscontext_to_core_returns_failure_with_core_uninitialised)
 	using ::testing::InvokeWithoutArgs;
 
 	std::string contextName = "";
-	appd::core::WSContextConfig contextConfig;
+	otel::core::WSContextConfig contextConfig;
 
 	int res = agent.addWSContextToCore(contextName.c_str(), &contextConfig); // contextName is NULL
 	EXPECT_EQ(res, -1);
@@ -748,7 +748,7 @@ TEST(WSAgent, add_wscontext_to_core_returns_failure_with_core_uninitialised)
 
 	contextConfig.serviceInstanceId = "testId";
 
-	std::shared_ptr<appd::core::TenantConfig> tenant = std::make_shared<appd::core::TenantConfig>();
+	std::shared_ptr<otel::core::TenantConfig> tenant = std::make_shared<otel::core::TenantConfig>();
     tenant->setServiceNamespace(contextConfig.serviceNamespace);
     tenant->setServiceName(contextConfig.serviceName);
     tenant->setServiceInstanceId(contextConfig.serviceInstanceId);
@@ -797,7 +797,7 @@ TEST(WSAgent, add_wscontext_to_core_returns_failure_with_core_initialised)
 	EXPECT_EQ(isInit, true);
 
 	std::string contextName1 = "testContextName1";
-	appd::core::WSContextConfig contextConfig;
+	otel::core::WSContextConfig contextConfig;
 
 	contextConfig.serviceNamespace = "testNamespace";
 	contextConfig.serviceName = "testName";
@@ -807,14 +807,14 @@ TEST(WSAgent, add_wscontext_to_core_returns_failure_with_core_initialised)
 
 	EXPECT_CALL(*agentCore, getWebServerContext(contextName1))
 		.Times(1)
-		.WillOnce(InvokeWithoutArgs([&]()->std::shared_ptr<appd::core::IContext>{
+		.WillOnce(InvokeWithoutArgs([&]()->std::shared_ptr<otel::core::IContext>{
 			return mockContext;
 		}));
 
-	std::shared_ptr<appd::core::TenantConfig> tenant = std::make_shared<appd::core::TenantConfig> ();
+	std::shared_ptr<otel::core::TenantConfig> tenant = std::make_shared<otel::core::TenantConfig> ();
 	EXPECT_CALL(*mockContext, getConfig())
 		.Times(1)
-		.WillOnce(InvokeWithoutArgs([&]()->std::shared_ptr<appd::core::TenantConfig>{
+		.WillOnce(InvokeWithoutArgs([&]()->std::shared_ptr<otel::core::TenantConfig>{
 			return tenant;
 		}));
 
@@ -824,7 +824,7 @@ TEST(WSAgent, add_wscontext_to_core_returns_failure_with_core_initialised)
 	std::string contextName2 = "testContextName2";
 	EXPECT_CALL(*agentCore, getWebServerContext(contextName2))
 		.Times(1)
-		.WillOnce(InvokeWithoutArgs([&]()->std::shared_ptr<appd::core::IContext>{
+		.WillOnce(InvokeWithoutArgs([&]()->std::shared_ptr<otel::core::IContext>{
 			return nullptr;
 		}));
 
