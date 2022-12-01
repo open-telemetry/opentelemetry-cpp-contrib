@@ -89,9 +89,9 @@ SdkHelperFactory::SdkHelperFactory(
             std::move(sampler)
             ));
 
-    mTracer = mTracerProvider->GetTracer("C++", cppSDKVersion);
+    mTracer = mTracerProvider->GetTracer("cpp", cppSDKVersion);
     LOG4CXX_INFO(mLogger,
-        "Tracer created with LibraryName: " << "C++" <<
+        "Tracer created with LibraryName: " << "cpp" <<
         " and LibraryVersion " << libraryVersion);
 
     // Adding trace propagator
