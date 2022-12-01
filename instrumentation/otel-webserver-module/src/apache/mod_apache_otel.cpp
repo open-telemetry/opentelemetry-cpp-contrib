@@ -15,7 +15,7 @@
 */
 
 /*
- * AppDynamics Agent Module.  Module that hooks in to apache at the relevant
+ * OpenTelemetry Agent Module.  Module that hooks in to apache at the relevant
  * request processing phases to allow apache to appear as an entity in the flow map.
  *
  * TODO: Add the description of the BT Logic
@@ -63,7 +63,7 @@ static const command_rec otel_cmds[] =
             (CMD_HAND_TYPE)ApacheConfigHandlers::otel_set_otelExporterEndpoint,
             NULL,
             OR_ALL,
-            "AppDynamics endpoint where the OpenTelemetry Exporter inside OTel SDK sends traces"),
+            "Collector Endpoint where the OpenTelemetry Exporter inside OTel SDK sends traces"),
     AP_INIT_TAKE1(
             "apacheModuleOtelSslEnabled",
             (CMD_HAND_TYPE)ApacheConfigHandlers::otel_set_otelSslEnabled,
@@ -93,13 +93,13 @@ static const command_rec otel_cmds[] =
             (CMD_HAND_TYPE)ApacheConfigHandlers::otel_set_serviceName,
             NULL,
             OR_ALL,
-            "Logical name of the service; equivalent to your AppDynamics tier name"),
+            "Logical name of the service"),
     AP_INIT_TAKE1(
             "apacheModuleServiceNamespace",
             (CMD_HAND_TYPE)ApacheConfigHandlers::otel_set_serviceNamespace,
             NULL,
             OR_ALL,
-            "A namespace for the AppdynamicsServiceName; equivalent to your AppDynamics application name"),
+            "Logical namespace of the service;"),
     AP_INIT_TAKE1(
             "apacheModuleServiceInstanceId",
             (CMD_HAND_TYPE)ApacheConfigHandlers::otel_set_serviceInstanceId,

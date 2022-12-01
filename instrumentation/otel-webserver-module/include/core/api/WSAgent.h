@@ -76,12 +76,12 @@ public:
         EndInteractionPayload *payload);
 
     /**
-    * Add webserver context to AppDynamics configuration for multi-tenancy.
+    * Add webserver context to OpenTelemetry configuration for multi-tenancy.
     *
     * @param contextName
     *     A unique identifier to refer to the context by
     * @param contextConfig
-    *     AppDynamics context configuration object
+    *     OpenTelemetry context configuration object
     */
     OTEL_SDK_API int addWSContextToCore(
         const char* wscontext,
