@@ -21,6 +21,7 @@ public:
   bool Send(MetricsEventType event_type, const char *data,
             uint16_t length) noexcept override;
   bool Disconnect() noexcept override;
+  ~UnixDomainSocketDataTransport() = default;
 
 private:
   // Socket connection is re-established for every batch of events

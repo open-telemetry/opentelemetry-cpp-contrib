@@ -26,12 +26,12 @@ const std::string kNamespaceName = "test_ns";
 
 void initMetrics(const std::string &name, const std::string &account_name) {
 
-#ifndef _WIN32
-  conn_string = "Endpoint=unix://" + kUnixDomainPath + ";" + conn_string;
-#else
   std::string conn_string =
       "Account=" + account_name + ";Namespace=" + kNamespaceName;
+#ifndef _WIN32
+  conn_string = "Endpoint=unix://" + kUnixDomainPath + ";" + conn_string;
 #endif
+
   geneva_exporter::ExporterOptions options{conn_string};
   std::unique_ptr<metric_sdk::PushMetricExporter> exporter{
       new geneva_exporter::Exporter(options)};

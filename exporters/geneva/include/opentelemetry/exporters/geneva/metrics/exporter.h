@@ -33,6 +33,8 @@ constexpr uint64_t kSecondsToUnixTime =
                   // 1601-01-01T00:00:00Z and UNIX/Linux epoch
                   // (1970-01-01T00:00:00Z)
 
+using ValueType = nostd::variant<int64_t, double>;
+
 /**
  * The Geneva metrics exporter exports metrics data to Geneva
  */
