@@ -28,14 +28,13 @@ const uint16_t kCounterDoubleCountDimensions = 1;
 const uint16_t kCounterDoubleEventId = 55;
 
 static inline opentelemetry::sdk::metrics::ResourceMetrics
-GenerateSumDataDoubleMetrics() 
-{
+GenerateSumDataDoubleMetrics() {
   opentelemetry::sdk::metrics::SumPointData sum_point_data1{};
   sum_point_data1.value_ = kCounterDoubleValue1;
-  sum_point_data1.is_monotonic_= true;
+  sum_point_data1.is_monotonic_ = true;
   opentelemetry::sdk::metrics::SumPointData sum_point_data2{};
   sum_point_data2.value_ = kCounterDoubleValue2;
-  sum_point_data2.is_monotonic_= true;
+  sum_point_data2.is_monotonic_ = true;
   opentelemetry::sdk::metrics::ResourceMetrics data;
   auto resource = opentelemetry::sdk::resource::Resource::Create(
       opentelemetry::sdk::resource::ResourceAttributes{});
@@ -82,8 +81,7 @@ const uint16_t kCounterLongCountDimensions = 1;
 const uint16_t kCounterLongEventId = 50;
 
 static inline opentelemetry::sdk::metrics::ResourceMetrics
-GenerateSumDataLongMetrics() 
-{
+GenerateSumDataLongMetrics() {
   opentelemetry::sdk::metrics::SumPointData sum_point_data{};
   sum_point_data.value_ = kCounterLongValue;
   sum_point_data.is_monotonic_ = true;
@@ -123,12 +121,12 @@ const std::string kUpDownCounterLongInstrumentUnit =
     "test_instrument_up_down_conter_long_unit";
 const long kUpDownCounterLongValue = -10;
 const std::string kUpDownCounterLongAttributeKey1 = "up_down_counter_long_key1";
-const std::string kUpDownCounterLongAttributeValue1 = "up_down_counter_long_value1";
+const std::string kUpDownCounterLongAttributeValue1 =
+    "up_down_counter_long_value1";
 const uint16_t kUpDownCounterLongCountDimensions = 1;
 
 static inline opentelemetry::sdk::metrics::ResourceMetrics
-GenerateSumDataLongMetricsNonMonotonic() 
-{
+GenerateSumDataLongMetricsNonMonotonic() {
   opentelemetry::sdk::metrics::SumPointData sum_point_data{};
   sum_point_data.value_ = kUpDownCounterLongValue;
   sum_point_data.is_monotonic_ = false;
@@ -150,7 +148,8 @@ GenerateSumDataLongMetricsNonMonotonic()
       opentelemetry::common::SystemTimestamp{std::chrono::system_clock::now()},
       std::vector<opentelemetry::sdk::metrics::PointDataAttributes>{
           {opentelemetry::sdk::metrics::PointAttributes{
-               {kUpDownCounterLongAttributeKey1, kUpDownCounterLongAttributeValue1}},
+               {kUpDownCounterLongAttributeKey1,
+                kUpDownCounterLongAttributeValue1}},
            sum_point_data}}};
   data.scope_metric_data_ =
       std::vector<opentelemetry::sdk::metrics::ScopeMetrics>{
@@ -167,16 +166,17 @@ const std::string kUpDownCounterDoubleInstrumentDesc =
 const std::string kUpDownCounterDoubleInstrumentUnit =
     "test_instrument_up_down_conter_double_unit";
 const double kUpDownCounterDoubleValue = -10.2;
-const std::string kUpDownCounterDoubleAttributeKey1 = "up_down_counter_double_key1";
-const std::string kUpDownCounterDoubleAttributeValue1 = "up_down_counter_double_value1";
+const std::string kUpDownCounterDoubleAttributeKey1 =
+    "up_down_counter_double_key1";
+const std::string kUpDownCounterDoubleAttributeValue1 =
+    "up_down_counter_double_value1";
 const uint16_t kUpDownCounterDoubleCountDimensions = 1;
 
 static inline opentelemetry::sdk::metrics::ResourceMetrics
-GenerateSumDataDoubleMetricsNonMonotonic() 
-{
+GenerateSumDataDoubleMetricsNonMonotonic() {
   opentelemetry::sdk::metrics::SumPointData sum_point_data1{};
   sum_point_data1.value_ = kUpDownCounterDoubleValue;
-  sum_point_data1.is_monotonic_= false;
+  sum_point_data1.is_monotonic_ = false;
   opentelemetry::sdk::metrics::ResourceMetrics data;
   auto resource = opentelemetry::sdk::resource::Resource::Create(
       opentelemetry::sdk::resource::ResourceAttributes{});
@@ -186,7 +186,8 @@ GenerateSumDataDoubleMetricsNonMonotonic()
           kInstrumentScopeName, kInstrumentScopeVer);
   opentelemetry::sdk::metrics::MetricData metric_data{
       opentelemetry::sdk::metrics::InstrumentDescriptor{
-          kUpDownCounterDoubleInstrumentName, kUpDownCounterDoubleInstrumentDesc,
+          kUpDownCounterDoubleInstrumentName,
+          kUpDownCounterDoubleInstrumentDesc,
           kUpDownCounterDoubleInstrumentUnit,
           opentelemetry::sdk::metrics::InstrumentType::kUpDownCounter,
           opentelemetry::sdk::metrics::InstrumentValueType::kDouble},
@@ -195,7 +196,8 @@ GenerateSumDataDoubleMetricsNonMonotonic()
       opentelemetry::common::SystemTimestamp{std::chrono::system_clock::now()},
       std::vector<opentelemetry::sdk::metrics::PointDataAttributes>{
           {opentelemetry::sdk::metrics::PointAttributes{
-               {kUpDownCounterDoubleAttributeKey1, kUpDownCounterDoubleAttributeValue1}},
+               {kUpDownCounterDoubleAttributeKey1,
+                kUpDownCounterDoubleAttributeValue1}},
            sum_point_data1}}};
   data.scope_metric_data_ =
       std::vector<opentelemetry::sdk::metrics::ScopeMetrics>{

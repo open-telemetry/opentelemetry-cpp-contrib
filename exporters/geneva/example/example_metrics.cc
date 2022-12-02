@@ -26,8 +26,8 @@ const std::string kNamespaceName = "test_ns";
 
 void initMetrics(const std::string &name, const std::string &account_name) {
 
-std::string conn_string =
-    "Account=" + account_name + ";Namespace=" + kNamespaceName;
+  std::string conn_string =
+      "Account=" + account_name + ";Namespace=" + kNamespaceName;
 #ifndef _WIN32
   conn_string = "Endpoint=unix://" + kUnixDomainPath + ";" + conn_string;
 #endif

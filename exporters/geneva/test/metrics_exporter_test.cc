@@ -61,7 +61,7 @@ struct TestServer {
               EXPECT_EQ(event_body->dimensions_names()->at(0)->value(),
                         kCounterDoubleAttributeKey1);
               EXPECT_EQ(event_body->metric_name()->value(),
-                      kCounterDoubleInstrumentName);
+                        kCounterDoubleInstrumentName);
               count_counter_double++;
             }
             if (static_cast<ifx_metrics_bin_t::single_double_value_t *>(
@@ -78,31 +78,29 @@ struct TestServer {
               EXPECT_EQ(event_body->dimensions_names()->at(1)->value(),
                         kCounterDoubleAttributeKey3);
               EXPECT_EQ(event_body->metric_name()->value(),
-                      kCounterDoubleInstrumentName);
+                        kCounterDoubleInstrumentName);
               count_counter_double++;
             }
             if (static_cast<ifx_metrics_bin_t::single_double_value_t *>(
                     event_body->value_section())
-                    ->value() == kUpDownCounterLongValue) 
-            {
+                    ->value() == kUpDownCounterLongValue) {
               EXPECT_EQ(event_body->num_dimensions(),
-                      kUpDownCounterLongCountDimensions);
+                        kUpDownCounterLongCountDimensions);
               EXPECT_EQ(event_body->dimensions_values()->at(0)->value(),
-                      kUpDownCounterLongAttributeValue1);
+                        kUpDownCounterLongAttributeValue1);
               EXPECT_EQ(event_body->dimensions_names()->at(0)->value(),
-                      kUpDownCounterLongAttributeKey1);
+                        kUpDownCounterLongAttributeKey1);
               count_up_down_counter_long++;
             }
             if (static_cast<ifx_metrics_bin_t::single_double_value_t *>(
                     event_body->value_section())
-                    ->value() == kUpDownCounterDoubleValue) 
-            {
+                    ->value() == kUpDownCounterDoubleValue) {
               EXPECT_EQ(event_body->num_dimensions(),
-                      kUpDownCounterDoubleCountDimensions);
+                        kUpDownCounterDoubleCountDimensions);
               EXPECT_EQ(event_body->dimensions_values()->at(0)->value(),
-                      kUpDownCounterDoubleAttributeValue1);
+                        kUpDownCounterDoubleAttributeValue1);
               EXPECT_EQ(event_body->dimensions_names()->at(0)->value(),
-                      kUpDownCounterDoubleAttributeKey1);
+                        kUpDownCounterDoubleAttributeKey1);
               count_up_down_counter_double++;
             }
             EXPECT_EQ(event_body->metric_account()->value(), kAccountName);
@@ -241,7 +239,7 @@ TEST(GenevaMetricsExporter, BasicTests) {
   // export sum aggregation - double - non monotonic
   metric_data = GenerateSumDataDoubleMetricsNonMonotonic();
   exporter.Export(metric_data);
-  yield_for(std::chrono::milliseconds(1000)); 
+  yield_for(std::chrono::milliseconds(1000));
 
   // export histogram aggregation - long
   metric_data = GenerateHistogramDataLongMetrics();
@@ -254,7 +252,6 @@ TEST(GenevaMetricsExporter, BasicTests) {
   EXPECT_EQ(testServer.count_up_down_counter_double, 1);
 
   EXPECT_EQ(testServer.count_histogram_long, 1);
-
 
   testServer.Stop();
 }
