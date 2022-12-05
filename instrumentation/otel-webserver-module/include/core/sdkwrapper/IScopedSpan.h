@@ -23,7 +23,7 @@
 #include <chrono>
 
 
-namespace appd {
+namespace otel {
 namespace core {
 namespace sdkwrapper {
 
@@ -51,7 +51,7 @@ public:
 
 } //sdkwrapper
 } //core
-} //appd
+} //otel
 
 
 #endif

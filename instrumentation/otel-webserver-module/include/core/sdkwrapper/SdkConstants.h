@@ -15,7 +15,7 @@
 */
 #pragma once
 
-namespace appd {
+namespace otel {
 namespace core {
 namespace sdkwrapper {
 
@@ -50,4 +50,4 @@ constexpr unsigned int kStatusCodeInit = 0;
 
 } // sdkwrapper
 } // core
-} // appd
+} // otel

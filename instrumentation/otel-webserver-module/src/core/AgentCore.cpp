@@ -16,7 +16,7 @@
 
 #include "AgentCore.h"
 
-namespace appd {
+namespace otel {
 namespace core {
 
 AgentKernel::AgentKernel() :
@@ -166,5 +166,5 @@ AgentCore::getRequestProcessor(
 }
 
 } // core
-} // appd
+} // otel
 

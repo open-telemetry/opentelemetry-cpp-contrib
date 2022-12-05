@@ -16,7 +16,7 @@
 
 #pragma once
 
-namespace appd {
+namespace otel {
 namespace core {
 namespace sdkwrapper {
 
@@ -34,4 +34,4 @@ enum class SpanKind {
 
 } // sdkwrapper
 } // core
-} // appd
+} // otel

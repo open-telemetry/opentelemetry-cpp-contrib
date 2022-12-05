@@ -31,7 +31,7 @@
 #include <fstream>
 #include <iostream>
 
-namespace appd {
+namespace otel {
 namespace core {
 namespace sdkwrapper {
 
@@ -188,5 +188,5 @@ OtelSampler SdkHelperFactory::GetSampler(
 
 } //sdkwrapper
 } //core
-} //appd
+} //otel
 

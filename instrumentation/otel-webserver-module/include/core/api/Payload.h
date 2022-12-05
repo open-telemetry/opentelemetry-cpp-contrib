@@ -20,13 +20,13 @@
 #include <unordered_map>
 #include "sdkwrapper/SdkConstants.h"
 
-namespace appd {
+namespace otel {
 namespace core {
 
 //-----------------------------------------------------------------------------------------
 // RequestPayload
 // Used for following purposes:
-//    1) Get the incoming request information from the web-server and pass it to the appdynamics
+//    1) Get the incoming request information from the web-server and pass it to the otel
 //		 core sdk library
 //-----------------------------------------------------------------------------------------
 class RequestPayload
@@ -126,7 +126,7 @@ struct EndInteractionPayload
 	{}
 };
 
-} // appd
+} // otel
 } // core
 
 #endif

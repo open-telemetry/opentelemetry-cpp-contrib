@@ -25,7 +25,7 @@
 #include <opentelemetry/common/key_value_iterable_view.h>
 
 using ::testing::Return;
-using namespace appd::core::sdkwrapper;
+using namespace otel::core::sdkwrapper;
 using::testing::_;
 using ::testing::Args;
 
@@ -35,7 +35,7 @@ MATCHER_P(HasLongIntValue, value, "") {
 
 TEST(SdkWrapper, SdkWrapper_CreateSpan_Kind_Server)
 {
-	auto config = std::shared_ptr<appd::core::TenantConfig>(new appd::core::TenantConfig);
+	auto config = std::shared_ptr<otel::core::TenantConfig>(new otel::core::TenantConfig);
 	FakeSdkWrapper sdkWrapper;
 	sdkWrapper.Init(config);
 
@@ -43,7 +43,7 @@ TEST(SdkWrapper, SdkWrapper_CreateSpan_Kind_Server)
 		dynamic_cast<MockSdkHelperFactory*>(sdkWrapper.GetMockSdkHelperFactory());
 	testing::Mock::AllowLeak(mockSdkHelperFactory);
 
-	appd::core::OtelPropagators testOtelPropagators;
+	otel::core::OtelPropagators testOtelPropagators;
 	testOtelPropagators.push_back(std::unique_ptr<MockPropagator>(
 		new MockPropagator()));
 	MockPropagator* mockPropagator = dynamic_cast<MockPropagator*>
@@ -56,7 +56,7 @@ TEST(SdkWrapper, SdkWrapper_CreateSpan_Kind_Server)
 	nostd::string_view testkey1 = "TestKey1";
 	nostd::string_view testSpanName = "TestSpanName";
 	auto kind = trace::SpanKind::kServer;
-	auto spanKind = appd::core::sdkwrapper::SpanKind::SERVER;
+	auto spanKind = otel::core::sdkwrapper::SpanKind::SERVER;
 
 	std::unordered_map<std::string, std::string> carrier {{"TestKey", "TestValue"}};
 	int64_t testvalue = 100;
@@ -68,7 +68,7 @@ TEST(SdkWrapper, SdkWrapper_CreateSpan_Kind_Server)
 	EXPECT_CALL(*mockPropagator, ExtractImpl(_)).Times(1);
 	EXPECT_CALL(*mockSdkHelperFactory, GetPropagators()).
 		Times(1).
-		WillOnce(InvokeWithoutArgs([&]()-> appd::core::OtelPropagators&{
+		WillOnce(InvokeWithoutArgs([&]()-> otel::core::OtelPropagators&{
 			return testOtelPropagators;
 		}));
 
@@ -92,7 +92,7 @@ TEST(SdkWrapper, SdkWrapper_CreateSpan_Kind_Server)
 
 TEST(SdkWrapper, SdkWrapper_CreateSpan_Kind_Client)
 {
-	auto config = std::shared_ptr<appd::core::TenantConfig>(new appd::core::TenantConfig);
+	auto config = std::shared_ptr<otel::core::TenantConfig>(new otel::core::TenantConfig);
 	FakeSdkWrapper sdkWrapper;
 	sdkWrapper.Init(config);
 
@@ -100,7 +100,7 @@ TEST(SdkWrapper, SdkWrapper_CreateSpan_Kind_Client)
 		dynamic_cast<MockSdkHelperFactory*>(sdkWrapper.GetMockSdkHelperFactory());
 	testing::Mock::AllowLeak(mockSdkHelperFactory);
 
-	appd::core::OtelPropagators testOtelPropagators;
+	otel::core::OtelPropagators testOtelPropagators;
 	testOtelPropagators.push_back(std::unique_ptr<MockPropagator>(
 		new MockPropagator()));
 	MockPropagator* mockPropagator = dynamic_cast<MockPropagator*>
@@ -113,7 +113,7 @@ TEST(SdkWrapper, SdkWrapper_CreateSpan_Kind_Client)
 	nostd::string_view testkey1 = "TestKey1";
 	nostd::string_view testSpanName = "TestSpanName";
 	auto kind = trace::SpanKind::kClient;
-	auto spanKind = appd::core::sdkwrapper::SpanKind::CLIENT;
+	auto spanKind = otel::core::sdkwrapper::SpanKind::CLIENT;
 
 	std::unordered_map<std::string, std::string> carrier {{"TestKey", "TestValue"}};
 	int64_t testvalue = 100;
@@ -142,7 +142,7 @@ TEST(SdkWrapper, SdkWrapper_CreateSpan_Kind_Client)
 
 TEST(SdkWrapper, SdkWrapper_PopulatePropagationHeaders)
 {
-	auto config = std::shared_ptr<appd::core::TenantConfig>(new appd::core::TenantConfig);
+	auto config = std::shared_ptr<otel::core::TenantConfig>(new otel::core::TenantConfig);
 	FakeSdkWrapper sdkWrapper;
 	sdkWrapper.Init(config);
 
@@ -150,7 +150,7 @@ TEST(SdkWrapper, SdkWrapper_PopulatePropagationHeaders)
 		dynamic_cast<MockSdkHelperFactory*>(sdkWrapper.GetMockSdkHelperFactory());
 	testing::Mock::AllowLeak(mockSdkHelperFactory);
 
-	appd::core::OtelPropagators testOtelPropagators;
+	otel::core::OtelPropagators testOtelPropagators;
 	testOtelPropagators.push_back(std::unique_ptr<MockPropagator>(
 		new MockPropagator()));
 	MockPropagator* mockPropagator = dynamic_cast<MockPropagator*>
@@ -163,7 +163,7 @@ TEST(SdkWrapper, SdkWrapper_PopulatePropagationHeaders)
 	nostd::string_view testkey1 = "TestKey1";
 	nostd::string_view testSpanName = "TestSpanName";
 	auto kind = trace::SpanKind::kInternal;
-	auto spanKind = appd::core::sdkwrapper::SpanKind::INTERNAL;
+	auto spanKind = otel::core::sdkwrapper::SpanKind::INTERNAL;
 
 	std::unordered_map<std::string, std::string> carrier {{"TestKey", "TestValue"}};
 	int64_t testvalue = 100;
@@ -191,7 +191,7 @@ TEST(SdkWrapper, SdkWrapper_PopulatePropagationHeaders)
 	using ::testing::Invoke;
 	EXPECT_CALL(*mockSdkHelperFactory, GetPropagators()).
 	  Times(1).
-	  WillOnce(InvokeWithoutArgs([&]()-> appd::core::OtelPropagators&{
+	  WillOnce(InvokeWithoutArgs([&]()-> otel::core::OtelPropagators&{
 	    return testOtelPropagators;
 	  }));
 	EXPECT_CALL(*mockPropagator, InjectImpl(_)).Times(1);

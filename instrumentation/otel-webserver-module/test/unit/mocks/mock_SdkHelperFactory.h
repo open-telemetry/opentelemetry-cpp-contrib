@@ -1,5 +1,5 @@
 /*
-* Copyright 2021 AppDynamics LLC. 
+* Copyright 2022, OpenTelemetry Authors.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -19,10 +19,10 @@
 #include <gmock/gmock.h>
 #include "sdkwrapper/ISdkHelperFactory.h"
 
-class MockSdkHelperFactory : public appd::core::sdkwrapper::ISdkHelperFactory
+class MockSdkHelperFactory : public otel::core::sdkwrapper::ISdkHelperFactory
 {
 public:
-	MOCK_METHOD(appd::core::OtelTracer, GetTracer, (), (override));
-	MOCK_METHOD(appd::core::OtelPropagators&, GetPropagators, (), (override));
+	MOCK_METHOD(otel::core::OtelTracer, GetTracer, (), (override));
+	MOCK_METHOD(otel::core::OtelPropagators&, GetPropagators, (), (override));
 };
 #endif

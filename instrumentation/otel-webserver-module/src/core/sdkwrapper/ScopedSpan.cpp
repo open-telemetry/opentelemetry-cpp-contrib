@@ -16,7 +16,7 @@
 
 #include "sdkwrapper/ScopedSpan.h"
 
-namespace appd {
+namespace otel {
 namespace core {
 namespace sdkwrapper {
 
@@ -81,4 +81,4 @@ SpanKind ScopedSpan::GetSpanKind()
 
 } //sdkwrapper
 } //core
-} //appd
+} //otel

@@ -26,7 +26,7 @@
 #include <boost/lexical_cast.hpp>
 
 using ::testing::Return;
-using namespace appd::core::sdkwrapper;
+using namespace otel::core::sdkwrapper;
 
 const std::string kTestSpanName{"TestSpanName"};
 
