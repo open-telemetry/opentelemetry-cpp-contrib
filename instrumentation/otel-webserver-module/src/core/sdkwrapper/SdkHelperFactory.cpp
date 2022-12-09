@@ -127,6 +127,7 @@ OtelSpanExporter SdkHelperFactory::GetExporter(
             LOG4CXX_TRACE(mLogger, "Ssl Credentials are enabled for exporter, path: "
                 << opts.ssl_credentials_cacert_path);
         }
+        opts.headers = config->getOtelExporterHeaders();
         exporter.reset(new opentelemetry::exporter::otlp::OtlpGrpcExporter(opts));
     }
 
