@@ -1118,7 +1118,7 @@ static void stopMonitoringRequest(ngx_http_request_t* r,
 
     if (OTEL_ISSUCCESS(res))
     {
-        ngx_writeError(r->connection->log, __func__, "Request Ends with result code: %d", res);
+        ngx_writeTrace(r->connection->log, __func__, "Request Ends with result code: %d", res);
     }
     else
     {
@@ -1150,7 +1150,7 @@ static void startMonitoringRequest(ngx_http_request_t* r){
         return;
     }
 
-    ngx_writeError(r->connection->log, __func__, "Starting Request Monitoring for: %s", r->uri.data);
+    ngx_writeTrace(r->connection->log, __func__, "Starting Request Monitoring for: %s", r->uri.data);
 
     // Handle request for static contents (Nginx is used for habdling static contents)
 
@@ -1193,7 +1193,6 @@ static void startMonitoringRequest(ngx_http_request_t* r){
             if (ctx == NULL)
             {
                 ngx_writeError(r->connection->log, __func__, "Cannot allocate memory for handles");
-                ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "Cannot allocate memory for handles");
                 return;
             }
             // Store the Request Handle on the request object
