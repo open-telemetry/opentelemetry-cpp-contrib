@@ -25,117 +25,117 @@
 
 
 /* {{{ For API user: environment variables to specify Controller connectivity */
-#define APPD_SDK_ENV_OTEL_EXPORTER_TYPE "APPD_SDK_ENV_OTEL_EXPORTER_TYPE"
-#define APPD_SDK_ENV_OTEL_EXPORTER_ENDPOINT "APPD_SDK_ENV_OTEL_EXPORTER_ENDPOINT"             /*required*/
-#define APPD_SDK_ENV_OTEL_SSL_ENABLED "APPD_SDK_ENV_OTEL_SSL_ENABLED"             /*optional*/
-#define APPD_SDK_ENV_OTEL_SSL_CERTIFICATE_PATH "APPD_SDK_ENV_OTEL_SSL_CERTIFICATE_PATH"   /*optional*/
-#define APPD_SDK_ENV_OTEL_PROCESSOR_TYPE "APPD_SDK_ENV_OTEL_PROCESSOR_TYPE"
-#define APPD_SDK_ENV_OTEL_SAMPLER_TYPE "APPD_SDK_ENV_OTEL_SAMPLER_TYPE"
-#define APPD_SDK_ENV_OTEL_LIBRARY_NAME "APPD_SDK_ENV_OTEL_LIBRARY_NAME"
+#define OTEL_SDK_ENV_OTEL_EXPORTER_TYPE "OTEL_SDK_ENV_OTEL_EXPORTER_TYPE"
+#define OTEL_SDK_ENV_OTEL_EXPORTER_ENDPOINT "OTEL_SDK_ENV_OTEL_EXPORTER_ENDPOINT"             /*required*/
+#define OTEL_SDK_ENV_OTEL_SSL_ENABLED "OTEL_SDK_ENV_OTEL_SSL_ENABLED"             /*optional*/
+#define OTEL_SDK_ENV_OTEL_SSL_CERTIFICATE_PATH "OTEL_SDK_ENV_OTEL_SSL_CERTIFICATE_PATH"   /*optional*/
+#define OTEL_SDK_ENV_OTEL_PROCESSOR_TYPE "OTEL_SDK_ENV_OTEL_PROCESSOR_TYPE"
+#define OTEL_SDK_ENV_OTEL_SAMPLER_TYPE "OTEL_SDK_ENV_OTEL_SAMPLER_TYPE"
+#define OTEL_SDK_ENV_OTEL_LIBRARY_NAME "OTEL_SDK_ENV_OTEL_LIBRARY_NAME"
 /* {{{ For API user: optional, only if connection by aggregator is required */
-#define APPD_SDK_ENV_SERVICE_NAMESPACE "APPD_SDK_ENV_SERVICE_NAMESPACE"
-#define APPD_SDK_ENV_SERVICE_NAME "APPD_SDK_ENV_SERVICE_NAME"                   /*optional*/
-#define APPD_SDK_ENV_SERVICE_INSTANCE_ID "APPD_SDK_ENV_SERVICE_INSTANCE_ID"                   /*optional*/
+#define OTEL_SDK_ENV_SERVICE_NAMESPACE "OTEL_SDK_ENV_SERVICE_NAMESPACE"
+#define OTEL_SDK_ENV_SERVICE_NAME "OTEL_SDK_ENV_SERVICE_NAME"                   /*optional*/
+#define OTEL_SDK_ENV_SERVICE_INSTANCE_ID "OTEL_SDK_ENV_SERVICE_INSTANCE_ID"                   /*optional*/
 /* }}} */
 
 /* {{{ For API user: environment variables to specify Webserver HostName/IP/Port */
-#define APPD_SDK_ENV_MAX_QUEUE_SIZE "APPD_SDK_ENV_MAX_QUEUE_SIZE"                   /*required*/
-#define APPD_SDK_ENV_SCHEDULED_DELAY "APPD_SDK_ENV_SCHEDULED_DELAY"                       /*required*/
-#define APPD_SDK_ENV_EXPORT_BATCH_SIZE "APPD_SDK_ENV_EXPORT_BATCH_SIZE"                   /*required*/
-#define APPD_SDK_ENV_EXPORT_TIMEOUT "APPD_SDK_ENV_EXPORT_TIMEOUT"
+#define OTEL_SDK_ENV_MAX_QUEUE_SIZE "OTEL_SDK_ENV_MAX_QUEUE_SIZE"                   /*required*/
+#define OTEL_SDK_ENV_SCHEDULED_DELAY "OTEL_SDK_ENV_SCHEDULED_DELAY"                       /*required*/
+#define OTEL_SDK_ENV_EXPORT_BATCH_SIZE "OTEL_SDK_ENV_EXPORT_BATCH_SIZE"                   /*required*/
+#define OTEL_SDK_ENV_EXPORT_TIMEOUT "OTEL_SDK_ENV_EXPORT_TIMEOUT"
 /* }}} */
 
 /* {{{ For API user: environment variables to override SDK installation defaults */
-#define APPD_SDK_ENV_LOG_CONFIG_PATH "APPD_SDK_LOG_CONFIG_PATH"
+#define OTEL_SDK_ENV_LOG_CONFIG_PATH "OTEL_SDK_LOG_CONFIG_PATH"
 /* }}} */
 
 // SPAN NAMING ENV VARIABLES
-#define APPD_SDK_ENV_SEGMENT_TYPE "APPD_SDK_ENV_SEGMENT_TYPE"
-#define APPD_SDK_ENV_SEGMENT_PARAMETER "APPD_SDK_ENV_SEGMENT_PARAMETER"
+#define OTEL_SDK_ENV_SEGMENT_TYPE "OTEL_SDK_ENV_SEGMENT_TYPE"
+#define OTEL_SDK_ENV_SEGMENT_PARAMETER "OTEL_SDK_ENV_SEGMENT_PARAMETER"
 
 //OTEL HTTP HEADERS
 #define APPD_SDK_ENV_OTEL_HTTP_HEADERS  "APPD_SDK_ENV_OTEL_HTTP_HEADERS"             /*optional*/
 
 /* {{{ For API user: API User logger */
-#define APPD_LOG_API_USER_LOGGER  "api_user"    /*logging at the level of sdk function call*/
-#define APPD_LOG_API_LOGGER  "api"              /*logging at the level of sdk core functionality*/
+#define OTEL_LOG_API_USER_LOGGER  "api_user"    /*logging at the level of sdk function call*/
+#define OTEL_LOG_API_LOGGER  "api"              /*logging at the level of sdk core functionality*/
 /* }}} */
 
 /* {{{ Internal: Status definition */
-#define APPD_PREFIXED_NAME(prefix, name) prefix##name
+#define OTEL_PREFIXED_NAME(prefix, name) prefix##name
 /* }}} */
 
 /* {{{ For API user: Status code and error helper */
-#define APPD_STATUS(name) APPD_PREFIXED_NAME(appd_sdk_status_,name)
-#define APPD_SUCCESS APPD_STATUS(success)
-#define APPD_ISFAIL(value) ((value) != APPD_SUCCESS)
-#define APPD_ISSUCCESS(value) ((value) == APPD_SUCCESS)
+#define OTEL_STATUS(name) OTEL_PREFIXED_NAME(otel_sdk_status_,name)
+#define OTEL_SUCCESS OTEL_STATUS(success)
+#define OTEL_ISFAIL(value) ((value) != OTEL_SUCCESS)
+#define OTEL_ISSUCCESS(value) ((value) == OTEL_SUCCESS)
 /* }}} */
 
 #if defined(_WIN32)
-#define APPD_SDK_API __declspec(dllexport)
+#define OTEL_SDK_API __declspec(dllexport)
 #else
-#define APPD_SDK_API __attribute__((visibility("default")))
+#define OTEL_SDK_API __attribute__((visibility("default")))
 #endif
 
-typedef enum APPD_SDK_API
+typedef enum OTEL_SDK_API
 {
-    APPD_STATUS(success) = 0
-    ,APPD_STATUS(fail)
-    ,APPD_STATUS(agent_failed_to_start)
-    ,APPD_STATUS(unspecified_environment_variable)
-    ,APPD_STATUS(environment_variable_invalid_value)
-    ,APPD_STATUS(environment_records_are_invalid)
-    ,APPD_STATUS(environment_record_name_is_not_specified_or_empty)
-    ,APPD_STATUS(environment_record_value_is_not_specified)
-    ,APPD_STATUS(no_log_config)
-    ,APPD_STATUS(log_init_failed)
-    ,APPD_STATUS(invalid_bt_type)
-    ,APPD_STATUS(invalid_backend_type)
-    ,APPD_STATUS(bt_name_invalid)
-    ,APPD_STATUS(uninitialized)
-    ,APPD_STATUS(wrong_handle)
-    ,APPD_STATUS(cannot_create_handle)
-    ,APPD_STATUS(already_initialized)
-    ,APPD_STATUS(payload_reflector_is_null)
-    ,APPD_STATUS(backend_reflector_is_null)
-    ,APPD_STATUS(handle_pointer_is_null)
-    ,APPD_STATUS(invalid_input_string)
-    ,APPD_STATUS(uninitialized_input)
-    ,APPD_STATUS(bt_detection_disabled)
-    ,APPD_STATUS(wrong_process_id)
-    ,APPD_STATUS(cfg_channel_uninitialized)
-    ,APPD_STATUS(invalid_context)
-    ,APPD_STATUS(cannot_add_ws_context_to_core)
+    OTEL_STATUS(success) = 0
+    ,OTEL_STATUS(fail)
+    ,OTEL_STATUS(agent_failed_to_start)
+    ,OTEL_STATUS(unspecified_environment_variable)
+    ,OTEL_STATUS(environment_variable_invalid_value)
+    ,OTEL_STATUS(environment_records_are_invalid)
+    ,OTEL_STATUS(environment_record_name_is_not_specified_or_empty)
+    ,OTEL_STATUS(environment_record_value_is_not_specified)
+    ,OTEL_STATUS(no_log_config)
+    ,OTEL_STATUS(log_init_failed)
+    ,OTEL_STATUS(invalid_bt_type)
+    ,OTEL_STATUS(invalid_backend_type)
+    ,OTEL_STATUS(bt_name_invalid)
+    ,OTEL_STATUS(uninitialized)
+    ,OTEL_STATUS(wrong_handle)
+    ,OTEL_STATUS(cannot_create_handle)
+    ,OTEL_STATUS(already_initialized)
+    ,OTEL_STATUS(payload_reflector_is_null)
+    ,OTEL_STATUS(backend_reflector_is_null)
+    ,OTEL_STATUS(handle_pointer_is_null)
+    ,OTEL_STATUS(invalid_input_string)
+    ,OTEL_STATUS(uninitialized_input)
+    ,OTEL_STATUS(bt_detection_disabled)
+    ,OTEL_STATUS(wrong_process_id)
+    ,OTEL_STATUS(cfg_channel_uninitialized)
+    ,OTEL_STATUS(invalid_context)
+    ,OTEL_STATUS(cannot_add_ws_context_to_core)
 
 /* {{{ Internal: */
-    ,APPD_STATUS(count)
+    ,OTEL_STATUS(count)
 /* }}} */
 
-} APPD_SDK_STATUS_CODE;
+} OTEL_SDK_STATUS_CODE;
 /* }}} */
 
 /* {{{ Internal: Handle definitions */
-#define APPD_SDK_HANDLE void*
+#define OTEL_SDK_HANDLE void*
 /* }}} */
 
 /* {{{ For API user: Handle definitions */
-#define APPD_SDK_NO_HANDLE NULL
-#define APPD_SDK_HANDLE_REQ APPD_SDK_HANDLE
-#define APPD_SDK_HANDLE_INTERACTION APPD_SDK_HANDLE
+#define OTEL_SDK_NO_HANDLE NULL
+#define OTEL_SDK_HANDLE_REQ OTEL_SDK_HANDLE
+#define OTEL_SDK_HANDLE_INTERACTION OTEL_SDK_HANDLE
 /* }}} */
 
 /* {{{ For API user: function parameter value direction */
-#define APPD_SDK_PARAM_IN
-#define APPD_SDK_PARAM_OUT
+#define OTEL_SDK_PARAM_IN
+#define OTEL_SDK_PARAM_OUT
 /* }}} */
 
 /* {{{ For API user: backend type */
-typedef struct _APPD_SDK_ENV_RECORD
+typedef struct _OTEL_SDK_ENV_RECORD
 {
     const char* name;
     const char* value;
-} APPD_SDK_ENV_RECORD;
+} OTEL_SDK_ENV_RECORD;
 /* }}} */
 
 #endif	/* APPDYNAMICS_SDK_H */

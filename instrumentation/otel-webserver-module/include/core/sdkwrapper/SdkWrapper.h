@@ -22,7 +22,7 @@
 #include "AgentLogger.h"
 #include <memory>
 
-namespace appd {
+namespace otel {
 namespace core {
 namespace sdkwrapper {
 
@@ -51,6 +51,6 @@ protected:
 
 } //sdkwrapper
 } //core
-} //appd
+} //otel
 
 #endif

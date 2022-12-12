@@ -28,9 +28,9 @@
 
 // Contexts did not exist in the beginning. Users put in the serviceNamespace/serviceName/serviceInstanceId
 //  in the init config structure.
-#define COREINIT_CONTEXT "APPD_COREINIT_CONTEXT"
+#define COREINIT_CONTEXT "OTEL_COREINIT_CONTEXT"
 
-namespace appd {
+namespace otel {
 namespace core {
 
 class AgentKernel : public IKernel
@@ -39,8 +39,8 @@ public:
     AgentKernel();
     ~AgentKernel() = default;
 
-    void initKernel(std::shared_ptr<appd::core::TenantConfig> config,
-        std::shared_ptr<appd::core::SpanNamer> spanNamer) override;
+    void initKernel(std::shared_ptr<otel::core::TenantConfig> config,
+        std::shared_ptr<otel::core::SpanNamer> spanNamer) override;
 
     IRequestProcessingEngine* getRequestProcessingEngine() override;
 
@@ -59,16 +59,16 @@ protected:
 class WebServerContext : public IContext
 {
 public:
-    WebServerContext(std::shared_ptr<appd::core::TenantConfig> tenantConfig);
+    WebServerContext(std::shared_ptr<otel::core::TenantConfig> tenantConfig);
     ~WebServerContext() = default;
 
-    void initContext(std::shared_ptr<appd::core::SpanNamer> spanNamer) override;
+    void initContext(std::shared_ptr<otel::core::SpanNamer> spanNamer) override;
 
     IKernel* getKernel() const override { return mAgentKernel.get();}
-    std::shared_ptr<appd::core::TenantConfig> getConfig() override { return mTenantConfig;}
+    std::shared_ptr<otel::core::TenantConfig> getConfig() override { return mTenantConfig;}
 
 private:
-    std::shared_ptr<appd::core::TenantConfig> mTenantConfig;
+    std::shared_ptr<otel::core::TenantConfig> mTenantConfig;
     //TODO: EUM config
 protected:
     std::unique_ptr<IKernel> mAgentKernel;
@@ -81,8 +81,8 @@ public:
     ~AgentCore() = default;
 
     bool start(
-        std::shared_ptr<appd::core::TenantConfig> initConfig,
-        std::shared_ptr<appd::core::SpanNamer> spanNamer,
+        std::shared_ptr<otel::core::TenantConfig> initConfig,
+        std::shared_ptr<otel::core::SpanNamer> spanNamer,
         userAddedTenantMap& userAddedTenants) override;
 
     void stop() override;
@@ -93,7 +93,7 @@ public:
 
     void addContext(
         const std::string& contextName,
-        std::shared_ptr<appd::core::TenantConfig> newConfig) override;
+        std::shared_ptr<otel::core::TenantConfig> newConfig) override;
 
     std::shared_ptr<IContext>
         getWebServerContext(std::string& name) override;
@@ -101,7 +101,7 @@ public:
 // Member variables
 private:
     AgentLogger mLogger;
-    std::shared_ptr<appd::core::SpanNamer> mSpanNamer;
+    std::shared_ptr<otel::core::SpanNamer> mSpanNamer;
 
 protected:
     std::unordered_map<std::string,
@@ -114,7 +114,7 @@ protected:
 };
 
 } // core
-} // appd
+} // otel
 
 #endif /* __AGENTCORE_H */
 

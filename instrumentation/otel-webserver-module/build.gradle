@@ -39,6 +39,7 @@ project.ext {
     props.load(new FileInputStream(file("version.properties")))
     moduleVersion = props.get("server-module-version")
     moduleRelease = props.get("release")
+    cppSDKVersion = props.get("CPP-SDK-version")
     moduleName = "WebServer Module"
     buildType = "Release Build"
     fullVersion = "${moduleName} ${moduleVersion} ${moduleRelease} ${headSHA1}: ${buildType}"
@@ -87,6 +88,7 @@ task generateModuleVersionHeader(type: Copy) {
         headSHA1: headSHA1,
         moduleVersion: moduleVersion,
         moduleRelease: moduleRelease,
+        cppSDKVersion: cppSDKVersion,
         fullVersion: fullVersion)
 }
 
@@ -100,6 +102,7 @@ task generateVersionFile(type: Copy) {
         headSHA1: headSHA1,
         moduleVersion: moduleVersion,
         moduleRelease: moduleRelease,
+        cppSDKVersion: cppSDKVersion,
         fullVersion: fullVersion)
 }
 

@@ -20,7 +20,7 @@
 #include "sdkwrapper/SdkUtils.h"
 #include "sdkwrapper/SdkHelperFactory.h"
 
-namespace appd {
+namespace otel {
 namespace core {
 namespace sdkwrapper {
 
@@ -103,4 +103,4 @@ trace::SpanKind SdkWrapper::GetTraceSpanKind(const SpanKind& kind)
 
 } //sdkwrapper
 } //core
-} //appd
+} //otel

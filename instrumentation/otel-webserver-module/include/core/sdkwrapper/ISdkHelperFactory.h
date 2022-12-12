@@ -23,7 +23,7 @@
 #include "opentelemetry/trace/tracer.h"
 #include "opentelemetry/context/propagation/text_map_propagator.h"
 
-namespace appd {
+namespace otel {
 namespace core {
 
 using OtelTracer = opentelemetry::nostd::shared_ptr<opentelemetry::trace::Tracer>;
@@ -41,6 +41,6 @@ public:
 
 } // sdkwrapper
 } // core
-} // appd
+} // otel
 
 #endif
