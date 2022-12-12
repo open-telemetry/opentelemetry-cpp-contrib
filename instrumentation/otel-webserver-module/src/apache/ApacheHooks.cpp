@@ -339,8 +339,8 @@ bool ApacheHooks::initialize_appdynamics(const request_rec *r)
         wsAgent.initDependency();
 
         // ENV RECORDS SIZE TO INCLUDE THE LOG PATH AND THE AGGREGATOR DIRECTORY
-        //
         // Update the CONFIG_COUNT in apr_pcalloc if we add another parameter to the input array!
+        
         OTEL_SDK_ENV_RECORD* env_config =
                 (OTEL_SDK_ENV_RECORD*) apr_pcalloc(r->pool, CONFIG_COUNT * sizeof(OTEL_SDK_ENV_RECORD));
 
