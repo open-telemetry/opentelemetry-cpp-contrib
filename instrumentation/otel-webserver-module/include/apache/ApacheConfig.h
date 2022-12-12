@@ -261,6 +261,40 @@ public:
             const char* serviceName,
             const char* serviceInstanceId);
 
+    static const char* otel_set_enabled(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* otel_set_otelExporterType(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* otel_set_otelExporterEndpoint(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* otel_set_otelExporterOtlpHeaders(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* otel_set_otelSslEnabled(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* otel_set_otelSslCertificatePath(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* otel_set_otelProcessorType(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* otel_set_otelSamplerType(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* otel_set_serviceNamespace(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* otel_set_serviceName(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* otel_set_serviceInstanceId(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* otel_set_otelMaxQueueSize(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* otel_set_otelScheduledDelay(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* otel_set_otelExportTimeout(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* otel_set_otelMaxExportBatchSize(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* otel_set_resolveBackends(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* otel_set_traceAsError(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* otel_set_reportAllInstrumentedModules(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* otel_set_maskCookie(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* otel_set_cookiePattern(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* otel_set_maskSmUser(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* otel_set_delimiter(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* otel_set_segment(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* otel_set_matchFilter(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* otel_set_matchPattern(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* otel_set_segmentType(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* otel_set_segmentParameter(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* otel_add_webserver_context(
+            cmd_parms* cmd,
+            void* conf,
+            const char* serviceNamespace,
+            const char* serviceName,
+            const char* serviceInstanceId);
+
     static void* appd_create_dir_config(apr_pool_t *p, char *dirspec);
     static void* appd_merge_dir_config(apr_pool_t *p, void *parent_conf, void *newloc_conf);
 
