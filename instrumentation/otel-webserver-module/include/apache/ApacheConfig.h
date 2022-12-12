@@ -230,7 +230,7 @@ public:
     static const char* appd_set_enabled(cmd_parms *cmd, void *conf, const char *arg);
     static const char* appd_set_otelExporterType(cmd_parms *cmd, void *conf, const char *arg);
     static const char* appd_set_otelExporterEndpoint(cmd_parms *cmd, void *conf, const char *arg);
-    static const char* appd_set_otelExporterOtlpHeaders(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* appd_set_otelExporterOtlpHeaders(cmd_parms *cmd, void *conf, const char *arg); //for otlp headers
     static const char* appd_set_otelSslEnabled(cmd_parms *cmd, void *conf, const char *arg);
     static const char* appd_set_otelSslCertificatePath(cmd_parms *cmd, void *conf, const char *arg);
     static const char* appd_set_otelProcessorType(cmd_parms *cmd, void *conf, const char *arg);
