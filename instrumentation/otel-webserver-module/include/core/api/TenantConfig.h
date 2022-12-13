@@ -58,8 +58,8 @@ public:
     const std::string& getOtelLibraryVersion() const {return otelLibraryVersion;}
     const std::string& getOtelExporterType() const {return otelExporterType;}
     const std::string& getOtelExporterEndpoint() const {return otelExporterEndpoint;}
-    const std::string& getOtelExporterHeaders() const {return otelExporterHeaders;}
-    const OtlpHeaders getOtelProcessorType() const {return otelProcessorType;}
+    const OtlpHeaders getOtelExporterHeaders() const {return otelExporterHeaders;}
+    const std::string& getOtelProcessorType() const {return otelProcessorType;}
     const unsigned getOtelMaxQueueSize() const {return otelMaxQueueSize;}
     const unsigned getOtelScheduledDelayMillis() const {return otelScheduledDelayMillis;}
     const unsigned getOtelExportTimeoutMillis() const {return otelExportTimeoutMillis;}
