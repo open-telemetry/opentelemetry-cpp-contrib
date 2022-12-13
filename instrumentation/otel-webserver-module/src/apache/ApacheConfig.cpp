@@ -126,7 +126,7 @@ const char* ApacheConfigHandlers::otel_set_otelExporterEndpoint(cmd_parms *cmd, 
 const char* ApacheConfigHandlers::otel_set_otelExporterOtlpHeaders(cmd_parms *cmd, void *conf, const char *arg)
 {
     appd_cfg* cfg = (appd_cfg*) conf;
-    return helperChar(cmd, cfg, arg, cfg->otelExporterOtlpHeaders, cfg->otelExporterOtlpHeaders_initialized, "appd_set_otelExporterOtlpHeaders");
+    return helperChar(cmd, cfg, arg, cfg->otelExporterOtlpHeaders, cfg->otelExporterOtlpHeaders_initialized, "otel_set_otelExporterOtlpHeaders");
 }
 
 //  char *otelSslEnabled;
