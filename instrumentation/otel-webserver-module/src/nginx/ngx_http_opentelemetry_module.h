@@ -1,5 +1,5 @@
 /*
-* Copyright 2021 AppDynamics LLC. 
+* Copyright 2022, OpenTelemetry Authors.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -117,8 +117,8 @@ typedef struct{
 }NGX_HTTP_OTEL_RECORDS;
 
 typedef struct {
-   APPD_SDK_HANDLE_REQ otel_req_handle_key;
-   APPD_SDK_ENV_RECORD* propagationHeaders;
+   OTEL_SDK_HANDLE_REQ otel_req_handle_key;
+   OTEL_SDK_ENV_RECORD* propagationHeaders;
    int pheaderCount;
 }ngx_http_otel_handles_t;
 
@@ -142,11 +142,11 @@ static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t*
 static void fillResponsePayload(response_payload* res_payload, ngx_http_request_t* r);
 static void startMonitoringRequest(ngx_http_request_t* r);
 static void stopMonitoringRequest(ngx_http_request_t* r,
-        APPD_SDK_HANDLE_REQ request_handle_key);
-static APPD_SDK_STATUS_CODE otel_startInteraction(ngx_http_request_t* r, const char* module_name);
+        OTEL_SDK_HANDLE_REQ request_handle_key);
+static OTEL_SDK_STATUS_CODE otel_startInteraction(ngx_http_request_t* r, const char* module_name);
 static void otel_stopInteraction(ngx_http_request_t* r, const char* module_name,
-        APPD_SDK_HANDLE_REQ request_handle_key);
-static void otel_payload_decorator(ngx_http_request_t* r, APPD_SDK_ENV_RECORD* propagationHeaders, int count);
+        OTEL_SDK_HANDLE_REQ request_handle_key);
+static void otel_payload_decorator(ngx_http_request_t* r, OTEL_SDK_ENV_RECORD* propagationHeaders, int count);
 static ngx_flag_t otel_requestHasErrors(ngx_http_request_t* r);
 static ngx_uint_t otel_getErrorCode(ngx_http_request_t* r);
 static char* ngx_otel_context_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);

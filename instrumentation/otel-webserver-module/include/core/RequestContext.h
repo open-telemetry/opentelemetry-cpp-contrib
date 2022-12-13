@@ -20,7 +20,7 @@
 #include <memory>
 #include <stack>
 
-namespace appd {
+namespace otel {
 namespace core {
 
 namespace sdkwrapper {
@@ -84,7 +84,7 @@ private:
 
 };
 
-} // appd
+} // otel
 } // core
 
 #endif

@@ -19,7 +19,7 @@
 
 TEST(SpanNamer, SpanNamerCreatedWithDefaultValues)
 {
-    auto spanNamer = std::make_shared<appd::core::SpanNamer>();
+    auto spanNamer = std::make_shared<otel::core::SpanNamer>();
     auto spanName = spanNamer->getSpanName("/one/two/three/index.html");
     EXPECT_EQ(spanName, "/one/two");
 
@@ -35,7 +35,7 @@ TEST(SpanNamer, SpanNamerCreatedWithDefaultValues)
 
 TEST(SpanNamer, SpanNamerCreatedWithFirstNSegments)
 {
-    auto spanNamer = std::make_shared<appd::core::SpanNamer>();
+    auto spanNamer = std::make_shared<otel::core::SpanNamer>();
 
     spanNamer->setSegmentRules("First", "2");
     auto spanName = spanNamer->getSpanName("/one/two/three/index.html");
@@ -60,7 +60,7 @@ TEST(SpanNamer, SpanNamerCreatedWithFirstNSegments)
 
 TEST(SpanNamer, SpanNamerCreatedWithLastNSegments)
 {
-    auto spanNamer = std::make_shared<appd::core::SpanNamer>();
+    auto spanNamer = std::make_shared<otel::core::SpanNamer>();
 
     spanNamer->setSegmentRules("Last", "2");
     auto spanName = spanNamer->getSpanName("/one/two/three/index.html");
@@ -89,7 +89,7 @@ TEST(SpanNamer, SpanNamerCreatedWithLastNSegments)
 
 TEST(SpanNamer, SpanNamerCreatedWithCustomSegments)
 {
-    auto spanNamer = std::make_shared<appd::core::SpanNamer>();
+    auto spanNamer = std::make_shared<otel::core::SpanNamer>();
 
     spanNamer->setSegmentRules("Custom", "2");
     auto spanName = spanNamer->getSpanName("/one/two/three/index.html");

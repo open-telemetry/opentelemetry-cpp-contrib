@@ -20,7 +20,7 @@
 #include <boost/lexical_cast.hpp>
 #include <iostream>
 
-namespace appd {
+namespace otel {
 namespace core {
 
 const unsigned DefaultSegmentCount = 2;

@@ -17,7 +17,7 @@
 #include "sdkwrapper/ServerSpan.h"
 #include "sdkwrapper/ScopedSpan.h"
 #include "sdkwrapper/SdkUtils.h"
-namespace appd {
+namespace otel {
 namespace core {
 namespace sdkwrapper {
 
@@ -76,4 +76,4 @@ SpanKind ServerSpan::GetSpanKind()
 
 } //sdkwrapper
 } //core
-} //appd
+} //otel

@@ -17,7 +17,7 @@
 
 #include <string>
 
-namespace appd {
+namespace otel {
 namespace core {
 
 enum class SegmentType
@@ -52,6 +52,6 @@ private:
 };
 
 } // core
-} // appd
+} // otel
 
 

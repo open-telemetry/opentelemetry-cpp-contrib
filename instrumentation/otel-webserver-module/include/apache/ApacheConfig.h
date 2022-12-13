@@ -14,8 +14,8 @@
 * limitations under the License.
 */
 
-#ifndef APPD_APACHECONFIG_H
-#define APPD_APACHECONFIG_H
+#ifndef APACHECONFIG_H
+#define APACHECONFIG_H
 #define SIZE 5 //Fixed SIZE (intermediate value chosen as 5) for masking private data if any before logging into Apache logs
 
 #include <memory>
@@ -24,14 +24,14 @@
 #include "httpd.h" // request_rec
 #include "http_config.h" // cmd_parms
 
-class appd_cfg
+class otel_cfg
 {
 public:
     void init();
     bool validate(const request_rec *r);
 
-    int getAppdEnabled() { return appdEnabled; }
-    int getAppdEnabledInitialized() { return appdEnabled_initialized; }
+    int getOtelEnabled() { return otelEnabled; }
+    int getOtelEnabledInitialized() { return otelEnabled_initialized; }
 
     const char* getOtelExporterType() { return otelExporterType; }
     int getOtelExporterTypeInitialized() { return otelExporterType_initialized; }
@@ -117,13 +117,13 @@ public:
 
 private:
     // Agent to Controller Connection Configuration
-    int appdEnabled;                    // OPTIONAL: 0 for false, 1 for true (defaults to true)
-    int appdEnabled_initialized;
+    int otelEnabled;                    // OPTIONAL: 0 for false, 1 for true (defaults to true)
+    int otelEnabled_initialized;
 
     const char *otelExporterType;       // OPTIONAL: Type of exporter to be configured in TracerProvider of OTel SDK embedded into Agent
     int otelExporterType_initialized;
 
-    const char *otelExporterEndpoint;   // REQUIRED: AppDynamics endpoint where the OpenTelemetry Exporter inside OTel SDK sends traces
+    const char *otelExporterEndpoint;   // REQUIRED: Collector endpoint where the OpenTelemetry Exporter inside OTel SDK sends traces
     int otelExporterEndpoint_initialized;
 
     const char *otelExporterOtlpHeaders;   // OPTIONAL: AppDynamics  Custom metadata for OTEL Exporter EX: OTEL_EXPORTER_OTLP_HEADERS="api-key=key,other-config-value=value"
@@ -141,10 +141,10 @@ private:
     const char *otelSamplerType;        // OPTIONAL: Type of Otel Sampler
     int otelSamplerType_initialized;
 
-    const char *serviceNamespace;       // REQUIRED: A namespace for the AppdServiceName; equivalent to your AppDynamics application name
+    const char *serviceNamespace;       // REQUIRED: A namespace for the ServiceName;
     int serviceNamespace_initialized;
 
-    const char *serviceName;            // REQUIRED: Logical name of the service; equivalent to your AppDynamics tier name
+    const char *serviceName;            // REQUIRED: Logical name of the service;
     int serviceName_initialized;
 
     const char *serviceInstanceId;      // REQUIRED: The string ID of the service instance. Distinguish between instances of a service
@@ -227,40 +227,6 @@ class ApacheConfigHandlers
 public:
     static std::unordered_map<std::string, std::shared_ptr<WebserverContext> > m_webServerContexts;
 
-    static const char* appd_set_enabled(cmd_parms *cmd, void *conf, const char *arg);
-    static const char* appd_set_otelExporterType(cmd_parms *cmd, void *conf, const char *arg);
-    static const char* appd_set_otelExporterEndpoint(cmd_parms *cmd, void *conf, const char *arg);
-    static const char* appd_set_otelExporterOtlpHeaders(cmd_parms *cmd, void *conf, const char *arg);
-    static const char* appd_set_otelSslEnabled(cmd_parms *cmd, void *conf, const char *arg);
-    static const char* appd_set_otelSslCertificatePath(cmd_parms *cmd, void *conf, const char *arg);
-    static const char* appd_set_otelProcessorType(cmd_parms *cmd, void *conf, const char *arg);
-    static const char* appd_set_otelSamplerType(cmd_parms *cmd, void *conf, const char *arg);
-    static const char* appd_set_serviceNamespace(cmd_parms *cmd, void *conf, const char *arg);
-    static const char* appd_set_serviceName(cmd_parms *cmd, void *conf, const char *arg);
-    static const char* appd_set_serviceInstanceId(cmd_parms *cmd, void *conf, const char *arg);
-    static const char* appd_set_otelMaxQueueSize(cmd_parms *cmd, void *conf, const char *arg);
-    static const char* appd_set_otelScheduledDelay(cmd_parms *cmd, void *conf, const char *arg);
-    static const char* appd_set_otelExportTimeout(cmd_parms *cmd, void *conf, const char *arg);
-    static const char* appd_set_otelMaxExportBatchSize(cmd_parms *cmd, void *conf, const char *arg);
-    static const char* appd_set_resolveBackends(cmd_parms *cmd, void *conf, const char *arg);
-    static const char* appd_set_traceAsError(cmd_parms *cmd, void *conf, const char *arg);
-    static const char* appd_set_reportAllInstrumentedModules(cmd_parms *cmd, void *conf, const char *arg);
-    static const char* appd_set_maskCookie(cmd_parms *cmd, void *conf, const char *arg);
-    static const char* appd_set_cookiePattern(cmd_parms *cmd, void *conf, const char *arg);
-    static const char* appd_set_maskSmUser(cmd_parms *cmd, void *conf, const char *arg);
-    static const char* appd_set_delimiter(cmd_parms *cmd, void *conf, const char *arg);
-    static const char* appd_set_segment(cmd_parms *cmd, void *conf, const char *arg);
-    static const char* appd_set_matchFilter(cmd_parms *cmd, void *conf, const char *arg);
-    static const char* appd_set_matchPattern(cmd_parms *cmd, void *conf, const char *arg);
-    static const char* appd_set_segmentType(cmd_parms *cmd, void *conf, const char *arg);
-    static const char* appd_set_segmentParameter(cmd_parms *cmd, void *conf, const char *arg);
-    static const char* appd_add_webserver_context(
-            cmd_parms* cmd,
-            void* conf,
-            const char* serviceNamespace,
-            const char* serviceName,
-            const char* serviceInstanceId);
-
     static const char* otel_set_enabled(cmd_parms *cmd, void *conf, const char *arg);
     static const char* otel_set_otelExporterType(cmd_parms *cmd, void *conf, const char *arg);
     static const char* otel_set_otelExporterEndpoint(cmd_parms *cmd, void *conf, const char *arg);
@@ -295,36 +261,36 @@ public:
             const char* serviceName,
             const char* serviceInstanceId);
 
-    static void* appd_create_dir_config(apr_pool_t *p, char *dirspec);
-    static void* appd_merge_dir_config(apr_pool_t *p, void *parent_conf, void *newloc_conf);
+    static void* otel_create_dir_config(apr_pool_t *p, char *dirspec);
+    static void* otel_merge_dir_config(apr_pool_t *p, void *parent_conf, void *newloc_conf);
 
-    static appd_cfg* getConfig(const request_rec* r);
-    static appd_cfg* getProcessConfig(const request_rec* r);
+    static otel_cfg* getConfig(const request_rec* r);
+    static otel_cfg* getProcessConfig(const request_rec* r);
 
-    static std::string computeContextName(const appd_cfg* cfg);
+    static std::string computeContextName(const otel_cfg* cfg);
 
     static std::string hashPassword(const char* arg);
 
-    static void traceConfig(const request_rec* r, const appd_cfg* cfg);
+    static void traceConfig(const request_rec* r, const otel_cfg* cfg);
 
 private:
-    static appd_cfg* our_dconfig(const request_rec *r);
+    static otel_cfg* our_dconfig(const request_rec *r);
 
     static const char* helperChar(
             cmd_parms* cmd,
-            appd_cfg* cfg,
+            otel_cfg* cfg,
             const char* arg,
             const char*& var,
             int& inherit,
             const char* varName);
     static const char* helperInt(
             cmd_parms* cmd,
-            appd_cfg* cfg,
+            otel_cfg* cfg,
             const char* arg,
             int& var,
             int& inherit,
             const char* varName);
-    static void insertWebserverContext(cmd_parms* cmd, const appd_cfg* cfg);
+    static void insertWebserverContext(cmd_parms* cmd, const otel_cfg* cfg);
 };
 
 #endif

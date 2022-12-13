@@ -25,7 +25,7 @@
 #include <opentelemetry/context/runtime_context.h>
 #include "AgentLogger.h"
 
-namespace appd {
+namespace otel {
 namespace core {
 namespace sdkwrapper {
 
@@ -62,6 +62,6 @@ private:
 
 } //sdkwrapper
 } //core
-} //appd
+} //otel
 
 #endif
