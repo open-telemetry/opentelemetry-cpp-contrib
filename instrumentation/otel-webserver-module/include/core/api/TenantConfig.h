@@ -19,18 +19,6 @@
 #include <iostream>
 #include <map>
 
-
-struct cmp_ic
-{
-    bool operator()(const std::string &s1, const std::string &s2) const
-    {
-        return std::lexicographical_compare(
-                s1.begin(), s1.end(), s2.begin(), s2.end(),
-                [](char c1, char c2) { return ::tolower(c1) < ::tolower(c2); });
-    }
-};
-using OtlpHeaders = std::multimap<std::string, std::string, cmp_ic>;
-
 namespace otel {
 namespace core {
 
@@ -58,7 +46,7 @@ public:
     const std::string& getOtelLibraryVersion() const {return otelLibraryVersion;}
     const std::string& getOtelExporterType() const {return otelExporterType;}
     const std::string& getOtelExporterEndpoint() const {return otelExporterEndpoint;}
-    const OtlpHeaders getOtelExporterHeaders() const {return otelExporterHeaders;}
+    const std::string& getOtelExporterHeaders() const {return otelExporterHeaders;}
     const std::string& getOtelProcessorType() const {return otelProcessorType;}
     const unsigned getOtelMaxQueueSize() const {return otelMaxQueueSize;}
     const unsigned getOtelScheduledDelayMillis() const {return otelScheduledDelayMillis;}
@@ -75,7 +63,7 @@ public:
     void setServiceInstanceId(const std::string& serviceInstanceId) { this->serviceInstanceId = serviceInstanceId; }
     void setOtelExporterType(const std::string& otelExporterType) { this->otelExporterType = otelExporterType; }
     void setOtelExporterEndpoint(const std::string& otelExporterEndpoint) { this->otelExporterEndpoint = otelExporterEndpoint; }
-    void setOtelExporterHeaders(const OtlpHeaders otelExporterHeaders) { this->otelExporterHeaders = otelExporterHeaders; }
+    void setOtelExporterHeaders(const std::string& otelExporterHeaders) { this->otelExporterHeaders = otelExporterHeaders; }
     void setOtelProcessorType(const std::string& otelProcessorType) { this->otelProcessorType = otelProcessorType; }
     void setOtelMaxQueueSize(const unsigned int otelMaxQueueSize) { this->otelMaxQueueSize = otelMaxQueueSize; }
     void setOtelScheduledDelayMillis(const unsigned int otelScheduledDelayMillis) { this->otelScheduledDelayMillis = otelScheduledDelayMillis; }
@@ -95,7 +83,7 @@ private:
 
     std::string otelExporterType;
     std::string otelExporterEndpoint;
-    OtlpHeaders otelExporterHeaders;
+    std::string otelExporterHeaders;
     bool otelSslEnabled;
     std::string otelSslCertPath;
 
@@ -124,6 +112,7 @@ inline std::ostream& operator<< (std::ostream &os, const otel::core::TenantConfi
         << "\n OtelSamplerType                  " << config.getOtelSamplerType()
         << "\n OtelSslEnabled                   " << config.getOtelSslEnabled()
         << "\n OtelSslCertPath                  " << config.getOtelSslCertPath()
+        << "\n OtelExportHeaders                " << config.getOtelExporterHeaders()
         << "";
     return os;
 }

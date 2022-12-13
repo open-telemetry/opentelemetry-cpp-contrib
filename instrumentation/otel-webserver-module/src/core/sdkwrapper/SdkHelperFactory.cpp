@@ -26,6 +26,7 @@
 #include "opentelemetry/sdk/trace/samplers/trace_id_ratio.h"
 #include "opentelemetry/sdk/resource/resource.h"
 #include "opentelemetry/exporters/otlp/otlp_grpc_exporter.h"
+#include "opentelemetry/exporters/otlp/otlp_environment.h"
 #include "opentelemetry/baggage/propagation/baggage_propagator.h"
 #include <module_version.h>
 #include <fstream>
@@ -132,7 +133,32 @@ OtelSpanExporter SdkHelperFactory::GetExporter(
             LOG4CXX_TRACE(mLogger, "Ssl Credentials are enabled for exporter, path: "
                 << opts.ssl_credentials_cacert_path);
         }
-        opts.metadata = config->getOtelExporterHeaders();
+
+        opentelemetry::common::KeyValueStringTokenizer tokenizer{config->getOtelExporterHeaders()};
+        opentelemetry::nostd::string_view header_key;
+        opentelemetry::nostd::string_view header_value;
+        bool header_valid = true;
+        std::unordered_set<std::string> trace_remove_cache;
+
+        while (tokenizer.next(header_valid, header_key, header_value))
+        {
+            if (header_valid)
+            {
+                std::string key = static_cast<std::string>(header_key);
+                if (remove_cache.end() == remove_cache.find(key))
+                {
+                    remove_cache.insert(key);
+                    auto range = opts.metadata.equal_range(key);
+                    if (range.first != range.second)
+                    {
+                        opts.metadata.erase(range.first, range.second);
+                    }
+                }
+
+                opts.metadata.emplace(std::make_pair(std::move(key), static_cast<std::string>(header_value)));
+            }
+        }
+
         exporter.reset(new opentelemetry::exporter::otlp::OtlpGrpcExporter(opts));
     }
 
