@@ -138,7 +138,7 @@ OtelSpanExporter SdkHelperFactory::GetExporter(
         opentelemetry::nostd::string_view header_key;
         opentelemetry::nostd::string_view header_value;
         bool header_valid = true;
-        std::unordered_set<std::string> trace_remove_cache;
+        std::unordered_set<std::string> remove_cache;
 
         while (tokenizer.next(header_valid, header_key, header_value))
         {
