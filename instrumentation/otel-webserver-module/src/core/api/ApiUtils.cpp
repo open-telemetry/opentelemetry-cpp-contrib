@@ -167,6 +167,7 @@ OTEL_SDK_STATUS_CODE ApiUtils::ReadSettingsFromReader(
 
     std::string otelExporterType;
     std::string otelExporterEndpoint;
+    std::string otelExporterOtlpHeaders;
     bool otelSslEnabled;
     std::string otelSslCertPath;
     std::string otelLibraryName;
@@ -254,6 +255,9 @@ OTEL_SDK_STATUS_CODE ApiUtils::ReadSettingsFromReader(
 
     reader.ReadOptional(
         std::string(OTEL_SDK_ENV_SEGMENT_PARAMETER), segmentParameter);
+
+    reader.ReadOptional(
+            std::string(OTEL_SDK_ENV_OTEL_EXPORTER_OTLPHEADERS), otelExporterOtlpHeaders);
 
 
     tenantConfig.setServiceNamespace(serviceNamespace);
