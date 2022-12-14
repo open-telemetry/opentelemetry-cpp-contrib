@@ -202,11 +202,11 @@ static ngx_command_t ngx_http_opentelemetry_commands[] = {
       offsetof(ngx_http_opentelemetry_loc_conf_t, nginxModuleOtelExporterEndpoint),
       NULL},
 
-    { ngx_string("NginxModuleOtelExporterOtelHeaders"),
+    { ngx_string("NginxModuleOtelExporterOtlpHeaders"),
       NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
       ngx_conf_set_str_slot,
       NGX_HTTP_LOC_CONF_OFFSET,
-      offsetof(ngx_http_opentelemetry_loc_conf_t, nginxModuleOtelExporterOtelHeaders),
+      offsetof(ngx_http_opentelemetry_loc_conf_t, nginxModuleOtelExporterOtlpHeaders),
       NULL},
 
     { ngx_string("NginxModuleOtelSpanProcessor"),
@@ -456,7 +456,7 @@ static char* ngx_http_opentelemetry_merge_loc_conf(ngx_conf_t *cf, void *parent,
 
     ngx_conf_merge_str_value(conf->nginxModuleOtelSpanExporter, prev->nginxModuleOtelSpanExporter, "");
     ngx_conf_merge_str_value(conf->nginxModuleOtelExporterEndpoint, prev->nginxModuleOtelExporterEndpoint, "");
-    ngx_conf_merge_str_value(conf->nginxModuleOtelExporterOtelHeaders, prev->nginxModuleOtelExporterOtelHeaders, "");
+    ngx_conf_merge_str_value(conf->nginxModuleOtelExporterOtlpHeaders, prev->nginxModuleOtelExporterOtlpHeaders, "");
     ngx_conf_merge_value(conf->nginxModuleOtelSslEnabled, prev->nginxModuleOtelSslEnabled, 0);
     ngx_conf_merge_str_value(conf->nginxModuleOtelSslCertificatePath, prev->nginxModuleOtelSslCertificatePath, "");
     ngx_conf_merge_str_value(conf->nginxModuleOtelSpanProcessor, prev->nginxModuleOtelSpanProcessor, "");
@@ -945,8 +945,8 @@ static ngx_flag_t ngx_initialize_opentelemetry(ngx_http_request_t *r)
         ++ix;
 
         // Otel Exporter OTEL headers
-        env_config[ix].name = OTEL_SDK_ENV_OTEL_EXPORTER_OTELHEADERS;
-        env_config[ix].value = (const char*)(conf->nginxModuleOtelExporterOtelHeaders).data;
+        env_config[ix].name = OTEL_SDK_ENV_OTEL_EXPORTER_OTLPHEADERS;
+        env_config[ix].value = (const char*)(conf->nginxModuleOtelExporterOtlpHeaders).data;
         ++ix;
 
         // Otel SSL Enabled
@@ -1460,7 +1460,7 @@ static void traceConfig(ngx_http_request_t *r, ngx_http_opentelemetry_loc_conf_t
     ngx_writeTrace(r->connection->log, __func__, " Config { :"
                                                       "(Enabled=\"%ld\")"
                                                       "(OtelExporterEndpoint=\"%s\")"
-                                                      "(OtelExporterOtelHeader=\"%s\")"
+                                                      "(OtelExporterOtlpHeader=\"%s\")"
                                                       "(OtelSslEnabled=\"%ld\")"
                                                       "(OtelSslCertificatePath=\"%s\")"
                                                       "(OtelSpanExporter=\"%s\")"
@@ -1483,7 +1483,7 @@ static void traceConfig(ngx_http_request_t *r, ngx_http_opentelemetry_loc_conf_t
                                                       " }",
                                                       conf->nginxModuleEnabled,
                                                       (conf->nginxModuleOtelExporterEndpoint).data,
-                                                      (conf->nginxModuleOtelExporterOtelHeaders).data,
+                                                      (conf->nginxModuleOtelExporterOtlpHeaders).data,
                                                       conf->nginxModuleOtelSslEnabled,
                                                       (conf->nginxModuleOtelSslCertificatePath).data,
                                                       (conf->nginxModuleOtelSpanExporter).data,

@@ -261,6 +261,7 @@ OTEL_SDK_STATUS_CODE ApiUtils::ReadSettingsFromReader(
     tenantConfig.setServiceInstanceId(serviceInstanceId);
     tenantConfig.setOtelExporterType(otelExporterType);
     tenantConfig.setOtelExporterEndpoint(otelExporterEndpoint);
+    tenantConfig.setOtelExporterOtlpHeaders(otelExporterOtlpHeaders);
     tenantConfig.setOtelLibraryName(otelLibraryName);
     tenantConfig.setOtelProcessorType(otelProcessorType);
     tenantConfig.setOtelSamplerType(otelSamplerType);

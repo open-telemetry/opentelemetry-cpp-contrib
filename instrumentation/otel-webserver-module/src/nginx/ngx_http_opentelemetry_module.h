@@ -102,7 +102,7 @@ typedef struct {
     ngx_str_t   nginxModuleSegmentParameter;
     ngx_str_t   nginxModuleRequestHeaders;
     ngx_str_t   nginxModuleResponseHeaders;
-    ngx_str_t   nginxModuleOtelExporterOtelHeaders;
+    ngx_str_t   nginxModuleOtelExporterOtlpHeaders;
 } ngx_http_opentelemetry_loc_conf_t;
 
 /*
