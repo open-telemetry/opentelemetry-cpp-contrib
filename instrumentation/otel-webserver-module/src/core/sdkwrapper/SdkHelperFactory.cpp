@@ -134,7 +134,7 @@ OtelSpanExporter SdkHelperFactory::GetExporter(
                 << opts.ssl_credentials_cacert_path);
         }
 
-        opentelemetry::common::KeyValueStringTokenizer tokenizer{config->getOtelExporterHeaders()};
+        opentelemetry::common::KeyValueStringTokenizer tokenizer{config->getOtelExporterOtlpHeaders()};
         opentelemetry::nostd::string_view header_key;
         opentelemetry::nostd::string_view header_value;
         bool header_valid = true;
