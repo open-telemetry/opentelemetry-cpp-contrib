@@ -51,7 +51,7 @@ fi
 
 log() {
     echo "$@" >> ${install_log}
-    if [ -z "${APPD_AUTO_MODE}" ]; then
+    if [ -z "${OTEL_AUTO_MODE}" ]; then
         echo "$@"
     fi
 }
@@ -96,15 +96,15 @@ checkPathIsAccessible() {
     eval $__resultVarName="$__result"
 }
 
-if [ -z "${APPD_LOCATION}" ]; then
-    APPD_LOCATION=$containingDir
-    APPD_PACKAGE=0
+if [ -z "${OTEL_LOCATION}" ]; then
+    OTEL_LOCATION=$containingDir
+    OTEL_PACKAGE=0
 else
-    APPD_PACKAGE=1
+    OTEL_PACKAGE=1
 fi
 
 datestamp=`date +%Y_%m_%d_%H_%M_%S 2>/dev/null`
-install_log=/tmp/appd_install_${datestamp}.log
+install_log=/tmp/otel_install_${datestamp}.log
 rm -f $install_log > /dev/null 2>&1
 cat > $install_log <<EOF
 Webserver Instrumentation installation log
@@ -112,7 +112,7 @@ Version: ${agentVersionId}
 Date: `date 2>/dev/null`
 
 Hostname: `hostname`
-Location: ${APPD_LOCATION}
+Location: ${OTEL_LOCATION}
 System: `uname -a 2>/dev/null`
 User: `id`
 Environment:
@@ -128,12 +128,12 @@ getenforce=`which getenforce 2>/dev/null`
 if [ -f "${getenforce}" ]; then
     selStatus=`$getenforce`
     if [ "$selStatus" = "Enforcing" ] ; then
-        log "Warning: You may encounter issues with SELinux and AppDynamics. Please refer to the AppDynamics documentation at https://docs.appdynamics.com for information on creating an SELinux policy for AppDynamics support."
+        log "Warning: You may encounter issues with SELinux and Opentelemetry. Please refer to https://github.com/open-telemetry/opentelemetry-cpp-contrib/tree/main/instrumentation/otel-webserver-module for more details"
     fi
 fi
 
 ## Installed files locations
-log4cxxFile="${containingDir}/conf/appdynamics_sdk_log4cxx.xml"
+log4cxxFile="${containingDir}/conf/opentelemetry_sdk_log4cxx.xml"
 
 rootDirCheck=
 checkPathIsAccessible rootDirCheck "${containingDir}"

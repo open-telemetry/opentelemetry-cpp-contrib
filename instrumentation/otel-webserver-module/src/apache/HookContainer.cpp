@@ -71,5 +71,4 @@ void HookContainer::traceHooks(request_rec* r) const
         modules += ":";
         modules += ii->second.module;
     }
-    //AppdTracing::writeTrace(r->server, __func__, "%s", modules.c_str());
 }

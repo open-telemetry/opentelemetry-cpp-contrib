@@ -18,7 +18,7 @@
 #include <ngx_core.h>
 #include <ngx_http.h>
 #include <stdbool.h>
-#include "../../include/core/api/AppdynamicsSdk.h"
+#include "../../include/core/api/OpentelemetrySdk.h"
 #include "../../include/core/api/opentelemetry_ngx_api.h"
 
 #define LOWEST_HTTP_ERROR_CODE 400
@@ -174,7 +174,7 @@ static ngx_int_t ngx_http_otel_mirror_handler(ngx_http_request_t *r);
 
 
 /*
-    Utility fuction to check if the given module is monitored by Appd Agent
+    Utility fuction to check if the given module is monitored by Opentelemetry Agent
 */
 
 static void traceConfig(ngx_http_request_t *r, ngx_http_opentelemetry_loc_conf_t* conf);

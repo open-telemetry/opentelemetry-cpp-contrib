@@ -28,7 +28,7 @@
           [
             'OS=="linux"', {
               'libraries': [
-                '$(APPD_SDK_LIB_DIR)/lib/libopentelemetry_webserver_sdk.so',
+                '$(OTEL_SDK_LIB_DIR)/lib/libopentelemetry_webserver_sdk.so',
               ],
 
               'library_dirs': [
@@ -58,7 +58,7 @@
         'dependencies': [
         ],
         'libraries': [
-          '$(APPD_SDK_LIB_DIR)/lib/libopentelemetry_webserver_sdk.so',
+          '$(OTEL_SDK_LIB_DIR)/lib/libopentelemetry_webserver_sdk.so',
         ],
         'defines': [
         ],

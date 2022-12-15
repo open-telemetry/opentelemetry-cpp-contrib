@@ -3,53 +3,53 @@
 # Bash script for testing Apache Server
 
 # Extract the agent
-tar -xf ../build/appdynamics-webserver-sdk-x64-linux.tgz -C /opt
+tar -xf ../build/opentelemetry-webserver-sdk-x64-linux.tgz -C /opt
 
-cd /opt/appdynamics-sdk-native
+cd /opt/opentelemetry-sdk-native
 
 echo "Installing Apache Agent"
 ./install.sh
 
-# Create a appdynamics_agent.conf file
-echo "Copying  agent config to appdynamics_agent file"
+# Create a opentelemetry_agent.conf file
+echo "Copying  agent config to opentelemetry_agent file"
 echo '
-AppDynamicsEnabled ON;
+NginxModuleEnabled ON;
 
-#AppDynamics Otel Exporter details
-AppDynamicsOtelSpanExporter OTLP;
-AppDynamicsOtelExporterEndpoint example.com:14250;
+# Otel Exporter details
+NginxModuleOtelSpanExporter OTLP;
+NginxModuleOtelExporterEndpoint example.com:14250;
 
-AppDynamicsOtelSpanProcessor Batch;
-AppDynamicsOtelSampler AlwaysOn;
+NginxModuleOtelSpanProcessor Batch;
+NginxModuleOtelSampler AlwaysOn;
 
-AppDynamicsServiceName cart;
-AppDynamicsServiceNamespace e-commerce;
-AppDynamicsServiceInstanceId 71410b7dec09;
+NginxModuleServiceName cart;
+NginxModuleServiceNamespace e-commerce;
+NginxModuleServiceInstanceId 71410b7dec09;
 
-AppDynamicsOtelMaxQueueSize 1024;
-AppDynamicsOtelScheduledDelayMillis 3000;
-AppDynamicsOtelExportTimeoutMillis 30000;
-AppDynamicsOtelMaxExportBatchSize 1024;
+NginxModuleOtelMaxQueueSize 1024;
+NginxModuleOtelScheduledDelayMillis 3000;
+NginxModuleOtelExportTimeoutMillis 30000;
+NginxModuleOtelMaxExportBatchSize 1024;
 
-AppDynamicsResolveBackends ON;
+NginxModuleResolveBackends ON;
 
-AppDynamicsTraceAsError ON;
+NginxModuleTraceAsError ON;
 
-AppDynamicsReportAllInstrumentedModules OFF;
+NginxModuleReportAllInstrumentedModules OFF;
 
-#AppDynamicsWebserverContext electronics e-commerce 71410b7jan13;
+#NginxModuleWebserverContext electronics e-commerce 71410b7jan13;
 
-AppDynamicsMaskCookie ON;
-AppDynamicsCookieMatchPattern PHPSESSID;
-AppDynamicsMaskSmUser ON;
+NginxModuleMaskCookie ON;
+NginxModuleCookieMatchPattern PHPSESSID;
+NginxModuleMaskSmUser ON;
 
-AppDynamicsDelimiter /;
-AppDynamicsSegment 2,3;
-AppDynamicsMatchfilter CONTAINS;
-AppDynamicsMatchpattern myapp;
-' > /opt/appdynamics_agent.conf
+NginxModuleDelimiter /;
+NginxModuleSegment 2,3;
+NginxModuleMatchfilter CONTAINS;
+NginxModuleMatchpattern myapp;
+' > /opt/opentelemetry_agent.conf
 
-# Overwrite nginx.conf file and include appdynamics_agent.conf and ngx_http_appdynamics_module.so in it
+# Overwrite nginx.conf file and include opentelemetry_agent.conf and ngx_http_opentelemetry_module.so in it
 echo '
 user  nobody;
 worker_processes  1;
@@ -57,7 +57,7 @@ worker_processes  1;
 error_log  /var/log/nginx/error.log notice;
 pid        /var/run/nginx.pid;
 
-load_module /opt/appdynamics-sdk-native/WebServerAgent/Nginx/ngx_http_appdynamics_module.so;
+load_module /opt/opentelemetry-sdk-native/WebServerAgent/Nginx/ngx_http_opentelemetry_module.so;
 
 events {
     worker_connections  1024;
@@ -74,7 +74,7 @@ http {
     sendfile        on;
     keepalive_timeout  65;
 
-    include /opt/appdynamics_agent.conf;
+    include /opt/opentelemetry_agent.conf;
 
     server {
         listen 8080;

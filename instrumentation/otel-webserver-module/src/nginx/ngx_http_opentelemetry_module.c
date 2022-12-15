@@ -1138,7 +1138,7 @@ static void startMonitoringRequest(ngx_http_request_t* r){
         ngx_writeTrace(r->connection->log, __func__, "Not a Main Request(sub-request or internal redirect)");
         return;
     }
-    else if (!ngx_initialize_opentelemetry(r))    /* check if Appd Agent Core is initialized */
+    else if (!ngx_initialize_opentelemetry(r))    /* check if Otel Agent Core is initialized */
     {
         ngx_writeError(r->connection->log, __func__, "Opentelemetry Agent Core did not get initialized");
         return;
