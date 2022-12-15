@@ -28,7 +28,7 @@ std::shared_ptr<otel::core::TenantConfig> getConfig() {
   config->setServiceNamespace("dummy_service_namespace");
   config->setServiceInstanceId("dummy_instance_id");
   config->setOtelExporterType("otlp");
-  config-> setOtelExporterEndpoint("otel-collector:4317");
+  config->setOtelExporterEndpoint("otel-collector:4317");
   config->setOtelLibraryName("opentelemetry-apache");
   return config;
 }
