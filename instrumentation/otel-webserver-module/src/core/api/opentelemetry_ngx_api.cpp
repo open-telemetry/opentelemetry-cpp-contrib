@@ -13,7 +13,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include "api/AppdynamicsSdk.h"
+#include "api/OpentelemetrySdk.h"
 #include "api/opentelemetry_ngx_api.h"
 #include "api/WSAgent.h"
 #include "api/Payload.h"

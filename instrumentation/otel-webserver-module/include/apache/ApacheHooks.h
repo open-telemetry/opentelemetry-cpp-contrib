@@ -18,7 +18,7 @@
 #ifndef APACHEHOOKS_H
 #define APACHEHOOKS_H
 
-#include <api/AppdynamicsSdk.h>
+#include <api/OpentelemetrySdk.h>
 #include <unordered_map>
 #include "HookContainer.h"
 #include "ExcludedModules.h"
@@ -117,7 +117,6 @@ public:
         Hooks to occur before a module to start an interaction for a stage.
         These hooks are stage specific and each hook corresponds to a particular module.
         The number of hooks are proportional to the number of modules instrumented for a stage.
-        See "AppDynamicsReportAllInstrumentedModules" flag for more details.
         TODO: Decide among the following stages at what all we need the modules to be instrumented,
               and define the hooks handlers for the same to start an interaction before module callback.
     */

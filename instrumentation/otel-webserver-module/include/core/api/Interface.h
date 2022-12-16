@@ -16,7 +16,7 @@
 #pragma once
 
 #include <unordered_map>
-#include <api/AppdynamicsSdk.h>
+#include <api/OpentelemetrySdk.h>
 #include <api/TenantConfig.h>
 #include <api/SpanNamer.h>
 

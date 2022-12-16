@@ -19,7 +19,7 @@
 
 #include <string>
 #include <map>
-#include <api/AppdynamicsSdk.h>
+#include <api/OpentelemetrySdk.h>
 #include "AgentLogger.h"
 #include <api/Interface.h>
 

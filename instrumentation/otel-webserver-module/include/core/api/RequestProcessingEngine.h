@@ -17,7 +17,7 @@
 #ifndef REQUEST_PROCESSOR_ENGINE_H
 #define REQUEST_PROCESSOR_ENGINE_H
 
-#include "api/AppdynamicsSdk.h"
+#include "api/OpentelemetrySdk.h"
 #include "api/SpanNamer.h"
 #include "RequestContext.h"
 #include "AgentLogger.h"

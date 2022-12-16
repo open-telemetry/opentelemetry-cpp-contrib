@@ -17,7 +17,7 @@
 #ifndef OTEL_WS_AGENT_H
 #define OTEL_WS_AGENT_H
 
-#include "api/AppdynamicsSdk.h"
+#include "api/OpentelemetrySdk.h"
 #include <string>
 #include <memory>
 #include <unordered_map>
