@@ -16,7 +16,7 @@
 
 #include "api/WSAgent.h"
 #include "api/RequestProcessingEngine.h"
-#include "api/AppdynamicsSdk.h"
+#include "api/OpentelemetrySdk.h"
 #include "api/ApiUtils.h"
 #include "RequestContext.h"
 #include <sstream>

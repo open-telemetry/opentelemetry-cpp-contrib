@@ -14,8 +14,8 @@
 * limitations under the License.
 */
 
-#ifndef APPDYNAMICS_SDK_H
-#define	APPDYNAMICS_SDK_H
+#ifndef OPENTELEMETRY_SDK_H
+#define	OPENTELEMETRY_SDK_H
 
 #include <stddef.h>
 
@@ -137,4 +137,4 @@ typedef struct _OTEL_SDK_ENV_RECORD
 } OTEL_SDK_ENV_RECORD;
 /* }}} */
 
-#endif	/* APPDYNAMICS_SDK_H */
+#endif	/* OPENTELEMETRY_SDK_H */

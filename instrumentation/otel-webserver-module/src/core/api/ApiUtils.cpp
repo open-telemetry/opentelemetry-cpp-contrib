@@ -16,7 +16,7 @@
 
 // file header
 #include "api/ApiUtils.h"
-#include "api/AppdynamicsSdk.h"
+#include "api/OpentelemetrySdk.h"
 #include "AgentLogger.h"
 #include <api/TenantConfig.h>
 #include <boost/lexical_cast.hpp>
@@ -52,7 +52,7 @@ OTEL_SDK_STATUS_CODE ApiUtils::init_boilerplate()
             logConfigPath =
                     getSDKInstallPath()
                     / boost::filesystem::path("conf")
-                    / boost::filesystem::path("appdynamics_sdk_log4cxx.xml");
+                    / boost::filesystem::path("opentelemetry_sdk_log4cxx.xml");
         }
 
         boost::system::error_code ec;
