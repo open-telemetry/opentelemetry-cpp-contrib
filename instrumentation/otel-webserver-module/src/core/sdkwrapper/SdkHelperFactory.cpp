@@ -134,8 +134,6 @@ OtelSpanExporter SdkHelperFactory::GetExporter(
                 << opts.ssl_credentials_cacert_path);
         }
 
-        if (!(config->getOtelExporterOtlpHeaders().empty()))
-        {
         opentelemetry::common::KeyValueStringTokenizer tokenizer{config->getOtelExporterOtlpHeaders()};
         opentelemetry::nostd::string_view header_key;
         opentelemetry::nostd::string_view header_value;
@@ -159,7 +157,6 @@ OtelSpanExporter SdkHelperFactory::GetExporter(
 
                 opts.metadata.emplace(std::make_pair(std::move(key), static_cast<std::string>(header_value)));
             }
-        }
         }
 
         exporter.reset(new opentelemetry::exporter::otlp::OtlpGrpcExporter(opts));
