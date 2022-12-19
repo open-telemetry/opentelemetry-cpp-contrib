@@ -440,6 +440,10 @@ void otel_cfg::init()
     otelExporterEndpoint = "";
     otelExporterEndpoint_initialized = 0;
 
+    // otelExporterOtlpHeaders         Optional: OTLP headers as key value pairs
+    otelExporterOtlpHeaders = "";
+    otelExporterOtlpHeaders_initialized = 0;
+
     // otelSslEnabled       OPTIONAL: Decides whether the connection to the endpoint is secured
     otelSslEnabled = 0;
     otelSslEnabled_initialized = 0;
