@@ -1565,6 +1565,7 @@ static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t*
 
     #endif
 
+    // TODO - use strncpy function to just create memory of size (r->http_protocol.len)
     char *temp_http_protocol = ngx_pcalloc(r->pool, (strlen((r->http_protocol).data))+1);
     strcpy(temp_http_protocol,(const char*)(r->http_protocol).data);
     temp_http_protocol[(r->http_protocol).len]='\0';
