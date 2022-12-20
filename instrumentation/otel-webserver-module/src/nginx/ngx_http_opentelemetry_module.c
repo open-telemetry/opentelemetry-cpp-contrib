@@ -1596,6 +1596,10 @@ static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t*
     }
 
     req_payload->client_ip = (const char*)(r->connection->addr_text).data;
+    char *temp_client_ip = ngx_pcalloc(r->pool, (strlen((r->connection->addr_text).data))+1);
+    strcpy(temp_client_ip,(const char*)(r->connection->addr_text).data);
+    temp_client_ip[(r->connection->addr_text).len]='\0';
+    req_payload->client_ip = temp_client_ip;
 
     ngx_http_opentelemetry_loc_conf_t *conf =
       ngx_http_get_module_loc_conf(r, ngx_http_opentelemetry_module);
