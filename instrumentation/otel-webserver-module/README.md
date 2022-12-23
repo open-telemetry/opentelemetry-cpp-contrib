@@ -58,6 +58,7 @@ Monitoring individual modules is crucial to the instrumentation of Apache web se
 |*ApacheModuleWebserverContext*                  |                 | OPTIONAL: Takes 3 values(space-seperated) ServiceName, ServiceNamespace and ServiceInstanceId|
 |*ApacheModuleSegmentType*                       |                 | OPTIONAL: Specify the string (FIRST/LAST/CUSTOM) to be filtered for Span Name Creation|
 |*ApacheModuleSegmentParameter*                  |                 | OPTIONAL: Specify the segment count or segment numbers that you want to display for Span Creation|
+|*ApacheModuleOtelExporterHeaders*               |                 | OPTIONAL: OTEL Exporter header info or Metadata like API key for OTLP endpoint |
 
 A sample configuration is mentioned in [opentelemetry_module.conf](https://github.com/cisco-open/otel-webserver-module/blob/main/opentelemetry_module.conf)
 
