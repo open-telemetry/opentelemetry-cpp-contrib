@@ -1565,11 +1565,19 @@ static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t*
 
     #endif
 
-    req_payload->protocol = (const char*)(r->http_protocol).data;
-    req_payload->request_method = (const char*)(r->method_name).data;
+    // TODO - use strncpy function to just create memory of size (r->http_protocol.len)
+    char *temp_http_protocol = ngx_pcalloc(r->pool, (strlen((r->http_protocol).data))+1);
+    strcpy(temp_http_protocol,(const char*)(r->http_protocol).data);
+    temp_http_protocol[(r->http_protocol).len]='\0';
+    req_payload->protocol = temp_http_protocol;
+
+    char *temp_request_method = ngx_pcalloc(r->pool, (strlen((r->method_name).data))+1);
+    strcpy(temp_request_method,(const char*)(r->method_name).data);
+    temp_request_method[(r->method_name).len]='\0';
+    req_payload->request_method = temp_request_method;
 
     // flavor has to be scraped from protocol in future
-    req_payload->flavor = (const char*)(r->http_protocol).data;
+    req_payload->flavor = temp_http_protocol;
 
     char *temp_hostname = ngx_pcalloc(r->pool, (strlen(hostname.data))+1);
     strcpy(temp_hostname,(const char*)hostname.data);
