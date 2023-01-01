@@ -1,3 +1,4 @@
+#include <opentelemetry/exporters/otlp/otlp_grpc_exporter.h>
 #include <opentelemetry/sdk/trace/processor.h>
 #include <opentelemetry/trace/span.h>
 #include <algorithm>
@@ -18,7 +19,6 @@ extern ngx_module_t otel_ngx_module;
 #include "nginx_utils.h"
 #include "propagate.h"
 #include <opentelemetry/context/context.h>
-#include <opentelemetry/exporters/otlp/otlp_grpc_exporter.h>
 #include <opentelemetry/nostd/shared_ptr.h>
 #include <opentelemetry/sdk/trace/batch_span_processor.h>
 #include <opentelemetry/sdk/trace/id_generator.h>
