@@ -121,6 +121,14 @@ const char* ApacheConfigHandlers::otel_set_otelExporterEndpoint(cmd_parms *cmd, 
     return helperChar(cmd, cfg, arg, cfg->otelExporterEndpoint, cfg->otelExporterEndpoint_initialized, "otel_set_otelExporterEndpoint");
 }
 
+//  char *otelExporterOtlpHeaders;
+//  int otelExporterOtlpHeaders_initialized;
+const char* ApacheConfigHandlers::otel_set_otelExporterOtlpHeaders(cmd_parms *cmd, void *conf, const char *arg)
+{
+    otel_cfg* cfg = (otel_cfg*) conf;
+    return helperChar(cmd, cfg, arg, cfg->otelExporterOtlpHeaders, cfg->otelExporterOtlpHeaders_initialized, "otel_set_otelExporterOtlpHeaders");
+}
+
 //  char *otelSslEnabled;
 //  int otelSslEnabled_initialized;
 const char* ApacheConfigHandlers::otel_set_otelSslEnabled(cmd_parms *cmd, void *conf, const char *arg)
@@ -431,6 +439,10 @@ void otel_cfg::init()
     // otelExporterEndpoint         REQUIRED: Collecter endpoint where the OpenTelemetry Exporter inside OTel SDK sends traces
     otelExporterEndpoint = "";
     otelExporterEndpoint_initialized = 0;
+
+    // otelExporterOtlpHeaders         Optional: OTLP headers as key value pairs
+    otelExporterOtlpHeaders = "";
+    otelExporterOtlpHeaders_initialized = 0;
 
     // otelSslEnabled       OPTIONAL: Decides whether the connection to the endpoint is secured
     otelSslEnabled = 0;
@@ -770,6 +782,9 @@ otel_cfg* ApacheConfigHandlers::getProcessConfig(const request_rec* r)
 
     process_cfg->otelExporterEndpoint = apr_pstrdup(r->server->process->pool, our_config->otelExporterEndpoint);
     process_cfg->otelExporterEndpoint_initialized = our_config->otelExporterEndpoint_initialized;
+
+    process_cfg->otelExporterOtlpHeaders = apr_pstrdup(r->server->process->pool, our_config->otelExporterOtlpHeaders);
+    process_cfg->otelExporterOtlpHeaders_initialized = our_config->otelExporterOtlpHeaders_initialized;
 
     process_cfg->otelSslEnabled = our_config->otelSslEnabled;
     process_cfg->otelSslEnabled_initialized = our_config->otelSslEnabled_initialized;

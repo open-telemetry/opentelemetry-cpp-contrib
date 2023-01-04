@@ -65,6 +65,12 @@ static const command_rec otel_cmds[] =
             OR_ALL,
             "Collector Endpoint where the OpenTelemetry Exporter inside OTel SDK sends traces"),
     AP_INIT_TAKE1(
+            "apacheModuleOtelExporterHeaders",
+            (CMD_HAND_TYPE)ApacheConfigHandlers::otel_set_otelExporterOtlpHeaders,
+            NULL,
+            OR_ALL,
+            "AppDynamics Otel export Headers key value pairs"),
+    AP_INIT_TAKE1(
             "apacheModuleOtelSslEnabled",
             (CMD_HAND_TYPE)ApacheConfigHandlers::otel_set_otelSslEnabled,
             NULL,

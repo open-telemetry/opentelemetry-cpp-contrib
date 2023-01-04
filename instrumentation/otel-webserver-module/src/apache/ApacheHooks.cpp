@@ -339,10 +339,11 @@ bool ApacheHooks::initialize_opentelemetry(const request_rec *r)
         wsAgent.initDependency();
 
         // ENV RECORDS SIZE TO INCLUDE THE LOG PATH AND THE AGGREGATOR DIRECTORY
-        //
-        // Update the apr_pcalloc if we add another parameter to the input array!
+        // Update the CONFIG_COUNT in apr_pcalloc if we add another parameter to the input array!
+        
         OTEL_SDK_ENV_RECORD* env_config =
-                (OTEL_SDK_ENV_RECORD*) apr_pcalloc(r->pool, 16 * sizeof(OTEL_SDK_ENV_RECORD));
+                (OTEL_SDK_ENV_RECORD*) apr_pcalloc(r->pool, CONFIG_COUNT * sizeof(OTEL_SDK_ENV_RECORD));
+
         int ix = 0;
 
         // Otel Exporter Type
@@ -423,6 +424,11 @@ bool ApacheHooks::initialize_opentelemetry(const request_rec *r)
         // Segment Parameter
         env_config[ix].name = OTEL_SDK_ENV_SEGMENT_PARAMETER;
         env_config[ix].value = our_config->getSegmentParameter();
+        ++ix;
+
+        // Segment Parameter
+        env_config[ix].name = OTEL_SDK_ENV_OTEL_EXPORTER_OTLPHEADERS;
+        env_config[ix].value = our_config->getOtelExporterOtlpHeaders();
         ++ix;
 
         // !!!
