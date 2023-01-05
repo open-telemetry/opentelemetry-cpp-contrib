@@ -1,7 +1,9 @@
+// clang-format off
 // otlp_grpc_exporter header has to be included before any other API header to 
 // avoid conflict between Abseil library and OpenTelemetry C++ absl::variant.
 // https://github.com/open-telemetry/opentelemetry-cpp/tree/main/examples/otlp#additional-notes-regarding-abseil-library
 #include <opentelemetry/exporters/otlp/otlp_grpc_exporter.h>
+// clang-format on
 
 #include <opentelemetry/sdk/trace/processor.h>
 #include <opentelemetry/trace/span.h>
