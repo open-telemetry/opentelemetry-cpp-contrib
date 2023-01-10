@@ -286,6 +286,13 @@ static ngx_command_t ngx_http_opentelemetry_commands[] = {
       offsetof(ngx_http_opentelemetry_loc_conf_t, nginxModuleTraceAsError),
       NULL},
 
+    { ngx_string("NginxModuleTrustIncomingSpans"),
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
+      ngx_conf_set_flag_slot,
+      NGX_HTTP_LOC_CONF_OFFSET,
+      offsetof(ngx_http_opentelemetry_loc_conf_t, nginxModuleTrustIncomingSpans),
+      NULL},
+
     { ngx_string("NginxModuleReportAllInstrumentedModules"),
       NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
       ngx_conf_set_flag_slot,
@@ -437,6 +444,7 @@ static void* ngx_http_opentelemetry_create_loc_conf(ngx_conf_t *cf)
     conf->nginxModuleTraceAsError              = NGX_CONF_UNSET;
     conf->nginxModuleOtelMaxQueueSize          = NGX_CONF_UNSET;
     conf->nginxModuleOtelSslEnabled            = NGX_CONF_UNSET;
+    conf->nginxModuleTrustIncomingSpans        = NGX_CONF_UNSET;
 
     return conf;
 }
