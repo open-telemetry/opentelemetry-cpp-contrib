@@ -236,7 +236,7 @@ size_t Exporter::SerializeHistogramMetrics(
     sdk::metrics::AggregationType agg_type, MetricsEventType event_type,
     uint64_t count, const sdk::metrics::ValueType &sum,
     const sdk::metrics::ValueType &min, const sdk::metrics::ValueType &max,
-    const std::list<double> &boundaries, const std::vector<uint64_t> &counts,
+    const std::vector<double> &boundaries, const std::vector<uint64_t> &counts,
     common::SystemTimestamp ts, const std::string &metric_name,
     const sdk::metrics::PointAttributes &attributes) {
 
