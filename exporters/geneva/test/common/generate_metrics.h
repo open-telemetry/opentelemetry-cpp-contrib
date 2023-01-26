@@ -3,6 +3,8 @@
 #include "opentelemetry/sdk/metrics/instruments.h"
 #include "opentelemetry/sdk/resource/resource.h"
 
+#include<vector>
+
 namespace {
 
 // Instrument Scope
@@ -127,7 +129,7 @@ const uint16_t kHistogramLongBucketSize = 10;
 const uint16_t kHistogramLongNonEmptyBucketSize = 8;
 const std::vector<uint64_t> kHistogramLongCounts = {1, 2, 1, 0, 0,
                                                     1, 2, 3, 4, 1};
-const std::list<double> kHistogramLongBoundaries = std::list<double>{
+const std::vector<double> kHistogramLongBoundaries = std::vector<double>{
     0.0, 5.0, 10.0, 25.0, 50.0, 75.0, 100.0, 250.0, 500.0, 1000.0};
 
 const std::string kHistogramLongAttributeKey1 = "histogram_long_key1";

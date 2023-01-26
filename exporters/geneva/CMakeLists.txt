@@ -5,7 +5,6 @@ cmake_minimum_required(VERSION 3.12)
 #
 set(MAIN_PROJECT OFF)
 
-set(MAIN_PROJECT OFF)
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   project(opentelemetry-geneva-metrics)
   set(MAIN_PROJECT ON)
@@ -22,13 +21,18 @@ include_directories(include)
 # create geneva metrics exporter
 add_library(opentelemetry_exporter_geneva_metrics
             src/exporter.cc src/unix_domain_socket_data_transport.cc)
+
+if(MAIN_PROJECT)
 target_include_directories(opentelemetry_exporter_geneva_metrics
                            PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
 target_link_libraries(opentelemetry_exporter_geneva_metrics
                       PUBLIC ${OPENTELEMETRY_CPP_LIBRARIES})
+else()
+target_link_libraries(opentelemetry_exporter_geneva_metrics
+                      PUBLIC opentelemetry_metrics opentelemetry_resources opentelemetry_common)
+endif()
 set_target_properties(opentelemetry_exporter_geneva_metrics
                       PROPERTIES EXPORT_NAME metrics)
-
 if(BUILD_TESTING)
   if(EXISTS ${CMAKE_BINARY_DIR}/lib/libgtest.a)
     # Prefer GTest from build tree. GTest is not always working with
@@ -81,7 +85,7 @@ if(BUILD_EXAMPLE)
                                  example/foo_library.cc)
   target_link_libraries(example_metrics opentelemetry_exporter_geneva_metrics)
 endif()
-if(BUILD_PACKAGE)
+if(MAIN_PROJECT AND BUILD_PACKAGE)
   include(cmake/package.cmake)
   include(CPack)
 endif()
