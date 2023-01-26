@@ -23,12 +23,12 @@ add_library(opentelemetry_exporter_geneva_metrics
             src/exporter.cc src/unix_domain_socket_data_transport.cc)
 
 if(MAIN_PROJECT)
-target_include_directories(opentelemetry_exporter_geneva_metrics
-                           PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
-target_link_libraries(opentelemetry_exporter_geneva_metrics
+   target_include_directories(opentelemetry_exporter_geneva_metrics
+                      PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
+   target_link_libraries(opentelemetry_exporter_geneva_metrics
                       PUBLIC ${OPENTELEMETRY_CPP_LIBRARIES})
 else()
-target_link_libraries(opentelemetry_exporter_geneva_metrics
+   target_link_libraries(opentelemetry_exporter_geneva_metrics
                       PUBLIC opentelemetry_metrics opentelemetry_resources opentelemetry_common)
 endif()
 set_target_properties(opentelemetry_exporter_geneva_metrics
