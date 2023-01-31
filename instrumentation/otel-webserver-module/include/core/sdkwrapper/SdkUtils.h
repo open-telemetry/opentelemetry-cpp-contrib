@@ -21,7 +21,7 @@
 #include <opentelemetry/context/propagation/text_map_propagator.h>
 #include <opentelemetry/nostd/string_view.h>
 
-namespace appd {
+namespace otel {
 namespace core {
 namespace sdkwrapper {
 
@@ -55,6 +55,6 @@ private:
 
 } //sdkwrapper
 } //core
-} //appd
+} //otel
 
 #endif

@@ -41,6 +41,7 @@ else()
    target_link_libraries(opentelemetry_exporter_geneva_metrics
                       PUBLIC opentelemetry_metrics opentelemetry_resources opentelemetry_common)
 endif()
+
 set_target_properties(opentelemetry_exporter_geneva_metrics
                       PROPERTIES EXPORT_NAME metrics)
 if(BUILD_TESTING)

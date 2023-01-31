@@ -14,8 +14,8 @@
 * limitations under the License.
 */
 
-#ifndef APPD_EXCLUDEDMODULES_H
-#define APPD_EXCLUDEDMODULES_H
+#ifndef EXCLUDEDMODULES_H
+#define EXCLUDEDMODULES_H
 
 #include <unordered_set>
 #include <string>

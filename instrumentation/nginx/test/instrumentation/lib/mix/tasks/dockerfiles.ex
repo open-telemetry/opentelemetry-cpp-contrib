@@ -1,8 +1,8 @@
 defmodule Mix.Tasks.Dockerfiles do
   use Mix.Task
 
-  @grpc_version "v1.36.4"
-  @otel_cpp_version "v1.3.0"
+  @grpc_version "v1.49.2"
+  @otel_cpp_version "v1.8.1"
 
   def run([out_dir | combos]) do
     out_dir_abs = Path.expand(out_dir)
@@ -178,6 +178,7 @@ defmodule Mix.Tasks.Dockerfiles do
         -DgRPC_BUILD_GRPC_PHP_PLUGIN=OFF \\
         -DgRPC_BUILD_GRPC_PYTHON_PLUGIN=OFF \\
         -DgRPC_BUILD_GRPC_RUBY_PLUGIN=OFF \\
+        -DCMAKE_CXX_STANDARD=17 \\
         ../.. \\
       && make -j2 \\
       && make install
@@ -195,6 +196,7 @@ defmodule Mix.Tasks.Dockerfiles do
         -DWITH_OTLP_HTTP=OFF \\
         -DBUILD_TESTING=OFF \\
         -DWITH_EXAMPLES=OFF \\
+        -DCMAKE_CXX_STANDARD=17 \\
         -DCMAKE_POSITION_INDEPENDENT_CODE=ON \\
         .. \\
       && make -j2 \\

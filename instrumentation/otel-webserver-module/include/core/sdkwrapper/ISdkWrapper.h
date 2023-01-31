@@ -23,7 +23,7 @@
 #include "sdkwrapper/IScopedSpan.h"
 #include "api/TenantConfig.h"
 
-namespace appd {
+namespace otel {
 namespace core {
 namespace sdkwrapper {
 
@@ -45,7 +45,7 @@ public:
 
 } //sdkwrapper
 } //core
-} //appd
+} //otel
 
 
 #endif

@@ -26,12 +26,13 @@
 #include "opentelemetry/sdk/trace/samplers/trace_id_ratio.h"
 #include "opentelemetry/sdk/resource/resource.h"
 #include "opentelemetry/exporters/otlp/otlp_grpc_exporter.h"
+#include "opentelemetry/exporters/otlp/otlp_environment.h"
 #include "opentelemetry/baggage/propagation/baggage_propagator.h"
 #include <module_version.h>
 #include <fstream>
 #include <iostream>
 
-namespace appd {
+namespace otel {
 namespace core {
 namespace sdkwrapper {
 
@@ -66,12 +67,17 @@ SdkHelperFactory::SdkHelperFactory(
 
     // NOTE : resource attribute values are nostd::variant and so we need to explicitely set it to std::string
     std::string libraryVersion = MODULE_VERSION;
+    std::string cppSDKVersion = CPP_SDK_VERSION;
 
     // NOTE : InstrumentationLibrary code is incomplete for the otlp exporter in sdk.
     // So, we need to pass libraryName and libraryVersion as resource attributes.
     // Ref : https://github.com/open-telemetry/opentelemetry-cpp/blob/main/exporters/otlp/src/otlp_recordable.cc
-    attributes[kOtelLibraryName] = config->getOtelLibraryName();
-    attributes[kOtelLibraryVersion] = libraryVersion;
+    
+    //Library was changed to webengine to comply with specs https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/resource/semantic_conventions/webengine.md
+    attributes[kOtelWebEngineName] = config->getOtelLibraryName();
+    //attributes[kOtelWebEngineVersion] = libraryVersion;
+
+    //attributes[kOtelWebEngineDescription] = config->getOtelLibraryName() + " Instrumentation";
 
     auto exporter = GetExporter(config);
     auto processor = GetSpanProcessor(config, std::move(exporter));
@@ -84,9 +90,9 @@ SdkHelperFactory::SdkHelperFactory(
             std::move(sampler)
             ));
 
-    mTracer = mTracerProvider->GetTracer(config->getOtelLibraryName(), libraryVersion);
+    mTracer = mTracerProvider->GetTracer("cpp", cppSDKVersion);
     LOG4CXX_INFO(mLogger,
-        "Tracer created with LibraryName: " << config->getOtelLibraryName() <<
+        "Tracer created with LibraryName: " << "cpp" <<
         " and LibraryVersion " << libraryVersion);
 
     // Adding trace propagator
@@ -127,6 +133,32 @@ OtelSpanExporter SdkHelperFactory::GetExporter(
             LOG4CXX_TRACE(mLogger, "Ssl Credentials are enabled for exporter, path: "
                 << opts.ssl_credentials_cacert_path);
         }
+
+        opentelemetry::common::KeyValueStringTokenizer tokenizer{config->getOtelExporterOtlpHeaders()};
+        opentelemetry::nostd::string_view header_key;
+        opentelemetry::nostd::string_view header_value;
+        bool header_valid = true;
+        std::unordered_set<std::string> remove_cache;
+
+        while (tokenizer.next(header_valid, header_key, header_value))
+        {
+            if (header_valid)
+            {
+                std::string key = static_cast<std::string>(header_key);
+                if (remove_cache.end() == remove_cache.find(key))
+                {
+                    remove_cache.insert(key);
+                    auto range = opts.metadata.equal_range(key);
+                    if (range.first != range.second)
+                    {
+                        opts.metadata.erase(range.first, range.second);
+                    }
+                }
+
+                opts.metadata.emplace(std::make_pair(std::move(key), static_cast<std::string>(header_value)));
+            }
+        }
+
         exporter.reset(new opentelemetry::exporter::otlp::OtlpGrpcExporter(opts));
     }
 
@@ -188,5 +220,5 @@ OtelSampler SdkHelperFactory::GetSampler(
 
 } //sdkwrapper
 } //core
-} //appd
+} //otel
 

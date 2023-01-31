@@ -39,6 +39,7 @@ project.ext {
     props.load(new FileInputStream(file("version.properties")))
     moduleVersion = props.get("server-module-version")
     moduleRelease = props.get("release")
+    cppSDKVersion = props.get("CPP-SDK-version")
     moduleName = "WebServer Module"
     buildType = "Release Build"
     fullVersion = "${moduleName} ${moduleVersion} ${moduleRelease} ${headSHA1}: ${buildType}"
@@ -87,6 +88,7 @@ task generateModuleVersionHeader(type: Copy) {
         headSHA1: headSHA1,
         moduleVersion: moduleVersion,
         moduleRelease: moduleRelease,
+        cppSDKVersion: cppSDKVersion,
         fullVersion: fullVersion)
 }
 
@@ -100,6 +102,7 @@ task generateVersionFile(type: Copy) {
         headSHA1: headSHA1,
         moduleVersion: moduleVersion,
         moduleRelease: moduleRelease,
+        cppSDKVersion: cppSDKVersion,
         fullVersion: fullVersion)
 }
 
@@ -142,6 +145,7 @@ task gypLibrary(type: Exec) {
         BOOST_LIB: BOOST_LIB,
         BOOST_INCLUDE: BOOST_INCLUDE,
         LIBRARY_FLAGS: libraryFlags,
+        CPP_SDK_VERSION: cppSDKVersion,
     ]
 
     environment libraryBuildEnvironment
@@ -178,15 +182,14 @@ task stageLibrary(type: Copy) {
 
     from("dist/runSDKProxy.sh") { it.fileMode 0770 }
 
-    from("src/sdk_lib/src/api/include/appdynamics.h") { it.into "sdk_lib" }
     from(buildLibrary) { it.into "sdk_lib/lib" }
-    from("${modDepDir}/opentelemetry/1.2.0/lib/libopentelemetry_common.so") { it.into "sdk_lib/lib" }
-    from("${modDepDir}/opentelemetry/1.2.0/lib/libopentelemetry_resources.so") { it.into "sdk_lib/lib" }
-    from("${modDepDir}/opentelemetry/1.2.0/lib/libopentelemetry_trace.so") { it.into "sdk_lib/lib" }
-    from("${modDepDir}/opentelemetry/1.2.0/lib/libopentelemetry_otlp_recordable.so") { it.into "sdk_lib/lib" }    
-    from("${modDepDir}/opentelemetry/1.2.0/lib/libopentelemetry_exporter_ostream_span.so") { it.into "sdk_lib/lib" }
-    from("${modDepDir}/opentelemetry/1.2.0/lib/libopentelemetry_exporter_otlp_grpc.so") { it.into "sdk_lib/lib" }
-    from("dist/appdynamics_sdk_log4cxx.xml.template") { it.into "conf" }
+    from("${modDepDir}/opentelemetry/${cppSDKVersion}/lib/libopentelemetry_common.so") { it.into "sdk_lib/lib" }
+    from("${modDepDir}/opentelemetry/${cppSDKVersion}/lib/libopentelemetry_resources.so") { it.into "sdk_lib/lib" }
+    from("${modDepDir}/opentelemetry/${cppSDKVersion}/lib/libopentelemetry_trace.so") { it.into "sdk_lib/lib" }
+    from("${modDepDir}/opentelemetry/${cppSDKVersion}/lib/libopentelemetry_otlp_recordable.so") { it.into "sdk_lib/lib" }
+    from("${modDepDir}/opentelemetry/${cppSDKVersion}/lib/libopentelemetry_exporter_ostream_span.so") { it.into "sdk_lib/lib" }
+    from("${modDepDir}/opentelemetry/${cppSDKVersion}/lib/libopentelemetry_exporter_otlp_grpc.so") { it.into "sdk_lib/lib" }
+    from("dist/opentelemetry_sdk_log4cxx.xml.template") { it.into "conf" }
     from("dist/install.${scriptExt}") { it.fileMode 0700 }
 
     into libraryStageDir
@@ -292,7 +295,7 @@ task gypApacheModule(type: Exec) {
         ARCH_FLAG: gccArchFlag,
         APACHE22_INCLUDE_DIR: "${platBuildDir}/httpd-${apache22Version}/include",
         APACHE24_INCLUDE_DIR: "${platBuildDir}/httpd-${apache24Version}/include",
-        APPD_SDK_LIB_DIR: "${libraryStageDir}/sdk_lib",
+        OTEL_SDK_LIB_DIR: "${libraryStageDir}/sdk_lib",
         ANSDK_DIR: modDepDir,
         COMPILER_FLAGS: (coverageEnabled) ? coverageCompilerFlags : '',
         LINKER_FLAGS: (coverageEnabled) ? coverageLinkerFlags : '',
@@ -492,13 +495,14 @@ task gypUnitTest(type: Exec) {
     outputs.file "${platBuildDir}/unit_test/Makefile"
 
     ext.testBuildEnvironment = [
-        APPD_SDK_LIB_DIR: "${libraryStageDir}/sdk_lib",
+        OTEL_SDK_LIB_DIR: "${libraryStageDir}/sdk_lib",
         ANSDK_DIR: modDepDir,
         BOOST_LIB: BOOST_LIB,
         BOOST_INCLUDE: BOOST_INCLUDE,
         GTEST_LIB_DIR: target_system == "ubuntu" ?
             "${modDepDir}/googletest/1.10.0/lib" : "${modDepDir}/googletest/1.10.0/lib64",
         LIBRARY_FLAGS: libraryFlags,
+        CPP_SDK_VERSION: cppSDKVersion,
     ]
 
     environment testBuildEnvironment
@@ -631,9 +635,9 @@ model {
 
     repositories {
         libs(PrebuiltLibraries) { libs ->
-            appd {
+            otel {
                 headers.srcDirs "${libraryStageDir}/sdk_lib"
-                // See FIXME on sources.cpp.lib library: 'appd' above
+                // See FIXME on sources.cpp.lib library: 'otel' above
                 // binaries.withType(SharedLibraryBinary) {
                 //     sharedLibraryFile = file("${libraryStageDir}/sdk_lib/lib/libopentelemetry_webserver_sdk.so")
                 // }

@@ -44,7 +44,7 @@ std::unordered_map<std::string, std::shared_ptr<WebserverContext> > ApacheConfig
 
 const char* ApacheConfigHandlers::helperChar(
         cmd_parms* cmd,
-        appd_cfg* cfg,
+        otel_cfg* cfg,
         const char* arg,
         const char*& var,
         int& initialized,
@@ -58,7 +58,7 @@ const char* ApacheConfigHandlers::helperChar(
 
 const char* ApacheConfigHandlers::helperInt(
         cmd_parms* cmd,
-        appd_cfg* cfg,
+        otel_cfg* cfg,
         const char* arg,
         int& var,
         int& initialized,
@@ -70,7 +70,7 @@ const char* ApacheConfigHandlers::helperInt(
     return NULL;
 }
 
-void ApacheConfigHandlers::insertWebserverContext(cmd_parms* cmd, const appd_cfg* cfg)
+void ApacheConfigHandlers::insertWebserverContext(cmd_parms* cmd, const otel_cfg* cfg)
 {
     std::string contextName = computeContextName(cfg);
     if (contextName.empty())
@@ -105,68 +105,76 @@ void ApacheConfigHandlers::insertWebserverContext(cmd_parms* cmd, const appd_cfg
                     cfg->serviceNamespace, cfg->serviceName, cfg->serviceInstanceId);
 }
 
-//  int appdEnabled;
-//  int appdEnabled_initialized;
-const char* ApacheConfigHandlers::appd_set_enabled(cmd_parms *cmd, void *conf, const char *arg)
+//  int otelEnabled;
+//  int otelEnabled_initialized;
+const char* ApacheConfigHandlers::otel_set_enabled(cmd_parms *cmd, void *conf, const char *arg)
 {
-    appd_cfg* cfg = (appd_cfg*) conf;
-    return helperInt(cmd, cfg, arg, cfg->appdEnabled, cfg->appdEnabled_initialized, "appd_set_enabled");
+    otel_cfg* cfg = (otel_cfg*) conf;
+    return helperInt(cmd, cfg, arg, cfg->otelEnabled, cfg->otelEnabled_initialized, "otel_set_enabled");
 }
 
 //  char *otelExporterEndpoint;
 //  int otelExporterEndpoint_initialized;
-const char* ApacheConfigHandlers::appd_set_otelExporterEndpoint(cmd_parms *cmd, void *conf, const char *arg)
+const char* ApacheConfigHandlers::otel_set_otelExporterEndpoint(cmd_parms *cmd, void *conf, const char *arg)
 {
-    appd_cfg* cfg = (appd_cfg*) conf;
-    return helperChar(cmd, cfg, arg, cfg->otelExporterEndpoint, cfg->otelExporterEndpoint_initialized, "appd_set_otelExporterEndpoint");
+    otel_cfg* cfg = (otel_cfg*) conf;
+    return helperChar(cmd, cfg, arg, cfg->otelExporterEndpoint, cfg->otelExporterEndpoint_initialized, "otel_set_otelExporterEndpoint");
+}
+
+//  char *otelExporterOtlpHeaders;
+//  int otelExporterOtlpHeaders_initialized;
+const char* ApacheConfigHandlers::otel_set_otelExporterOtlpHeaders(cmd_parms *cmd, void *conf, const char *arg)
+{
+    otel_cfg* cfg = (otel_cfg*) conf;
+    return helperChar(cmd, cfg, arg, cfg->otelExporterOtlpHeaders, cfg->otelExporterOtlpHeaders_initialized, "otel_set_otelExporterOtlpHeaders");
 }
 
 //  char *otelSslEnabled;
 //  int otelSslEnabled_initialized;
-const char* ApacheConfigHandlers::appd_set_otelSslEnabled(cmd_parms *cmd, void *conf, const char *arg)
+const char* ApacheConfigHandlers::otel_set_otelSslEnabled(cmd_parms *cmd, void *conf, const char *arg)
 {
-    appd_cfg* cfg = (appd_cfg*) conf;
-    return helperInt(cmd, cfg, arg, cfg->otelSslEnabled, cfg->otelSslEnabled_initialized, "appd_set_otelSslEnabled");
+    otel_cfg* cfg = (otel_cfg*) conf;
+    return helperInt(cmd, cfg, arg, cfg->otelSslEnabled, cfg->otelSslEnabled_initialized, "otel_set_otelSslEnabled");
 }
 
 //  char *otelSslCertificatePath;
 //  int otelSslCertificatePath_initialized;
-const char* ApacheConfigHandlers::appd_set_otelSslCertificatePath(cmd_parms *cmd, void *conf, const char *arg)
+const char* ApacheConfigHandlers::otel_set_otelSslCertificatePath(cmd_parms *cmd, void *conf, const char *arg)
 {
-    appd_cfg* cfg = (appd_cfg*) conf;
-    return helperChar(cmd, cfg, arg, cfg->otelSslCertificatePath, cfg->otelSslCertificatePath_initialized, "appd_set_otelSslCertificatePath");
+    otel_cfg* cfg = (otel_cfg*) conf;
+    return helperChar(cmd, cfg, arg, cfg->otelSslCertificatePath, cfg->otelSslCertificatePath_initialized, "otel_set_otelSslCertificatePath");
 }
 
 //  char *otelExporterType;
 //  int otelExporterType_initialized;
-const char* ApacheConfigHandlers::appd_set_otelExporterType(cmd_parms *cmd, void *conf, const char *arg)
+const char* ApacheConfigHandlers::otel_set_otelExporterType(cmd_parms *cmd, void *conf, const char *arg)
 {
-    appd_cfg* cfg = (appd_cfg*) conf;
-    return helperChar(cmd, cfg, arg, cfg->otelExporterType, cfg->otelExporterType_initialized, "appd_set_otelExporterType");
+    otel_cfg* cfg = (otel_cfg*) conf;
+    return helperChar(cmd, cfg, arg, cfg->otelExporterType, cfg->otelExporterType_initialized, "otel_set_otelExporterType");
 }
 
 //  char *otelProcessorType;
 //  int otelProcessorType_initialized;
-const char* ApacheConfigHandlers::appd_set_otelProcessorType(cmd_parms *cmd, void *conf, const char *arg)
+const char* ApacheConfigHandlers::otel_set_otelProcessorType(cmd_parms *cmd, void *conf, const char *arg)
 {
-    appd_cfg* cfg = (appd_cfg*) conf;
-    return helperChar(cmd, cfg, arg, cfg->otelProcessorType, cfg->otelProcessorType_initialized, "appd_set_otelProcessorType");
+    otel_cfg* cfg = (otel_cfg*) conf;
+    return helperChar(cmd, cfg, arg, cfg->otelProcessorType, cfg->otelProcessorType_initialized, "otel_set_otelProcessorType");
 }
 
 //  char *otelSamplerType;
 //  int otelSamplerType_initialized;
-const char* ApacheConfigHandlers::appd_set_otelSamplerType(cmd_parms *cmd, void *conf, const char *arg)
+const char* ApacheConfigHandlers::otel_set_otelSamplerType(cmd_parms *cmd, void *conf, const char *arg)
 {
-    appd_cfg* cfg = (appd_cfg*) conf;
-    return helperChar(cmd, cfg, arg, cfg->otelSamplerType, cfg->otelSamplerType_initialized, "appd_set_otelSamplerType");
+    otel_cfg* cfg = (otel_cfg*) conf;
+    return helperChar(cmd, cfg, arg, cfg->otelSamplerType, cfg->otelSamplerType_initialized, "otel_set_otelSamplerType");
 }
 
 //  char *serviceNamespace;
 //  int serviceNamespace_initialized;
-const char* ApacheConfigHandlers::appd_set_serviceNamespace(cmd_parms *cmd, void *conf, const char *arg)
+const char* ApacheConfigHandlers::otel_set_serviceNamespace(cmd_parms *cmd, void *conf, const char *arg)
 {
-    appd_cfg* cfg = (appd_cfg*) conf;
-    const char* rc = helperChar(cmd, cfg, arg, cfg->serviceNamespace, cfg->serviceNamespace_initialized, "appd_set_serviceNamespace");
+    otel_cfg* cfg = (otel_cfg*) conf;
+    const char* rc = helperChar(cmd, cfg, arg, cfg->serviceNamespace, cfg->serviceNamespace_initialized, "otel_set_serviceNamespace");
     if (cfg->serviceNamespace_initialized && cfg->serviceName_initialized && cfg->serviceInstanceId_initialized)
     {
         // There are separate Apache directives for setting serviceNamespace, serviceName and serviceInstanceId.
@@ -178,10 +186,10 @@ const char* ApacheConfigHandlers::appd_set_serviceNamespace(cmd_parms *cmd, void
 
 //  char *serviceName;
 //  int serviceName_initialized;
-const char* ApacheConfigHandlers::appd_set_serviceName(cmd_parms *cmd, void *conf, const char *arg)
+const char* ApacheConfigHandlers::otel_set_serviceName(cmd_parms *cmd, void *conf, const char *arg)
 {
-    appd_cfg* cfg = (appd_cfg*) conf;
-    const char* rc = helperChar(cmd, cfg, arg, cfg->serviceName, cfg->serviceName_initialized, "appd_set_serviceName");
+    otel_cfg* cfg = (otel_cfg*) conf;
+    const char* rc = helperChar(cmd, cfg, arg, cfg->serviceName, cfg->serviceName_initialized, "otel_set_serviceName");
     if (cfg->serviceNamespace_initialized && cfg->serviceName_initialized && cfg->serviceInstanceId_initialized)
     {
         // There are separate Apache directives for setting serviceNamespace, serviceName and serviceInstanceId.
@@ -193,10 +201,10 @@ const char* ApacheConfigHandlers::appd_set_serviceName(cmd_parms *cmd, void *con
 
 //  char *serviceInstanceId;
 //  int serviceInstanceId_initialized;
-const char* ApacheConfigHandlers::appd_set_serviceInstanceId(cmd_parms *cmd, void *conf, const char *arg)
+const char* ApacheConfigHandlers::otel_set_serviceInstanceId(cmd_parms *cmd, void *conf, const char *arg)
 {
-    appd_cfg* cfg = (appd_cfg*) conf;
-    const char* rc = helperChar(cmd, cfg, arg, cfg->serviceInstanceId, cfg->serviceInstanceId_initialized, "appd_set_serviceInstanceId");
+    otel_cfg* cfg = (otel_cfg*) conf;
+    const char* rc = helperChar(cmd, cfg, arg, cfg->serviceInstanceId, cfg->serviceInstanceId_initialized, "otel_set_serviceInstanceId");
     if (cfg->serviceNamespace_initialized && cfg->serviceName_initialized && cfg->serviceInstanceId_initialized)
     {
         // There are separate Apache directives for setting serviceNamespace, serviceName and serviceInstanceId.
@@ -208,66 +216,66 @@ const char* ApacheConfigHandlers::appd_set_serviceInstanceId(cmd_parms *cmd, voi
 
 //  char *otelMaxQueueSize;
 //  int otelMaxQueueSize_initialized;
-const char* ApacheConfigHandlers::appd_set_otelMaxQueueSize(cmd_parms *cmd, void *conf, const char *arg)
+const char* ApacheConfigHandlers::otel_set_otelMaxQueueSize(cmd_parms *cmd, void *conf, const char *arg)
 {
-    appd_cfg* cfg = (appd_cfg*) conf;
-    return helperChar(cmd, cfg, arg, cfg->otelMaxQueueSize, cfg->otelMaxQueueSize_initialized, "appd_set_otelMaxQueueSize");
+    otel_cfg* cfg = (otel_cfg*) conf;
+    return helperChar(cmd, cfg, arg, cfg->otelMaxQueueSize, cfg->otelMaxQueueSize_initialized, "otel_set_otelMaxQueueSize");
 }
 
 //  char *otelScheduledDelay;
 //  int otelScheduledDelay_initialized;
-const char* ApacheConfigHandlers::appd_set_otelScheduledDelay(cmd_parms *cmd, void *conf, const char *arg)
+const char* ApacheConfigHandlers::otel_set_otelScheduledDelay(cmd_parms *cmd, void *conf, const char *arg)
 {
-    appd_cfg* cfg = (appd_cfg*) conf;
-    return helperChar(cmd, cfg, arg, cfg->otelScheduledDelay, cfg->otelScheduledDelay_initialized, "appd_set_otelScheduledDelay");
+    otel_cfg* cfg = (otel_cfg*) conf;
+    return helperChar(cmd, cfg, arg, cfg->otelScheduledDelay, cfg->otelScheduledDelay_initialized, "otel_set_otelScheduledDelay");
 }
 
 //  char *otelExportTimeout;
 //  int otelExportTimeout_initialized;
-const char* ApacheConfigHandlers::appd_set_otelExportTimeout(cmd_parms *cmd, void *conf, const char *arg)
+const char* ApacheConfigHandlers::otel_set_otelExportTimeout(cmd_parms *cmd, void *conf, const char *arg)
 {
-    appd_cfg* cfg = (appd_cfg*) conf;
-    return helperChar(cmd, cfg, arg, cfg->otelExportTimeout, cfg->otelExportTimeout_initialized, "appd_set_otelExportTimeout");
+    otel_cfg* cfg = (otel_cfg*) conf;
+    return helperChar(cmd, cfg, arg, cfg->otelExportTimeout, cfg->otelExportTimeout_initialized, "otel_set_otelExportTimeout");
 }
 
 //  char *otelMaxExportBatchSize;
 //  int otelMaxExportBatchSize_initialized;
-const char* ApacheConfigHandlers::appd_set_otelMaxExportBatchSize(cmd_parms *cmd, void *conf, const char *arg)
+const char* ApacheConfigHandlers::otel_set_otelMaxExportBatchSize(cmd_parms *cmd, void *conf, const char *arg)
 {
-    appd_cfg* cfg = (appd_cfg*) conf;
-    return helperChar(cmd, cfg, arg, cfg->otelMaxExportBatchSize, cfg->otelMaxExportBatchSize_initialized, "appd_set_otelMaxExportBatchSize");
+    otel_cfg* cfg = (otel_cfg*) conf;
+    return helperChar(cmd, cfg, arg, cfg->otelMaxExportBatchSize, cfg->otelMaxExportBatchSize_initialized, "otel_set_otelMaxExportBatchSize");
 }
 
 //  int resolveBackends;
 //  int resolveBackends_initialized;
-const char* ApacheConfigHandlers::appd_set_resolveBackends(cmd_parms *cmd, void *conf, const char *arg)
+const char* ApacheConfigHandlers::otel_set_resolveBackends(cmd_parms *cmd, void *conf, const char *arg)
 {
-    appd_cfg* cfg = (appd_cfg*) conf;
-    return helperInt(cmd, cfg, arg, cfg->resolveBackends, cfg->resolveBackends_initialized, "appd_set_resolveBackends");
+    otel_cfg* cfg = (otel_cfg*) conf;
+    return helperInt(cmd, cfg, arg, cfg->resolveBackends, cfg->resolveBackends_initialized, "otel_set_resolveBackends");
 }
 
 //  int traceAsError;
 //  int traceAsError_initialized;
-const char* ApacheConfigHandlers::appd_set_traceAsError(cmd_parms *cmd, void *conf, const char *arg)
+const char* ApacheConfigHandlers::otel_set_traceAsError(cmd_parms *cmd, void *conf, const char *arg)
 {
-    appd_cfg* cfg = (appd_cfg*) conf;
-    helperInt(cmd, cfg, arg, cfg->traceAsError, cfg->traceAsError_initialized, "appd_set_traceAsError");
+    otel_cfg* cfg = (otel_cfg*) conf;
+    helperInt(cmd, cfg, arg, cfg->traceAsError, cfg->traceAsError_initialized, "otel_set_traceAsError");
     ApacheTracing::m_traceAsErrorFromUser = cfg->traceAsError;
     return NULL;
 }
 
 //  int reportAllInstrumentedModules;
 //  int reportAllInstrumentedModules_initialized;
-const char* ApacheConfigHandlers::appd_set_reportAllInstrumentedModules(cmd_parms *cmd, void *conf, const char *arg)
+const char* ApacheConfigHandlers::otel_set_reportAllInstrumentedModules(cmd_parms *cmd, void *conf, const char *arg)
 {
-    appd_cfg* cfg = (appd_cfg*) conf;
+    otel_cfg* cfg = (otel_cfg*) conf;
     helperInt(
             cmd,
             cfg,
             arg,
             cfg->reportAllInstrumentedModules,
             cfg->reportAllInstrumentedModules_initialized,
-            "appd_set_reportAllInstrumentedModules");
+            "otel_set_reportAllInstrumentedModules");
     ApacheHooks::m_reportAllStages = cfg->reportAllInstrumentedModules;
     return NULL;
 }
@@ -276,39 +284,39 @@ const char* ApacheConfigHandlers::appd_set_reportAllInstrumentedModules(cmd_parm
 
 // int maskCookie
 // int maskCookie_intialized
-const char* ApacheConfigHandlers::appd_set_maskCookie(cmd_parms *cmd, void *conf, const char *arg)
+const char* ApacheConfigHandlers::otel_set_maskCookie(cmd_parms *cmd, void *conf, const char *arg)
 {
-   appd_cfg* cfg = (appd_cfg*) conf;
-   helperInt(cmd, cfg, arg, cfg->maskCookie, cfg->maskCookie_initialized, "appd_set_maskCookie");
+   otel_cfg* cfg = (otel_cfg*) conf;
+   helperInt(cmd, cfg, arg, cfg->maskCookie, cfg->maskCookie_initialized, "otel_set_maskCookie");
    // ApacheHooks::m_maskCookie = cfg->maskCookie;
    return NULL;
 }
 
 // char *cookiePattern
 // int cookiePattern_initialized
-const char* ApacheConfigHandlers::appd_set_cookiePattern(cmd_parms *cmd, void *conf, const char *arg)
+const char* ApacheConfigHandlers::otel_set_cookiePattern(cmd_parms *cmd, void *conf, const char *arg)
 {
-   appd_cfg* cfg = (appd_cfg*) conf;
-   helperChar(cmd, cfg, arg, cfg->cookiePattern, cfg->cookiePattern_initialized, "appd_set_cookiePattern");
+   otel_cfg* cfg = (otel_cfg*) conf;
+   helperChar(cmd, cfg, arg, cfg->cookiePattern, cfg->cookiePattern_initialized, "otel_set_cookiePattern");
    // ApacheHooks::m_cookiePattern = cfg->cookiePattern;
    return NULL;
 }
 
 // int maskSmUser
 // int maskSmUser_intialized
-const char* ApacheConfigHandlers::appd_set_maskSmUser(cmd_parms *cmd, void *conf, const char *arg)
+const char* ApacheConfigHandlers::otel_set_maskSmUser(cmd_parms *cmd, void *conf, const char *arg)
 {
-   appd_cfg* cfg = (appd_cfg*) conf;
-   helperInt(cmd, cfg, arg, cfg->maskSmUser, cfg->maskSmUser_initialized, "appd_set_maskSmUser");
+   otel_cfg* cfg = (otel_cfg*) conf;
+   helperInt(cmd, cfg, arg, cfg->maskSmUser, cfg->maskSmUser_initialized, "otel_set_maskSmUser");
    // ApacheHooks::m_maskSmUser = cfg->maskSmUser;
    return NULL;
 }
 // char *delimiter
 // int delimiter_initialized
-const char* ApacheConfigHandlers::appd_set_delimiter(cmd_parms *cmd, void *conf, const char *arg)
+const char* ApacheConfigHandlers::otel_set_delimiter(cmd_parms *cmd, void *conf, const char *arg)
 {
-    appd_cfg* cfg = (appd_cfg*) conf;
-    helperChar(cmd, cfg, arg, cfg->delimiter, cfg->delimiter_initialized, "appd_set_delimiter");
+    otel_cfg* cfg = (otel_cfg*) conf;
+    helperChar(cmd, cfg, arg, cfg->delimiter, cfg->delimiter_initialized, "otel_set_delimiter");
     // UrlFilterManager::m_delimiter = cfg->delimiter;
     if (cfg->delimiter_initialized && cfg->segment_initialized && cfg->matchFilter_initialized && cfg->matchPattern_initialized)
     {
@@ -320,10 +328,10 @@ const char* ApacheConfigHandlers::appd_set_delimiter(cmd_parms *cmd, void *conf,
 
 // char *segment
 // int segment_initialized
-const char* ApacheConfigHandlers::appd_set_segment(cmd_parms *cmd, void *conf, const char *arg)
+const char* ApacheConfigHandlers::otel_set_segment(cmd_parms *cmd, void *conf, const char *arg)
 {
-    appd_cfg* cfg = (appd_cfg*) conf;
-    helperChar(cmd, cfg, arg, cfg->segment, cfg->segment_initialized, "appd_set_segment");
+    otel_cfg* cfg = (otel_cfg*) conf;
+    helperChar(cmd, cfg, arg, cfg->segment, cfg->segment_initialized, "otel_set_segment");
     // UrlFilterManager::m_segment = cfg->segment;
     if (cfg->delimiter_initialized && cfg->segment_initialized && cfg->matchFilter_initialized && cfg->matchPattern_initialized)
     {
@@ -335,10 +343,10 @@ const char* ApacheConfigHandlers::appd_set_segment(cmd_parms *cmd, void *conf, c
 
 // char *matchFilter
 // int matchFilter_initialized
-const char* ApacheConfigHandlers::appd_set_matchFilter(cmd_parms *cmd, void *conf, const char *arg)
+const char* ApacheConfigHandlers::otel_set_matchFilter(cmd_parms *cmd, void *conf, const char *arg)
 {
-    appd_cfg* cfg = (appd_cfg*) conf;
-    helperChar(cmd, cfg, arg, cfg->matchFilter, cfg->matchFilter_initialized, "appd_set_matchFilter");
+    otel_cfg* cfg = (otel_cfg*) conf;
+    helperChar(cmd, cfg, arg, cfg->matchFilter, cfg->matchFilter_initialized, "otel_set_matchFilter");
     // UrlFilterManager::m_matchFilter = cfg->matchFilter;
     if (cfg->delimiter_initialized && cfg->segment_initialized && cfg->matchFilter_initialized && cfg->matchPattern_initialized)
     {
@@ -350,10 +358,10 @@ const char* ApacheConfigHandlers::appd_set_matchFilter(cmd_parms *cmd, void *con
 
 // char *matchPattern
 // int matchPattern_initialized
-const char* ApacheConfigHandlers::appd_set_matchPattern(cmd_parms *cmd, void *conf, const char *arg)
+const char* ApacheConfigHandlers::otel_set_matchPattern(cmd_parms *cmd, void *conf, const char *arg)
 {
-    appd_cfg* cfg = (appd_cfg*) conf;
-    helperChar(cmd, cfg, arg, cfg->matchPattern, cfg->matchPattern_initialized, "appd_set_matchPattern");
+    otel_cfg* cfg = (otel_cfg*) conf;
+    helperChar(cmd, cfg, arg, cfg->matchPattern, cfg->matchPattern_initialized, "otel_set_matchPattern");
     // UrlFilterManager::m_matchPattern = cfg->matchPattern;
     if (cfg->delimiter_initialized && cfg->segment_initialized && cfg->matchFilter_initialized && cfg->matchPattern_initialized)
     {
@@ -365,10 +373,10 @@ const char* ApacheConfigHandlers::appd_set_matchPattern(cmd_parms *cmd, void *co
 
 // char *segmentType
 // int segmentType_initialized
-const char* ApacheConfigHandlers::appd_set_segmentType(cmd_parms *cmd, void *conf, const char *arg)
+const char* ApacheConfigHandlers::otel_set_segmentType(cmd_parms *cmd, void *conf, const char *arg)
 {
-    appd_cfg* cfg = (appd_cfg*) conf;
-    helperChar(cmd, cfg, arg, cfg->segmentType, cfg->segmentType_initialized, "appd_set_segmentType");
+    otel_cfg* cfg = (otel_cfg*) conf;
+    helperChar(cmd, cfg, arg, cfg->segmentType, cfg->segmentType_initialized, "otel_set_segmentType");
     if (cfg->segmentType_initialized && cfg->segmentParameter_initialized)
     {
 
@@ -378,10 +386,10 @@ const char* ApacheConfigHandlers::appd_set_segmentType(cmd_parms *cmd, void *con
 
 // char *segmentParameter
 // int segmentParameter_initialized
-const char* ApacheConfigHandlers::appd_set_segmentParameter(cmd_parms *cmd, void *conf, const char *arg)
+const char* ApacheConfigHandlers::otel_set_segmentParameter(cmd_parms *cmd, void *conf, const char *arg)
 {
-    appd_cfg* cfg = (appd_cfg*) conf;
-    helperChar(cmd, cfg, arg, cfg->segmentParameter, cfg->segmentParameter_initialized, "appd_set_segmentParameter");
+    otel_cfg* cfg = (otel_cfg*) conf;
+    helperChar(cmd, cfg, arg, cfg->segmentParameter, cfg->segmentParameter_initialized, "otel_set_segmentParameter");
     if (cfg->segmentType_initialized && cfg->segmentParameter_initialized)
     {
 
@@ -389,7 +397,7 @@ const char* ApacheConfigHandlers::appd_set_segmentParameter(cmd_parms *cmd, void
     return NULL;
 }
 
-std::string ApacheConfigHandlers::computeContextName(const appd_cfg* cfg)
+std::string ApacheConfigHandlers::computeContextName(const otel_cfg* cfg)
 {
     if (!cfg->serviceNamespace_initialized || !cfg->serviceName_initialized || !cfg->serviceInstanceId_initialized)
     {
@@ -401,14 +409,14 @@ std::string ApacheConfigHandlers::computeContextName(const appd_cfg* cfg)
     return oss.str();
 }
 
-const char* ApacheConfigHandlers::appd_add_webserver_context(
+const char* ApacheConfigHandlers::otel_add_webserver_context(
         cmd_parms* cmd,
         void* conf,
         const char* serviceNamespace,
         const char* serviceName,
         const char* serviceInstanceId)
 {
-    appd_cfg* cfg = (appd_cfg*) conf;
+    otel_cfg* cfg = (otel_cfg*) conf;
 
     cfg->serviceNamespace = apr_pstrdup(cmd->pool, serviceNamespace);
     cfg->serviceNamespace_initialized = 1;
@@ -421,16 +429,20 @@ const char* ApacheConfigHandlers::appd_add_webserver_context(
     return NULL;
 }
 
-void appd_cfg::init()
+void otel_cfg::init()
 {
     // Agent to Controller Connection Configuration
-    // appdEnabled                 OPTIONAL: 0 for false, 1 for true (defaults to true)
-    appdEnabled = 1;
-    appdEnabled_initialized = 0;
+    // otelEnabled                 OPTIONAL: 0 for false, 1 for true (defaults to true)
+    otelEnabled = 1;
+    otelEnabled_initialized = 0;
 
-    // otelExporterEndpoint         REQUIRED: AppDynamics endpoint where the OpenTelemetry Exporter inside OTel SDK sends traces
+    // otelExporterEndpoint         REQUIRED: Collecter endpoint where the OpenTelemetry Exporter inside OTel SDK sends traces
     otelExporterEndpoint = "";
     otelExporterEndpoint_initialized = 0;
+
+    // otelExporterOtlpHeaders         Optional: OTLP headers as key value pairs
+    otelExporterOtlpHeaders = "";
+    otelExporterOtlpHeaders_initialized = 0;
 
     // otelSslEnabled       OPTIONAL: Decides whether the connection to the endpoint is secured
     otelSslEnabled = 0;
@@ -452,11 +464,11 @@ void appd_cfg::init()
     otelSamplerType = "ALWAYSON";
     otelSamplerType_initialized = 0;
 
-    // serviceNamespace             REQUIRED: A namespace for the AppdServiceName; equivalent to your AppDynamics application name
+    // serviceNamespace             REQUIRED: A namespace for the ServiceName;
     serviceNamespace = "";
     serviceNamespace_initialized = 0;
 
-    // serviceName                  REQUIRED: Logical name of the service; equivalent to your AppDynamics tier name
+    // serviceName                  REQUIRED: Logical name of the service;
     serviceName = "";
     serviceName_initialized = 0;
 
@@ -529,49 +541,49 @@ void appd_cfg::init()
     segmentParameter_initialized = 0;
 }
 
-bool appd_cfg::validate(const request_rec *r)
+bool otel_cfg::validate(const request_rec *r)
 {
     bool config_valid = true;
 
     // Agent to Controller Connection Configuration
-    // appdEnabled             - should be either 1 or 0
-    if ((appdEnabled != 0) && (appdEnabled != 1))
+    // otelEnabled             - should be either 1 or 0
+    if ((otelEnabled != 0) && (otelEnabled != 1))
     {
-        ApacheTracing::writeError(r->server, __func__, "Enabled flag is invalid - appd not enabled");
+        ApacheTracing::writeError(r->server, __func__, "Enabled flag is invalid - otel not enabled");
         config_valid = false;
     }
 
     // otelExporterEndpoint          - must be non empty
     if (strlen(otelExporterEndpoint) < 1)
     {
-        ApacheTracing::writeError(r->server, __func__, "Otel Exporter Endpoint not specified - appd not enabled");
+        ApacheTracing::writeError(r->server, __func__, "Otel Exporter Endpoint not specified - otel not enabled");
         config_valid = false;
     }
 
     if ((otelSslEnabled != 0) && strlen(otelSslCertificatePath) < 1)
     {
-        ApacheTracing::writeError(r->server, __func__, "Otel Exporter Certificate Path not specified - appd not enabled");
+        ApacheTracing::writeError(r->server, __func__, "Otel Exporter Certificate Path not specified - otel not enabled");
         config_valid = false;
     }
 
     // serviceNamespace               - must be specified
     if (strlen(serviceNamespace) < 1)
     {
-        ApacheTracing::writeError(r->server, __func__, "Service Namespace not specified - appd not enabled");
+        ApacheTracing::writeError(r->server, __func__, "Service Namespace not specified - otel not enabled");
         config_valid = false;
     }
 
     // serviceName         - must be non empty
     if (strlen(serviceName) < 1)
     {
-        ApacheTracing::writeError(r->server, __func__, "Service name not specified - appd not enabled");
+        ApacheTracing::writeError(r->server, __func__, "Service name not specified - otel not enabled");
         config_valid = false;
     }
 
     // serviceInstanceId               - must be non empty
     if (strlen(serviceInstanceId) < 1)
     {
-        ApacheTracing::writeError(r->server, __func__, "Service Instance ID not specified - appd not enabled");
+        ApacheTracing::writeError(r->server, __func__, "Service Instance ID not specified - otel not enabled");
         config_valid = false;
     }
 
@@ -588,12 +600,12 @@ bool appd_cfg::validate(const request_rec *r)
 //
 // The return value is a pointer to the created module-specific
 // structure.
-void* ApacheConfigHandlers::appd_create_dir_config(apr_pool_t* p, char* dirspec)
+void* ApacheConfigHandlers::otel_create_dir_config(apr_pool_t* p, char* dirspec)
 {
     const char* dname = (dirspec != NULL) ? dirspec : "";
 
     // Allocate the space for our record from the pool supplied.
-    appd_cfg* cfg = (appd_cfg*) apr_pcalloc(p, sizeof(appd_cfg));
+    otel_cfg* cfg = (otel_cfg*) apr_pcalloc(p, sizeof(otel_cfg));
     if (cfg) // Set Default values on creation
     {
         cfg->init(); // Set Default values on creation
@@ -618,19 +630,19 @@ void* ApacheConfigHandlers::appd_create_dir_config(apr_pool_t* p, char* dirspec)
 //
 // The return value is a pointer to the created module-specific structure
 // containing the merged values.
-void* ApacheConfigHandlers::appd_merge_dir_config(apr_pool_t* p, void* parent_conf, void* newloc_conf)
+void* ApacheConfigHandlers::otel_merge_dir_config(apr_pool_t* p, void* parent_conf, void* newloc_conf)
 {
-    // the "(char*)" is to remove the compiler warning, look at appd_create_dir_config for more explanation
-    appd_cfg* merged_config = (appd_cfg*) appd_create_dir_config(p, (char*)"Merged Directory Configuration");
-    appd_cfg* pconf = (appd_cfg*) parent_conf;
-    appd_cfg* nconf = (appd_cfg*) newloc_conf;
+    // the "(char*)" is to remove the compiler warning, look at otel_create_dir_config for more explanation
+    otel_cfg* merged_config = (otel_cfg*) otel_create_dir_config(p, (char*)"Merged Directory Configuration");
+    otel_cfg* pconf = (otel_cfg*) parent_conf;
+    otel_cfg* nconf = (otel_cfg*) newloc_conf;
 
     // Agent to Controller Connection Configuration
-    // appdEnabled             OPTIONAL: 0 for false, 1 for true (defaults to false)
-    merged_config->appdEnabled = nconf->appdEnabled_initialized ? nconf->appdEnabled : pconf->appdEnabled;
-    merged_config->appdEnabled_initialized = 1;
+    // otelEnabled             OPTIONAL: 0 for false, 1 for true (defaults to false)
+    merged_config->otelEnabled = nconf->otelEnabled_initialized ? nconf->otelEnabled : pconf->otelEnabled;
+    merged_config->otelEnabled_initialized = 1;
 
-    // otelExporterEndpoint          REQUIRED: AppDynamics endpoint where the OpenTelemetry Exporter inside OTel SDK sends traces
+    // otelExporterEndpoint          REQUIRED: Collector endpoint where the OpenTelemetry Exporter inside OTel SDK sends traces
     merged_config->otelExporterEndpoint = nconf->otelExporterEndpoint_initialized ?
             apr_pstrdup(p, nconf->otelExporterEndpoint) : apr_pstrdup(p, pconf->otelExporterEndpoint);
     merged_config->otelExporterEndpoint_initialized = 1;
@@ -660,12 +672,12 @@ void* ApacheConfigHandlers::appd_merge_dir_config(apr_pool_t* p, void* parent_co
             apr_pstrdup(p, nconf->otelSamplerType) : apr_pstrdup(p, pconf->otelSamplerType);
     merged_config->otelSamplerType_initialized = 1;
 
-    // serviceNamespace          REQUIRED: A namespace for the AppdServiceName; equivalent to your AppDynamics application name
+    // serviceNamespace          REQUIRED: A namespace for the ServiceName;
     merged_config->serviceNamespace = nconf->serviceNamespace_initialized ?
             apr_pstrdup(p, nconf->serviceNamespace) : apr_pstrdup(p, pconf->serviceNamespace);
     merged_config->serviceNamespace_initialized = 1;
 
-    // serviceName               REQUIRED: Logical name of the service; equivalent to your AppDynamics tier name
+    // serviceName               REQUIRED: Logical name of the service;
     merged_config->serviceName = nconf->serviceName_initialized ?
             apr_pstrdup(p, nconf->serviceName) : apr_pstrdup(p, pconf->serviceName);
     merged_config->serviceName_initialized = 1;
@@ -743,9 +755,9 @@ void* ApacheConfigHandlers::appd_merge_dir_config(apr_pool_t* p, void* parent_co
     return static_cast<void*>(merged_config);
 }
 
-appd_cfg* ApacheConfigHandlers::getConfig(const request_rec* r)
+otel_cfg* ApacheConfigHandlers::getConfig(const request_rec* r)
 {
-    appd_cfg* cfg = ApacheConfigHandlers::our_dconfig(r);
+    otel_cfg* cfg = ApacheConfigHandlers::our_dconfig(r);
 
     if (cfg && cfg->validate(r))
     {
@@ -758,18 +770,21 @@ appd_cfg* ApacheConfigHandlers::getConfig(const request_rec* r)
 /*
     Function to set user data/config in the process pool
 */
-appd_cfg* ApacheConfigHandlers::getProcessConfig(const request_rec* r)
+otel_cfg* ApacheConfigHandlers::getProcessConfig(const request_rec* r)
 {
-    appd_cfg* our_config = ApacheConfigHandlers::getConfig(r);
+    otel_cfg* our_config = ApacheConfigHandlers::getConfig(r);
 
-    appd_cfg *process_cfg;
-    process_cfg = (appd_cfg *) apr_pcalloc(r->server->process->pool, sizeof(appd_cfg));
+    otel_cfg *process_cfg;
+    process_cfg = (otel_cfg *) apr_pcalloc(r->server->process->pool, sizeof(otel_cfg));
 
-    process_cfg->appdEnabled = our_config->appdEnabled;
-    process_cfg->appdEnabled_initialized = our_config->appdEnabled_initialized;
+    process_cfg->otelEnabled = our_config->otelEnabled;
+    process_cfg->otelEnabled_initialized = our_config->otelEnabled_initialized;
 
     process_cfg->otelExporterEndpoint = apr_pstrdup(r->server->process->pool, our_config->otelExporterEndpoint);
     process_cfg->otelExporterEndpoint_initialized = our_config->otelExporterEndpoint_initialized;
+
+    process_cfg->otelExporterOtlpHeaders = apr_pstrdup(r->server->process->pool, our_config->otelExporterOtlpHeaders);
+    process_cfg->otelExporterOtlpHeaders_initialized = our_config->otelExporterOtlpHeaders_initialized;
 
     process_cfg->otelSslEnabled = our_config->otelSslEnabled;
     process_cfg->otelSslEnabled_initialized = our_config->otelSslEnabled_initialized;
@@ -837,7 +852,7 @@ std::string ApacheConfigHandlers::hashPassword(const char* arg)
 /*
     Function to log config.
 */
-void ApacheConfigHandlers::traceConfig(const request_rec* r, const appd_cfg* cfg)
+void ApacheConfigHandlers::traceConfig(const request_rec* r, const otel_cfg* cfg)
 {
     ApacheTracing::writeTrace(r->server, __func__,
             "config{"
@@ -863,7 +878,7 @@ void ApacheConfigHandlers::traceConfig(const request_rec* r, const appd_cfg* cfg
                 "(SegmentType=\"%s\")"
                 "(SegmentParameter=\"%s\")"
             "}",
-            cfg->appdEnabled,
+            cfg->otelEnabled,
             cfg->otelExporterEndpoint,
             cfg->otelSslEnabled,
             cfg->otelSslCertificatePath,

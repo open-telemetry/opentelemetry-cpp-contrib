@@ -22,7 +22,7 @@
 #include <opentelemetry/common/key_value_iterable_view.h>
 
 using ::testing::Return;
-using namespace appd::core::sdkwrapper;
+using namespace otel::core::sdkwrapper;
 using ::testing::_;
 
 MATCHER_P(HasLongIntValue, value, "") {
@@ -32,7 +32,7 @@ MATCHER_P(HasLongIntValue, value, "") {
 TEST(ServerSpan, ServerSpan_Create)
 {
 	MockSdkHelperFactory mockSdkHelperFactory;
-	appd::core::OtelPropagators testOtelPropagators;
+	otel::core::OtelPropagators testOtelPropagators;
 	testOtelPropagators.push_back(std::unique_ptr<MockPropagator>(
 		new MockPropagator()));
 	MockPropagator* mockPropagator = dynamic_cast<MockPropagator*>
@@ -56,7 +56,7 @@ TEST(ServerSpan, ServerSpan_Create)
 	EXPECT_CALL(*mockPropagator, ExtractImpl(_)).Times(1);
 	EXPECT_CALL(mockSdkHelperFactory, GetPropagators()).
 		Times(1).
-		WillOnce(InvokeWithoutArgs([&]()-> appd::core::OtelPropagators&{
+		WillOnce(InvokeWithoutArgs([&]()-> otel::core::OtelPropagators&{
 			return testOtelPropagators;
 		}));
 
@@ -81,7 +81,7 @@ TEST(ServerSpan, ServerSpan_Create)
 TEST(ServerSpan, ServerSpan_End)
 {
 	MockSdkHelperFactory mockSdkHelperFactory;
-	appd::core::OtelPropagators testOtelPropagators;
+	otel::core::OtelPropagators testOtelPropagators;
 	testOtelPropagators.push_back(std::unique_ptr<MockPropagator>(
 		new MockPropagator()));
 	MockPropagator* mockPropagator = dynamic_cast<MockPropagator*>
@@ -105,7 +105,7 @@ TEST(ServerSpan, ServerSpan_End)
 	EXPECT_CALL(*mockPropagator, ExtractImpl(_)).Times(1);
 	EXPECT_CALL(mockSdkHelperFactory, GetPropagators()).
 		Times(1).
-		WillOnce(InvokeWithoutArgs([&]()-> appd::core::OtelPropagators&{
+		WillOnce(InvokeWithoutArgs([&]()-> otel::core::OtelPropagators&{
 			return testOtelPropagators;
 		}));
 
@@ -133,7 +133,7 @@ TEST(ServerSpan, ServerSpan_End)
 TEST(ServerSpan, ServerSpan_AddEvent)
 {
 	MockSdkHelperFactory mockSdkHelperFactory;
-	appd::core::OtelPropagators testOtelPropagators;
+	otel::core::OtelPropagators testOtelPropagators;
 	testOtelPropagators.push_back(std::unique_ptr<MockPropagator>(
 		new MockPropagator()));
 	MockPropagator* mockPropagator = dynamic_cast<MockPropagator*>
@@ -157,7 +157,7 @@ TEST(ServerSpan, ServerSpan_AddEvent)
 	EXPECT_CALL(*mockPropagator, ExtractImpl(_)).Times(1);
 	EXPECT_CALL(mockSdkHelperFactory, GetPropagators()).
 		Times(1).
-		WillOnce(InvokeWithoutArgs([&]()-> appd::core::OtelPropagators&{
+		WillOnce(InvokeWithoutArgs([&]()-> otel::core::OtelPropagators&{
 			return testOtelPropagators;
 		}));
 
@@ -193,7 +193,7 @@ TEST(ServerSpan, ServerSpan_AddEvent)
 TEST(ServerSpan, ServerSpan_AddAttribute)
 {
 	MockSdkHelperFactory mockSdkHelperFactory;
-	appd::core::OtelPropagators testOtelPropagators;
+	otel::core::OtelPropagators testOtelPropagators;
 	testOtelPropagators.push_back(std::unique_ptr<MockPropagator>(
 		new MockPropagator()));
 	MockPropagator* mockPropagator = dynamic_cast<MockPropagator*>
@@ -217,7 +217,7 @@ TEST(ServerSpan, ServerSpan_AddAttribute)
 	EXPECT_CALL(*mockPropagator, ExtractImpl(_)).Times(1);
 	EXPECT_CALL(mockSdkHelperFactory, GetPropagators()).
 		Times(1).
-		WillOnce(InvokeWithoutArgs([&]()-> appd::core::OtelPropagators&{
+		WillOnce(InvokeWithoutArgs([&]()-> otel::core::OtelPropagators&{
 			return testOtelPropagators;
 		}));
 
