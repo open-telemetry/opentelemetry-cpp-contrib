@@ -10,17 +10,27 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   set(MAIN_PROJECT ON)
 endif()
 
+if(NOT WIN32)
+  find_package(CURL REQUIRED)
+endif()
+
 add_definitions(-DHAVE_CONSOLE_LOG)
 if(MAIN_PROJECT)
   find_package(opentelemetry-cpp REQUIRED)
 endif()
 
-find_package(CURL REQUIRED)
-
 include_directories(include)
+
 # create geneva metrics exporter
-add_library(opentelemetry_exporter_geneva_metrics
-            src/exporter.cc src/unix_domain_socket_data_transport.cc)
+if(WIN32)
+  add_library(
+    opentelemetry_exporter_geneva_metrics
+    src/exporter.cc src/etw_data_transport.cc
+    src/unix_domain_socket_data_transport.cc)
+else()
+  add_library(opentelemetry_exporter_geneva_metrics
+              src/exporter.cc src/unix_domain_socket_data_transport.cc)
+endif()
 
 if(MAIN_PROJECT)
    target_include_directories(opentelemetry_exporter_geneva_metrics
