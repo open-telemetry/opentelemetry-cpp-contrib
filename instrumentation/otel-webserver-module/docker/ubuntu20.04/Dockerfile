@@ -83,7 +83,7 @@ RUN mkdir -p dependencies/opentelemetry/${OPENTELEMETRY_VERSION}/lib \
 
 #install Apr
 RUN mkdir -p dependencies/apr/${APR_VERSION} \
-    && wget https://dlcdn.apache.org//apr/apr-${APR_VERSION}.tar.gz --no-check-certificate \
+    && wget https://archive.apache.org/dist/apr/apr-${APR_VERSION}.tar.gz --no-check-certificate \
     && tar -xf apr-${APR_VERSION}.tar.gz \
     && cd apr-${APR_VERSION} \
     && ./configure --prefix=/dependencies/apr/${APR_VERSION} --enable-static=yes --enable-shared=no --with-pic && echo $? \
@@ -103,7 +103,7 @@ RUN mkdir -p dependencies/expat/${EXPAT_VERSION} \
 
 # install Apr-util
 RUN mkdir -p dependencies/apr-util/${APRUTIL_VERSION} \
-    && wget https://dlcdn.apache.org//apr/apr-util-${APRUTIL_VERSION}.tar.gz --no-check-certificate \
+    && wget https://archive.apache.org/dist/apr/apr-util-${APRUTIL_VERSION}.tar.gz --no-check-certificate \
     && tar -xf apr-util-${APRUTIL_VERSION}.tar.gz \
     && cd apr-util-${APRUTIL_VERSION} \
     && ./configure --prefix=/dependencies/apr-util/${APRUTIL_VERSION} --enable-static=yes --enable-shared=no --with-pic --with-apr=/dependencies/apr/1.7.0 --with-expat=/dependencies/expat/2.3.0 && echo $? \
