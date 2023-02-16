@@ -30,6 +30,7 @@ ScopedSpan::ScopedSpan(
 {
 	trace::StartSpanOptions options{};
 	options.kind = kind;
+	//options.parent = GetCurrentSpan(incomingContext);
 	mSpan = sdkHelperFactory->GetTracer()->StartSpan(name, attributes, options);
 	mScope.reset(new trace::Scope(mSpan));
 	mSpanKind = kind;

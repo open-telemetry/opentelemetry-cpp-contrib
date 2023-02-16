@@ -286,6 +286,13 @@ static ngx_command_t ngx_http_opentelemetry_commands[] = {
       offsetof(ngx_http_opentelemetry_loc_conf_t, nginxModuleTraceAsError),
       NULL},
 
+    { ngx_string("NginxModuleTrustIncomingSpans"),
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
+      ngx_conf_set_flag_slot,
+      NGX_HTTP_LOC_CONF_OFFSET,
+      offsetof(ngx_http_opentelemetry_loc_conf_t, nginxModuleTrustIncomingSpans),
+      NULL},
+
     { ngx_string("NginxModuleReportAllInstrumentedModules"),
       NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
       ngx_conf_set_flag_slot,
@@ -437,6 +444,7 @@ static void* ngx_http_opentelemetry_create_loc_conf(ngx_conf_t *cf)
     conf->nginxModuleTraceAsError              = NGX_CONF_UNSET;
     conf->nginxModuleOtelMaxQueueSize          = NGX_CONF_UNSET;
     conf->nginxModuleOtelSslEnabled            = NGX_CONF_UNSET;
+    conf->nginxModuleTrustIncomingSpans        = NGX_CONF_UNSET;
 
     return conf;
 }
@@ -453,6 +461,7 @@ static char* ngx_http_opentelemetry_merge_loc_conf(ngx_conf_t *cf, void *parent,
     ngx_conf_merge_value(conf->nginxModuleTraceAsError, prev->nginxModuleTraceAsError, 0);
     ngx_conf_merge_value(conf->nginxModuleMaskCookie, prev->nginxModuleMaskCookie, 0);
     ngx_conf_merge_value(conf->nginxModuleMaskSmUser, prev->nginxModuleMaskSmUser, 0);
+    ngx_conf_merge_value(conf->nginxModuleTrustIncomingSpans, prev->nginxModuleTrustIncomingSpans, 1);
 
     ngx_conf_merge_str_value(conf->nginxModuleOtelSpanExporter, prev->nginxModuleOtelSpanExporter, "");
     ngx_conf_merge_str_value(conf->nginxModuleOtelExporterEndpoint, prev->nginxModuleOtelExporterEndpoint, "");
@@ -711,11 +720,13 @@ static OTEL_SDK_STATUS_CODE otel_startInteraction(ngx_http_request_t* r, const c
     if(ctx && ctx->otel_req_handle_key)
     {
         ngx_flag_t resolveBackends = false;
+        ngx_flag_t trustIncomingSpans = false;
         ngx_http_opentelemetry_loc_conf_t* conf;
         conf = ngx_http_get_module_loc_conf(r, ngx_http_opentelemetry_module);
         if(conf)
         {
             resolveBackends = conf->nginxModuleResolveBackends;
+            trustIncomingSpans = conf->nginxModuleTrustIncomingSpans;
         }
         OTEL_SDK_ENV_RECORD* propagationHeaders = ngx_pcalloc(r->pool, 5 * sizeof(OTEL_SDK_ENV_RECORD));
         if (propagationHeaders == NULL)
@@ -756,6 +767,7 @@ static void otel_payload_decorator(ngx_http_request_t* r, OTEL_SDK_ENV_RECORD* p
    ngx_http_header_t          *hh;
    ngx_http_core_main_conf_t  *cmcf;
    ngx_uint_t       nelts;
+
 
    part = &r->headers_in.headers.part;
    header = (ngx_table_elt_t*)part->elts;
@@ -1477,6 +1489,7 @@ static void traceConfig(ngx_http_request_t *r, ngx_http_opentelemetry_loc_conf_t
                                                       "(ReportAllInstrumentedModules=\"%ld\")"
                                                       "(MaskCookie=\"%ld\")"
                                                       "(MaskSmUser=\"%ld\")"
+                                                      "(TrustIncomingSpans=\"%ld\")"
                                                       "(SegmentType=\"%s\")"
                                                       "(SegmentParameter=\"%s\")"
                                                       " }",
@@ -1500,6 +1513,7 @@ static void traceConfig(ngx_http_request_t *r, ngx_http_opentelemetry_loc_conf_t
                                                       conf->nginxModuleReportAllInstrumentedModules,
                                                       conf->nginxModuleMaskCookie,
                                                       conf->nginxModuleMaskSmUser,
+                                                      conf->nginxModuleTrustIncomingSpans,
                                                       (conf->nginxModuleSegmentType).data,
                                                       (conf->nginxModuleSegmentParameter).data);
 }

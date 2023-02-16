@@ -60,6 +60,7 @@ Monitoring individual modules is crucial to the instrumentation of Apache web se
 |*ApacheModuleSegmentParameter*                  |                 | OPTIONAL: Specify the segment count or segment numbers that you want to display for Span Creation|
 |*ApacheModuleOtelExporterHeaders*               |                 | OPTIONAL: OTEL Exporter header info or Metadata like API key for OTLP endpoint. a list of key value pairs, and these are expected to be represented in a format matching to the W3C Correlation-Context, except that additional semi-colon delimited metadata is not supported, i.e.: key1=value1,key2=value2. |
 
+
 A sample configuration is mentioned in [opentelemetry_module.conf](https://github.com/cisco-open/otel-webserver-module/blob/main/opentelemetry_module.conf)
 
 ### Build and Installation
@@ -176,6 +177,7 @@ Currently, Nginx Webserver module monitores some fixed set of modules, which get
 |*NginxModuleRequestHeaders*                    |                 | OPTIONAL: Specify the request headers to be captured in the span attributes. The headers are Case-Sensitive and should be comma-separated. e.g.```NginxModuleRequestHeaders               Accept-Charset,Accept-Encoding,User-Agent;```|
 |*NginxModuleResponseHeaders*                   |                  | OPTIONAL: Specify the response headers to be captured in the span attributes. The headers are Case-Sensitive and should be comma-separated. e.g.```NginxModuleResponseHeaders                  Content-Length,Content-Type;```|
 |*NginxModuleOtelExporterOtlpHeaders*           |                  | OPTIONAL: OTEL exporter headers like Meta data related exposrted end point. a list of key value pairs, and these are expected to be represented in a format matching to the W3C Correlation-Context, except that additional semi-colon delimited metadata is not supported, i.e.: key1=value1,key2=value2.|
+|*NginxModuleTrustIncomingSpans*                |                  | OPTIONAL: Enables or disables using spans from incoming requests as parent for created ones. (default: ON).|
 
 ### Build and Installation
 #### Prerequisites

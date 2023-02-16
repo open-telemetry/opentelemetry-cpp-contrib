@@ -40,6 +40,7 @@ public:
 
 	void PopulatePropagationHeaders(
 		std::unordered_map<std::string, std::string>& carrier) override;
+	//opentelemetry::trace::SpanContext GetCurrentSpan(opentelemetry::context::Context context);
 
 private:
 	trace::SpanKind GetTraceSpanKind(const SpanKind& kind);

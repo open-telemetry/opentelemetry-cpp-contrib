@@ -91,6 +91,7 @@ typedef struct {
     ngx_flag_t  nginxModuleReportAllInstrumentedModules;
     ngx_flag_t	nginxModuleResolveBackends;
     ngx_flag_t	nginxModuleTraceAsError;
+    ngx_flag_t  nginxModuleTrustIncomingSpans;
     ngx_flag_t  nginxModuleMaskCookie;
     ngx_flag_t  nginxModuleMaskSmUser;
     ngx_str_t   nginxModuleCookieMatchPattern;

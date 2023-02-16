@@ -67,6 +67,15 @@ std::shared_ptr<IScopedSpan> SdkWrapper::CreateSpan(
 	}
 }
 
+/*opentelemetry::trace::SpanContext SdkWrapper::GetCurrentSpan(opentelemetry::context::Context context) {
+  opentelemetry::context::ContextValue span = context.GetValue(trace::kSpanKey);
+  if (nostd::holds_alternative<nostd::shared_ptr<trace::Span>>(span)) {
+    return nostd::get<opentelemetry::nostd::shared_ptr<trace::Span>>(span).get()->GetContext();
+  }
+
+  return trace::SpanContext::GetInvalid();
+}*/
+
 void SdkWrapper::PopulatePropagationHeaders(
 	std::unordered_map<std::string, std::string>& carrier) {
 
