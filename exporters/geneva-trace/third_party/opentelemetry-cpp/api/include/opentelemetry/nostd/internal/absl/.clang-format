@@ -1,3 +1,0 @@
-# Disable formatting for Google Abseil library snapshot
-DisableFormat: true
-SortIncludes: false

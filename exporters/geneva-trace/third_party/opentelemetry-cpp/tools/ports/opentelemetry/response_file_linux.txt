@@ -1,9 +1,0 @@
---head
---overlay-ports=tools/ports
-gtest
-benchmark
-ms-gsl
-nlohmann-json
-abseil
-protobuf
-opentelemetry
