@@ -62,7 +62,9 @@ foreach ($item in $items)
   Write-Output "Creating nuget $nugetName-$version ..."
   # Copy all files from Git
   CopyAll $otel_repo_main $tempDir.Fullname
-  CopyAll $gitWorkTree $tempDir.Fullname
+
+  CopyAll $gitWorkTree\include\ $tempDir\exporters\etw\include
+
   # Append extra nuget package files
   Copy-Item -Path ".\nuget\build" -Recurse -Destination $tempDir.Fullname
   Copy-Item -Path ".\nuget\$nugetName.nuspec" -Destination $tempDir.Fullname

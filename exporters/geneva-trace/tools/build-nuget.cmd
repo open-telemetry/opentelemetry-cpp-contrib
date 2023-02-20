@@ -9,7 +9,7 @@ if not defined PackageVersion (
 
 REM This script assumes that the main OpenTelemetry C++ repo
 REM has been checked out two levels above at opentelemetry-cpp
-powershell -File .\build-nuget.ps1 %CD%\..\..\opentelemetry-cpp
+powershell -File .\build-nuget.ps1 %CD%\..\third_party\opentelemetry-cpp
 
 REM If %OUTPUTROOT% variable is defined, then copy the packages
 REM to %OUTPUTROOT%\packages for subsequent deployment.
