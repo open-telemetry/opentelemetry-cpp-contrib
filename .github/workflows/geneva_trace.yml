@@ -26,4 +26,4 @@ jobs:
       env: 
         PackageVersion: 0.0.1
       run: |
-        cd exporters\geneva-trace\tools && .\build-nuget.cmd  
+        cd exporters\geneva-trace\tools && .\build-nuget.cmd
