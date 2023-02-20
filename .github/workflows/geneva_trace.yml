@@ -17,6 +17,8 @@ jobs:
     name: Geneva Trace
     runs-on: windows-latest
     steps:
+    - name: github config
+      run: git config --system core.longpaths true
     - uses: actions/checkout@v3
       with:
         submodules: 'recursive'
