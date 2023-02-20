@@ -1,0 +1,29 @@
+name: Geneva Trace Nuget Generation
+
+on:
+  push:
+    branches: "*"
+    paths:
+      - "exporters/geneva-trace/**"
+      - ".github/workflows/geneva_trace.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "exporters/geneva-trace/**"
+      - ".github/workflows/geneva_trace.yml"
+  
+jobs:
+  geneva-trace-nuget-generation:
+    name: Geneva Trace
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
+    - name: NuGet package generation
+      env: 
+        PackageVersion: 0.0.1
+      run: |
+        cd exporters\geneva-trace\tools
+        build-nuget.cmd
+  
