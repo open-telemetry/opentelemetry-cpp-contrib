@@ -1,3 +1,6 @@
+# Copyright The OpenTelemetry Authors
+# SPDX-License-Identifier: Apache-2.0
+
 $otel_repo_main=$args[0]
 
 # Function returns 4-part 'classic' version string from SemVer 2.0 string

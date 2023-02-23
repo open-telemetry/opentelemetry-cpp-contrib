@@ -1,5 +1,6 @@
-// Copyright 2021 (c) Microsoft Corporation.  All rights reserved.
-//
+// Copyright The OpenTelemetry Authors
+// SPDX-License-Identifier: Apache-2.0
+
 #pragma once
 
 #ifndef CUSTOM_ETW_FIELDS_H
