@@ -89,7 +89,7 @@ void initMetrics(const std::string &name, const std::string &account_name) {
           new opentelemetry::sdk::metrics::HistogramAggregationConfig()};
   static_cast<opentelemetry::sdk::metrics::HistogramAggregationConfig *>(
       aggregation_config.get())
-      ->boundaries_ = std::list<double>{0.0,   50.0,   100.0,  250.0,  500.0,
+      ->boundaries_ = std::vector<double>{0.0,   50.0,   100.0,  250.0,  500.0,
                                         750.0, 1000.0, 2500.0, 5000.0, 10000.0};
   std::unique_ptr<metric_sdk::View> histogram_view{new metric_sdk::View{
       name, "description", metric_sdk::AggregationType::kHistogram,
