@@ -26,8 +26,7 @@ class ConnectionStringParser {
 
 public:
   ConnectionStringParser(const std::string &connection_string)
-      : account_(""), namespace_(""),
-        url_(nullptr), transport_protocol_{TransportProtocol::kUnknown} {
+      : account_(""), namespace_(""),  transport_protocol_{TransportProtocol::kUnknown} {
     std::string::size_type key_pos = 0;
     std::string::size_type key_end;
     std::string::size_type val_pos;
@@ -36,14 +35,16 @@ public:
     while ((key_end = connection_string.find(kEqual, key_pos)) !=
            std::string::npos) {
       if ((val_pos = connection_string.find_first_not_of(kEqual, key_end)) ==
-          std::string::npos) {
+          std::string::npos) 
+      {
         break;
       }
       val_end = connection_string.find(kSemicolon, val_pos);
       auto key = connection_string.substr(key_pos, key_end - key_pos);
       auto value = connection_string.substr(val_pos, val_end - val_pos);
       key_pos = val_end;
-      if (key_pos != std::string::npos) {
+      if (key_pos != std::string::npos) 
+      {
         ++key_pos;
       }
       if (key == kNamespace) {
@@ -52,22 +53,26 @@ public:
         account_ = value;
       } else if (key == kEndpoint) {
         is_endpoint_found = true;
-        url_ = std::unique_ptr<ext::http::common::UrlParser>(
-            new ext::http::common::UrlParser(value));
-        if (url_->success_) {
+        size_t pos = value.find("://", 0);
+        if (pos != std::string::npos)
+        {
+          auto scheme = std::string(value.begin(), value.begin() + pos);
+          auto connection_string_ = value.substr(pos + strlen("://"));
+          std::cout << "\n\nSCHEME:::: "<< scheme << " ---- CONN STRING:" << connection_string_ << "\n\n";
+
 #ifdef HAVE_UNIX_DOMAIN
-          if (url_->scheme_ == "unix") {
+          if (scheme == "unix") {
             transport_protocol_ = TransportProtocol::kUNIX;
           }
 #else
-          if (url_->scheme_ == "unix") {
+          if (scheme == "unix") {
             LOG_ERROR("Unix domain socket not supported on this platform")
           }
 #endif
-          if (url_->scheme_ == "tcp") {
+          if (scheme == "tcp") {
             transport_protocol_ = TransportProtocol::kTCP;
           }
-          if (url_->scheme_ == "udp") {
+          if (scheme == "udp") {
             transport_protocol_ = TransportProtocol::kUDP;
           }
         }
@@ -84,8 +89,8 @@ public:
 
   std::string account_;
   std::string namespace_;
-  std::unique_ptr<ext::http::common::UrlParser> url_;
   TransportProtocol transport_protocol_;
+  std::string connection_string_;
 };
 } // namespace metrics
 } // namespace geneva
