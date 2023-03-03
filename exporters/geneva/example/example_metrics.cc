@@ -29,7 +29,7 @@ void initMetrics(const std::string &name, const std::string &account_name) {
   std::string conn_string =
       "Account=" + account_name + ";Namespace=" + kNamespaceName;
 #ifndef _WIN32
-  conn_string = "Endpoint=unix://" + '\0' + kUnixDomainPath + ";" + conn_string;
+  conn_string = "Endpoint=unix://" + kUnixDomainPath + ";" + conn_string;
 #endif
 
   geneva_exporter::ExporterOptions options{conn_string};

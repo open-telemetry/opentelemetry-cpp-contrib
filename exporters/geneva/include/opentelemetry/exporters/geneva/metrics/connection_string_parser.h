@@ -9,8 +9,6 @@
 #include <memory>
 #include <string>
 
-#include <iostream>
-
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter {
 namespace geneva {
@@ -27,7 +25,7 @@ class ConnectionStringParser {
 
 public:
   ConnectionStringParser(const std::string &connection_string)
-      : account_(""), namespace_(""),  transport_protocol_{TransportProtocol::kUnknown} {
+      : account_(""), namespace_(""), transport_protocol_{TransportProtocol::kUnknown} {
     std::string::size_type key_pos = 0;
     std::string::size_type key_end;
     std::string::size_type val_pos;
