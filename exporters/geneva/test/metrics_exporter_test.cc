@@ -17,7 +17,11 @@ using namespace kaitai;
 using namespace opentelemetry::sdk::metrics;
 using namespace opentelemetry::exporter::geneva::metrics;
 
-const std::string kUnixDomainPath = "/tmp/ifx_unix_socket";
+std::string nullChar(1, '\0');
+std::string kUnixDomainPathUDS = "/tmp/ifx_unix_socket";
+std::string kUnixDomainPathAbstractSocket = nullChar + kUnixDomainPathUDS;
+
+
 const std::string kNamespaceName = "test_ns";
 const std::string kAccountName = "test_account";
 
@@ -202,7 +206,12 @@ struct TestServer {
   }
 };
 
-TEST(GenevaMetricsExporter, BasicTests) {
+class GenericMetricsExporterTextFixture: public ::testing::TestWithParam<std::string>
+{};
+
+TEST_P(GenericMetricsExporterTextFixture, BasicTests) {
+
+  std::string kUnixDomainPath = GetParam();
   bool isRunning = true;
 
   // Start test server
@@ -255,3 +264,8 @@ TEST(GenevaMetricsExporter, BasicTests) {
 
   testServer.Stop();
 }
+
+INSTANTIATE_TEST_SUITE_P(GenericMetricsExporterText, GenericMetricsExporterTextFixture,
+    ::testing::Values(kUnixDomainPathUDS, kUnixDomainPathAbstractSocket));
+
+

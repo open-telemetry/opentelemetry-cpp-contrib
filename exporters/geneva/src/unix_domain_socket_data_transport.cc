@@ -4,13 +4,18 @@
 #include "opentelemetry/exporters/geneva/metrics/unix_domain_socket_data_transport.h"
 #include "opentelemetry/exporters/geneva/metrics/macros.h"
 
+#include <iostream>
+
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter {
 namespace geneva {
 namespace metrics {
 
 UnixDomainSocketDataTransport::UnixDomainSocketDataTransport(
-    const std::string &connection_string) {
+    const std::string &connection_string) 
+{
+  std::cout << "CONN STRING: " << connection_string << "\n";
+      
   addr_.reset(new SocketTools::SocketAddr(connection_string.c_str(), true));
 }
 

@@ -5,10 +5,11 @@
 
 #include "opentelemetry/exporters/geneva/metrics/macros.h"
 #include "opentelemetry/exporters/geneva/metrics/socket_tools.h"
-#include "opentelemetry/ext/http/common/url_parser.h"
 #include "opentelemetry/version.h"
 #include <memory>
 #include <string>
+
+#include <iostream>
 
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter {
@@ -57,9 +58,7 @@ public:
         if (pos != std::string::npos)
         {
           auto scheme = std::string(value.begin(), value.begin() + pos);
-          auto connection_string_ = value.substr(pos + strlen("://"));
-          std::cout << "\n\nSCHEME:::: "<< scheme << " ---- CONN STRING:" << connection_string_ << "\n\n";
-
+          connection_string_ = value.substr(pos + strlen("://"));
 #ifdef HAVE_UNIX_DOMAIN
           if (scheme == "unix") {
             transport_protocol_ = TransportProtocol::kUNIX;
