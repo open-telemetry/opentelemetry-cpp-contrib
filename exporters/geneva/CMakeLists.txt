@@ -95,6 +95,9 @@ if(BUILD_EXAMPLE)
   add_executable(example_metrics example/example_metrics.cc
                                  example/foo_library.cc)
   target_link_libraries(example_metrics opentelemetry_exporter_geneva_metrics)
+
+  add_executable(stress_test_linux example/stress_test_linux.cc)
+target_link_libraries(stress_test_linux opentelemetry_exporter_geneva_metrics)
 endif()
 if(MAIN_PROJECT AND BUILD_PACKAGE)
   include(cmake/package.cmake)
