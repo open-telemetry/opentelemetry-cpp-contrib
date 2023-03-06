@@ -326,7 +326,7 @@ void start_stress_test_counter(size_t dimension_count, size_t dimension_cardinal
                 size_t rand1 = rand() % 10;
                 size_t rand2 = rand() % 10;
                 size_t rand3 = rand() % 10;
-                instrument->Add(1.0/*, properties*/);
+                instrument->Add(1.0, properties);
             }
         }));
     }
@@ -365,9 +365,9 @@ int main(int argc, char **argv)
   if (args.size() == 0 || args[0] == "--help") {
       std::cout <<  "Options -- \n" ;
       std::cout << "\t --geneva_account_name [default=test_account] --geneva_namespace [default=test_ns]\n";
-      std::cout << "\t --socket_type [uds|abstract, default=abstract] --socket_path [path default=/tmp/geneva.socket]\n";
+      std::cout << "\t --socket_type [uds|abstract, default=uds] --socket_path [path default=/tmp/geneva.socket]\n";
       std::cout << "\t --metrics_collection_time_secs [default=60]\n";
-      std::cout <<  "\t --process.cpu.time --process.cpu.utilization --process.memory.usage --process.memory.virtual\n" ;
+      std::cout <<  "\t --process.cpu.time --process.cpu.utilization --process.memory.physical --process.memory.virtual --process.memory.heap\n" ;
       std::cout <<  "\t --process.disk.io --process.network.io --process.threads --process.open.files --process.context.switches --stress.test\n";
       std::cout << "\t --dimension_count [default=3]  --dimension_cardinality [default=5] --delay_between_measurements_secs [default=0]\n"; // relevant options for stress test
       std::cout << "\t --measurement_type [counter|histogram default=counter] --number_of_threads [default=1]\n"; // relevant options for stress test
