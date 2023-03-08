@@ -214,6 +214,7 @@ struct SocketAddr {
 
   // Indicator that the sockaddr is sockaddr_un
   bool isUnixDomain;
+  size_t abstract_socket_size;
 
   /// <summary>
   /// SocketAddr constructor
@@ -221,6 +222,7 @@ struct SocketAddr {
   /// <returns>SocketAddr</returns>
   SocketAddr() {
     isUnixDomain = false;
+    abstract_socket_size = 0;
 #ifdef HAVE_UNIX_DOMAIN
     memset(&m_data_un, 0, sizeof(m_data_un));
 #else
@@ -256,6 +258,7 @@ struct SocketAddr {
       // prefixed with '#' character.
       if (unix_domain_path[0] == '#') {
         m_data_un.sun_path[0] = '\0';
+        abstract_socket_size = ipAddress.size();
       } 
       return;
     }
@@ -311,7 +314,9 @@ struct SocketAddr {
   size_t size() const {
 #ifdef HAVE_UNIX_DOMAIN
     // Unix domain struct m_data_un
-    if (isUnixDomain)
+    if (isUnixDomain && abstract_socket_size)
+      return sizeof(sa_family_t) + abstract_socket_size;
+    else if(isUnixDomain)
       return sizeof(m_data_un);
 #endif
     // IPv4 struct m_data_in
