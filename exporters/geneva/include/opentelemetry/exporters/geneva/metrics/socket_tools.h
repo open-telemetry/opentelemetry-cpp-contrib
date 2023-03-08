@@ -252,6 +252,11 @@ struct SocketAddr {
       // Max length of Unix domain filename is up to 108 chars
       strncpy_s(m_data_un.sun_path, sizeof(m_data_un.sun_path),
                 unix_domain_path, sizeof(m_data_un.sun_path));
+      // special handling for abstract socket - they should be
+      // prefixed with '#' character.
+      if (unix_domain_path[0] == '#') {
+        m_data_un.sun_path[0] = '\0';
+      } 
       return;
     }
 #endif

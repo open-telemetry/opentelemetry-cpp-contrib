@@ -42,7 +42,7 @@ namespace {
   std::cout << " Init metrics : " <<account_name << "-" << ns <<"-"<< socket_path << "-"<< is_uds << "-"<<metrics_collection_time_secs << "\n";
   std::string conn_string = "Account=" + account_name + ";Namespace=" + ns;
   if (!is_uds){
-    std::string null_string(1, '\0');
+    std::string null_string(1, '#');
     socket_path  = null_string + socket_path;
   }
   conn_string = "Endpoint=unix://" + socket_path + ";" + conn_string;
