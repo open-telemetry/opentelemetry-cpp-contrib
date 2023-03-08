@@ -319,39 +319,37 @@ void start_stress_test_counter(size_t dimension_count, size_t dimension_cardinal
             {
                 std::map<std::string, size_t> properties;
                 for (int j = 0 ; j < dimension_count ; j++){
-                    std::string key = "dimension" +  std::to_string(i);
+                    std::string key = "dimension" +  std::to_string(j);
                     size_t rand_val = rand() % dimension_cardinality;
                     properties[key] = rand_val;
                 }
-                size_t rand1 = rand() % 10;
-                size_t rand2 = rand() % 10;
-                size_t rand3 = rand() % 10;
                 instrument->Add(1.0, properties);
+                std::this_thread::sleep_for(std::chrono::seconds(delay_between_measurements_secs));
+
             }
         }));
     }
 }
 
-void start_stress_test_histogram(size_t dimension_count, size_t dimension_cardinality, size_t delay_between_measurements_secs, size_t number_of_threads, std::vector<std::thread> &measurementThreads)
+void start_stress_test_counter(size_t dimension_count, size_t dimension_cardinality, size_t delay_between_measurements_secs, size_t number_of_threads, std::vector<std::thread> &measurementThreads)
 {
+    measurementThreads.resize(0);
     auto provider = metrics_api::Provider::GetMeterProvider();
     nostd::shared_ptr<metrics_api::Meter> meter = provider->GetMeter("process.metrics", "1.2.0");
-    auto instrument = meter->CreateDoubleHistogram("histogram1", "histogram1_description", "histogram1_unit");
+    static opentelemetry::nostd::unique_ptr<opentelemetry::metrics::Histogram<double>> instrument = meter->CreateDoubleHistogram("histogram1", "histogram1_description", "histogram1_unit");
     for (int i = 0; i < number_of_threads; i++){
-        measurementThreads.push_back(std::thread( [&instrument, i , &dimension_count, &dimension_cardinality, &delay_between_measurements_secs]() {
+        measurementThreads.push_back(std::thread( [i , dimension_count, dimension_cardinality, delay_between_measurements_secs]() {
             while(true)
             {
                 std::map<std::string, size_t> properties;
-                for (int i = 0 ; i < dimension_count ; i++){
-                    std::string key = "dimension" +  std::to_string(i);
+                for (int j = 0 ; j < dimension_count ; j++){
+                    std::string key = "dimension" +  std::to_string(j);
                     size_t rand_val = rand() % dimension_cardinality;
                     properties[key] = rand_val;
                 }
-                size_t rand1 = rand() % 10;
-                size_t rand2 = rand() % 10;
-                size_t rand3 = rand() % 10;
                 instrument->Record(1.0, properties);
                 std::this_thread::sleep_for(std::chrono::seconds(delay_between_measurements_secs));
+
             }
         }));
     }
