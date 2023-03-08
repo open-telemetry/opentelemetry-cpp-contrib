@@ -331,7 +331,7 @@ void start_stress_test_counter(size_t dimension_count, size_t dimension_cardinal
     }
 }
 
-void start_stress_test_counter(size_t dimension_count, size_t dimension_cardinality, size_t delay_between_measurements_secs, size_t number_of_threads, std::vector<std::thread> &measurementThreads)
+void start_stress_test_histogram(size_t dimension_count, size_t dimension_cardinality, size_t delay_between_measurements_secs, size_t number_of_threads, std::vector<std::thread> &measurementThreads)
 {
     measurementThreads.resize(0);
     auto provider = metrics_api::Provider::GetMeterProvider();
