@@ -18,7 +18,7 @@ using namespace opentelemetry::sdk::metrics;
 using namespace opentelemetry::exporter::geneva::metrics;
 
 std::string kUnixDomainPathUDS = "/tmp/ifx_unix_socket";
-std::string kUnixDomainPathAbstractSocket = "#/tmp/ifx_unix_socket";
+std::string kUnixDomainPathAbstractSocket = "@/tmp/ifx_unix_socket";
 
 const std::string kNamespaceName = "test_ns";
 const std::string kAccountName = "test_account";
