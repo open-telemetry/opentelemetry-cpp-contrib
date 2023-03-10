@@ -16,6 +16,7 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <random>
 
 #include <dirent.h>
 
@@ -26,6 +27,10 @@
 #include <time.h>
 #include <chrono>
 #include <sys/times.h>
+
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/uuid_generators.hpp>
 
 namespace metrics_sdk      = opentelemetry::sdk::metrics;
 namespace nostd           = opentelemetry::nostd;
@@ -42,7 +47,7 @@ namespace {
   std::cout << " Init metrics : " <<account_name << "-" << ns <<"-"<< socket_path << "-"<< is_uds << "-"<<metrics_collection_time_secs << "\n";
   std::string conn_string = "Account=" + account_name + ";Namespace=" + ns;
   if (!is_uds){
-    std::string null_string(1, '@');
+    std::string null_string(1, '#');
     socket_path  = null_string + socket_path;
   }
   conn_string = "Endpoint=unix://" + socket_path + ";" + conn_string;
@@ -128,6 +133,26 @@ static void ReadNetworkIOStats(long &total_read_bytes, long &total_write_bytes) 
         }
     }
 }
+
+#ifndef HAVE_BOOST
+std::string generate_uuid() {
+    std::stringstream ss;
+    std::random_device rd;
+    std::mt19937 gen(rd()); 
+    std::uniform_int_distribution<> dis(0, 255);
+    for(auto i = 0; i < 16; i++) {
+        auto rc = static_cast<unsigned char>(dis(gen));
+        std::stringstream hexstream;
+        hexstream << std::hex << int(rc);
+        auto hex = hexstream.str();
+        ss << (hex.length() < 2 ? '0' + hex : hex);
+       if (i == 3 || i == 5 || i == 7 || i == 9) {
+            ss << "-";
+        }
+    }        
+    return ss.str();
+}
+#endif
 
 void GetProcessCpuTime(opentelemetry::metrics::ObserverResult observer_result, void * /*state*/) 
 {
@@ -307,23 +332,49 @@ void create_process_context_switches_observable_gauge()
   context_switches_obserable_gauge_->AddCallback(GetProcessContextSwitches, nullptr);
 }
 
-void start_stress_test_counter(size_t dimension_count, size_t dimension_cardinality, size_t delay_between_measurements_secs, size_t number_of_threads, std::vector<std::thread> &measurementThreads)
+void start_stress_test_counter(size_t dimension_count, size_t dimension_cardinality, size_t delay_between_measurements_secs, size_t number_of_threads, size_t number_of_measurements, std::vector<std::thread> &measurementThreads)
 {
     measurementThreads.resize(0);
+#ifdef HAVE_BOOST
+    std::vector<boost::uuids::uuid> dimension_values;
+#else
+    std::vector<std::string> dimension_values;
+#endif
+    dimension_values.reserve(dimension_cardinality);
+    for (int val_idx = 0 ; val_idx < dimension_cardinality ; ++val_idx){
+#ifdef HAVE_BOOST
+        dimension_values.emplace_back(boost::uuids::random_generator()());
+#else
+        dimension_values.emplace_back(generate_uuid());
+#endif
+    }
     auto provider = metrics_api::Provider::GetMeterProvider();
     nostd::shared_ptr<metrics_api::Meter> meter = provider->GetMeter("process.metrics", "1.2.0");
-    static opentelemetry::nostd::unique_ptr<opentelemetry::metrics::Counter<double>> instrument = meter->CreateDoubleCounter("counter1", "counter1_description", "counter1_unit");
+    static std::vector<opentelemetry::nostd::unique_ptr<opentelemetry::metrics::Counter<double>>> instrument_vector;
+    instrument_vector.reserve(number_of_measurements);
+    for (size_t measurement_idx = 0 ; measurement_idx < number_of_measurements ; ++measurement_idx){
+        std::string counter_name = "counter" + std::to_string(measurement_idx + 1);
+        instrument_vector.emplace_back(meter->CreateDoubleCounter(counter_name, counter_name + "_description", counter_name + "_unit"));
+    }
     for (int i = 0; i < number_of_threads; i++){
-        measurementThreads.push_back(std::thread( [i , dimension_count, dimension_cardinality, delay_between_measurements_secs]() {
+        measurementThreads.push_back(std::thread( [i , dimension_count, dimension_cardinality, delay_between_measurements_secs, number_of_measurements, dimension_values]() {
             while(true)
             {
-                std::map<std::string, size_t> properties;
-                for (int j = 0 ; j < dimension_count ; j++){
-                    std::string key = "dimension" +  std::to_string(j);
-                    size_t rand_val = rand() % dimension_cardinality;
-                    properties[key] = rand_val;
+                for (size_t measurement_idx = 0 ; measurement_idx < number_of_measurements ; ++measurement_idx){
+                    std::map<std::string, std::string> properties;
+                    for (int j = 0 ; j < dimension_count ; j++){
+                        std::string key = "dimension" +  std::to_string(j);
+                        size_t rand_val = rand() % dimension_cardinality;
+#ifdef HAVE_BOOST
+                        properties[key] = boost::uuids::to_string(dimension_values[rand_val]);
+#else
+                        properties[key] =  dimension_values[rand_val];
+#endif          
+                    }
+                    int value = rand() % 10 + 1;
+                    auto labelkv = opentelemetry::common::KeyValueIterableView<decltype(properties)>{properties};
+                    instrument_vector[measurement_idx]->Add(value, labelkv);
                 }
-                instrument->Add(1.0, properties);
                 std::this_thread::sleep_for(std::chrono::seconds(delay_between_measurements_secs));
 
             }
@@ -331,23 +382,50 @@ void start_stress_test_counter(size_t dimension_count, size_t dimension_cardinal
     }
 }
 
-void start_stress_test_histogram(size_t dimension_count, size_t dimension_cardinality, size_t delay_between_measurements_secs, size_t number_of_threads, std::vector<std::thread> &measurementThreads)
+void start_stress_test_histogram(size_t dimension_count, size_t dimension_cardinality, size_t delay_between_measurements_secs, size_t number_of_threads, size_t number_of_measurements, std::vector<std::thread> &measurementThreads)
 {
     measurementThreads.resize(0);
+#ifdef HAVE_BOOST
+    std::vector<boost::uuids::uuid> dimension_values;
+#else
+    std::vector<std::string> dimension_values;
+#endif    
+    dimension_values.reserve(dimension_cardinality);
+    for (int val_idx = 0 ; val_idx < dimension_cardinality ; ++val_idx){
+#ifdef HAVE_BOOST
+        dimension_values.emplace_back(boost::uuids::random_generator()());
+#else
+        dimension_values.emplace_back(generate_uuid());
+#endif  
+    }
     auto provider = metrics_api::Provider::GetMeterProvider();
     nostd::shared_ptr<metrics_api::Meter> meter = provider->GetMeter("process.metrics", "1.2.0");
-    static opentelemetry::nostd::unique_ptr<opentelemetry::metrics::Histogram<double>> instrument = meter->CreateDoubleHistogram("histogram1", "histogram1_description", "histogram1_unit");
+    static std::vector<opentelemetry::nostd::unique_ptr<opentelemetry::metrics::Histogram<double>>> instrument_vector;
+    instrument_vector.reserve(number_of_measurements);
+    for (size_t measurement_idx = 0 ; measurement_idx < number_of_measurements ; ++measurement_idx){
+        std::string histogram_name = "histogram" + std::to_string(measurement_idx + 1);
+        instrument_vector.emplace_back(meter->CreateDoubleHistogram(histogram_name, histogram_name + "_description", histogram_name + "_unit"));
+    }
     for (int i = 0; i < number_of_threads; i++){
-        measurementThreads.push_back(std::thread( [i , dimension_count, dimension_cardinality, delay_between_measurements_secs]() {
+        measurementThreads.push_back(std::thread( [i , dimension_count, dimension_cardinality, delay_between_measurements_secs, number_of_measurements, dimension_values]() {
             while(true)
             {
-                std::map<std::string, size_t> properties;
-                for (int j = 0 ; j < dimension_count ; j++){
-                    std::string key = "dimension" +  std::to_string(j);
-                    size_t rand_val = rand() % dimension_cardinality;
-                    properties[key] = rand_val;
+                for (size_t measurement_idx = 0 ; measurement_idx < number_of_measurements ; ++measurement_idx){
+                    std::map<std::string, std::string> properties;
+                    for (int j = 0 ; j < dimension_count ; j++){
+                        std::string key = "dimension" +  std::to_string(j);
+                        size_t rand_val = rand() % dimension_cardinality;
+#ifdef HAVE_BOOST
+                        properties[key] = boost::uuids::to_string(dimension_values[rand_val]);
+#else
+                        properties[key] =  dimension_values[rand_val];
+#endif               
+                    }
+                    int value = rand() % 10 + 1;
+                    auto labelkv = opentelemetry::common::KeyValueIterableView<decltype(properties)>{properties};
+                    auto context = opentelemetry::context::Context{};
+                    instrument_vector[measurement_idx]->Record(value, labelkv, context);
                 }
-                instrument->Record(1.0, properties);
                 std::this_thread::sleep_for(std::chrono::seconds(delay_between_measurements_secs));
 
             }
@@ -368,7 +446,7 @@ int main(int argc, char **argv)
       std::cout <<  "\t --process.cpu.time --process.cpu.utilization --process.memory.physical --process.memory.virtual --process.memory.heap\n" ;
       std::cout <<  "\t --process.disk.io --process.network.io --process.threads --process.open.files --process.context.switches --stress.test\n";
       std::cout << "\t --dimension_count [default=3]  --dimension_cardinality [default=5] --delay_between_measurements_secs [default=0]\n"; // relevant options for stress test
-      std::cout << "\t --measurement_type [counter|histogram default=counter] --number_of_threads [default=1]\n"; // relevant options for stress test
+      std::cout << "\t --measurement_type [counter|histogram default=counter] --number_of_threads [default=1] --number_of_measurements [default=1]\n"; // relevant options for stress test
       std::cout << "\n";
       exit(1); 
   }
@@ -417,6 +495,7 @@ int main(int argc, char **argv)
    size_t dimension_cardinality = 5;
    size_t delay_between_measurements_secs = 0;
    size_t number_of_threads = 1;
+   size_t number_of_measurements = 1;
    std::string measurement_type = "counter";
   
    if (is_stress_test) 
@@ -443,6 +522,10 @@ int main(int argc, char **argv)
         else if (args[index] == "--number_of_threads")
         {
             number_of_threads =  atoi(args[++index].c_str());
+        }
+        else if (args[index] == "--number_of_measurements")
+        {
+            number_of_measurements = atoi(args[++index].c_str());
         }
         index++;
     }
@@ -496,11 +579,11 @@ int main(int argc, char **argv)
   {
     if (measurement_type == "counter")
     {
-        start_stress_test_counter(dimension_count, dimension_cardinality, delay_between_measurements_secs, number_of_threads, measurementThreads);
+        start_stress_test_counter(dimension_count, dimension_cardinality, delay_between_measurements_secs, number_of_threads, number_of_measurements, measurementThreads);
     }
     else if (measurement_type == "histogram") 
     {
-        start_stress_test_histogram(dimension_count, dimension_cardinality, delay_between_measurements_secs, number_of_threads, measurementThreads);
+        start_stress_test_histogram(dimension_count, dimension_cardinality, delay_between_measurements_secs, number_of_threads, number_of_measurements, measurementThreads);
     }
   }
 
