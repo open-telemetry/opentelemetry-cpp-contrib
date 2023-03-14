@@ -313,10 +313,10 @@ struct SocketAddr {
 
   size_t size() const {
 #ifdef HAVE_UNIX_DOMAIN
-    // Unix domain struct m_data_un
     if (isUnixDomain && abstract_socket_size)
       return sizeof(sa_family_t) + abstract_socket_size;
     else if(isUnixDomain)
+      // Unix domain struct m_data_un
       return sizeof(m_data_un);
 #endif
     // IPv4 struct m_data_in
