@@ -10,7 +10,8 @@ namespace geneva {
 namespace metrics {
 
 UnixDomainSocketDataTransport::UnixDomainSocketDataTransport(
-    const std::string &connection_string) {
+    const std::string &connection_string) 
+{      
   addr_.reset(new SocketTools::SocketAddr(connection_string.c_str(), true));
 }
 

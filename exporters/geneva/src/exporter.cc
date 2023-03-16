@@ -26,7 +26,7 @@ Exporter::Exporter(const ExporterOptions &options)
         TransportProtocol::kUNIX) {
       data_transport_ =
           std::unique_ptr<DataTransport>(new UnixDomainSocketDataTransport(
-              connection_string_parser_.url_->path_));
+              connection_string_parser_.connection_string_));
     }
 #ifdef _WIN32
     else if (connection_string_parser_.transport_protocol_ ==
