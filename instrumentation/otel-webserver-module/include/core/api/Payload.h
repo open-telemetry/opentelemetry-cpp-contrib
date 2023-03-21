@@ -1,5 +1,5 @@
 /*
-* Copyright 2021 AppDynamics LLC. 
+* Copyright 2022, OpenTelemetry Authors. 
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -18,15 +18,15 @@
 #define __PAYLOAD_H
 
 #include <unordered_map>
+#include "sdkwrapper/SdkConstants.h"
 
-namespace appd {
+namespace otel {
 namespace core {
-
 
 //-----------------------------------------------------------------------------------------
 // RequestPayload
 // Used for following purposes:
-//    1) Get the incoming request information from the web-server and pass it to the appdynamics
+//    1) Get the incoming request information from the web-server and pass it to the otel
 //		 core sdk library
 //-----------------------------------------------------------------------------------------
 class RequestPayload
@@ -38,6 +38,7 @@ class RequestPayload
 	std::string http_request_method;			/* Request method (eg. GET, HEAD, POST, etc.) */
 
 	std::unordered_map<std::string, std::string> http_headers; /* HTTP Request headers: Cookie, Referer, SM_USER*/
+	std::unordered_map<std::string, std::string> request_headers;
 
 	std::string server_name;
     std::string scheme;
@@ -45,13 +46,16 @@ class RequestPayload
     std::string target;
     std::string flavor;
     std::string client_ip;
-    long port;
-    long status_code;
+    long port = 80;
 
 public:
 	void set_http_headers(const std::string& key, const std::string& value)
     {
         http_headers[key] = value;
+    }
+    void set_request_headers(const std::string& key, const std::string& value)
+    {
+    	request_headers[key] = value;
     }
     void set_uri(const char* URI) { uri = URI; }
     void set_request_protocol(const char* requestProtocol) {request_protocol = requestProtocol; }
@@ -65,7 +69,6 @@ public:
     void set_flavor(const char* aflavor) {flavor = aflavor; }
     void set_client_ip(const char* clientIp) {client_ip = clientIp; }
     void set_port(long aPort) {port = aPort; }
-    void set_status_code(long statusCode) {status_code = statusCode; }
 
 
 	std::string get_uri() {	return uri; }
@@ -81,7 +84,15 @@ public:
     std::string get_flavor() {return flavor; }
     std::string get_client_ip() {return client_ip; }
     long get_port() {return port; }
-    long get_status_code() {return status_code; }
+    std::unordered_map<std::string, std::string>& get_request_headers() {
+    	return request_headers;
+    }
+};
+
+struct ResponsePayload
+{
+	std::unordered_map<std::string, std::string> response_headers;
+	unsigned int status_code{sdkwrapper::kStatusCodeInit};
 };
 
 struct InteractionPayload
@@ -115,7 +126,7 @@ struct EndInteractionPayload
 	{}
 };
 
-} // appd
+} // otel
 } // core
 
 #endif

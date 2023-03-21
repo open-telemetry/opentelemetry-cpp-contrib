@@ -1,5 +1,5 @@
 /*
-* Copyright 2021 AppDynamics LLC. 
+* Copyright 2022, OpenTelemetry Authors. 
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
 #include "opentelemetry/trace/tracer.h"
 #include "opentelemetry/context/propagation/text_map_propagator.h"
 
-namespace appd {
+namespace otel {
 namespace core {
 
 using OtelTracer = opentelemetry::nostd::shared_ptr<opentelemetry::trace::Tracer>;
@@ -41,6 +41,6 @@ public:
 
 } // sdkwrapper
 } // core
-} // appd
+} // otel
 
 #endif

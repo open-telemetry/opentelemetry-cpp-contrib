@@ -1,5 +1,5 @@
 /*
-* Copyright 2021 AppDynamics LLC. 
+* Copyright 2022, OpenTelemetry Authors.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -14,17 +14,17 @@
 * limitations under the License.
 */
 
+#include "ngx_http_opentelemetry_module.h"
+#include "ngx_http_opentelemetry_log.h"
 #include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
-
-#include "ngx_http_opentelemetry_module.h"
-#include "ngx_http_opentelemetry_log.h"
 
 ngx_http_opentelemetry_worker_conf_t *worker_conf;
 static contextNode contexts[5];
 static unsigned int c_count = 0;
 static unsigned int isGlobalContextSet = 0;
+static ngx_str_t hostname;
 
 /*
 List of modules being monitored
@@ -202,6 +202,13 @@ static ngx_command_t ngx_http_opentelemetry_commands[] = {
       offsetof(ngx_http_opentelemetry_loc_conf_t, nginxModuleOtelExporterEndpoint),
       NULL},
 
+    { ngx_string("NginxModuleOtelExporterOtlpHeaders"),
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
+      ngx_conf_set_str_slot,
+      NGX_HTTP_LOC_CONF_OFFSET,
+      offsetof(ngx_http_opentelemetry_loc_conf_t, nginxModuleOtelExporterOtlpHeaders),
+      NULL},
+
     { ngx_string("NginxModuleOtelSpanProcessor"),
       NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
       ngx_conf_set_str_slot,
@@ -356,6 +363,20 @@ static ngx_command_t ngx_http_opentelemetry_commands[] = {
       offsetof(ngx_http_opentelemetry_loc_conf_t, nginxModuleSegmentParameter),
       NULL},
 
+    { ngx_string("NginxModuleRequestHeaders"),
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
+      ngx_conf_set_str_slot,
+      NGX_HTTP_LOC_CONF_OFFSET,
+      offsetof(ngx_http_opentelemetry_loc_conf_t, nginxModuleRequestHeaders),
+      NULL},
+
+    { ngx_string("NginxModuleResponseHeaders"),
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
+      ngx_conf_set_str_slot,
+      NGX_HTTP_LOC_CONF_OFFSET,
+      offsetof(ngx_http_opentelemetry_loc_conf_t, nginxModuleResponseHeaders),
+      NULL},
+
     ngx_null_command	/* command termination */
 };
 
@@ -435,6 +456,7 @@ static char* ngx_http_opentelemetry_merge_loc_conf(ngx_conf_t *cf, void *parent,
 
     ngx_conf_merge_str_value(conf->nginxModuleOtelSpanExporter, prev->nginxModuleOtelSpanExporter, "");
     ngx_conf_merge_str_value(conf->nginxModuleOtelExporterEndpoint, prev->nginxModuleOtelExporterEndpoint, "");
+    ngx_conf_merge_str_value(conf->nginxModuleOtelExporterOtlpHeaders, prev->nginxModuleOtelExporterOtlpHeaders, "");
     ngx_conf_merge_value(conf->nginxModuleOtelSslEnabled, prev->nginxModuleOtelSslEnabled, 0);
     ngx_conf_merge_str_value(conf->nginxModuleOtelSslCertificatePath, prev->nginxModuleOtelSslCertificatePath, "");
     ngx_conf_merge_str_value(conf->nginxModuleOtelSpanProcessor, prev->nginxModuleOtelSpanProcessor, "");
@@ -455,6 +477,8 @@ static char* ngx_http_opentelemetry_merge_loc_conf(ngx_conf_t *cf, void *parent,
 
     ngx_conf_merge_str_value(conf->nginxModuleSegmentType, prev->nginxModuleSegmentType, "First");
     ngx_conf_merge_str_value(conf->nginxModuleSegmentParameter, prev->nginxModuleSegmentParameter, "2");
+    ngx_conf_merge_str_value(conf->nginxModuleRequestHeaders, prev->nginxModuleRequestHeaders, "");
+    ngx_conf_merge_str_value(conf->nginxModuleResponseHeaders, prev->nginxModuleResponseHeaders, "");
 
     return NGX_CONF_OK;
 }
@@ -498,7 +522,7 @@ static ngx_int_t ngx_http_opentelemetry_init(ngx_conf_t *cf)
     ngx_uint_t                   phase_index;
     ngx_int_t                    res;
 
-    ngx_writeError(cf->cycle->log, __func__, "Starting Opentelemetry Modlue init");
+    ngx_writeError(cf->cycle->log, __func__, "Starting Opentelemetry Module init");
 
     cp = ap = pap = srp = prp = rp = lp = pcp = 0;
 
@@ -598,7 +622,11 @@ static ngx_int_t ngx_http_opentelemetry_init(ngx_conf_t *cf)
     // ngx_http_next_body_filter = ngx_http_top_body_filter;
     // ngx_http_top_body_filter = ngx_http_opentelemetry_body_filter;
 
-    ngx_writeError(cf->cycle->log, __func__, "Opentelemetry Modlue init completed !");
+    hostname = cf->cycle->hostname;
+    /* hostname is extracted from the nginx cycle. The attribute hostname is needed
+    for OTEL spec and the only place it is available is cf->cycle
+    */
+    ngx_writeError(cf->cycle->log, __func__, "Opentelemetry Module init completed!");
 
   return NGX_OK;
 }
@@ -669,8 +697,8 @@ static void ngx_otel_set_global_context(ngx_http_opentelemetry_loc_conf_t * prev
 /*
     Begin a new interaction
 */
-static APPD_SDK_STATUS_CODE otel_startInteraction(ngx_http_request_t* r, const char* module_name){
-    APPD_SDK_STATUS_CODE res = APPD_SUCCESS;
+static OTEL_SDK_STATUS_CODE otel_startInteraction(ngx_http_request_t* r, const char* module_name){
+    OTEL_SDK_STATUS_CODE res = OTEL_SUCCESS;
     ngx_http_otel_handles_t* ctx;
 
     if(!r || r->internal)
@@ -689,18 +717,19 @@ static APPD_SDK_STATUS_CODE otel_startInteraction(ngx_http_request_t* r, const c
         {
             resolveBackends = conf->nginxModuleResolveBackends;
         }
-        APPD_SDK_ENV_RECORD* propagationHeaders = ngx_pcalloc(r->pool, 5 * sizeof(APPD_SDK_ENV_RECORD));
+        OTEL_SDK_ENV_RECORD* propagationHeaders = ngx_pcalloc(r->pool, 5 * sizeof(OTEL_SDK_ENV_RECORD));
         if (propagationHeaders == NULL)
         {
             ngx_writeError(r->connection->log, __func__, "Failed to allocate memory for propagation headers");
-            return APPD_STATUS(fail);
+            return OTEL_STATUS(fail);
         }
         ngx_writeTrace(r->connection->log, __func__, "Starting a new module interaction for: %s", module_name);
         int ix = 0;
         res = startModuleInteraction((void*)ctx->otel_req_handle_key, module_name, "", resolveBackends, propagationHeaders, &ix);
 
-        if (APPD_ISSUCCESS(res))
+        if (OTEL_ISSUCCESS(res))
         {
+            removeUnwantedHeader(r);
             otel_payload_decorator(r, propagationHeaders, ix);
             ngx_writeTrace(r->connection->log, __func__, "Interaction begin successful");
         }
@@ -719,7 +748,7 @@ static APPD_SDK_STATUS_CODE otel_startInteraction(ngx_http_request_t* r, const c
     return res;
 }
 
-static void otel_payload_decorator(ngx_http_request_t* r, APPD_SDK_ENV_RECORD* propagationHeaders, int count)
+static void otel_payload_decorator(ngx_http_request_t* r, OTEL_SDK_ENV_RECORD* propagationHeaders, int count)
 {
    ngx_list_part_t  *part;
    ngx_table_elt_t  *header;
@@ -796,7 +825,7 @@ static void otel_stopInteraction(ngx_http_request_t* r, const char* module_name,
         return;
     }
 
-    APPD_SDK_HANDLE_REQ otel_req_handle_key = APPD_SDK_NO_HANDLE;
+    OTEL_SDK_HANDLE_REQ otel_req_handle_key = OTEL_SDK_NO_HANDLE;
     ngx_http_otel_handles_t* ctx = ngx_http_get_module_ctx(r, ngx_http_opentelemetry_module);
     if (r->pool == NULL && request_handle_key != NULL)
     {
@@ -829,8 +858,8 @@ static void otel_stopInteraction(ngx_http_request_t* r, const char* module_name,
         strcat(msg, code);
     }
     ngx_writeTrace(r->connection->log, __func__, "Stopping the Interaction for: %s", module_name);
-    APPD_SDK_STATUS_CODE res = stopModuleInteraction(otel_req_handle_key, backendName, backendType, errCode, msg);
-    if (APPD_ISFAIL(res))
+    OTEL_SDK_STATUS_CODE res = stopModuleInteraction(otel_req_handle_key, backendName, backendType, errCode, msg);
+    if (OTEL_ISFAIL(res))
     {
         ngx_writeError(r->connection->log, __func__, "Error: Stop Interaction failed, result code: %d", res);
     }
@@ -874,7 +903,7 @@ static ngx_flag_t ngx_initialize_opentelemetry(ngx_http_request_t *r)
 
     if (conf->nginxModuleEnabled)
     {
-        APPD_SDK_STATUS_CODE res = APPD_SUCCESS;
+        OTEL_SDK_STATUS_CODE res = OTEL_SUCCESS;
         char            *qs = (char *)malloc(6);
         char            *et = (char *)malloc(6);
         char            *es = (char *)malloc(6);
@@ -892,7 +921,7 @@ static ngx_flag_t ngx_initialize_opentelemetry(ngx_http_request_t *r)
 
 
         // Update the apr_pcalloc if we add another parameter to the input array!
-        APPD_SDK_ENV_RECORD* env_config = ngx_pcalloc(r->pool, 16 * sizeof(APPD_SDK_ENV_RECORD));
+        OTEL_SDK_ENV_RECORD* env_config = ngx_pcalloc(r->pool, CONFIG_COUNT * sizeof(OTEL_SDK_ENV_RECORD));
         if(env_config == NULL)
         {
             ngx_writeError(r->connection->log, __func__, "Not Able to allocate memory for the Env Config");
@@ -901,86 +930,91 @@ static ngx_flag_t ngx_initialize_opentelemetry(ngx_http_request_t *r)
         int ix = 0;
 
         // Otel Exporter Type
-        env_config[ix].name = APPD_SDK_ENV_OTEL_EXPORTER_TYPE;
+        env_config[ix].name = OTEL_SDK_ENV_OTEL_EXPORTER_TYPE;
         env_config[ix].value = (const char*)((conf->nginxModuleOtelSpanExporter).data);
         ++ix;
 
         // sdk libaray name
-        env_config[ix].name = APPD_SDK_ENV_OTEL_LIBRARY_NAME;
+        env_config[ix].name = OTEL_SDK_ENV_OTEL_LIBRARY_NAME;
         env_config[ix].value = "Nginx";
         ++ix;
 
         // Otel Exporter Endpoint
-        env_config[ix].name = APPD_SDK_ENV_OTEL_EXPORTER_ENDPOINT;
+        env_config[ix].name = OTEL_SDK_ENV_OTEL_EXPORTER_ENDPOINT;
         env_config[ix].value = (const char*)(conf->nginxModuleOtelExporterEndpoint).data;
         ++ix;
 
+        // Otel Exporter OTEL headers
+        env_config[ix].name = OTEL_SDK_ENV_OTEL_EXPORTER_OTLPHEADERS;
+        env_config[ix].value = (const char*)(conf->nginxModuleOtelExporterOtlpHeaders).data;
+        ++ix;
+
         // Otel SSL Enabled
-        env_config[ix].name = APPD_SDK_ENV_OTEL_SSL_ENABLED;
+        env_config[ix].name = OTEL_SDK_ENV_OTEL_SSL_ENABLED;
         env_config[ix].value = conf->nginxModuleOtelSslEnabled == 1 ? "1" : "0";
         ++ix;
 
         // Otel SSL Certificate Path
-        env_config[ix].name = APPD_SDK_ENV_OTEL_SSL_CERTIFICATE_PATH;
+        env_config[ix].name = OTEL_SDK_ENV_OTEL_SSL_CERTIFICATE_PATH;
         env_config[ix].value = (const char*)(conf->nginxModuleOtelSslCertificatePath).data;
         ++ix;
 
         // Otel Processor Type
-        env_config[ix].name = APPD_SDK_ENV_OTEL_PROCESSOR_TYPE;
+        env_config[ix].name = OTEL_SDK_ENV_OTEL_PROCESSOR_TYPE;
         env_config[ix].value = (const char*)(conf->nginxModuleOtelSpanProcessor).data;
         ++ix;
 
         // Otel Sampler Type
-        env_config[ix].name = APPD_SDK_ENV_OTEL_SAMPLER_TYPE;
+        env_config[ix].name = OTEL_SDK_ENV_OTEL_SAMPLER_TYPE;
         env_config[ix].value = (const char*)(conf->nginxModuleOtelSampler).data;
         ++ix;
 
         // Service Namespace
-        env_config[ix].name = APPD_SDK_ENV_SERVICE_NAMESPACE;
+        env_config[ix].name = OTEL_SDK_ENV_SERVICE_NAMESPACE;
         env_config[ix].value = (const char*)(conf->nginxModuleServiceNamespace).data;
         ++ix;
 
         // Service Name
-        env_config[ix].name = APPD_SDK_ENV_SERVICE_NAME;
+        env_config[ix].name = OTEL_SDK_ENV_SERVICE_NAME;
         env_config[ix].value = (const char*)(conf->nginxModuleServiceName).data;
         ++ix;
 
         // Service Instance ID
-        env_config[ix].name = APPD_SDK_ENV_SERVICE_INSTANCE_ID;
+        env_config[ix].name = OTEL_SDK_ENV_SERVICE_INSTANCE_ID;
         env_config[ix].value = (const char*)(conf->nginxModuleServiceInstanceId).data;
         ++ix;
 
         // Otel Max Queue Size
-        env_config[ix].name = APPD_SDK_ENV_MAX_QUEUE_SIZE;
+        env_config[ix].name = OTEL_SDK_ENV_MAX_QUEUE_SIZE;
         sprintf(qs, "%lu", conf->nginxModuleOtelMaxQueueSize);
         env_config[ix].value = qs;
         ++ix;
 
         // Otel Scheduled Delay
-        env_config[ix].name = APPD_SDK_ENV_SCHEDULED_DELAY;
+        env_config[ix].name = OTEL_SDK_ENV_SCHEDULED_DELAY;
         sprintf(sd, "%lu", conf->nginxModuleOtelScheduledDelayMillis);
         env_config[ix].value = sd;
         ++ix;
 
         // Otel Max Export Batch Size
-        env_config[ix].name = APPD_SDK_ENV_EXPORT_BATCH_SIZE;
+        env_config[ix].name = OTEL_SDK_ENV_EXPORT_BATCH_SIZE;
         sprintf(es, "%lu", conf->nginxModuleOtelMaxExportBatchSize);
         env_config[ix].value = es;
         ++ix;
 
         // Otel Export Timeout
-        env_config[ix].name = APPD_SDK_ENV_EXPORT_TIMEOUT;
+        env_config[ix].name = OTEL_SDK_ENV_EXPORT_TIMEOUT;
         sprintf(et, "%lu", conf->nginxModuleOtelExportTimeoutMillis);
         env_config[ix].value = et;
         ++ix;
 
         // Segment Type
-        env_config[ix].name = APPD_SDK_ENV_SEGMENT_TYPE;
+        env_config[ix].name = OTEL_SDK_ENV_SEGMENT_TYPE;
         env_config[ix].value = (const char*)(conf->nginxModuleSegmentType).data;
         ++ix;
 
         // Segment Parameter
-        env_config[ix].name = APPD_SDK_ENV_SEGMENT_PARAMETER;
+        env_config[ix].name = OTEL_SDK_ENV_SEGMENT_PARAMETER;
         env_config[ix].value = (const char*)(conf->nginxModuleSegmentParameter).data;
         ++ix;
 
@@ -1013,13 +1047,14 @@ static ngx_flag_t ngx_initialize_opentelemetry(ngx_http_request_t *r)
               cn = cn->next;
             }
         }
-
+        setRequestResponseHeaders((const char*)(conf->nginxModuleRequestHeaders).data,
+           (const char*)(conf->nginxModuleResponseHeaders).data);
         res = opentelemetry_core_init(env_config, ix, rootCN);
         free(qs);
         free(sd);
         free(et);
         free(es);
-        if (APPD_ISSUCCESS(res))
+        if (OTEL_ISSUCCESS(res))
         {
             worker_conf->isInitialized = 1;
             ngx_writeTrace(r->connection->log, __func__, "Initializing Agent Core succceeded for process with PID: %s", worker_conf->pid);
@@ -1041,7 +1076,7 @@ static ngx_flag_t ngx_initialize_opentelemetry(ngx_http_request_t *r)
 }
 
 static void stopMonitoringRequest(ngx_http_request_t* r,
-    APPD_SDK_HANDLE_REQ request_handle_key)
+    OTEL_SDK_HANDLE_REQ request_handle_key)
 {
     ngx_http_opentelemetry_loc_conf_t  *ngx_conf = ngx_http_get_module_loc_conf(r, ngx_http_opentelemetry_module);
     if(!ngx_conf->nginxModuleEnabled)
@@ -1050,7 +1085,7 @@ static void stopMonitoringRequest(ngx_http_request_t* r,
         return;
     }
 
-    APPD_SDK_HANDLE_REQ otel_req_handle_key = APPD_SDK_NO_HANDLE;
+    OTEL_SDK_HANDLE_REQ otel_req_handle_key = OTEL_SDK_NO_HANDLE;
     ngx_http_otel_handles_t* ctx = ngx_http_get_module_ctx(r, ngx_http_opentelemetry_module);
     if (r->pool == NULL && request_handle_key != NULL)
     {
@@ -1071,25 +1106,32 @@ static void stopMonitoringRequest(ngx_http_request_t* r,
 
     ngx_writeTrace(r->connection->log, __func__, "Stopping the Request Monitoring");
 
-    APPD_SDK_STATUS_CODE res;
-    unsigned int errCode=0;
+    response_payload* res_payload = NULL;
+    if (r->pool) {
+        res_payload = ngx_pcalloc(r->pool, sizeof(response_payload));
+        res_payload->response_headers_count = 0;
+        fillResponsePayload(res_payload, r);
+    }
+
+    OTEL_SDK_STATUS_CODE res;
     char* msg = NULL;
 
     if (otel_requestHasErrors(r))
     {
-        errCode=(unsigned int)otel_getErrorCode(r);
-        msg = (char*)malloc(6);
-        sprintf(msg, "%d", errCode);
-        res = endRequest(otel_req_handle_key, msg);
+        res_payload->status_code = (unsigned int)otel_getErrorCode(r);
+        msg = (char*)malloc(STATUS_CODE_BYTE_COUNT * sizeof(char));
+        sprintf(msg, "%d", res_payload->status_code);
+        res = endRequest(otel_req_handle_key, msg, res_payload);
     }
     else
     {
-            res = endRequest(otel_req_handle_key, msg);
+        res_payload->status_code = r->headers_out.status;
+        res = endRequest(otel_req_handle_key, msg, res_payload);
     }
 
-    if (APPD_ISSUCCESS(res))
+    if (OTEL_ISSUCCESS(res))
     {
-        ngx_writeError(r->connection->log, __func__, "Request Ends with result code: %d", res);
+        ngx_writeTrace(r->connection->log, __func__, "Request Ends with result code: %d", res);
     }
     else
     {
@@ -1109,7 +1151,7 @@ static void startMonitoringRequest(ngx_http_request_t* r){
         ngx_writeTrace(r->connection->log, __func__, "Not a Main Request(sub-request or internal redirect)");
         return;
     }
-    else if (!ngx_initialize_opentelemetry(r))    /* check if Appd Agent Core is initialized */
+    else if (!ngx_initialize_opentelemetry(r))    /* check if Otel Agent Core is initialized */
     {
         ngx_writeError(r->connection->log, __func__, "Opentelemetry Agent Core did not get initialized");
         return;
@@ -1121,12 +1163,12 @@ static void startMonitoringRequest(ngx_http_request_t* r){
         return;
     }
 
-    ngx_writeError(r->connection->log, __func__, "Starting Request Monitoring for: %s", r->uri.data);
+    ngx_writeTrace(r->connection->log, __func__, "Starting Request Monitoring for: %s", r->uri.data);
 
     // Handle request for static contents (Nginx is used for habdling static contents)
 
-    APPD_SDK_STATUS_CODE res = APPD_SUCCESS;
-    APPD_SDK_HANDLE_REQ reqHandle = APPD_SDK_NO_HANDLE;
+    OTEL_SDK_STATUS_CODE res = OTEL_SUCCESS;
+    OTEL_SDK_HANDLE_REQ reqHandle = OTEL_SDK_NO_HANDLE;
 
     const char* wscontext = NULL;
 
@@ -1152,12 +1194,11 @@ static void startMonitoringRequest(ngx_http_request_t* r){
     {
         ngx_writeError(r->connection->log, __func__, "Not able to get memory for request payload");
     }
-    int header_count = 0;
-    fillRequestPayload(req_payload, r, &header_count);
+    fillRequestPayload(req_payload, r);
 
-    res = startRequest(wscontext, req_payload, &reqHandle, header_count);
+    res = startRequest(wscontext, req_payload, &reqHandle);
 
-    if (APPD_ISSUCCESS(res))
+    if (OTEL_ISSUCCESS(res))
     {
         if (ctx == NULL)
         {
@@ -1165,11 +1206,10 @@ static void startMonitoringRequest(ngx_http_request_t* r){
             if (ctx == NULL)
             {
                 ngx_writeError(r->connection->log, __func__, "Cannot allocate memory for handles");
-                ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "Cannot allocate memory for handles");
                 return;
             }
             // Store the Request Handle on the request object
-            APPD_SDK_HANDLE_REQ reqHandleValue = ngx_pcalloc(r->pool, sizeof(APPD_SDK_HANDLE_REQ));
+            OTEL_SDK_HANDLE_REQ reqHandleValue = ngx_pcalloc(r->pool, sizeof(OTEL_SDK_HANDLE_REQ));
             if (reqHandleValue)
             {
                 reqHandleValue = reqHandle;
@@ -1179,7 +1219,7 @@ static void startMonitoringRequest(ngx_http_request_t* r){
         }
         ngx_writeTrace(r->connection->log, __func__, "Request Monitoring begins successfully ");
     }
-    else if (res == APPD_STATUS(cfg_channel_uninitialized) || res == APPD_STATUS(bt_detection_disabled))
+    else if (res == OTEL_STATUS(cfg_channel_uninitialized) || res == OTEL_STATUS(bt_detection_disabled))
     {
         ngx_writeTrace(r->connection->log, __func__, "Request begin detection disabled, result code: %d", res);
     }
@@ -1192,7 +1232,7 @@ static void startMonitoringRequest(ngx_http_request_t* r){
 static ngx_int_t ngx_http_otel_rewrite_handler(ngx_http_request_t *r){
     otel_startInteraction(r, "ngx_http_rewrite_module");
     ngx_int_t rvalue = h[NGX_HTTP_REWRITE_MODULE_INDEX](r);
-    otel_stopInteraction(r, "ngx_http_rewrite_module", APPD_SDK_NO_HANDLE);
+    otel_stopInteraction(r, "ngx_http_rewrite_module", OTEL_SDK_NO_HANDLE);
 
     return rvalue;
 }
@@ -1200,7 +1240,7 @@ static ngx_int_t ngx_http_otel_rewrite_handler(ngx_http_request_t *r){
 static ngx_int_t ngx_http_otel_limit_conn_handler(ngx_http_request_t *r){
     otel_startInteraction(r, "ngx_http_limit_conn_module");
     ngx_int_t rvalue = h[NGX_HTTP_LIMIT_CONN_MODULE_INDEX](r);
-    otel_stopInteraction(r, "ngx_http_limit_conn_module", APPD_SDK_NO_HANDLE);
+    otel_stopInteraction(r, "ngx_http_limit_conn_module", OTEL_SDK_NO_HANDLE);
 
     return rvalue;
 }
@@ -1208,7 +1248,7 @@ static ngx_int_t ngx_http_otel_limit_conn_handler(ngx_http_request_t *r){
 static ngx_int_t ngx_http_otel_limit_req_handler(ngx_http_request_t *r){
     otel_startInteraction(r, "ngx_http_limit_req_module");
     ngx_int_t rvalue = h[NGX_HTTP_LIMIT_REQ_MODULE_INDEX](r);
-    otel_stopInteraction(r, "ngx_http_limit_req_module", APPD_SDK_NO_HANDLE);
+    otel_stopInteraction(r, "ngx_http_limit_req_module", OTEL_SDK_NO_HANDLE);
 
     return rvalue;
 }
@@ -1224,7 +1264,7 @@ static ngx_int_t ngx_http_otel_realip_handler(ngx_http_request_t *r){
 
     otel_startInteraction(r, "ngx_http_realip_module");
     ngx_int_t rvalue = h[NGX_HTTP_REALIP_MODULE_INDEX](r);
-    otel_stopInteraction(r, "ngx_http_realip_module", APPD_SDK_NO_HANDLE);
+    otel_stopInteraction(r, "ngx_http_realip_module", OTEL_SDK_NO_HANDLE);
 
     return rvalue;
 }
@@ -1232,7 +1272,7 @@ static ngx_int_t ngx_http_otel_realip_handler(ngx_http_request_t *r){
 static ngx_int_t ngx_http_otel_auth_request_handler(ngx_http_request_t *r){
     otel_startInteraction(r, "ngx_http_auth_request_module");
     ngx_int_t rvalue = h[NGX_HTTP_LIMIT_AUTH_REQ_MODULE_INDEX](r);
-    otel_stopInteraction(r, "ngx_http_auth_request_module", APPD_SDK_NO_HANDLE);
+    otel_stopInteraction(r, "ngx_http_auth_request_module", OTEL_SDK_NO_HANDLE);
 
     return rvalue;
 }
@@ -1240,7 +1280,7 @@ static ngx_int_t ngx_http_otel_auth_request_handler(ngx_http_request_t *r){
 static ngx_int_t ngx_http_otel_auth_basic_handler(ngx_http_request_t *r){
     otel_startInteraction(r, "ngx_http_auth_basic_module");
     ngx_int_t rvalue = h[NGX_HTTP_AUTH_BASIC_MODULE_INDEX](r);
-    otel_stopInteraction(r, "ngx_http_auth_basic_module", APPD_SDK_NO_HANDLE);
+    otel_stopInteraction(r, "ngx_http_auth_basic_module", OTEL_SDK_NO_HANDLE);
 
     return rvalue;
 }
@@ -1248,7 +1288,7 @@ static ngx_int_t ngx_http_otel_auth_basic_handler(ngx_http_request_t *r){
 static ngx_int_t ngx_http_otel_access_handler(ngx_http_request_t *r){
     otel_startInteraction(r, "ngx_http_access_module");
     ngx_int_t rvalue = h[NGX_HTTP_ACCESS_MODULE_INDEX](r);
-    otel_stopInteraction(r, "ngx_http_access_module", APPD_SDK_NO_HANDLE);
+    otel_stopInteraction(r, "ngx_http_access_module", OTEL_SDK_NO_HANDLE);
 
     return rvalue;
 }
@@ -1256,7 +1296,7 @@ static ngx_int_t ngx_http_otel_access_handler(ngx_http_request_t *r){
 static ngx_int_t ngx_http_otel_static_handler(ngx_http_request_t *r){
     otel_startInteraction(r, "ngx_http_static_module");
     ngx_int_t rvalue = h[NGX_HTTP_STATIC_MODULE_INDEX](r);
-    otel_stopInteraction(r, "ngx_http_static_module", APPD_SDK_NO_HANDLE);
+    otel_stopInteraction(r, "ngx_http_static_module", OTEL_SDK_NO_HANDLE);
 
     return rvalue;
 }
@@ -1264,7 +1304,7 @@ static ngx_int_t ngx_http_otel_static_handler(ngx_http_request_t *r){
 static ngx_int_t ngx_http_otel_gzip_static_handler(ngx_http_request_t *r){
     otel_startInteraction(r, "ngx_http_gzip_static_module");
     ngx_int_t rvalue = h[NGX_HTTP_GZIP_STATIC_MODULE_INDEX](r);
-    otel_stopInteraction(r, "ngx_http_gzip_static_module", APPD_SDK_NO_HANDLE);
+    otel_stopInteraction(r, "ngx_http_gzip_static_module", OTEL_SDK_NO_HANDLE);
 
     return rvalue;
 }
@@ -1272,7 +1312,7 @@ static ngx_int_t ngx_http_otel_gzip_static_handler(ngx_http_request_t *r){
 static ngx_int_t ngx_http_otel_dav_handler(ngx_http_request_t *r){
     otel_startInteraction(r, "ngx_http_dav_module");
     ngx_int_t rvalue = h[NGX_HTTP_DAV_MODULE_INDEX](r);
-    otel_stopInteraction(r, "ngx_http_dav_module", APPD_SDK_NO_HANDLE);
+    otel_stopInteraction(r, "ngx_http_dav_module", OTEL_SDK_NO_HANDLE);
 
     return rvalue;
 }
@@ -1280,7 +1320,7 @@ static ngx_int_t ngx_http_otel_dav_handler(ngx_http_request_t *r){
 static ngx_int_t ngx_http_otel_autoindex_handler(ngx_http_request_t *r){
     otel_startInteraction(r, "ngx_http_autoindex_module");
     ngx_int_t rvalue = h[NGX_HTTP_AUTO_INDEX_MODULE_INDEX](r);
-    otel_stopInteraction(r, "ngx_http_autoindex_module", APPD_SDK_NO_HANDLE);
+    otel_stopInteraction(r, "ngx_http_autoindex_module", OTEL_SDK_NO_HANDLE);
 
     return rvalue;
 }
@@ -1309,10 +1349,10 @@ static ngx_int_t ngx_http_otel_index_handler(ngx_http_request_t *r){
     if (new_internal == true && new_internal != old_internal) {
         ngx_http_set_ctx(r, old_ctx, ngx_http_opentelemetry_module);
         r->internal = 0;
-        otel_stopInteraction(r, "ngx_http_index_module", APPD_SDK_NO_HANDLE);
+        otel_stopInteraction(r, "ngx_http_index_module", OTEL_SDK_NO_HANDLE);
         r->internal = 1;
     } else {
-        otel_stopInteraction(r, "ngx_http_index_module", APPD_SDK_NO_HANDLE);
+        otel_stopInteraction(r, "ngx_http_index_module", OTEL_SDK_NO_HANDLE);
     }
 
     return rvalue;
@@ -1329,11 +1369,11 @@ static ngx_int_t ngx_http_otel_random_index_handler(ngx_http_request_t *r){
     if (new_internal == true && new_internal != old_internal) {
         ngx_http_set_ctx(r, old_ctx, ngx_http_opentelemetry_module);
         r->internal = 0;
-        otel_stopInteraction(r, "ngx_http_random_index_module", APPD_SDK_NO_HANDLE);
+        otel_stopInteraction(r, "ngx_http_random_index_module", OTEL_SDK_NO_HANDLE);
         r->internal = 1;
 
     } else {
-        otel_stopInteraction(r, "ngx_http_random_index_module", APPD_SDK_NO_HANDLE);
+        otel_stopInteraction(r, "ngx_http_random_index_module", OTEL_SDK_NO_HANDLE);
     }
 
     return rvalue;
@@ -1353,7 +1393,7 @@ static ngx_int_t ngx_http_otel_try_files_handler(ngx_http_request_t *r) {
     bool old_internal = r->internal;
     ngx_http_otel_handles_t* old_ctx;
 
-    APPD_SDK_HANDLE_REQ request_handle = APPD_SDK_NO_HANDLE;
+    OTEL_SDK_HANDLE_REQ request_handle = OTEL_SDK_NO_HANDLE;
     old_ctx = ngx_http_get_module_ctx(r, ngx_http_opentelemetry_module);
     if (old_ctx && old_ctx->otel_req_handle_key) {
         request_handle = old_ctx->otel_req_handle_key;
@@ -1367,7 +1407,7 @@ static ngx_int_t ngx_http_otel_try_files_handler(ngx_http_request_t *r) {
         otel_stopInteraction(r, "ngx_http_otel_try_files_handler", request_handle);
         r->internal = 1;
     } else {
-        otel_stopInteraction(r, "ngx_http_otel_try_files_handler", APPD_SDK_NO_HANDLE);
+        otel_stopInteraction(r, "ngx_http_otel_try_files_handler", OTEL_SDK_NO_HANDLE);
     }
 
     if (!r->pool) {
@@ -1379,7 +1419,7 @@ static ngx_int_t ngx_http_otel_try_files_handler(ngx_http_request_t *r) {
 static ngx_int_t ngx_http_otel_mirror_handler(ngx_http_request_t *r) {
     otel_startInteraction(r, "ngx_http_otel_mirror_handler");
     ngx_int_t rvalue = h[NGX_HTTP_MIRROR_MODULE_INDEX](r);
-    otel_stopInteraction(r, "ngx_http_otel_mirror_handler", APPD_SDK_NO_HANDLE);
+    otel_stopInteraction(r, "ngx_http_otel_mirror_handler", OTEL_SDK_NO_HANDLE);
 
     return rvalue;
 }
@@ -1388,7 +1428,7 @@ static ngx_int_t ngx_http_otel_log_handler(ngx_http_request_t *r){
     //This will be last handler to be be encountered before a request ends and response is finally sent back to client
     // Here, End the main trace, span created by Webserver Agent and the collected data will be passed to the backend
     // It will work as ngx_http_opentelemetry_log_transaction_end
-    stopMonitoringRequest(r, APPD_SDK_NO_HANDLE);
+    stopMonitoringRequest(r, OTEL_SDK_NO_HANDLE);
 
     ngx_int_t rvalue = h[NGX_HTTP_LOG_MODULE_INDEX](r);
 
@@ -1419,6 +1459,7 @@ static void traceConfig(ngx_http_request_t *r, ngx_http_opentelemetry_loc_conf_t
     ngx_writeTrace(r->connection->log, __func__, " Config { :"
                                                       "(Enabled=\"%ld\")"
                                                       "(OtelExporterEndpoint=\"%s\")"
+                                                      "(OtelExporterOtlpHeader=\"%s\")"
                                                       "(OtelSslEnabled=\"%ld\")"
                                                       "(OtelSslCertificatePath=\"%s\")"
                                                       "(OtelSpanExporter=\"%s\")"
@@ -1441,6 +1482,7 @@ static void traceConfig(ngx_http_request_t *r, ngx_http_opentelemetry_loc_conf_t
                                                       " }",
                                                       conf->nginxModuleEnabled,
                                                       (conf->nginxModuleOtelExporterEndpoint).data,
+                                                      (conf->nginxModuleOtelExporterOtlpHeaders).data,
                                                       conf->nginxModuleOtelSslEnabled,
                                                       (conf->nginxModuleOtelSslCertificatePath).data,
                                                       (conf->nginxModuleOtelSpanExporter).data,
@@ -1462,7 +1504,48 @@ static void traceConfig(ngx_http_request_t *r, ngx_http_opentelemetry_loc_conf_t
                                                       (conf->nginxModuleSegmentParameter).data);
 }
 
-static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t* r, int* count){
+static void removeUnwantedHeader(ngx_http_request_t* r)
+{
+  ngx_list_part_t  *part;
+  ngx_table_elt_t  *header;
+  ngx_table_elt_t            *h;
+  ngx_http_header_t          *hh;
+  ngx_http_core_main_conf_t  *cmcf;
+  ngx_uint_t       nelts;
+
+  part = &r->headers_in.headers.part;
+  header = (ngx_table_elt_t*)part->elts;
+  nelts = part->nelts;
+
+  for(ngx_uint_t j = 0; j<nelts; j++){
+    h = &header[j];
+    if(strcmp("singularityheader", h->key.data)==0){
+      if (h->value.len == 0) {
+        break;
+      }
+      if(h->value.data)
+        ngx_pfree(r->pool, h->value.data);
+
+      char str[] = "";
+      h->hash = ngx_hash_key(h->key.data, h->key.len);
+
+      h->value.len = 0;
+      h->value.data = ngx_pcalloc(r->pool, sizeof(char)*((h->value.len)+1));
+      strcpy(h->value.data, str);
+      h->lowcase_key = h->key.data;
+
+      cmcf = ngx_http_get_module_main_conf(r, ngx_http_core_module);
+      hh = ngx_hash_find(&cmcf->headers_in_hash, h->hash,h->lowcase_key, h->key.len);
+      if (hh && hh->handler(r, h, hh->offset) != NGX_OK) {
+       return;
+      }
+
+      break;
+    }
+  }
+}
+
+static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t* r){
     ngx_list_part_t  *part;
     ngx_table_elt_t  *header;
     ngx_uint_t       nelts;
@@ -1477,8 +1560,44 @@ static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t*
     temp_uri[(r->uri).len]='\0';
     req_payload->uri = temp_uri;
 
-    req_payload->protocol = (const char*)(r->http_protocol).data;
-    req_payload->request_method = (const char*)(r->method_name).data;
+    ngx_http_core_srv_conf_t* cscf = (ngx_http_core_srv_conf_t*)ngx_http_get_module_srv_conf(r, ngx_http_core_module);
+    req_payload->server_name = (const char*)(cscf->server_name).data;
+
+    #if (NGX_HTTP_SSL)
+
+      if(r->connection->ssl)
+      {
+        req_payload->scheme = "https";
+      }
+      else
+      {
+        req_payload->scheme = "http";
+      }
+
+    #else
+
+      req_payload->scheme = "http";
+
+    #endif
+
+    // TODO - use strncpy function to just create memory of size (r->http_protocol.len)
+    char *temp_http_protocol = ngx_pcalloc(r->pool, (strlen((r->http_protocol).data))+1);
+    strcpy(temp_http_protocol,(const char*)(r->http_protocol).data);
+    temp_http_protocol[(r->http_protocol).len]='\0';
+    req_payload->protocol = temp_http_protocol;
+
+    char *temp_request_method = ngx_pcalloc(r->pool, (strlen((r->method_name).data))+1);
+    strcpy(temp_request_method,(const char*)(r->method_name).data);
+    temp_request_method[(r->method_name).len]='\0';
+    req_payload->request_method = temp_request_method;
+
+    // flavor has to be scraped from protocol in future
+    req_payload->flavor = temp_http_protocol;
+
+    char *temp_hostname = ngx_pcalloc(r->pool, (strlen(hostname.data))+1);
+    strcpy(temp_hostname,(const char*)hostname.data);
+    temp_hostname[hostname.len]='\0';
+    req_payload->hostname = temp_hostname;
 
     req_payload->http_post_param = ngx_pcalloc(r->pool, sizeof(u_char*));
     req_payload->http_get_param = ngx_pcalloc(r->pool, sizeof(u_char*));
@@ -1499,23 +1618,78 @@ static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t*
         }
     }
 
-   part = &r->headers_in.headers.part;
-   header = (ngx_table_elt_t*)part->elts;
-   nelts = part->nelts;
+    req_payload->client_ip = (const char*)(r->connection->addr_text).data;
+    char *temp_client_ip = ngx_pcalloc(r->pool, (strlen((r->connection->addr_text).data))+1);
+    strcpy(temp_client_ip,(const char*)(r->connection->addr_text).data);
+    temp_client_ip[(r->connection->addr_text).len]='\0';
+    req_payload->client_ip = temp_client_ip;
 
-   req_payload->headers = ngx_pcalloc(r->pool, 3 * sizeof(http_headers));
-   for(int i=0; i<3; i++){
-       char* c = httpHeaders[i];
-       req_payload->headers[*count].name = c;
-       for(ngx_uint_t j = 0; j<nelts; j++){
-           h = &header[j];
-           if(strcmp(httpHeaders[i], h->key.data)==0){
-               req_payload->headers[*count].value = (const char*)(h->value).data;
-           }
-       }
-       if(!req_payload->headers[*count].value){
-           req_payload->headers[*count].value = "No Param";
-       }
-       ++(*count);
-   }
+    ngx_http_opentelemetry_loc_conf_t *conf =
+      ngx_http_get_module_loc_conf(r, ngx_http_opentelemetry_module);
+    part = &r->headers_in.headers.part;
+    header = (ngx_table_elt_t*)part->elts;
+    nelts = part->nelts;
+
+    req_payload->propagation_headers = ngx_pcalloc(r->pool, nelts * sizeof(http_headers));
+    req_payload->request_headers = ngx_pcalloc(r->pool, nelts * sizeof(http_headers));
+    int request_headers_idx = 0;
+    int propagation_headers_idx = 0;
+    for (ngx_uint_t j = 0; j < nelts; j++) {
+
+        h = &header[j];
+        for (int i = 0; i < headers_len; i++) {
+
+            if (strcmp(h->key.data, httpHeaders[i]) == 0) {
+                req_payload->propagation_headers[propagation_headers_idx].name = httpHeaders[i];
+                req_payload->propagation_headers[propagation_headers_idx].value = (const char*)(h->value).data;
+                if (req_payload->propagation_headers[propagation_headers_idx].value == NULL) {
+                    req_payload->propagation_headers[propagation_headers_idx].value = "";
+                }
+                propagation_headers_idx++;
+                break;
+            }
+        }
+
+        req_payload->request_headers[request_headers_idx].name = (const char*)(h->key).data;
+        req_payload->request_headers[request_headers_idx].value = (const char*)(h->value).data;
+        if (req_payload->request_headers[request_headers_idx].value == NULL) {
+            req_payload->request_headers[request_headers_idx].value = "";
+        }
+        request_headers_idx++;
+    }
+    req_payload->propagation_count = propagation_headers_idx;
+    req_payload->request_headers_count = request_headers_idx;
+}
+
+static void fillResponsePayload(response_payload* res_payload, ngx_http_request_t* r)
+{
+    if (!r->pool) {
+        return;
+    }
+
+    ngx_list_part_t  *part;
+    ngx_table_elt_t  *header;
+    ngx_uint_t       nelts;
+    ngx_table_elt_t  *h;
+
+    part = &r->headers_out.headers.part;
+    header = (ngx_table_elt_t*)part->elts;
+    nelts = part->nelts;
+
+    res_payload->response_headers = ngx_pcalloc(r->pool, nelts * sizeof(http_headers));
+    ngx_uint_t headers_count = 0;
+
+    for (ngx_uint_t j = 0; j < nelts; j++) {
+        h = &header[j];
+
+        if (headers_count < nelts) {
+            res_payload->response_headers[headers_count].name = (const char*)(h->key).data;
+            res_payload->response_headers[headers_count].value = (const char*)(h->value).data;
+            if (res_payload->response_headers[headers_count].value == NULL) {
+                res_payload->response_headers[headers_count].value = "";
+            }
+            headers_count++;
+        }
+    }
+    res_payload->response_headers_count = headers_count;
 }

@@ -1,5 +1,5 @@
 /*
-* Copyright 2021 AppDynamics LLC. 
+* Copyright 2022, OpenTelemetry Authors. 
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -16,11 +16,11 @@
 #pragma once
 
 #include <unordered_map>
-#include <api/AppdynamicsSdk.h>
+#include <api/OpentelemetrySdk.h>
 #include <api/TenantConfig.h>
 #include <api/SpanNamer.h>
 
-namespace appd {
+namespace otel {
 namespace core {
 
 class IRequestProcessingEngine;
@@ -28,9 +28,9 @@ class IRequestProcessingEngine;
 class IEnvReader
 {
 public:
-    virtual APPD_SDK_STATUS_CODE ReadMandatory(
+    virtual OTEL_SDK_STATUS_CODE ReadMandatory(
     	const std::string& varName, std::string& result) = 0;
-    virtual APPD_SDK_STATUS_CODE ReadOptional(
+    virtual OTEL_SDK_STATUS_CODE ReadOptional(
     	const std::string& varName, std::string& result) = 0;
 };
 
@@ -39,22 +39,22 @@ class IApiUtils
 public:
     virtual ~IApiUtils() = default;
 
-    virtual APPD_SDK_STATUS_CODE init_boilerplate() = 0; // initializes agentLogging
+    virtual OTEL_SDK_STATUS_CODE init_boilerplate() = 0; // initializes agentLogging
 
-    virtual APPD_SDK_STATUS_CODE ReadFromPassedSettings(
-            APPD_SDK_ENV_RECORD* env,
+    virtual OTEL_SDK_STATUS_CODE ReadFromPassedSettings(
+            OTEL_SDK_ENV_RECORD* env,
             unsigned numberOfRecords,
             TenantConfig& tenantConfig,
             SpanNamer& spanNamer) = 0;
 protected:
-    //virtual APPD_SDK_STATUS_CODE ReadFromEnvinronment(TenantConfig&) = 0;
-    virtual APPD_SDK_STATUS_CODE ReadSettingsFromReader(
+    //virtual OTEL_SDK_STATUS_CODE ReadFromEnvinronment(TenantConfig&) = 0;
+    virtual OTEL_SDK_STATUS_CODE ReadSettingsFromReader(
         IEnvReader& reader, TenantConfig&, SpanNamer&) = 0;
-    /*virtual APPD_SDK_STATUS_CODE ReadMandatoryFromReader(
+    /*virtual OTEL_SDK_STATUS_CODE ReadMandatoryFromReader(
         IEnvReader& reader, const std::string& varName, unsigned short& result) = 0;*/
-    virtual APPD_SDK_STATUS_CODE ReadOptionalFromReader(
+    virtual OTEL_SDK_STATUS_CODE ReadOptionalFromReader(
         IEnvReader& reader, const std::string& varName, bool& result) = 0;
-    virtual APPD_SDK_STATUS_CODE ReadOptionalFromReader(
+    virtual OTEL_SDK_STATUS_CODE ReadOptionalFromReader(
         IEnvReader& reader, const std::string& varName, unsigned int& result) = 0;
 };
 
@@ -63,8 +63,8 @@ class IKernel
 public:
     virtual ~IKernel() = default;
 
-    virtual void initKernel(std::shared_ptr<appd::core::TenantConfig> config,
-        std::shared_ptr<appd::core::SpanNamer> spanNamer) = 0;
+    virtual void initKernel(std::shared_ptr<otel::core::TenantConfig> config,
+        std::shared_ptr<otel::core::SpanNamer> spanNamer) = 0;
 
     virtual IRequestProcessingEngine* getRequestProcessingEngine() = 0;
 };
@@ -74,11 +74,11 @@ class IContext
 public:
     virtual ~IContext() = default;
 
-    virtual void initContext(std::shared_ptr<appd::core::SpanNamer> spanNamer) = 0;
+    virtual void initContext(std::shared_ptr<otel::core::SpanNamer> spanNamer) = 0;
 
     virtual IKernel* getKernel() const = 0;
 
-    virtual std::shared_ptr<appd::core::TenantConfig> getConfig() = 0;
+    virtual std::shared_ptr<otel::core::TenantConfig> getConfig() = 0;
 };
 
 class ICore
@@ -90,8 +90,8 @@ public:
     virtual ~ICore() = default;
 
     virtual bool start(
-        std::shared_ptr<appd::core::TenantConfig> initConfig,
-        std::shared_ptr<appd::core::SpanNamer> spanNamer,
+        std::shared_ptr<otel::core::TenantConfig> initConfig,
+        std::shared_ptr<otel::core::SpanNamer> spanNamer,
         userAddedTenantMap& userAddedTenants) = 0;
 
     virtual void stop() = 0;

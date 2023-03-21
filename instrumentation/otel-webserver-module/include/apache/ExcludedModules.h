@@ -1,5 +1,5 @@
 /*
-* Copyright 2021 AppDynamics LLC. 
+* Copyright 2022, OpenTelemetry Authors. 
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
 * limitations under the License.
 */
 
-#ifndef APPD_EXCLUDEDMODULES_H
-#define APPD_EXCLUDEDMODULES_H
+#ifndef EXCLUDEDMODULES_H
+#define EXCLUDEDMODULES_H
 
 #include <unordered_set>
 #include <string>

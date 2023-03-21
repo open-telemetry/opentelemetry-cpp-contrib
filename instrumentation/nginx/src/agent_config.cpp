@@ -94,6 +94,14 @@ static bool SetupExporter(toml_table_t* root, ngx_log_t* log, OtelNgxAgentConfig
 }
 
 static bool SetupService(toml_table_t* root, ngx_log_t*, OtelNgxAgentConfig* config) {
+  const char *otel_service_name_env = "OTEL_SERVICE_NAME";
+  auto service_name_from_env = std::getenv(otel_service_name_env);
+
+  if (service_name_from_env) {
+    config->service.name = service_name_from_env;
+    return true;
+  }
+
   toml_table_t* service = toml_table_in(root, "service");
 
   if (service) {

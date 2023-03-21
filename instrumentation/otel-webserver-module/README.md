@@ -58,8 +58,9 @@ Monitoring individual modules is crucial to the instrumentation of Apache web se
 |*ApacheModuleWebserverContext*                  |                 | OPTIONAL: Takes 3 values(space-seperated) ServiceName, ServiceNamespace and ServiceInstanceId|
 |*ApacheModuleSegmentType*                       |                 | OPTIONAL: Specify the string (FIRST/LAST/CUSTOM) to be filtered for Span Name Creation|
 |*ApacheModuleSegmentParameter*                  |                 | OPTIONAL: Specify the segment count or segment numbers that you want to display for Span Creation|
+|*ApacheModuleOtelExporterHeaders*               |                 | OPTIONAL: OTEL Exporter header info or Metadata like API key for OTLP endpoint. a list of key value pairs, and these are expected to be represented in a format matching to the W3C Correlation-Context, except that additional semi-colon delimited metadata is not supported, i.e.: key1=value1,key2=value2. |
 
-A sample configuration is mentioned in [opentelemetry_module.conf](https://github.com/cisco-open/otel-webserver-module/blob/main/opentelemetry_module.conf)
+A sample configuration is mentioned in [opentelemetry_module.conf](https://github.com/open-telemetry/opentelemetry-cpp-contrib/blob/main/instrumentation/otel-webserver-module/opentelemetry_module.conf)
 
 ### Build and Installation
 #### Prerequisites
@@ -149,7 +150,7 @@ Currently, Nginx Webserver module monitores some fixed set of modules, which get
 
 | Library                                        | Present Version |
 | ---------------------------------------------- | -----------     |
-| Nginx                                          | 1.18.0          |
+| Nginx                                          | 1.22.0, 1.23.0,1.23.1          |
 | Apr                                            | 1.7.0           |
 | Apr-util                                       | 1.6.1           |
 
@@ -172,14 +173,17 @@ Currently, Nginx Webserver module monitores some fixed set of modules, which get
 |*NginxModuleWebserverContext*                  |                 | OPTIONAL: Takes 3 values(space-seperated) ServiceName, ServiceNamespace and ServiceInstanceId|
 |*NginxModuleSegmentType*                       |                 | OPTIONAL: Specify the string (FIRST/LAST/CUSTOM) to be filtered for Span Name Creation|
 |*NginxModuleSegmentParameter*                  |                 | OPTIONAL: Specify the segment count or segment numbers that you want to display for Span Creation|
-
+|*NginxModuleRequestHeaders*                    |                 | OPTIONAL: Specify the request headers to be captured in the span attributes. The headers are Case-Sensitive and should be comma-separated. e.g.```NginxModuleRequestHeaders               Accept-Charset,Accept-Encoding,User-Agent;```|
+|*NginxModuleResponseHeaders*                   |                  | OPTIONAL: Specify the response headers to be captured in the span attributes. The headers are Case-Sensitive and should be comma-separated. e.g.```NginxModuleResponseHeaders                  Content-Length,Content-Type;```|
+|*NginxModuleOtelExporterOtlpHeaders*           |                  | OPTIONAL: OTEL exporter headers like Meta data related exposrted end point. a list of key value pairs, and these are expected to be represented in a format matching to the W3C Correlation-Context, except that additional semi-colon delimited metadata is not supported, i.e.: key1=value1,key2=value2.|
 
 ### Build and Installation
 #### Prerequisites
 - Docker Desktop should be installed on the system
 
 #### Platform Supported
-- Supports only Nginx v1.18.0.
+- Supports both stable(1.22.0) and mainline(1.23.1).
+- Earlier support of v1.18.0 is deprecated.
 - The build is supported for **x86-64** platforms.
 - OS support: **Centos6**, **Centos7, ubuntu20.04**.
 
@@ -235,7 +239,7 @@ Make sure to edit the directives values according to your need e.g NginxModuleOt
 Edit the nginx.conf to provide the reference to opentelemetry_module.conf and shared library.
 Please mind the order and location of the below entries by referring to ```conf/nginx/nginx.conf```.
 ```
-load_module /opt/opentelemetry-webserver-sdk/WebServerModule/Nginx/ngx_http_opentelemetry_module.so;
+load_module /opt/opentelemetry-webserver-sdk/WebServerModule/Nginx/<nginx-version>/ngx_http_opentelemetry_module.so;
 include /opt/opentelemetry_module.conf;
 ```
 

@@ -1,0 +1,5 @@
+rootProject.name = 'otel-webserver-module'
+
+include 'test:integration'
+findProject(':test:integration')?.name = 'integration'
+

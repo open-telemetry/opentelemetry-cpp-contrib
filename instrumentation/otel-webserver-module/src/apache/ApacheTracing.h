@@ -1,5 +1,5 @@
 /*
-* Copyright 2021 AppDynamics LLC. 
+* Copyright 2022, OpenTelemetry Authors. 
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
 * limitations under the License.
 */
 
-#ifndef APPD_APACHETRACING_H
-#define APPD_APACHETRACING_H
+#ifndef APACHETRACING_H
+#define APACHETRACING_H
 
 #include <string>
 #include <vector>

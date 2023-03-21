@@ -1,5 +1,5 @@
 /*
-* Copyright 2021 AppDynamics LLC. 
+* Copyright 2022, OpenTelemetry Authors.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@
 */
 
 
-#include <stdbool.h>
 #include <ngx_config.h>
 #include <ngx_core.h>
+#include <stdbool.h>
 #include <stdarg.h>
 
 /* 

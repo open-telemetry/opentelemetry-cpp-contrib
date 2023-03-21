@@ -1,0 +1,46 @@
+name: Geneva Metrics CI
+
+on:
+  push:
+    branches: "*"
+    paths:
+      - "exporters/geneva/**"
+      - ".github/workflows/geneva_metrics.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "exporters/geneva/**"
+      - ".github/workflows/geneva_metrics.yml"
+  
+ cmake_linux:
+    name: CMake on Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout otel contrib geneva metrics
+        uses: actions/checkout@v3
+        with:
+          path: "otel_cpp_contrib"
+      - name: checkout otel cpp
+        uses: actions/checkout@v3
+        with:
+          repository: "open-telemetry/opentelemetry-cpp"
+          ref: "v1.8.2"
+          path: "otel_cpp"
+          submodules: "recursive"
+      - name: setup
+        run: |
+          sudo apt update -y 
+          sudo apt install -y --no-install-recommends --no-install-suggests build-essential\
+            ca-certificates wget git valgrind lcov
+      - name: run tests
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/otel_cpp/build"
+          cd "$GITHUB_WORKSPACE/otel_cpp/build"
+          cmake .. -DCMAKE_BUILD_TYPE=Debug 
+          cmake --build . -j --config Debug
+          cmake --install . --prefix "$HOME/prebuilt-otel" --config Debug
+          mkdir -p "$GITHUB_WORKSPACE/otel_cpp_contrib/exporters/geneva/build"
+          cd "$GITHUB_WORKSPACE/otel_cpp_contrib/exporters/geneva/build"
+          cmake .. "-DCMAKE_PREFIX_PATH=$HOME/prebuilt-otel" -DCMAKE_BUILD_TYPE=Debug \
+            -DBUILD_TESTING=ON -DBUILD_EXAMPLE=ON
+          cmake --build . -j --config Debug

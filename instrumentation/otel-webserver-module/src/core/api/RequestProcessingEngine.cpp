@@ -1,5 +1,5 @@
 /*
-* Copyright 2021 AppDynamics LLC. 
+* Copyright 2022, OpenTelemetry Authors.  
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -30,10 +30,13 @@
 #include <sstream>
 
 
-namespace appd {
+namespace otel {
 namespace core {
 
 using namespace sdkwrapper;
+
+constexpr const char* http_request_header = "http.request.header.";
+constexpr const char* http_response_header = "http.response.header.";
 
 RequestProcessingEngine::RequestProcessingEngine()
     : mLogger(getLogger(std::string(LogContext::AGENT) + ".RequestProcessingEngine"))
@@ -47,22 +50,22 @@ void RequestProcessingEngine::init(std::shared_ptr<TenantConfig>& config,
     m_spanNamer = spanNamer;
 }
 
-APPD_SDK_STATUS_CODE RequestProcessingEngine::startRequest(
+OTEL_SDK_STATUS_CODE RequestProcessingEngine::startRequest(
     const std::string& wscontext,
     RequestPayload* payload,
-    APPD_SDK_HANDLE_REQ* reqHandle) {
+    OTEL_SDK_HANDLE_REQ* reqHandle) {
     if (!reqHandle) {
-        LOG4CXX_ERROR(mLogger, __FUNCTION__ << " " << APPD_STATUS(handle_pointer_is_null));
-        return APPD_STATUS(handle_pointer_is_null);
+        LOG4CXX_ERROR(mLogger, __FUNCTION__ << " " << OTEL_STATUS(handle_pointer_is_null));
+        return OTEL_STATUS(handle_pointer_is_null);
     }
 
     if (!payload) {
-        LOG4CXX_ERROR(mLogger, __FUNCTION__ << " " << APPD_STATUS(payload_reflector_is_null));
-        return APPD_STATUS(payload_reflector_is_null);
+        LOG4CXX_ERROR(mLogger, __FUNCTION__ << " " << OTEL_STATUS(payload_reflector_is_null));
+        return OTEL_STATUS(payload_reflector_is_null);
     }
 
     std::string spanName = m_spanNamer->getSpanName(payload->get_uri());
-    appd::core::sdkwrapper::OtelKeyValueMap keyValueMap;
+    otel::core::sdkwrapper::OtelKeyValueMap keyValueMap;
     keyValueMap[kAttrRequestProtocol] = payload->get_request_protocol();
     keyValueMap[kAttrHTTPServerName] = payload->get_server_name();
     keyValueMap[kAttrHTTPMethod] = payload->get_http_request_method();
@@ -71,8 +74,14 @@ APPD_SDK_STATUS_CODE RequestProcessingEngine::startRequest(
     keyValueMap[kAttrNETHostPort] = payload->get_port();
     keyValueMap[kAttrHTTPTarget] =payload->get_target();
     keyValueMap[kAttrHTTPFlavor] = payload->get_flavor();
-    keyValueMap[kAttrHTTPStatusCode] = payload->get_status_code();
     keyValueMap[kAttrHTTPClientIP] = payload->get_client_ip();
+
+    auto& request_headers = payload->get_request_headers();
+    for (auto itr = request_headers.begin(); itr != request_headers.end(); itr++) {
+        std::string key = std::string(http_request_header) +
+                std::string(itr->first);
+        keyValueMap[key] = itr->second;
+    }
     auto span = m_sdkWrapper->CreateSpan(spanName, sdkwrapper::SpanKind::SERVER, keyValueMap, payload->get_http_headers());
 
     LOG4CXX_TRACE(mLogger, "Span started for context: [" << wscontext
@@ -84,16 +93,17 @@ APPD_SDK_STATUS_CODE RequestProcessingEngine::startRequest(
     // Fill the requestHandle
     *reqHandle = (void*)requestContext;
 
-    return APPD_SUCCESS;
+    return OTEL_SUCCESS;
 }
 
-APPD_SDK_STATUS_CODE RequestProcessingEngine::endRequest(
-    APPD_SDK_HANDLE_REQ reqHandle,
-    const char* error) {
+OTEL_SDK_STATUS_CODE RequestProcessingEngine::endRequest(
+    OTEL_SDK_HANDLE_REQ reqHandle,
+    const char* error,
+    const ResponsePayload* payload) {
 
     if (!reqHandle) {
         LOG4CXX_ERROR(mLogger, "Invalid request, can't end request");
-        return APPD_STATUS(fail);
+        return OTEL_STATUS(fail);
     }
 
     RequestContext* requestContext = (RequestContext*)reqHandle;
@@ -139,27 +149,37 @@ APPD_SDK_STATUS_CODE RequestProcessingEngine::endRequest(
     } else {
         rootSpan->SetStatus(StatusCode::Ok);
     }
+    if (payload != nullptr) {
+        for (auto itr = payload->response_headers.begin();
+            itr != payload->response_headers.end(); itr++) {
+            std::string key = std::string(http_response_header) +
+                std::string(itr->first);
+            rootSpan->AddAttribute(key, itr->second);
+        }
+
+        rootSpan->AddAttribute(kAttrHTTPStatusCode, payload->status_code);
+    }
 
     LOG4CXX_TRACE(mLogger, "Ending root span with id: " << rootSpan.get());
     rootSpan->End();
     delete requestContext;
 
-    return APPD_SUCCESS;
+    return OTEL_SUCCESS;
 }
 
-APPD_SDK_STATUS_CODE RequestProcessingEngine::startInteraction(
-    APPD_SDK_HANDLE_REQ reqHandle,
+OTEL_SDK_STATUS_CODE RequestProcessingEngine::startInteraction(
+    OTEL_SDK_HANDLE_REQ reqHandle,
     const InteractionPayload* payload,
     std::unordered_map<std::string, std::string>& propagationHeaders) {
 
     if (!reqHandle) {
-        LOG4CXX_ERROR(mLogger, __FUNCTION__ << " " << APPD_STATUS(handle_pointer_is_null));
-        return APPD_STATUS(handle_pointer_is_null);
+        LOG4CXX_ERROR(mLogger, __FUNCTION__ << " " << OTEL_STATUS(handle_pointer_is_null));
+        return OTEL_STATUS(handle_pointer_is_null);
     }
 
     if (!payload) {
-        LOG4CXX_ERROR(mLogger, __FUNCTION__ << " " << APPD_STATUS(payload_reflector_is_null));
-        return APPD_STATUS(payload_reflector_is_null);
+        LOG4CXX_ERROR(mLogger, __FUNCTION__ << " " << OTEL_STATUS(payload_reflector_is_null));
+        return OTEL_STATUS(payload_reflector_is_null);
     }
 
     RequestContext* requestContext = (RequestContext*)reqHandle;
@@ -167,7 +187,7 @@ APPD_SDK_STATUS_CODE RequestProcessingEngine::startInteraction(
     // TODO : Add internal spans for virtual hosts post MVP
 
     // Create client span for this interaction. And set it in RequestContext object.
-    appd::core::sdkwrapper::OtelKeyValueMap keyValueMap;
+    otel::core::sdkwrapper::OtelKeyValueMap keyValueMap;
 
     // TODO : confirm and update name later
     std::string spanName = payload->moduleName + "_" + payload->phaseName;
@@ -179,22 +199,22 @@ APPD_SDK_STATUS_CODE RequestProcessingEngine::startInteraction(
 
     // Add the interaction to the request context.
     requestContext->addInteraction(interactionSpan);
-    return APPD_SUCCESS;
+    return OTEL_SUCCESS;
 }
 
-APPD_SDK_API APPD_SDK_STATUS_CODE RequestProcessingEngine::endInteraction(
-    APPD_SDK_HANDLE_REQ reqHandle,
+OTEL_SDK_API OTEL_SDK_STATUS_CODE RequestProcessingEngine::endInteraction(
+    OTEL_SDK_HANDLE_REQ reqHandle,
     bool ignoreBackend,
     EndInteractionPayload *payload) {
 
     if (!reqHandle) {
-        LOG4CXX_ERROR(mLogger, __FUNCTION__ << " " << APPD_STATUS(handle_pointer_is_null));
-        return APPD_STATUS(handle_pointer_is_null);
+        LOG4CXX_ERROR(mLogger, __FUNCTION__ << " " << OTEL_STATUS(handle_pointer_is_null));
+        return OTEL_STATUS(handle_pointer_is_null);
     }
 
     if (!payload) {
-        LOG4CXX_ERROR(mLogger, __FUNCTION__ << " " << APPD_STATUS(payload_reflector_is_null));
-        return APPD_STATUS(payload_reflector_is_null);
+        LOG4CXX_ERROR(mLogger, __FUNCTION__ << " " << OTEL_STATUS(payload_reflector_is_null));
+        return OTEL_STATUS(payload_reflector_is_null);
     }
 
     // TODO : incorporate ignore backend logic here.
@@ -203,8 +223,8 @@ APPD_SDK_API APPD_SDK_STATUS_CODE RequestProcessingEngine::endInteraction(
 
     if (!rContext->hasActiveInteraction()) {
         // error : requestContext has no corresponding interaction.
-        LOG4CXX_TRACE(mLogger, __FUNCTION__ << " " << APPD_STATUS(invalid_context));
-        return APPD_STATUS(invalid_context);
+        LOG4CXX_TRACE(mLogger, __FUNCTION__ << " " << OTEL_STATUS(invalid_context));
+        return OTEL_STATUS(invalid_context);
     }
 
     auto interactionSpan = rContext->lastActiveInteraction();
@@ -241,8 +261,8 @@ APPD_SDK_API APPD_SDK_STATUS_CODE RequestProcessingEngine::endInteraction(
     LOG4CXX_TRACE(mLogger, "Ending Span with id: " << interactionSpan.get());
     interactionSpan->End();
     rContext->removeInteraction();
-    return APPD_SUCCESS;
+    return OTEL_SUCCESS;
 }
 
 } // core
-} // appd
+} // otel

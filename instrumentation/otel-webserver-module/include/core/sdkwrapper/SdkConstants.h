@@ -1,5 +1,5 @@
 /*
-* Copyright 2021 AppDynamics LLC. 
+* Copyright 2022, OpenTelemetry Authors. 
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -15,15 +15,16 @@
 */
 #pragma once
 
-namespace appd {
+namespace otel {
 namespace core {
 namespace sdkwrapper {
 
 const std::string kServiceName = "service.name";
 const std::string kServiceNamespace = "service.namespace";
 const std::string kServiceInstanceId = "service.instance.id";
-const std::string kOtelLibraryName = "telemetry.sdk.language";
-const std::string kOtelLibraryVersion = "telemetry.sdk.version";
+const std::string kOtelWebEngineName = "webengine.name";
+const std::string kOtelWebEngineVersion = "webengine.version";
+const std::string kOtelWebEngineDescription = "webengine.description";
 const std::string kHttpErrorCode = "HTTP ERROR CODE:";
 const std::string kAttrHTTPServerName         = "http.server_name";
 const std::string kAttrHTTPMethod             = "http.method";
@@ -46,6 +47,8 @@ constexpr int HTTP_ERROR_5XX = 500;
 constexpr int HTTP_PROTO_1000 = 1000;
 constexpr int HTTP_PROTO_1001 = 1001;
 
+constexpr unsigned int kStatusCodeInit = 0;
+
 } // sdkwrapper
 } // core
-} // appd
+} // otel
