@@ -9,6 +9,12 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   project(opentelemetry-geneva-metrics)
   set(MAIN_PROJECT ON)
 endif()
+option(OTELCPP_VERSIONED_LIBS "Whether to generate the versioned shared libs"
+       OFF)
+if(OTELCPP_VERSIONED_LIBS AND NOT BUILD_SHARED_LIBS)
+  message(FATAL_ERROR "OTELCPP_VERSIONED_LIBS=ON requires BUILD_SHARED_LIBS=ON")
+endif()
+    
 
 if(NOT WIN32)
   find_package(CURL REQUIRED)
@@ -20,6 +26,17 @@ if(MAIN_PROJECT)
 endif()
 
 include_directories(include)
+
+set(OTEL_GENEVA_EXPORTER_VERSION 1.0.0)
+set(OTEL_GENEVA_EXPORTER_MAJOR_VERSION 1)
+
+function(set_target_version target_name)
+  if(OTELCPP_VERSIONED_LIBS)
+    set_target_properties(
+      ${target_name} PROPERTIES VERSION ${OTEL_GENEVA_EXPORTER_VERSION}
+                                SOVERSION ${OTEL_GENEVA_EXPORTER_MAJOR_VERSION})
+  endif()
+endfunction()
 
 # create geneva metrics exporter
 if(WIN32)
@@ -44,6 +61,8 @@ endif()
 
 set_target_properties(opentelemetry_exporter_geneva_metrics
                       PROPERTIES EXPORT_NAME metrics)
+set_target_version(opentelemetry_exporter_geneva_metrics)
+
 if(BUILD_TESTING)
   if(EXISTS ${CMAKE_BINARY_DIR}/lib/libgtest.a)
     # Prefer GTest from build tree. GTest is not always working with
