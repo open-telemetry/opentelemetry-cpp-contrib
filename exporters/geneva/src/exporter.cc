@@ -19,8 +19,7 @@ namespace geneva {
 namespace metrics {
 Exporter::Exporter(const ExporterOptions &options)
     : options_(options), connection_string_parser_(options_.connection_string),
-      data_transport_{nullptr}, buffer_index_histogram_(0),
-      buffer_index_non_histogram_(0) {
+      data_transport_{nullptr} {
   if (connection_string_parser_.IsValid()) {
     if (connection_string_parser_.transport_protocol_ ==
         TransportProtocol::kUNIX) {
@@ -43,11 +42,6 @@ Exporter::Exporter(const ExporterOptions &options)
     is_shutdown_ = true;
     return;
   }
-  // Initialize non-histogram buffer
-  buffer_index_non_histogram_ = InitializeBufferForNonHistogramData();
-
-  // Initialize histogram buffer
-  buffer_index_histogram_ = InitiaizeBufferForHistogramData();
 }
 
 sdk::metrics::AggregationTemporality Exporter::GetAggregationTemporality(
@@ -106,7 +100,7 @@ opentelemetry::sdk::common::ExportResult Exporter::Export(
               sdk::metrics::AggregationType::kSum, event_type, new_value,
               metric_data.end_ts, metric_data.instrument_descriptor.name_,
               point_data_with_attributes.attributes);
-          data_transport_->Send(event_type, buffer_non_histogram_,
+          data_transport_->Send(event_type, buffer_,
                                 body_length + kBinaryHeaderSize);
 
         } else if (nostd::holds_alternative<sdk::metrics::LastValuePointData>(
@@ -127,7 +121,7 @@ opentelemetry::sdk::common::ExportResult Exporter::Export(
               sdk::metrics::AggregationType::kLastValue, event_type, new_value,
               metric_data.end_ts, metric_data.instrument_descriptor.name_,
               point_data_with_attributes.attributes);
-          data_transport_->Send(event_type, buffer_non_histogram_,
+          data_transport_->Send(event_type, buffer_,
                                 body_length + kBinaryHeaderSize);
         } else if (nostd::holds_alternative<sdk::metrics::HistogramPointData>(
                        point_data_with_attributes.point_data)) {
@@ -156,7 +150,7 @@ opentelemetry::sdk::common::ExportResult Exporter::Export(
                   .counts_,
               metric_data.end_ts, metric_data.instrument_descriptor.name_,
               point_data_with_attributes.attributes);
-          data_transport_->Send(event_type, buffer_histogram_,
+          data_transport_->Send(event_type, buffer_,
                                 body_length + kBinaryHeaderSize);
         }
       }
@@ -183,9 +177,9 @@ size_t Exporter::InitializeBufferForNonHistogramData() {
 
   // Leave enough space for the header and fixed payload
   auto bufferIndex = kBinaryHeaderSize + kMetricPayloadSize;
-  SerializeString(buffer_non_histogram_, bufferIndex,
+  SerializeString(buffer_, bufferIndex,
                   connection_string_parser_.account_);
-  SerializeString(buffer_non_histogram_, bufferIndex,
+  SerializeString(buffer_, bufferIndex,
                   connection_string_parser_.namespace_);
   return bufferIndex;
 }
@@ -198,9 +192,9 @@ size_t Exporter::InitiaizeBufferForHistogramData() {
 
   // Leave enough space for the header and fixed payload
   auto bufferIndex = kBinaryHeaderSize + kExternalPayloadSize;
-  SerializeString(buffer_histogram_, bufferIndex,
+  SerializeString(buffer_, bufferIndex,
                   connection_string_parser_.account_);
-  SerializeString(buffer_histogram_, bufferIndex,
+  SerializeString(buffer_, bufferIndex,
                   connection_string_parser_.namespace_);
   return bufferIndex;
 }
