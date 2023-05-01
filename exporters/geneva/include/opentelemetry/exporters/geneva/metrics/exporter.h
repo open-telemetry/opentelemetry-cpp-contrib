@@ -33,6 +33,9 @@ constexpr uint64_t kSecondsToUnixTime =
                   // 1601-01-01T00:00:00Z and UNIX/Linux epoch
                   // (1970-01-01T00:00:00Z)
 
+const std::string kAttributeNamespaceKey = "_microsoft_metrics_namespace";
+const std::string kAttributeAccountKey = "_microsoft_metrics_account";
+
 using ValueType = nostd::variant<int64_t, double>;
 
 /**
@@ -67,8 +70,6 @@ private:
   // metrics storage
   char buffer_[kBufferSize];
 
-  size_t InitializeBufferForNonHistogramData();
-  size_t InitiaizeBufferForHistogramData();
   size_t SerializeNonHistogramMetrics(sdk::metrics::AggregationType,
                                       MetricsEventType,
                                       const sdk::metrics::ValueType &,
