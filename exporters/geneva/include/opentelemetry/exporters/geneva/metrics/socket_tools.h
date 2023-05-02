@@ -48,6 +48,10 @@
 #include <WinSock2.h>
 #include <Windows.h>
 
+// sa_family_t is not defined in Windows, so typedef-ing it.
+// refer - https://learn.microsoft.com/en-us/windows/win32/winsock/sockaddr-2
+typedef u_short sa_family_t;
+
 #ifdef min
 // NOMINMAX may be a better choice. However, defining it globally may break
 // other. Code that depends on macro definition in Windows SDK.
