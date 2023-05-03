@@ -23,6 +23,10 @@ std::string kUnixDomainPathAbstractSocket = "@/tmp/ifx_unix_socket";
 const std::string kNamespaceName = "test_ns";
 const std::string kAccountName = "test_account";
 
+const std::string kCustomNamespaceName = "custom_ns";
+const std::string kCustomAccountName = "custom_account";
+
+
 // "busy sleep" while suggesting that other threads run
 // for a small amount of time
 template <typename timeunit> void yield_for(timeunit duration) {

@@ -284,7 +284,7 @@ size_t Exporter::SerializeHistogramMetrics(
   auto account_namespace = connection_string_parser_.namespace_;
 
   // try reading namespace and/or account from attributes
-  // TBD = This can be avoided by migrating to the 
+  // TODO: This can be avoided by migrating to the 
   // TLV binary format
   for (const auto &kv : attributes) {
     if (kv.first  == kAttributeAccountKey){
@@ -309,11 +309,27 @@ size_t Exporter::SerializeHistogramMetrics(
                kMaxDimensionNameSize);
       continue;
     }
+    if (kv.first == kAttributeAccountKey ||
+        kv.first == kAttributeNamespaceKey)
+    {
+      // custom namespace and account name should't be exported
+      continue;
+    }
     SerializeString(buffer_, bufferIndex, kv.first);
   }
 
   // dimentions - value
   for (const auto &kv : attributes) {
+    if (kv.first.size() > kMaxDimensionNameSize) {
+      // warning is already logged earlier, no logging again
+      continue;
+    }
+    if (kv.first == kAttributeAccountKey ||
+        kv.first == kAttributeNamespaceKey)
+    {
+      // custom namespace and account name should't be exported
+      continue;
+    }
     auto attr_value = AttributeValueToString(kv.second);
     SerializeString(buffer_, bufferIndex, attr_value);
   }
