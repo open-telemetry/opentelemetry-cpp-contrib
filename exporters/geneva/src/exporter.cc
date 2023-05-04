@@ -205,15 +205,34 @@ size_t Exporter::SerializeNonHistogramMetrics(
   // metric name
   SerializeString(buffer_, bufferIndex, metric_name);
 
+  uint16_t attributes_size = 0;
   for (const auto &kv : attributes) {
     if (kv.first.size() > kMaxDimensionNameSize) {
-      LOG_WARN("Dimension name limit overflow: %s Limit %d", kv.first.c_str(),
+      LOG_WARN("Dimension name limit overflow: %s Limit: %d", kv.first.c_str(),
                kMaxDimensionNameSize);
       continue;
     }
+    if (kv.first == kAttributeAccountKey ||
+        kv.first == kAttributeNamespaceKey)
+    {
+      // custom namespace and account name should't be exported
+      continue;
+    }
+    attributes_size++;
     SerializeString(buffer_, bufferIndex, kv.first);
   }
   for (const auto &kv : attributes) {
+    if (kv.first.size() > kMaxDimensionNameSize) {
+      LOG_WARN("Dimension name limit overflow: %s Limit: %d", kv.first.c_str(),
+               kMaxDimensionNameSize);
+      continue;
+    }
+    if (kv.first == kAttributeAccountKey ||
+        kv.first == kAttributeNamespaceKey)
+    {
+      // custom namespace and account name should't be exported
+      continue;
+    }
     auto attr_value = AttributeValueToString(kv.second);
     SerializeString(buffer_, bufferIndex, attr_value);
   }
@@ -236,7 +255,7 @@ size_t Exporter::SerializeNonHistogramMetrics(
 
   // count of dimensions.
   SerializeInt<uint16_t>(buffer_, bufferIndex,
-                         static_cast<uint16_t>(attributes.size()));
+                         static_cast<uint16_t>(attributes_size));
 
   // reserverd word (2 bytes)
   SerializeInt<uint16_t>(buffer_, bufferIndex, 0);
@@ -302,6 +321,7 @@ size_t Exporter::SerializeHistogramMetrics(
   // metric name
   SerializeString(buffer_, bufferIndex, metric_name);
 
+  uint16_t attributes_size = 0;
   // dimentions - name
   for (const auto &kv : attributes) {
     if (kv.first.size() > kMaxDimensionNameSize) {
@@ -315,6 +335,7 @@ size_t Exporter::SerializeHistogramMetrics(
       // custom namespace and account name should't be exported
       continue;
     }
+    attributes_size++;
     SerializeString(buffer_, bufferIndex, kv.first);
   }
 
@@ -385,7 +406,7 @@ size_t Exporter::SerializeHistogramMetrics(
 
   // count of dimensions.
   SerializeInt<uint16_t>(buffer_, bufferIndex,
-                         static_cast<uint16_t>(attributes.size()));
+                         static_cast<uint16_t>(attributes_size));
 
   // reserverd word (2 bytes)
   SerializeInt<uint16_t>(buffer_, bufferIndex, 0);
