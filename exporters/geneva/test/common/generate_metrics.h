@@ -88,6 +88,7 @@ const std::string kCounterLongInstrumentDesc =
 const std::string kCounterLongInstrumentUnit =
     "test_instrument_conter_long_unit";
 const long kCounterLongValue = 102;
+const long kCounterCustomLongValue = 103;
 const std::string kCounterLongAttributeKey1 = "counter_long_key1";
 const std::string kCounterLongAttributeValue1 = "counter_long_value1";
 
@@ -100,7 +101,6 @@ GenerateSumDataLongMetrics(
     std::string account_namespace= ""
 ) {
   opentelemetry::sdk::metrics::SumPointData sum_point_data{};
-  sum_point_data.value_ = kCounterLongValue;
   sum_point_data.is_monotonic_ = true;
   opentelemetry::sdk::metrics::ResourceMetrics data;
   auto resource = opentelemetry::sdk::resource::Resource::Create(
@@ -113,8 +113,13 @@ GenerateSumDataLongMetrics(
   {{kCounterLongAttributeKey1,
                 kCounterLongAttributeValue1}};
   if (account_name.size() && account_namespace.size()) {
+    std::cout << "\n Generating custom namespae and metrics for " << kCounterCustomLongValue << "\n";
     attributes[opentelemetry::exporter::geneva::metrics::kAttributeNamespaceKey] = account_namespace;
     attributes[opentelemetry::exporter::geneva::metrics::kAttributeAccountKey] = account_name;
+      sum_point_data.value_ = kCounterCustomLongValue;
+  } else  {
+    std::cout << "\n Generating derfault  namespae and metrics for " << kCounterLongValue << "\n";
+    sum_point_data.value_ = kCounterLongValue;
   }
   opentelemetry::sdk::metrics::MetricData metric_data{
       opentelemetry::sdk::metrics::InstrumentDescriptor{
@@ -252,6 +257,7 @@ const std::string kHistogramLongInstrumentUnit =
     "test_instrument_histogram_long_unit";
 
 const long kHistogramLongSum = 4024l;
+const long kHistogramCustomLongSum = 4025l;
 const long kHistogramLongMin = 3l;
 const long kHistogramLongMax = 1004l;
 const size_t kHistogramLongCount = 10l;
@@ -273,9 +279,7 @@ GenerateHistogramDataLongMetrics(
     std::string account_name = "",
     std::string account_namespace = ""
 ) {
-
   opentelemetry::sdk::metrics::HistogramPointData histogram_point_data{};
-  histogram_point_data.sum_ = kHistogramLongSum;
   histogram_point_data.boundaries_ = kHistogramLongBoundaries;
   histogram_point_data.count_ = kHistogramLongCount;
   histogram_point_data.min_ = kHistogramLongMin;
@@ -295,6 +299,10 @@ GenerateHistogramDataLongMetrics(
   if (account_name.size() && account_namespace.size()) {
     attributes[opentelemetry::exporter::geneva::metrics::kAttributeNamespaceKey] = account_namespace;
     attributes[opentelemetry::exporter::geneva::metrics::kAttributeAccountKey] = account_name;
+    histogram_point_data.sum_ = kHistogramCustomLongSum;
+
+  } else {
+    histogram_point_data.sum_ = kHistogramLongSum;
   }
   opentelemetry::sdk::metrics::MetricData metric_data{
       opentelemetry::sdk::metrics::InstrumentDescriptor{

@@ -45,6 +45,7 @@ struct TestServer {
   size_t count_up_down_counter_long = 0;
   size_t count_up_down_counter_double = 0;
   size_t count_histogram_long = 0;
+  size_t count_custom_histogram_long = 0;
 
   TestServer(SocketServer &server) : server(server) {
     server.onRequest = [&](SocketServer::Connection &conn) {
@@ -114,18 +115,39 @@ struct TestServer {
           } else if (event_bin.event_id() == kCounterLongEventId) {
             EXPECT_EQ(event_bin.event_id(), kCounterLongEventId);
             auto event_body = event_bin.body();
-            EXPECT_EQ(static_cast<ifx_metrics_bin_t::single_uint64_value_t *>(
+            if (static_cast<ifx_metrics_bin_t::single_uint64_value_t *>(
+                  event_body->value_section())->value() == kCounterLongValue) {
+              EXPECT_EQ(static_cast<ifx_metrics_bin_t::single_uint64_value_t *>(
                           event_body->value_section())
                           ->value(),
                       kCounterLongValue);
-            EXPECT_EQ(event_body->num_dimensions(),
+              EXPECT_EQ(event_body->num_dimensions(),
                       kCounterLongCountDimensions);
-            EXPECT_EQ(event_body->dimensions_values()->at(0)->value(),
+              EXPECT_EQ(event_body->dimensions_values()->at(0)->value(),
                       kCounterLongAttributeValue1);
-            EXPECT_EQ(event_body->dimensions_names()->at(0)->value(),
+              EXPECT_EQ(event_body->dimensions_names()->at(0)->value(),
                       kCounterLongAttributeKey1);
-            count_counter_long++;
-          } else if (event_bin.event_id() == kHistogramLongEventId) {
+              count_counter_long++;
+              EXPECT_EQ(event_body->metric_account()->value(), kAccountName);
+              EXPECT_EQ(event_body->metric_namespace()->value(), kNamespaceName);
+            } else if (static_cast<ifx_metrics_bin_t::single_uint64_value_t *>(
+                event_body->value_section())->value() == kCounterCustomLongValue) {
+              EXPECT_EQ(static_cast<ifx_metrics_bin_t::single_uint64_value_t *>(
+                          event_body->value_section())
+                          ->value(),
+                      kCounterCustomLongValue);
+              EXPECT_EQ(event_body->num_dimensions(),
+                      kCounterLongCountDimensions);
+              EXPECT_EQ(event_body->dimensions_values()->at(0)->value(),
+                      kCounterLongAttributeValue1);
+              EXPECT_EQ(event_body->dimensions_names()->at(0)->value(),
+                      kCounterLongAttributeKey1);
+              count_counter_long++;
+              EXPECT_EQ(event_body->metric_account()->value(), kCustomAccountName);
+              EXPECT_EQ(event_body->metric_namespace()->value(), kCustomNamespaceName);
+            }
+          }  
+           else if (event_bin.event_id() == kHistogramLongEventId) {
             EXPECT_EQ(event_bin.event_id(), kHistogramLongEventId);
             auto event_body = event_bin.body();
             EXPECT_EQ(event_body->num_dimensions(),
@@ -134,11 +156,19 @@ struct TestServer {
                       kHistogramLongAttributeValue1);
             EXPECT_EQ(event_body->dimensions_names()->at(0)->value(),
                       kHistogramLongAttributeKey1);
-            EXPECT_EQ(
-                static_cast<ifx_metrics_bin_t::ext_aggregated_uint64_value_t *>(
+            if (static_cast<ifx_metrics_bin_t::ext_aggregated_uint64_value_t *>(
                     event_body->value_section())
-                    ->sum(),
-                kHistogramLongSum);
+                    ->sum() == kHistogramLongSum) {
+              EXPECT_EQ(event_body->metric_account()->value(), kAccountName);
+              EXPECT_EQ(event_body->metric_namespace()->value(), kNamespaceName);
+              count_histogram_long++;
+            } else if (static_cast<ifx_metrics_bin_t::ext_aggregated_uint64_value_t *>(
+                    event_body->value_section())
+                    ->sum() == kHistogramCustomLongSum) {
+              EXPECT_EQ(event_body->metric_account()->value(), kCustomAccountName);
+              EXPECT_EQ(event_body->metric_namespace()->value(), kCustomNamespaceName);
+              count_custom_histogram_long++;
+            }
             EXPECT_EQ(
                 static_cast<ifx_metrics_bin_t::ext_aggregated_uint64_value_t *>(
                     event_body->value_section())
@@ -181,7 +211,6 @@ struct TestServer {
               }
               index_all_buckets++;
             }
-            count_histogram_long++;
           }
 
         } catch (...) {
@@ -232,6 +261,7 @@ TEST_P(GenericMetricsExporterTextFixture, BasicTests) {
   ExporterOptions options{conn_string};
   opentelemetry::exporter::geneva::metrics::Exporter exporter(options);
 
+
   // export sum aggregation - double
   auto metric_data = GenerateSumDataDoubleMetrics();
   exporter.Export(metric_data);
@@ -239,6 +269,11 @@ TEST_P(GenericMetricsExporterTextFixture, BasicTests) {
 
   // export sum aggregation - long
   metric_data = GenerateSumDataLongMetrics();
+  exporter.Export(metric_data);
+  yield_for(std::chrono::milliseconds(1000));
+
+  // export sum aggregation - long, custom account & ns
+  metric_data = GenerateSumDataLongMetrics(kCustomAccountName, kCustomNamespaceName);
   exporter.Export(metric_data);
   yield_for(std::chrono::milliseconds(1000));
 
@@ -257,12 +292,17 @@ TEST_P(GenericMetricsExporterTextFixture, BasicTests) {
   exporter.Export(metric_data);
   yield_for(std::chrono::milliseconds(1000));
 
+  // export histogram aggregation - long, custom account & ns
+  metric_data = GenerateHistogramDataLongMetrics(kCustomAccountName, kCustomNamespaceName);
+  exporter.Export(metric_data);
+  yield_for(std::chrono::milliseconds(1000));
+
   EXPECT_EQ(testServer.count_counter_double, 1);
-  EXPECT_EQ(testServer.count_counter_long, 1);
+  EXPECT_EQ(testServer.count_counter_long, 2);
   EXPECT_EQ(testServer.count_up_down_counter_long, 1);
   EXPECT_EQ(testServer.count_up_down_counter_double, 1);
-
   EXPECT_EQ(testServer.count_histogram_long, 1);
+  EXPECT_EQ(testServer.count_custom_histogram_long, 1);
 
   testServer.Stop();
 }
