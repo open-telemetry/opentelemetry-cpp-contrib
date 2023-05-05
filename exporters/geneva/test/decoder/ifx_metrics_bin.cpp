@@ -4,8 +4,6 @@
 
 #include <iostream>
 ifx_metrics_bin_t::ifx_metrics_bin_t(kaitai::kstream* p__io, kaitai::kstruct* p__parent, ifx_metrics_bin_t* p__root) : kaitai::kstruct(p__io) {
-        std::cout << "\nLALIT:ifx_metrics_bin::CONST..";
-
     m__parent = p__parent;
     m__root = this;
     m_body = 0;
@@ -20,9 +18,7 @@ ifx_metrics_bin_t::ifx_metrics_bin_t(kaitai::kstream* p__io, kaitai::kstruct* p_
 }
 
 void ifx_metrics_bin_t::_read() {
-    std::cout << "\nLALIT:ifx_metrics_bin::READ..";
     m_event_id = m__io->read_u2le();
-    std::cout << "\nLALIT:ifx_metrics_bin Event ID:" << m_event_id << "\n";
     m_len_body = m__io->read_u2le();
     m__raw_body = m__io->read_bytes(len_body());
     m__io__raw_body = new kaitai::kstream(m__raw_body);

@@ -19,8 +19,7 @@ namespace geneva {
 namespace metrics {
 Exporter::Exporter(const ExporterOptions &options)
     : options_(options), connection_string_parser_(options_.connection_string),
-      data_transport_{nullptr}, buffer_index_histogram_(0),
-      buffer_index_non_histogram_(0) {
+      data_transport_{nullptr} {
   if (connection_string_parser_.IsValid()) {
     if (connection_string_parser_.transport_protocol_ ==
         TransportProtocol::kUNIX) {
@@ -43,11 +42,6 @@ Exporter::Exporter(const ExporterOptions &options)
     is_shutdown_ = true;
     return;
   }
-  // Initialize non-histogram buffer
-  buffer_index_non_histogram_ = InitializeBufferForNonHistogramData();
-
-  // Initialize histogram buffer
-  buffer_index_histogram_ = InitiaizeBufferForHistogramData();
 }
 
 sdk::metrics::AggregationTemporality Exporter::GetAggregationTemporality(
@@ -106,7 +100,7 @@ opentelemetry::sdk::common::ExportResult Exporter::Export(
               sdk::metrics::AggregationType::kSum, event_type, new_value,
               metric_data.end_ts, metric_data.instrument_descriptor.name_,
               point_data_with_attributes.attributes);
-          data_transport_->Send(event_type, buffer_non_histogram_,
+          data_transport_->Send(event_type, buffer_,
                                 body_length + kBinaryHeaderSize);
 
         } else if (nostd::holds_alternative<sdk::metrics::LastValuePointData>(
@@ -127,7 +121,7 @@ opentelemetry::sdk::common::ExportResult Exporter::Export(
               sdk::metrics::AggregationType::kLastValue, event_type, new_value,
               metric_data.end_ts, metric_data.instrument_descriptor.name_,
               point_data_with_attributes.attributes);
-          data_transport_->Send(event_type, buffer_non_histogram_,
+          data_transport_->Send(event_type, buffer_,
                                 body_length + kBinaryHeaderSize);
         } else if (nostd::holds_alternative<sdk::metrics::HistogramPointData>(
                        point_data_with_attributes.point_data)) {
@@ -156,7 +150,7 @@ opentelemetry::sdk::common::ExportResult Exporter::Export(
                   .counts_,
               metric_data.end_ts, metric_data.instrument_descriptor.name_,
               point_data_with_attributes.attributes);
-          data_transport_->Send(event_type, buffer_histogram_,
+          data_transport_->Send(event_type, buffer_,
                                 body_length + kBinaryHeaderSize);
         }
       }
@@ -175,7 +169,12 @@ bool Exporter::Shutdown(std::chrono::microseconds timeout) noexcept {
   return true;
 }
 
-size_t Exporter::InitializeBufferForNonHistogramData() {
+size_t Exporter::SerializeNonHistogramMetrics(
+    sdk::metrics::AggregationType agg_type, MetricsEventType event_type,
+    const sdk::metrics::ValueType &value, common::SystemTimestamp ts,
+    const std::string &metric_name,
+    const sdk::metrics::PointAttributes &attributes) {
+
   // The buffer format is as follows:
   // -- BinaryHeader
   // -- MetricPayload
@@ -183,49 +182,62 @@ size_t Exporter::InitializeBufferForNonHistogramData() {
 
   // Leave enough space for the header and fixed payload
   auto bufferIndex = kBinaryHeaderSize + kMetricPayloadSize;
-  SerializeString(buffer_non_histogram_, bufferIndex,
-                  connection_string_parser_.account_);
-  SerializeString(buffer_non_histogram_, bufferIndex,
-                  connection_string_parser_.namespace_);
-  return bufferIndex;
-}
 
-size_t Exporter::InitiaizeBufferForHistogramData() {
-  // The buffer format is as follows:
-  // -- BinaryHeader
-  // -- ExternalPayload
-  // -- Variable length content
+  auto account_name = connection_string_parser_.account_;
+  auto account_namespace = connection_string_parser_.namespace_;
 
-  // Leave enough space for the header and fixed payload
-  auto bufferIndex = kBinaryHeaderSize + kExternalPayloadSize;
-  SerializeString(buffer_histogram_, bufferIndex,
-                  connection_string_parser_.account_);
-  SerializeString(buffer_histogram_, bufferIndex,
-                  connection_string_parser_.namespace_);
-  return bufferIndex;
-}
+  // try reading namespace and/or account from attributes
+  // TBD = This can be avoided by migrating to  the 
+  // TLV binary format
+  for (const auto &kv : attributes) {
+    if (kv.first == kAttributeAccountKey){
+      account_name = AttributeValueToString(kv.second); 
+    }
+    else if (kv.first == kAttributeNamespaceKey) {
+      account_namespace = AttributeValueToString(kv.second); 
+    }
+  }
 
-size_t Exporter::SerializeNonHistogramMetrics(
-    sdk::metrics::AggregationType agg_type, MetricsEventType event_type,
-    const sdk::metrics::ValueType &value, common::SystemTimestamp ts,
-    const std::string &metric_name,
-    const sdk::metrics::PointAttributes &attributes) {
-  auto bufferIndex = buffer_index_non_histogram_;
-  SerializeString(buffer_non_histogram_, bufferIndex, metric_name);
+  // account name
+  SerializeString(buffer_, bufferIndex, account_name);
+  // namespace
+  SerializeString(buffer_, bufferIndex, account_namespace);
+  // metric name
+  SerializeString(buffer_, bufferIndex, metric_name);
+
+  uint16_t attributes_size = 0;
   for (const auto &kv : attributes) {
     if (kv.first.size() > kMaxDimensionNameSize) {
-      LOG_WARN("Dimension name limit overflow: %s Limit %d", kv.first.c_str(),
+      LOG_WARN("Dimension name limit overflow: %s Limit: %d", kv.first.c_str(),
                kMaxDimensionNameSize);
       continue;
     }
-    SerializeString(buffer_non_histogram_, bufferIndex, kv.first);
+    if (kv.first == kAttributeAccountKey ||
+        kv.first == kAttributeNamespaceKey)
+    {
+      // custom namespace and account name should't be exported
+      continue;
+    }
+    attributes_size++;
+    SerializeString(buffer_, bufferIndex, kv.first);
   }
   for (const auto &kv : attributes) {
+    if (kv.first.size() > kMaxDimensionNameSize) {
+      LOG_WARN("Dimension name limit overflow: %s Limit: %d", kv.first.c_str(),
+               kMaxDimensionNameSize);
+      continue;
+    }
+    if (kv.first == kAttributeAccountKey ||
+        kv.first == kAttributeNamespaceKey)
+    {
+      // custom namespace and account name should't be exported
+      continue;
+    }
     auto attr_value = AttributeValueToString(kv.second);
-    SerializeString(buffer_non_histogram_, bufferIndex, attr_value);
+    SerializeString(buffer_, bufferIndex, attr_value);
   }
   // length zero for auto-pilot
-  SerializeInt<uint16_t>(buffer_non_histogram_, bufferIndex, 0);
+  SerializeInt<uint16_t>(buffer_, bufferIndex, 0);
 
   // get final size of payload to be added in front of buffer
   uint16_t body_length = bufferIndex - kBinaryHeaderSize;
@@ -234,22 +246,22 @@ size_t Exporter::SerializeNonHistogramMetrics(
   bufferIndex = 0;
 
   // event_type
-  SerializeInt<uint16_t>(buffer_non_histogram_, bufferIndex,
+  SerializeInt<uint16_t>(buffer_, bufferIndex,
                          static_cast<uint16_t>(event_type));
 
   // body length
-  SerializeInt<uint16_t>(buffer_non_histogram_, bufferIndex,
+  SerializeInt<uint16_t>(buffer_, bufferIndex,
                          static_cast<uint16_t>(body_length));
 
   // count of dimensions.
-  SerializeInt<uint16_t>(buffer_non_histogram_, bufferIndex,
-                         static_cast<uint16_t>(attributes.size()));
+  SerializeInt<uint16_t>(buffer_, bufferIndex,
+                         static_cast<uint16_t>(attributes_size));
 
   // reserverd word (2 bytes)
-  SerializeInt<uint16_t>(buffer_non_histogram_, bufferIndex, 0);
+  SerializeInt<uint16_t>(buffer_, bufferIndex, 0);
 
   // reserved word (4 bytes)
-  SerializeInt<uint32_t>(buffer_non_histogram_, bufferIndex, 0);
+  SerializeInt<uint32_t>(buffer_, bufferIndex, 0);
 
   // timestamp utc (8 bytes)
   auto windows_ticks = UnixTimeToWindowsTicks(
@@ -257,13 +269,13 @@ size_t Exporter::SerializeNonHistogramMetrics(
           ts.time_since_epoch())
           .count());
 
-  SerializeInt<uint64_t>(buffer_non_histogram_, bufferIndex, windows_ticks);
+  SerializeInt<uint64_t>(buffer_, bufferIndex, windows_ticks);
   if (event_type == MetricsEventType::Uint64Metric) {
-    SerializeInt<uint64_t>(buffer_non_histogram_, bufferIndex,
+    SerializeInt<uint64_t>(buffer_, bufferIndex,
                            static_cast<uint64_t>(nostd::get<int64_t>(value)));
   } else if (event_type == MetricsEventType::DoubleMetric) {
     SerializeInt<uint64_t>(
-        buffer_non_histogram_, bufferIndex,
+        buffer_, bufferIndex,
         *(reinterpret_cast<const uint64_t *>(&(nostd::get<double>(value)))));
   } else {
     // Won't reach here.
@@ -279,10 +291,37 @@ size_t Exporter::SerializeHistogramMetrics(
     common::SystemTimestamp ts, const std::string &metric_name,
     const sdk::metrics::PointAttributes &attributes) {
 
-  auto bufferIndex = buffer_index_histogram_;
-  // metric name
-  SerializeString(buffer_histogram_, bufferIndex, metric_name);
+  // The buffer format is as follows:
+  // -- BinaryHeader
+  // -- ExternalPayload
+  // -- Variable length content
 
+  // Leave enough space for the header and fixed payload
+  auto bufferIndex = kBinaryHeaderSize + kExternalPayloadSize;
+
+  auto account_name = connection_string_parser_.account_;
+  auto account_namespace = connection_string_parser_.namespace_;
+
+  // try reading namespace and/or account from attributes
+  // TODO: This can be avoided by migrating to the 
+  // TLV binary format
+  for (const auto &kv : attributes) {
+    if (kv.first  == kAttributeAccountKey){
+      account_name = AttributeValueToString(kv.second); 
+    }
+    else if (kv.first ==  kAttributeNamespaceKey) {
+      account_namespace = AttributeValueToString(kv.second); 
+    }
+  }
+
+  // account name
+  SerializeString(buffer_, bufferIndex, account_name);
+  // namespace
+  SerializeString(buffer_, bufferIndex, account_namespace);
+  // metric name
+  SerializeString(buffer_, bufferIndex, metric_name);
+
+  uint16_t attributes_size = 0;
   // dimentions - name
   for (const auto &kv : attributes) {
     if (kv.first.size() > kMaxDimensionNameSize) {
@@ -290,29 +329,46 @@ size_t Exporter::SerializeHistogramMetrics(
                kMaxDimensionNameSize);
       continue;
     }
-    SerializeString(buffer_histogram_, bufferIndex, kv.first);
+    if (kv.first == kAttributeAccountKey ||
+        kv.first == kAttributeNamespaceKey)
+    {
+      // custom namespace and account name should't be exported
+      continue;
+    }
+    attributes_size++;
+    SerializeString(buffer_, bufferIndex, kv.first);
   }
 
   // dimentions - value
   for (const auto &kv : attributes) {
+    if (kv.first.size() > kMaxDimensionNameSize) {
+      // warning is already logged earlier, no logging again
+      continue;
+    }
+    if (kv.first == kAttributeAccountKey ||
+        kv.first == kAttributeNamespaceKey)
+    {
+      // custom namespace and account name should't be exported
+      continue;
+    }
     auto attr_value = AttributeValueToString(kv.second);
-    SerializeString(buffer_histogram_, bufferIndex, attr_value);
+    SerializeString(buffer_, bufferIndex, attr_value);
   }
 
   // two bytes padding for auto-pilot
-  SerializeInt<uint16_t>(buffer_histogram_, bufferIndex, 0);
+  SerializeInt<uint16_t>(buffer_, bufferIndex, 0);
 
   // version - set as 0
-  SerializeInt<uint8_t>(buffer_histogram_, bufferIndex, 0);
+  SerializeInt<uint8_t>(buffer_, bufferIndex, 0);
 
   // Meta-data
   // Value-count pairs is associated with the constant value of 2 in the
   // distribution_type enum.
-  SerializeInt<uint8_t>(buffer_histogram_, bufferIndex, 2);
+  SerializeInt<uint8_t>(buffer_, bufferIndex, 2);
 
   // Keep a position to record how many buckets are added
   auto itemsWrittenIndex = bufferIndex;
-  SerializeInt<uint16_t>(buffer_histogram_, bufferIndex, 0);
+  SerializeInt<uint16_t>(buffer_, bufferIndex, 0);
 
   // bucket values
   size_t index = 0;
@@ -321,9 +377,9 @@ size_t Exporter::SerializeHistogramMetrics(
       MetricsEventType::ExternallyAggregatedUlongDistributionMetric) {
     for (auto boundary : boundaries) {
       if (counts[index] > 0) {
-        SerializeInt<uint64_t>(buffer_histogram_, bufferIndex,
+        SerializeInt<uint64_t>(buffer_, bufferIndex,
                                static_cast<uint64_t>(boundary));
-        SerializeInt<uint32_t>(buffer_histogram_, bufferIndex,
+        SerializeInt<uint32_t>(buffer_, bufferIndex,
                                (uint32_t)(counts[index]));
         bucket_count++;
       }
@@ -332,7 +388,7 @@ size_t Exporter::SerializeHistogramMetrics(
   }
 
   // write bucket count to previous preserved index
-  SerializeInt<uint16_t>(buffer_histogram_, itemsWrittenIndex, bucket_count);
+  SerializeInt<uint16_t>(buffer_, itemsWrittenIndex, bucket_count);
 
   // get final size of payload to be added in front of buffer
   uint16_t body_length = bufferIndex - kBinaryHeaderSize;
@@ -341,42 +397,42 @@ size_t Exporter::SerializeHistogramMetrics(
   bufferIndex = 0;
 
   // event_type
-  SerializeInt<uint16_t>(buffer_histogram_, bufferIndex,
+  SerializeInt<uint16_t>(buffer_, bufferIndex,
                          static_cast<uint16_t>(event_type));
 
   // body length
-  SerializeInt<uint16_t>(buffer_histogram_, bufferIndex,
+  SerializeInt<uint16_t>(buffer_, bufferIndex,
                          static_cast<uint16_t>(body_length));
 
   // count of dimensions.
-  SerializeInt<uint16_t>(buffer_histogram_, bufferIndex,
-                         static_cast<uint16_t>(attributes.size()));
+  SerializeInt<uint16_t>(buffer_, bufferIndex,
+                         static_cast<uint16_t>(attributes_size));
 
   // reserverd word (2 bytes)
-  SerializeInt<uint16_t>(buffer_histogram_, bufferIndex, 0);
+  SerializeInt<uint16_t>(buffer_, bufferIndex, 0);
 
   // count of events
-  SerializeInt<uint32_t>(buffer_histogram_, bufferIndex, count);
+  SerializeInt<uint32_t>(buffer_, bufferIndex, count);
 
   // timestamp utc (8 bytes)
   auto windows_ticks = UnixTimeToWindowsTicks(
       std::chrono::duration_cast<std::chrono::duration<std::uint64_t>>(
           ts.time_since_epoch())
           .count());
-  SerializeInt<uint64_t>(buffer_histogram_, bufferIndex, windows_ticks);
+  SerializeInt<uint64_t>(buffer_, bufferIndex, windows_ticks);
 
   // sum, min, max
 
   if (event_type ==
       MetricsEventType::ExternallyAggregatedUlongDistributionMetric) {
     // sum
-    SerializeInt<uint64_t>(buffer_histogram_, bufferIndex,
+    SerializeInt<uint64_t>(buffer_, bufferIndex,
                            static_cast<uint64_t>(nostd::get<int64_t>(sum)));
     // min
-    SerializeInt<uint64_t>(buffer_histogram_, bufferIndex,
+    SerializeInt<uint64_t>(buffer_, bufferIndex,
                            static_cast<uint64_t>(nostd::get<int64_t>(min)));
     // max
-    SerializeInt<uint64_t>(buffer_histogram_, bufferIndex,
+    SerializeInt<uint64_t>(buffer_, bufferIndex,
                            static_cast<uint64_t>(nostd::get<int64_t>(max)));
   } else {
     // won't reach here.
