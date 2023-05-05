@@ -113,12 +113,10 @@ GenerateSumDataLongMetrics(
   {{kCounterLongAttributeKey1,
                 kCounterLongAttributeValue1}};
   if (account_name.size() && account_namespace.size()) {
-    std::cout << "\n Generating custom namespae and metrics for " << kCounterCustomLongValue << "\n";
     attributes[opentelemetry::exporter::geneva::metrics::kAttributeNamespaceKey] = account_namespace;
     attributes[opentelemetry::exporter::geneva::metrics::kAttributeAccountKey] = account_name;
       sum_point_data.value_ = kCounterCustomLongValue;
   } else  {
-    std::cout << "\n Generating derfault  namespae and metrics for " << kCounterLongValue << "\n";
     sum_point_data.value_ = kCounterLongValue;
   }
   opentelemetry::sdk::metrics::MetricData metric_data{
