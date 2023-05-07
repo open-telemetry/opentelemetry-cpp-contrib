@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 
 project(opentelemetry-nginx)
 
+find_package(nlohmann_json REQUIRED)
 find_package(opentelemetry-cpp REQUIRED)
 find_package(Threads REQUIRED)
 find_package(Protobuf REQUIRED)
@@ -19,6 +20,8 @@ add_library(otel_ngx_module SHARED
   src/otel_ngx_module_modules.c
   src/propagate.cpp
   src/script.cpp
+  src/post_batch_span_processor.cpp
+  src/post_span_processor.cpp
 )
 
 target_compile_options(otel_ngx_module
