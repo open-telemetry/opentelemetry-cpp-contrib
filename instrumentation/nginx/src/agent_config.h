@@ -7,12 +7,14 @@ extern "C" {
 }
 
 enum OtelExporterType { OtelExporterOTLP, OtelExporterJaeger };
+enum OtelExporterProtocol { gRPC, HTTP };
 enum OtelProcessorType { OtelProcessorSimple, OtelProcessorBatch };
 enum OtelSamplerType { OtelSamplerAlwaysOn, OtelSamplerAlwaysOff, OtelSamplerTraceIdRatioBased };
 
 struct OtelNgxAgentConfig {
   struct {
     OtelExporterType type = OtelExporterOTLP;
+    OtelExporterProtocol protocol = gRPC;
     std::string endpoint;
     bool use_ssl_credentials = false;
     std::string ssl_credentials_cacert_path = "";
