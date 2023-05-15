@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        {
+            "name": "otel_log",
+            "defines": [
+                "ENABLE_LOGS_PREVIEW"
+            ]
+        }
+    ],
+    "version": 4
+}
