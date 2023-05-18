@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.12)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 if (WIN32)
   message(STATUS_FATAL "Windows is not supported yet")
 endif () 
@@ -12,9 +15,12 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 endif()
 
 add_definitions(-DHAVE_CONSOLE_LOG -DENABLE_LOGS_PREVIEW)
+
 if(MAIN_PROJECT)
   find_package(opentelemetry-cpp REQUIRED)
 endif()
+
+add_subdirectory(third_party/LinuxTraceLogging\)
 
 include_directories(include)
 
