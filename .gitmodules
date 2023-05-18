@@ -4,3 +4,6 @@
 [submodule "exporters/userevents/third_party/LinuxTraceLogging"]
 	path = exporters/userevents/third_party/LinuxTraceLogging
 	url = https://github.com/Microsoft/LinuxTraceLogging
+[submodule "exporters/user_events/third_party/LinuxTraceLogging"]
+	path = exporters/user_events/third_party/LinuxTraceLogging
+	url = https://github.com/Microsoft/LinuxTraceLogging
