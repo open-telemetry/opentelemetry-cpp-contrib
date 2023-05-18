@@ -20,7 +20,6 @@ namespace logs
 
 Exporter::Exporter(const ExporterOptions &options) noexcept : options_(options)
 {
-  // TODO register TraceLoggingProvider
 }
 
 /*********************** Exporter methods ***********************/
@@ -29,18 +28,28 @@ sdk::common::ExportResult Exporter::Export(
 {
   if (isShutdown())
   {
-    OTEL_INTERNAL_LOG_ERROR("[UserEvents Log Exporter] Exporting "
+    OTEL_INTERNAL_LOG_ERROR("[user_events Log Exporter] Exporting "
                             << records.size() << " log(s) failed, exporter is shutdown");
     return sdk::common::ExportResult::kFailure;
   }
 
+  ehd::EventBuilder eb;
+  int err;
+
   for (auto &record : records)
   {
-    // TODO: serialize and write record to user_events
-    TraceLoggingWrite(
-      g_hProvider,
-      "opentelemetry-logs",
-      TraceLoggingString(record->GetBody(), "Body"));
+    eb.Reset("opentelemetry-logs", 0);
+    // TODO: set Id and Version to something meaningful
+    eb.IdVersion(1, 2);
+    eb.AddString<char>("str", "Body", record->GetBody());
+
+    err = eb.Write(*event_set_);
+
+    if (err != 0)
+    {
+      OTEL_INTERNAL_LOG_ERROR("[user_events Log Exporter] Exporting failed, error code: " << err);
+      return sdk::common::ExportResult::kFailure;
+    }
   }
 
   return sdk::common::ExportResult::kSuccess;

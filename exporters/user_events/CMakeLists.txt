@@ -3,9 +3,9 @@ cmake_minimum_required(VERSION 3.12)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if (WIN32)
-  message(STATUS_FATAL "Windows is not supported yet")
-endif () 
+if(WIN32)
+  message(STATUS_FATAL "user_events is Linux only for now")
+endif()
 
 set(MAIN_PROJECT OFF)
 
@@ -20,24 +20,27 @@ if(MAIN_PROJECT)
   find_package(opentelemetry-cpp REQUIRED)
 endif()
 
-add_subdirectory(third_party/LinuxTraceLogging\)
+add_subdirectory(third_party/LinuxTraceLogging)
 
 include_directories(include)
 
-add_library(opentelemetry_exporter_userevents_logs
+add_library(opentelemetry_exporter_user_events_logs
             src/exporter.cc)
 
 if(MAIN_PROJECT)
-   target_include_directories(opentelemetry_exporter_userevents_logs
+   target_include_directories(opentelemetry_exporter_user_events_logs
                       PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
-   target_link_libraries(opentelemetry_exporter_userevents_logs
+   target_link_libraries(opentelemetry_exporter_user_events_logs
                       PUBLIC ${OPENTELEMETRY_CPP_LIBRARIES})
 else()
-   target_link_libraries(opentelemetry_exporter_userevents_logs
+   target_link_libraries(opentelemetry_exporter_user_events_logs
                       PUBLIC opentelemetry_logs opentelemetry_resources opentelemetry_common)
 endif()
 
-set_target_properties(opentelemetry_exporter_userevents_logs
+target_link_libraries(opentelemetry_exporter_user_events_logs
+                      PUBLIC eventheader-tracepoint tracepoint)
+
+set_target_properties(opentelemetry_exporter_user_events_logs
                       PROPERTIES EXPORT_NAME logs)
 
 if(BUILD_TESTING)
@@ -58,13 +61,13 @@ if(BUILD_TESTING)
   include_directories(SYSTEM test/decoder)
   enable_testing()
   include(GoogleTest)
-  # build user_events logs tests
+  # build tests for user_events logs
   add_executable(
     userevents_logs_exporter_test
     test/logs_exporter_test.cc)
   target_link_libraries(
     userevents_logs_exporter_test ${GTEST_BOTH_LIBRARIES}
-    ${CMAKE_THREAD_LIBS_INIT} opentelemetry_exporter_userevents_logs)
+    ${CMAKE_THREAD_LIBS_INIT} opentelemetry_exporter_user_events_logs)
 
   gtest_add_tests(
     TARGET userevents_logs_exporter_test
@@ -73,7 +76,7 @@ if(BUILD_TESTING)
 endif()
 
 install(
-  TARGETS opentelemetry_exporter_userevents_logs
+  TARGETS opentelemetry_exporter_user_events_logs
   EXPORT "${PROJECT_NAME}-target"
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

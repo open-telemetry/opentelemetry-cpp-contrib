@@ -9,7 +9,7 @@
 #  include "opentelemetry/sdk/logs/exporter.h"
 #  include "opentelemetry/exporters/userevents/logs/exporter_options.h"
 
-#  include <TraceLoggingProvider.h>
+#  include <eventheader/EventHeaderDynamic.h>
 
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter {
@@ -44,6 +44,9 @@ private:
   const ExporterOptions options_;
   bool is_shutdown_ = false;
   mutable opentelemetry::common::SpinLockMutex lock_;
+
+  ehd::EventProvider provider_{"opentelemetry-logs"};
+  ehd::EventSet event_set_ = provider_.RegisterSet(event_level_verbose, 1);
 };
 
 } // namespace logs
