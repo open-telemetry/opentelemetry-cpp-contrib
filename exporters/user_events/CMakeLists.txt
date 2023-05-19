@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(WIN32)
-  message(STATUS_FATAL "user_events is Linux only for now")
+  message(FATAL_ERROR "user_events is Linux only for now")
 endif()
 
 set(MAIN_PROJECT OFF)
@@ -25,7 +25,7 @@ add_subdirectory(third_party/LinuxTraceLogging)
 include_directories(include)
 
 add_library(opentelemetry_exporter_user_events_logs
-            src/exporter.cc)
+            src/logs_exporter.cc)
 
 if(MAIN_PROJECT)
    target_include_directories(opentelemetry_exporter_user_events_logs

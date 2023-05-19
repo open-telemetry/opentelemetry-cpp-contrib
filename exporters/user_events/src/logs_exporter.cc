@@ -3,7 +3,7 @@
 
 #ifdef ENABLE_LOGS_PREVIEW
 
-#  include "opentelemetry/exporters/userevents/logs/exporter.h"
+#  include "opentelemetry/exporters/user_events/logs/exporter.h"
 #  include "opentelemetry/sdk_config.h"
 
 namespace nostd     = opentelemetry::nostd;
