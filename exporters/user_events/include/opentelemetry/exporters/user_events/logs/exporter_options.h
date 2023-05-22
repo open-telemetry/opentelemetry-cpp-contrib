@@ -10,13 +10,13 @@
 
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter {
-namespace userevents {
+namespace user_events {
 namespace logs {
 
 struct ExporterOptions {
 };
 } // namespace logs
-} // namespace userevents
+} // namespace user_events
 } // namespace exporter
 OPENTELEMETRY_END_NAMESPACE
 

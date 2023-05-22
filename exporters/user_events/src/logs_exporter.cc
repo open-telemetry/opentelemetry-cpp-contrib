@@ -13,6 +13,8 @@ namespace sdkcommon = opentelemetry::sdk::common;
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter
 {
+namespace user_events
+{
 namespace logs
 {
 
@@ -41,7 +43,7 @@ sdk::common::ExportResult Exporter::Export(
     eb.Reset("opentelemetry-logs", 0);
     // TODO: set Id and Version to something meaningful
     eb.IdVersion(1, 2);
-    eb.AddString<char>("str", "Body", record->GetBody());
+    // eb.AddString<char>("str", "Body", record->GetBody());
 
     err = eb.Write(*event_set_);
 
@@ -70,6 +72,7 @@ bool Exporter::isShutdown() const noexcept
 
 
 }  // namespace logs
+}  // namespace user_events
 }  // namespace exporter
 OPENTELEMETRY_END_NAMESPACE
 
