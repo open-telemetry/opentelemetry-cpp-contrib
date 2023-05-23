@@ -25,6 +25,13 @@ Exporter::Exporter(const ExporterOptions &options) noexcept : options_(options)
 }
 
 /*********************** Exporter methods ***********************/
+
+std::unique_ptr<sdk_logs::Recordable> Exporter::MakeRecordable() noexcept
+{
+  // return std::unique_ptr<Recordable>(new Recordable());
+  return nullptr;
+}
+
 sdk::common::ExportResult Exporter::Export(
     const nostd::span<std::unique_ptr<sdklogs::Recordable>> &records) noexcept
 {

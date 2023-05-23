@@ -8,18 +8,19 @@
 #include <string>
 #include <vector>
 
-#include "opentelemetry/exporters/userevents/logs/exporter.h"
+#include "opentelemetry/exporters/user_events/logs/exporter.h"
 
 #include <gtest/gtest.h>
 
 namespace sdk_logs=opentelemetry::sdk::logs;
-namespace userevents_logs=opentelemetry::exporter::userevents::logs;
+namespace user_events_logs=opentelemetry::exporter::user_events::logs;
 
 // Test that when OStream Log exporter is shutdown, no logs should be sent to stream
 TEST(UserEventsLogRecordExporter, Shutdown)
 {
+  auto options = user_events_logs::ExporterOptions();
   auto exporter =
-      std::unique_ptr<sdklogs::LogRecordExporter>(new userevents_logs::Exporter({}));
+      std::unique_ptr<sdk_logs::LogRecordExporter>(new user_events_logs::Exporter(options));
 
   // Save cout's original buffer here
   std::streambuf *original = std::cout.rdbuf();

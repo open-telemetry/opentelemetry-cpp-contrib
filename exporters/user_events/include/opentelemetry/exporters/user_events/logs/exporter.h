@@ -17,6 +17,8 @@ namespace exporter {
 namespace user_events {
 namespace logs {
 
+namespace sdk_logs = opentelemetry::sdk::logs;
+
 /**
  * The user_events logs exporter exports logs data to Geneva
  */
@@ -27,15 +29,19 @@ public:
   /**
    * Exports a span of logs sent from the processor.
    */
+
+  std::unique_ptr<sdk_logs::Recordable> MakeRecordable() noexcept override;
+
   opentelemetry::sdk::common::ExportResult Export(
-      const opentelemetry::nostd::span<std::unique_ptr<sdk::logs::Recordable>> &records) noexcept
+      const opentelemetry::nostd::span<std::unique_ptr<sdk_logs::Recordable>> &records) noexcept
       override;
 
-  bool ForceFlush(std::chrono::microseconds timeout =
-                      (std::chrono::microseconds::max)()) noexcept override;
+  // bool ForceFlush(std::chrono::microseconds timeout =
+                      // (std::chrono::microseconds::max)()) noexcept override;
 
   bool Shutdown(std::chrono::microseconds timeout =
                     (std::chrono::microseconds::max)()) noexcept override;
+
   bool isShutdown() const noexcept;
 
 
@@ -49,7 +55,7 @@ private:
 };
 
 } // namespace logs
-} // namespace userevents
+} // namespace user_events
 } // namespace exporter
 OPENTELEMETRY_END_NAMESPACE
 

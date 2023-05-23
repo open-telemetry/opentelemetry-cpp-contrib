@@ -7,6 +7,9 @@ if(WIN32)
   message(FATAL_ERROR "user_events is Linux only for now")
 endif()
 
+option(BUILD_EXAMPLE "Build example" ON)
+option(BUILD_TESTING "Build tests" ON)
+
 set(MAIN_PROJECT OFF)
 
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
@@ -42,6 +45,13 @@ target_link_libraries(opentelemetry_exporter_user_events_logs
 
 set_target_properties(opentelemetry_exporter_user_events_logs
                       PROPERTIES EXPORT_NAME logs)
+
+if(BUILD_EXAMPLE)
+
+  add_executable(user_events_logs example/main.cc example/foo_library.cc)
+  target_link_libraries(user_events_logs ${CMAKE_THREAD_LIBS_INIT} opentelemetry_logs opentelemetry_exporter_user_events_logs)
+
+endif(BUILD_EXAMPLE)
 
 if(BUILD_TESTING)
   if(EXISTS ${CMAKE_BINARY_DIR}/lib/libgtest.a)
