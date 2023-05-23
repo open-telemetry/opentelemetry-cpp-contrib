@@ -3,14 +3,15 @@
 
 #ifdef ENABLE_LOGS_PREVIEW
 
-#  include <map>
 #  include <string>
+#  include "opentelemetry/logs/event_id.h"
 #  include "opentelemetry/logs/provider.h"
 #  include "opentelemetry/sdk/version/version.h"
 
 namespace logs  = opentelemetry::logs;
-namespace trace = opentelemetry::trace;
 namespace nostd = opentelemetry::nostd;
+
+const logs::EventId function_name_event_id{0x12345678, "Company.Component.SubComponent.FunctionName"};
 
 namespace
 {
@@ -25,7 +26,11 @@ void foo_library()
 {
   auto logger = get_logger();
 
-  logger->Trace("body", opentelemetry::common::SystemTimestamp(std::chrono::system_clock::now()));
+  logger->Trace(
+      function_name_event_id,
+      "Simulate function enter trace message from {process_id}:{thread_id}",
+      opentelemetry::common::MakeAttributes({{"process_id", 12347}, {"thread_id", 12348}}));
+
 }
 
 #endif
