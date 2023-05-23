@@ -28,7 +28,7 @@ add_subdirectory(third_party/LinuxTraceLogging)
 include_directories(include)
 
 add_library(opentelemetry_exporter_user_events_logs
-            src/logs_exporter.cc)
+            src/logs_exporter.cc src/recordable.cc)
 
 if(MAIN_PROJECT)
    target_include_directories(opentelemetry_exporter_user_events_logs

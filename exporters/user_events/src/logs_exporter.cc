@@ -4,6 +4,7 @@
 #ifdef ENABLE_LOGS_PREVIEW
 
 #  include "opentelemetry/exporters/user_events/logs/exporter.h"
+#  include "opentelemetry/exporters/user_events/logs/recordable.h"
 #  include "opentelemetry/sdk_config.h"
 
 namespace nostd     = opentelemetry::nostd;
@@ -28,8 +29,7 @@ Exporter::Exporter(const ExporterOptions &options) noexcept : options_(options)
 
 std::unique_ptr<sdk_logs::Recordable> Exporter::MakeRecordable() noexcept
 {
-  // return std::unique_ptr<Recordable>(new Recordable());
-  return nullptr;
+  return std::unique_ptr<Recordable>(new Recordable());
 }
 
 sdk::common::ExportResult Exporter::Export(
