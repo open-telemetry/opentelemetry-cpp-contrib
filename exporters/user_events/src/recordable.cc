@@ -46,29 +46,25 @@ void Recordable::SetEventId(int64_t id, nostd::string_view name) noexcept
 
 void Recordable::SetTraceId(const opentelemetry::trace::TraceId &trace_id) noexcept
 {
+  // TODO: implement
 }
 
 void Recordable::SetSpanId(const opentelemetry::trace::SpanId &span_id) noexcept
 {
+  // TODO: implement
 }
 
 void Recordable::SetAttribute(
     nostd::string_view key,
     const opentelemetry::common::AttributeValue &value) noexcept
 {
+  // TODO: implement attributes
 }
 
 void Recordable::SetTimestamp(
     opentelemetry::common::SystemTimestamp timestamp) noexcept
 {
-  // fluentd_common::get_msgpack_eventtimeext(
-  //     static_cast<int32_t>(std::chrono::duration_cast<std::chrono::seconds>(
-  //                              timestamp.time_since_epoch())
-  //                              .count()),
-  //     std::chrono::duration_cast<std::chrono::nanoseconds>(
-  //         timestamp.time_since_epoch())
-  //             .count() %
-  //         1000000000);
+  // TODO: convert to nanoseconds
 }
 
 } // namespace logs

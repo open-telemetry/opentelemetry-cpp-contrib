@@ -31,6 +31,11 @@ void foo_library()
       "Simulate function enter trace message from {process_id}:{thread_id}",
       opentelemetry::common::MakeAttributes({{"process_id", 12347}, {"thread_id", 12348}}));
 
+  logger->Fatal(
+      function_name_event_id,
+      "Simulate function enter trace message from {process_id}:{thread_id}",
+      opentelemetry::common::MakeAttributes({{"process_id", 12347}, {"thread_id", 12348}}));
+
 }
 
 #endif
