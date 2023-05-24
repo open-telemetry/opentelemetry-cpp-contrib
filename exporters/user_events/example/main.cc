@@ -1,14 +1,15 @@
 // Copyright The OpenTelemetry Authors
 // SPDX-License-Identifier: Apache-2.0
 
-#ifdef ENABLE_LOGS_PREVIEW
+#include "opentelemetry/exporters/user_events/logs/exporter.h"
+#include "opentelemetry/logs/provider.h"
+#include "opentelemetry/sdk/logs/logger_provider_factory.h"
+#include "opentelemetry/sdk/logs/simple_log_record_processor_factory.h"
 
-#  include "opentelemetry/exporters/user_events/logs/exporter.h"
-#  include "opentelemetry/logs/provider.h"
-#  include "opentelemetry/sdk/logs/logger_provider_factory.h"
-#  include "opentelemetry/sdk/logs/simple_log_record_processor_factory.h"
+#include <chrono>
+#include <thread>
 
-#  include "foo_library.h"
+#include "foo_library.h"
 
 namespace logs_api      = opentelemetry::logs;
 namespace logs_sdk      = opentelemetry::sdk::logs;
@@ -39,17 +40,37 @@ void CleanupLogger()
 
 }  // namespace
 
+using namespace std;
+
+int i = 0;
+std::string get_fruit_name_from_customer()
+{
+  static int i = 0;
+
+  if (i++ % 2 == 0)
+  {
+    return "strawberry";
+  }
+  else
+  {
+    return "apple";
+  }
+}
+
 int main()
 {
   InitLogger();
 
-  foo_library();
+  while (true)
+  {
+    string fruit_name = get_fruit_name_from_customer();
+
+    printf("%d: customer wants to buy %s\n", i++, fruit_name.c_str());
+
+    sell_fruit(fruit_name);
+
+    this_thread::sleep_for(chrono::seconds(3));
+  }
 
   CleanupLogger();
 }
-#else
-int main()
-{
-  return 0;
-}
-#endif  // ENABLE_LOGS_PREVIEW

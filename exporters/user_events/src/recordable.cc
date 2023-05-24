@@ -34,18 +34,20 @@ void Recordable::SetSeverity(api_logs::Severity severity) noexcept
     }
 
     level_index_ = (severity_value - 1) >> 2;
+
+    event_builder_.AddValue("severityNumber", static_cast<uint16_t>(severity_value), event_field_format_default);
 }
 
 void Recordable::SetBody(const opentelemetry::common::AttributeValue &message) noexcept
 {
-  utils::PopulateAttribute("message", message, event_builder_);
+  utils::PopulateAttribute("body", message, event_builder_);
 }
 
 void Recordable::SetEventId(int64_t id, nostd::string_view name) noexcept
 {
-  utils::PopulateAttribute("event_id", id, event_builder_);
+  utils::PopulateAttribute("eventId", id, event_builder_);
   if (!name.empty()) {
-    utils::PopulateAttribute("event_name", name, event_builder_);
+    utils::PopulateAttribute("name", name, event_builder_);
   }
 }
 

@@ -10,7 +10,10 @@
 namespace logs  = opentelemetry::logs;
 namespace nostd = opentelemetry::nostd;
 
-const logs::EventId function_name_event_id{0x12345678, "Company.Component.SubComponent.FunctionName"};
+const logs::EventId fruit_sell_event_id{0x1, "FruitCompany.SalesDepartment.SellFruit"};
+const logs::EventId fruit_not_found_event_id{0x2, "FruitCompany.SalesDepartment.FruitNotFound"};
+
+std::map<std::string, double> fruit_prices = {{"apple", 1.1}, {"orange", 2.2}, {"banana", 3.3}};
 
 namespace
 {
@@ -21,20 +24,24 @@ nostd::shared_ptr<logs::Logger> get_logger()
 }
 }  // namespace
 
-void foo_library()
+void sell_fruit(std::string_view fruit)
 {
   auto logger = get_logger();
 
+  if (fruit_prices.find(std::string{fruit}) == fruit_prices.end())
+  {
+    logger->Error(
+      fruit_not_found_event_id,
+      "Fruit {name} not found",
+      opentelemetry::common::MakeAttributes({{"name", fruit.data()}}));
+
+    return;
+  }
+
   logger->Trace(
-      function_name_event_id,
-      "Simulate function enter trace message from {process_id}:{thread_id}",
-      opentelemetry::common::MakeAttributes({{"process_id", 12347}, {"thread_id", 12348}}));
-
-  logger->Fatal(
-      function_name_event_id,
-      "Simulate function enter trace message from {process_id}:{thread_id}",
-      opentelemetry::common::MakeAttributes({{"process_id", 12347}, {"thread_id", 12348}}));
-
+      fruit_sell_event_id,
+      "Selling fruit {name} with {price}",
+      opentelemetry::common::MakeAttributes({{"name", fruit.data()}, {"price", fruit_prices[fruit.data()]}}));
 }
 
 #endif

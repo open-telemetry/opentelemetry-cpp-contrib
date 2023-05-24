@@ -3,4 +3,4 @@
 
 #pragma once
 
-void foo_library();
+void sell_fruit(std::string_view fruit);
