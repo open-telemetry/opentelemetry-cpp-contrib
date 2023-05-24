@@ -20,7 +20,7 @@ namespace
 nostd::shared_ptr<logs::Logger> get_logger()
 {
   auto provider = logs::Provider::GetLoggerProvider();
-  return provider->GetLogger("foo_library_logger", "foo_library");
+  return provider->GetLogger("fruit_selling");
 }
 }  // namespace
 
@@ -33,7 +33,12 @@ void sell_fruit(std::string_view fruit)
     logger->Error(
       fruit_not_found_event_id,
       "Fruit {fruit_name} not found in inventory with {error_code}",
-      opentelemetry::common::MakeAttributes({{"fruit_name", fruit.data()}, {"error_code", 404}}));
+      opentelemetry::common::MakeAttributes(
+        {
+          {"fruit_name", fruit.data()},
+          {"error_code", 404}
+        })
+    );
 
     return;
   }
@@ -41,7 +46,12 @@ void sell_fruit(std::string_view fruit)
   logger->Trace(
       fruit_sell_event_id,
       "Selling fruit {fruit_name} with {fruit_price}",
-      opentelemetry::common::MakeAttributes({{"fruit_name", fruit.data()}, {"fruit_price", static_cast<int>(fruit_inventory[fruit.data()])}}));
+      opentelemetry::common::MakeAttributes(
+        {
+          {"fruit_name", fruit.data()},
+          {"fruit_price", static_cast<int>(fruit_inventory[fruit.data()])
+        }})
+  );
 }
 
 #endif
