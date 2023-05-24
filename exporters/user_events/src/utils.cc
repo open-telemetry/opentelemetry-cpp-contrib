@@ -53,15 +53,15 @@ void PopulateAttribute(nostd::string_view key,
   }
   else if (nostd::holds_alternative<const char *>(value))
   {
-    event_builder.AddString<char>(key.data(), nostd::get<const char *>(value), event_field_format_default);
+    event_builder.AddString<char>(key_name, nostd::get<const char *>(value), event_field_format_default);
   }
   else if (nostd::holds_alternative<nostd::string_view>(value))
   {
-    event_builder.AddString<char>(key.data(), nostd::get<nostd::string_view>(value).data(), event_field_format_default);
+    event_builder.AddString<char>(key_name, nostd::get<nostd::string_view>(value).data(), event_field_format_default);
   }
   else if (nostd::holds_alternative<nostd::span<const uint8_t>>(value))
   {
-
+    // TODO: implement
   }
   else if (nostd::holds_alternative<nostd::span<const int>>(value))
   {
@@ -90,9 +90,6 @@ void PopulateAttribute(nostd::string_view key,
   else if (nostd::holds_alternative<nostd::span<const nostd::string_view>>(value))
   {
 
-  }
-  else
-  {
   }
   
 }

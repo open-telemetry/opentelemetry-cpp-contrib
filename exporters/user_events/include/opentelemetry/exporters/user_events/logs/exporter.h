@@ -50,12 +50,12 @@ private:
 
   ehd::Provider provider_{"opentelemetry-logs"};
   std::array<std::shared_ptr<const ehd::EventSet>, 6> event_set_levels_ = {
+    provider_.RegisterSet(static_cast<event_level>(6), 1),
     provider_.RegisterSet(event_level_verbose, 1),
-    provider_.RegisterSet(event_level_verbose, 1),
-    provider_.RegisterSet(event_level_verbose, 1),
-    provider_.RegisterSet(event_level_verbose, 1),
-    provider_.RegisterSet(event_level_verbose, 1),
-    provider_.RegisterSet(event_level_verbose, 1)
+    provider_.RegisterSet(event_level_information, 1),
+    provider_.RegisterSet(event_level_warning, 1),
+    provider_.RegisterSet(event_level_error, 1),
+    provider_.RegisterSet(event_level_critical_error, 1)
   };
 
 }; // class Exporter
