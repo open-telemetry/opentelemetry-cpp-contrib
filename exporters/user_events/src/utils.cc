@@ -47,10 +47,6 @@ void PopulateAttribute(nostd::string_view key,
   {
     event_builder.AddValue(key_name, nostd::get<double>(value), event_field_format_default);
   }
-  else if (nostd::holds_alternative<double>(value), event_field_format_default)
-  {
-    event_builder.AddValue(key_name, nostd::get<double>(value), event_field_format_default);
-  }
   else if (nostd::holds_alternative<const char *>(value))
   {
     event_builder.AddString<char>(key_name, nostd::get<const char *>(value), event_field_format_default);

@@ -52,7 +52,17 @@ sdk::common::ExportResult Exporter::Export(
 
     int level_index = user_events_record->GetLevelIndex();
 
-    err = user_events_record->GetEventBuilder().Write(*event_set_levels_[level_index]);
+    auto event_set = event_set_levels_[level_index];
+
+    if (event_set->Enabled())
+    {
+      err = user_events_record->GetEventBuilder().Write(*event_set_levels_[level_index]);
+    }
+    else
+    {
+      // event_set is not enabled
+      err = 0;
+    }
 
     if (err != 0)
     {

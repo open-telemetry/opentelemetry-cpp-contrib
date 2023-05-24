@@ -18,11 +18,9 @@ Recordable::Recordable() noexcept
     event_builder_.Reset("OpenTelemetry-Logs");
 
     utils::PopulateAttribute("__csver__", static_cast<uint16_t>(0x400), event_builder_);
-    event_builder_.AddStruct("PartA", 1);
+    // event_builder_.AddStruct("PartA", 1);
 
-    event_builder_.AddStruct("PartB", 4);
-
-    event_builder_.AddStruct("PartC", 3);
+    event_builder_.AddStruct("PartC", 2);
 }
 
 void Recordable::SetSeverity(api_logs::Severity severity) noexcept
@@ -37,10 +35,12 @@ void Recordable::SetSeverity(api_logs::Severity severity) noexcept
     level_index_ = (severity_value - 1) >> 2;
 
     event_builder_.AddValue("severityNumber", static_cast<uint16_t>(severity_value), event_field_format_default);
+    event_builder_.AddString<char>("severityText", api_logs::SeverityNumToText[static_cast<uint32_t>(severity_value)].data(), event_field_format_default);
 }
 
 void Recordable::SetBody(const opentelemetry::common::AttributeValue &message) noexcept
 {
+  event_builder_.AddStruct("PartB", 5);
   utils::PopulateAttribute("body", message, event_builder_);
 }
 
@@ -66,7 +66,7 @@ void Recordable::SetAttribute(
     nostd::string_view key,
     const opentelemetry::common::AttributeValue &value) noexcept
 {
-  // TODO: implement attributes
+  utils::PopulateAttribute(key, value, event_builder_);
 }
 
 void Recordable::SetTimestamp(

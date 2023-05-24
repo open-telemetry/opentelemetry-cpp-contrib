@@ -13,7 +13,7 @@ namespace nostd = opentelemetry::nostd;
 const logs::EventId fruit_sell_event_id{0x1, "FruitCompany.SalesDepartment.SellFruit"};
 const logs::EventId fruit_not_found_event_id{0x2, "FruitCompany.SalesDepartment.FruitNotFound"};
 
-std::map<std::string, double> fruit_inventory = {{"apple", 1.1}, {"orange", 2.2}, {"banana", 3.3}};
+std::map<std::string, int> fruit_inventory = {{"apple", 1}, {"orange", 2}, {"banana", 3}};
 
 namespace
 {
@@ -40,8 +40,8 @@ void sell_fruit(std::string_view fruit)
 
   logger->Trace(
       fruit_sell_event_id,
-      "Selling fruit {name} with {price}",
-      opentelemetry::common::MakeAttributes({{"fruit_name", fruit.data()}, {"fruit_price", fruit_inventory[fruit.data()]}}));
+      "Selling fruit {fruit_name} with {fruit_price}",
+      opentelemetry::common::MakeAttributes({{"fruit_name", fruit.data()}, {"fruit_price", static_cast<int>(fruit_inventory[fruit.data()])}}));
 }
 
 #endif
