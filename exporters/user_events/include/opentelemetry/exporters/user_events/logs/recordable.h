@@ -3,13 +3,15 @@
 
 #pragma once
 
-#define ENABLE_LOGS_PREVIEW 1
+#ifdef ENABLE_LOGS_PREVIEW
 
-#include "opentelemetry/sdk/common/attribute_utils.h"
-#include "opentelemetry/sdk/logs/recordable.h"
-#include "opentelemetry/version.h"
+#  include "opentelemetry/sdk/common/attribute_utils.h"
+#  include "opentelemetry/sdk/logs/recordable.h"
+#  include "opentelemetry/version.h"
+#  include "utils.h"
 
-#include <chrono>
+#  include <eventheader/EventHeaderDynamic.h>
+#  include <chrono>
 
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter {
@@ -18,6 +20,16 @@ namespace logs {
 
 class Recordable final : public opentelemetry::sdk::logs::Recordable {
 public:
+
+  ehd::EventBuilder &GetEventBuilder() noexcept { return event_builder_; }
+
+  int GetLevelIndex() noexcept { return level_index_; }
+
+  /**
+   * Construct a new Recordable object
+   *
+   */
+  Recordable() noexcept;
   /**
    * Set the severity for this log.
    * @param severity the severity of the event
@@ -102,9 +114,13 @@ public:
           &instrumentation_scope) noexcept override {} // Not Supported
 
 private:
+  ehd::EventBuilder event_builder_;
+  int level_index_;
 };
 
 } // namespace logs
 } // namespace fluentd
 } // namespace exporter
 OPENTELEMETRY_END_NAMESPACE
+
+#endif  // ENABLE_LOGS_PREVIEW

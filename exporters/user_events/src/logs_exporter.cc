@@ -42,17 +42,17 @@ sdk::common::ExportResult Exporter::Export(
     return sdk::common::ExportResult::kFailure;
   }
 
-  ehd::EventBuilder eb;
   int err;
 
   for (auto &record : records)
   {
-    eb.Reset("opentelemetry-logs", 0);
-    // TODO: set Id and Version to something meaningful
-    eb.IdVersion(1, 2);
-    // eb.AddString<char>("str", "Body", record->GetBody());
+    auto user_events_record = std::unique_ptr<Recordable>(static_cast<Recordable *>(record.release()));
 
-    err = eb.Write(*event_set_);
+    // assert(user_events_record != nullptr, "Recordable is null");
+
+    int level_index = user_events_record->GetLevelIndex();
+
+    err = user_events_record->GetEventBuilder().Write(*event_set_levels_[level_index]);
 
     if (err != 0)
     {

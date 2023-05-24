@@ -9,6 +9,7 @@
 #  include "opentelemetry/sdk/logs/exporter.h"
 #  include "exporter_options.h"
 
+#  include <array>
 #  include <mutex>
 #  include <eventheader/EventHeaderDynamic.h>
 
@@ -36,9 +37,6 @@ public:
       const opentelemetry::nostd::span<std::unique_ptr<sdk_logs::Recordable>> &records) noexcept
       override;
 
-  // bool ForceFlush(std::chrono::microseconds timeout =
-                      // (std::chrono::microseconds::max)()) noexcept override;
-
   bool Shutdown(std::chrono::microseconds timeout =
                     (std::chrono::microseconds::max)()) noexcept override;
 
@@ -51,8 +49,16 @@ private:
   mutable opentelemetry::common::SpinLockMutex lock_;
 
   ehd::Provider provider_{"opentelemetry-logs"};
-  std::shared_ptr<const ehd::EventSet> event_set_ = provider_.RegisterSet(event_level_verbose, 1);
-};
+  std::array<std::shared_ptr<const ehd::EventSet>, 6> event_set_levels_ = {
+    provider_.RegisterSet(event_level_verbose, 1),
+    provider_.RegisterSet(event_level_verbose, 1),
+    provider_.RegisterSet(event_level_verbose, 1),
+    provider_.RegisterSet(event_level_verbose, 1),
+    provider_.RegisterSet(event_level_verbose, 1),
+    provider_.RegisterSet(event_level_verbose, 1)
+  };
+
+}; // class Exporter
 
 } // namespace logs
 } // namespace user_events
