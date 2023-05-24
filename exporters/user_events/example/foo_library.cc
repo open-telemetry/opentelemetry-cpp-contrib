@@ -13,7 +13,7 @@ namespace nostd = opentelemetry::nostd;
 const logs::EventId fruit_sell_event_id{0x1, "FruitCompany.SalesDepartment.SellFruit"};
 const logs::EventId fruit_not_found_event_id{0x2, "FruitCompany.SalesDepartment.FruitNotFound"};
 
-std::map<std::string, double> fruit_prices = {{"apple", 1.1}, {"orange", 2.2}, {"banana", 3.3}};
+std::map<std::string, double> fruit_inventory = {{"apple", 1.1}, {"orange", 2.2}, {"banana", 3.3}};
 
 namespace
 {
@@ -28,12 +28,12 @@ void sell_fruit(std::string_view fruit)
 {
   auto logger = get_logger();
 
-  if (fruit_prices.find(std::string{fruit}) == fruit_prices.end())
+  if (fruit_inventory.find(std::string{fruit}) == fruit_inventory.end())
   {
     logger->Error(
       fruit_not_found_event_id,
-      "Fruit {name} not found",
-      opentelemetry::common::MakeAttributes({{"name", fruit.data()}}));
+      "Fruit {fruit_name} not found in inventory with {error_code}",
+      opentelemetry::common::MakeAttributes({{"fruit_name", fruit.data()}, {"error_code", 404}}));
 
     return;
   }
@@ -41,7 +41,7 @@ void sell_fruit(std::string_view fruit)
   logger->Trace(
       fruit_sell_event_id,
       "Selling fruit {name} with {price}",
-      opentelemetry::common::MakeAttributes({{"name", fruit.data()}, {"price", fruit_prices[fruit.data()]}}));
+      opentelemetry::common::MakeAttributes({{"fruit_name", fruit.data()}, {"fruit_price", fruit_inventory[fruit.data()]}}));
 }
 
 #endif

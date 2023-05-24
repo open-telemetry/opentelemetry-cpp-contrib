@@ -65,8 +65,6 @@ int main()
   {
     string fruit_name = get_fruit_name_from_customer();
 
-    printf("%d: customer wants to buy %s\n", i++, fruit_name.c_str());
-
     sell_fruit(fruit_name);
 
     this_thread::sleep_for(chrono::seconds(3));
