@@ -3,7 +3,6 @@
 
 #ifdef ENABLE_LOGS_PREVIEW
 
-#  include <string>
 #  include "opentelemetry/logs/event_id.h"
 #  include "opentelemetry/logs/provider.h"
 #  include "opentelemetry/sdk/version/version.h"

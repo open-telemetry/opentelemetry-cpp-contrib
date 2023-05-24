@@ -48,7 +48,7 @@ private:
   bool is_shutdown_ = false;
   mutable opentelemetry::common::SpinLockMutex lock_;
 
-  ehd::Provider provider_{"opentelemetry-logs"};
+  ehd::Provider provider_{"opentelemetry_logs"};
   std::array<std::shared_ptr<const ehd::EventSet>, 6> event_set_levels_ = {
     provider_.RegisterSet(static_cast<event_level>(6), 1),
     provider_.RegisterSet(event_level_verbose, 1),
