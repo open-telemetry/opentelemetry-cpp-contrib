@@ -16,7 +16,12 @@ namespace api_logs = opentelemetry::logs;
 Recordable::Recordable() noexcept
 {
     event_builder_.Reset("OpenTelemetry-Logs");
-    // eb_.IdVersion(1, 2);
+    event_builder_.AddStruct("PartA", 1);
+    utils::PopulateAttribute("__csver__", static_cast<uint16_t>(0x400), event_builder_);
+
+    // event_builder_.AddStruct("PartB", 2);
+
+    // event_builder_.AddStruct("PartC", 3);
 }
 
 void Recordable::SetSeverity(api_logs::Severity severity) noexcept
