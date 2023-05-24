@@ -11,8 +11,8 @@
 
 #include "foo_library.h"
 
-namespace logs_api      = opentelemetry::logs;
-namespace logs_sdk      = opentelemetry::sdk::logs;
+namespace logs_api         = opentelemetry::logs;
+namespace logs_sdk         = opentelemetry::sdk::logs;
 namespace user_events_logs = opentelemetry::exporter::user_events::logs;
 
 namespace
