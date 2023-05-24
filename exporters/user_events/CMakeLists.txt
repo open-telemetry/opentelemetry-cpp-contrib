@@ -85,6 +85,11 @@ if(BUILD_TESTING)
     TEST_LIST userevents_logs_exporter_test)
 endif()
 
+find_package(benchmark CONFIG REQUIRED)
+add_executable(user_events_logger_benchmark benchmark/logger_benchmark.cc)
+target_link_libraries(user_events_logger_benchmark benchmark::benchmark
+                      ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_THREAD_LIBS_INIT} opentelemetry_logs opentelemetry_exporter_user_events_logs)
+
 install(
   TARGETS opentelemetry_exporter_user_events_logs
   EXPORT "${PROJECT_NAME}-target"
