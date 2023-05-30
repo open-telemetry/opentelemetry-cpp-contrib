@@ -23,7 +23,7 @@ if(MAIN_PROJECT)
   find_package(opentelemetry-cpp REQUIRED)
 endif()
 
-add_subdirectory(third_party/LinuxTraceLogging)
+add_subdirectory(third_party/LinuxTracepoints)
 
 include_directories(include)
 
