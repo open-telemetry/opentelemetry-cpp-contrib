@@ -24,7 +24,7 @@ namespace logs
 namespace sdk_logs = opentelemetry::sdk::logs;
 
 /**
- * The user_events logs exporter exports logs data to Geneva
+ * The user_events logs exporter exports logs data to tracepoint via user_events.
  */
 class Exporter final : public opentelemetry::sdk::logs::LogRecordExporter
 {

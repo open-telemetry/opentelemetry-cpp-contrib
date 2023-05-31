@@ -13,11 +13,9 @@ option(BUILD_TESTING "Build tests" ON)
 set(MAIN_PROJECT OFF)
 
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-  project(opentelemetry-userevents-logs)
+  project(opentelemetry-userevents-exporter)
   set(MAIN_PROJECT ON)
 endif()
-
-add_definitions(-DHAVE_CONSOLE_LOG -DENABLE_LOGS_PREVIEW)
 
 if(MAIN_PROJECT)
   # TODO: cleanup the dependent packages
@@ -31,8 +29,14 @@ add_subdirectory(third_party/LinuxTracepoints)
 
 include_directories(include)
 
+find_package(CURL REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
+
 add_library(opentelemetry_exporter_user_events_logs
             src/logs_exporter.cc src/recordable.cc src/utils.cc)
+
+target_compile_definitions(opentelemetry_exporter_user_events_logs
+                           PUBLIC HAVE_CONSOLE_LOG HAVE_LOGS_PREVIEW)
 
 if(MAIN_PROJECT)
   target_include_directories(opentelemetry_exporter_user_events_logs
@@ -50,6 +54,23 @@ target_link_libraries(opentelemetry_exporter_user_events_logs
 
 set_target_properties(opentelemetry_exporter_user_events_logs
                       PROPERTIES EXPORT_NAME logs)
+
+
+find_package(Protobuf REQUIRED)
+
+add_library(opentelemetry_exporter_user_events_metrics
+            src/metrics_exporter.cc)
+
+if(MAIN_PROJECT)
+  target_include_directories(opentelemetry_exporter_user_events_metrics
+                             PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
+  target_link_libraries(opentelemetry_exporter_user_events_metrics
+                        PUBLIC ${OPENTELEMETRY_CPP_LIBRARIES} tracepoint protobuf::libprotobuf)     
+  # TODO: link to opentelemetry_otlp_recordable
+else()
+  target_link_libraries(opentelemetry_exporter_user_events_metrics
+    PUBLIC opentelemetry_metrics opentelemetry_resources opentelemetry_common)
+endif()
 
 if(BUILD_EXAMPLE)
 
