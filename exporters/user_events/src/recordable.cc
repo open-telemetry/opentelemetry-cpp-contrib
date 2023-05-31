@@ -33,33 +33,25 @@ void Recordable::SetSeverity(api_logs::Severity severity) noexcept
 
     level_index_ = (severity_value - 1) >> 2;
 
-    bookmark_size_ += 2;
+    cs_part_b_bookmark_size_ += 2;
     event_builder_.AddValue("severityNumber", static_cast<uint16_t>(severity_value), event_field_format_default);
     event_builder_.AddString<char>("severityText", api_logs::SeverityNumToText[static_cast<uint32_t>(severity_value)].data(), event_field_format_default);
 }
 
 void Recordable::SetBody(const opentelemetry::common::AttributeValue &message) noexcept
 {
-  if (bookmark_size_ > 0)
-  {
-      event_builder_.SetStructFieldCount(bookmark_, bookmark_size_);
-  }
-
-  // reset bookmark for EventHeaderBuilder patch.
-  bookmark_ = 0;
-
   // Set intial bookmark size to 1 for body below.
-  bookmark_size_ = 1;
-  event_builder_.AddStruct("PartB", 1, 0, &bookmark_);
+  cs_part_b_bookmark_size_++;
+  event_builder_.AddStruct("PartB", 1, 0, &cs_part_b_bookmark_);
   utils::PopulateAttribute("body", message, event_builder_);
 }
 
 void Recordable::SetEventId(int64_t id, nostd::string_view name) noexcept
 {
-  bookmark_size_++;
+  cs_part_b_bookmark_size_++;
   utils::PopulateAttribute("eventId", id, event_builder_);
   if (!name.empty()) {
-    bookmark_size_++;
+    cs_part_b_bookmark_size_++;
     utils::PopulateAttribute("name", name, event_builder_);
   }
 }
@@ -81,12 +73,12 @@ void Recordable::SetAttribute(
     nostd::string_view key,
     const opentelemetry::common::AttributeValue &value) noexcept
 {
-  if (bookmark_size_ == 0)
+  if (cs_part_c_bookmark_size_ == 0)
   {
-    event_builder_.AddStruct("PartC", 1, 0, &bookmark_);
+    event_builder_.AddStruct("PartC", 1, 0, &cs_part_c_bookmark_);
   }
-  bookmark_size_++;
 
+  cs_part_c_bookmark_size_++;
   utils::PopulateAttribute(key, value, event_builder_);
 }
 
@@ -98,9 +90,13 @@ void Recordable::SetTimestamp(
 
 bool Recordable::PrepareExport() noexcept
 {
-  if (bookmark_size_ > 0)
+  if (cs_part_b_bookmark_size_ > 0)
   {
-    event_builder_.SetStructFieldCount(bookmark_, bookmark_size_);
+    event_builder_.SetStructFieldCount(cs_part_b_bookmark_, cs_part_b_bookmark_size_);
+  }
+  if (cs_part_c_bookmark_size_ > 0)
+  {
+    event_builder_.SetStructFieldCount(cs_part_c_bookmark_, cs_part_c_bookmark_size_);
   }
 
   return true;

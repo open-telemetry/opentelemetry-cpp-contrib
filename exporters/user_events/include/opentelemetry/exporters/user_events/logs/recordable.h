@@ -118,8 +118,10 @@ public:
 private:
   ehd::EventBuilder event_builder_;
   int level_index_;
-  size_t bookmark_ = 0;
-  size_t bookmark_size_ = 0;
+  size_t cs_part_b_bookmark_ = 0;
+  size_t cs_part_b_bookmark_size_ = 0;
+  size_t cs_part_c_bookmark_ = 0;
+  size_t cs_part_c_bookmark_size_ = 0;
 };
 
 } // namespace logs
