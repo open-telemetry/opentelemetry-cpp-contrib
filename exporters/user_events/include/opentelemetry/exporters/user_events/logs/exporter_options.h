@@ -5,19 +5,22 @@
 
 #ifdef ENABLE_LOGS_PREVIEW
 
-#include "opentelemetry/version.h"
-#include <string>
+#  include <string>
+#  include "opentelemetry/version.h"
 
 OPENTELEMETRY_BEGIN_NAMESPACE
-namespace exporter {
-namespace user_events {
-namespace logs {
+namespace exporter
+{
+namespace user_events
+{
+namespace logs
+{
 
-struct ExporterOptions {
-};
-} // namespace logs
-} // namespace user_events
-} // namespace exporter
+struct ExporterOptions
+{};
+}  // namespace logs
+}  // namespace user_events
+}  // namespace exporter
 OPENTELEMETRY_END_NAMESPACE
 
 #endif

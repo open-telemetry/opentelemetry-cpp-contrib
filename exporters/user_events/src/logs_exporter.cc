@@ -21,9 +21,7 @@ namespace logs
 
 /*********************** Constructor ***********************/
 
-Exporter::Exporter(const ExporterOptions &options) noexcept : options_(options)
-{
-}
+Exporter::Exporter(const ExporterOptions &options) noexcept : options_(options) {}
 
 /*********************** Exporter methods ***********************/
 
@@ -46,7 +44,8 @@ sdk::common::ExportResult Exporter::Export(
 
   for (auto &record : records)
   {
-    auto user_events_record = std::unique_ptr<Recordable>(static_cast<Recordable *>(record.release()));
+    auto user_events_record =
+        std::unique_ptr<Recordable>(static_cast<Recordable *>(record.release()));
 
     user_events_record->PrepareExport();
 
@@ -88,7 +87,6 @@ bool Exporter::isShutdown() const noexcept
   const std::lock_guard<opentelemetry::common::SpinLockMutex> locked(lock_);
   return is_shutdown_;
 }
-
 
 }  // namespace logs
 }  // namespace user_events

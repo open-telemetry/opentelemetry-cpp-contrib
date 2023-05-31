@@ -6,9 +6,12 @@
 
 OPENTELEMETRY_BEGIN_NAMESPACE
 
-namespace exporter {
-namespace user_events {
-namespace utils {
+namespace exporter
+{
+namespace user_events
+{
+namespace utils
+{
 
 namespace api_common = opentelemetry::common;
 
@@ -21,7 +24,7 @@ void PopulateAttribute(nostd::string_view key,
   static_assert(nostd::variant_size<api_common::AttributeValue>::value == kAttributeValueSize,
                 "AttributeValue has changed, update PopulateAttributeValue");
 
-  const char * key_name = key.data();
+  const char *key_name = key.data();
 
   if (nostd::holds_alternative<bool>(value))
   {
@@ -49,45 +52,32 @@ void PopulateAttribute(nostd::string_view key,
   }
   else if (nostd::holds_alternative<const char *>(value))
   {
-    event_builder.AddString<char>(key_name, nostd::get<const char *>(value), event_field_format_default);
+    event_builder.AddString<char>(key_name, nostd::get<const char *>(value),
+                                  event_field_format_default);
   }
   else if (nostd::holds_alternative<nostd::string_view>(value))
   {
-    event_builder.AddString<char>(key_name, nostd::get<nostd::string_view>(value).data(), event_field_format_default);
+    event_builder.AddString<char>(key_name, nostd::get<nostd::string_view>(value).data(),
+                                  event_field_format_default);
   }
   else if (nostd::holds_alternative<nostd::span<const uint8_t>>(value))
   {
     // TODO: implement
   }
   else if (nostd::holds_alternative<nostd::span<const int>>(value))
-  {
-
-  }
+  {}
   else if (nostd::holds_alternative<nostd::span<const int64_t>>(value))
-  {
-
-  }
+  {}
   else if (nostd::holds_alternative<nostd::span<const unsigned int>>(value))
-  {
-
-  }
+  {}
   else if (nostd::holds_alternative<nostd::span<const uint64_t>>(value))
-  {
-
-  }
+  {}
   else if (nostd::holds_alternative<nostd::span<const double>>(value))
-  {
-
-  }
+  {}
   else if (nostd::holds_alternative<nostd::span<const bool>>(value))
-  {
-
-  }
+  {}
   else if (nostd::holds_alternative<nostd::span<const nostd::string_view>>(value))
-  {
-
-  }
-  
+  {}
 }
 
 }  // namespace utils

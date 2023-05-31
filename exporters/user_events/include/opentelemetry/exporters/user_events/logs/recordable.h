@@ -14,13 +14,16 @@
 #  include <chrono>
 
 OPENTELEMETRY_BEGIN_NAMESPACE
-namespace exporter {
-namespace user_events {
-namespace logs {
+namespace exporter
+{
+namespace user_events
+{
+namespace logs
+{
 
-class Recordable final : public opentelemetry::sdk::logs::Recordable {
+class Recordable final : public opentelemetry::sdk::logs::Recordable
+{
 public:
-
   ehd::EventBuilder &GetEventBuilder() noexcept { return event_builder_; }
 
   int GetLevelIndex() noexcept { return level_index_; }
@@ -61,17 +64,16 @@ public:
    * Set a resource for this log.
    * @param Resource the resource to set
    */
-  void SetResource(const opentelemetry::sdk::resource::Resource
-                       &resource) noexcept override {} // Not Supported
+  void SetResource(const opentelemetry::sdk::resource::Resource &resource) noexcept override {
+  }  // Not Supported
 
   /**
    * Set an attribute of a log.
    * @param key the key of the attribute
    * @param value the attribute value
    */
-  void SetAttribute(
-      nostd::string_view key,
-      const opentelemetry::common::AttributeValue &value) noexcept override;
+  void SetAttribute(nostd::string_view key,
+                    const opentelemetry::common::AttributeValue &value) noexcept override;
 
   /**
    * Set trace id for this log.
@@ -89,16 +91,14 @@ public:
    * Inject a trace_flags  for this log.
    * @param trace_flags the span id to set
    */
-  void SetTraceFlags(
-      const opentelemetry::trace::TraceFlags &trace_flags) noexcept override {
-  } // Not Supported
+  void SetTraceFlags(const opentelemetry::trace::TraceFlags &trace_flags) noexcept override {
+  }  // Not Supported
 
   /**
    * Set the timestamp for this log.
    * @param timestamp the timestamp of the event
    */
-  void SetTimestamp(
-      opentelemetry::common::SystemTimestamp timestamp) noexcept override;
+  void SetTimestamp(opentelemetry::common::SystemTimestamp timestamp) noexcept override;
 
   /**
    * Set the observed timestamp for this log.
@@ -106,27 +106,26 @@ public:
    */
   void SetObservedTimestamp(common::SystemTimestamp timestamp) noexcept override {}
 
-
   /**
    * Set instrumentation_scope for this log.
    * @param instrumentation_scope the instrumentation scope to set
    */
-  void SetInstrumentationScope(
-      const opentelemetry::sdk::instrumentationscope::InstrumentationScope
-          &instrumentation_scope) noexcept override {} // Not Supported
+  void SetInstrumentationScope(const opentelemetry::sdk::instrumentationscope::InstrumentationScope
+                                   &instrumentation_scope) noexcept override
+  {}  // Not Supported
 
 private:
   ehd::EventBuilder event_builder_;
   int level_index_;
-  size_t cs_part_b_bookmark_ = 0;
+  size_t cs_part_b_bookmark_      = 0;
   size_t cs_part_b_bookmark_size_ = 0;
-  size_t cs_part_c_bookmark_ = 0;
+  size_t cs_part_c_bookmark_      = 0;
   size_t cs_part_c_bookmark_size_ = 0;
 };
 
-} // namespace logs
-} // namespace fluentd
-} // namespace exporter
+}  // namespace logs
+}  // namespace user_events
+}  // namespace exporter
 OPENTELEMETRY_END_NAMESPACE
 
 #endif  // ENABLE_LOGS_PREVIEW

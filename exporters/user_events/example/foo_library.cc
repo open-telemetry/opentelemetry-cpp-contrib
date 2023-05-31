@@ -31,27 +31,16 @@ void sell_fruit(std::string_view fruit)
   if (fruit_inventory.find(std::string{fruit}) == fruit_inventory.end())
   {
     logger->Error(
-      fruit_not_found_event_id,
-      "Fruit {fruit_name} not found in inventory with {error_code}",
-      opentelemetry::common::MakeAttributes(
-        {
-          {"fruit_name", fruit.data()},
-          {"error_code", 404}
-        })
-    );
+        fruit_not_found_event_id, "Fruit {fruit_name} not found in inventory with {error_code}",
+        opentelemetry::common::MakeAttributes({{"fruit_name", fruit.data()}, {"error_code", 404}}));
 
     return;
   }
 
-  logger->Trace(
-      fruit_sell_event_id,
-      "Selling fruit {fruit_name} with {fruit_price}",
-      opentelemetry::common::MakeAttributes(
-        {
-          {"fruit_name", fruit.data()},
-          {"fruit_price", static_cast<int>(fruit_inventory[fruit.data()])
-        }})
-  );
+  logger->Trace(fruit_sell_event_id, "Selling fruit {fruit_name} with {fruit_price}",
+                opentelemetry::common::MakeAttributes(
+                    {{"fruit_name", fruit.data()},
+                     {"fruit_price", static_cast<int>(fruit_inventory[fruit.data()])}}));
 }
 
 #endif

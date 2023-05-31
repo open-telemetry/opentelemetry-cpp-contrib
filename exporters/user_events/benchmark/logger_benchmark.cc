@@ -36,8 +36,8 @@ namespace nostd   = opentelemetry::nostd;
 namespace trace   = opentelemetry::trace;
 namespace log_api = opentelemetry::logs;
 
-namespace logs_api      = opentelemetry::logs;
-namespace logs_sdk      = opentelemetry::sdk::logs;
+namespace logs_api         = opentelemetry::logs;
+namespace logs_sdk         = opentelemetry::sdk::logs;
 namespace user_events_logs = opentelemetry::exporter::user_events::logs;
 
 namespace

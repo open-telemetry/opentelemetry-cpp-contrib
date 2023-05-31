@@ -9,9 +9,12 @@
 #include <eventheader/EventHeaderDynamic.h>
 
 OPENTELEMETRY_BEGIN_NAMESPACE
-namespace exporter {
-namespace user_events {
-namespace utils {
+namespace exporter
+{
+namespace user_events
+{
+namespace utils
+{
 
 namespace api_common = opentelemetry::common;
 
