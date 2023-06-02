@@ -1,3 +1,6 @@
 [submodule "exporters/geneva-trace/third_party/opentelemetry-cpp"]
 	path = exporters/geneva-trace/third_party/opentelemetry-cpp
 	url = https://github.com/open-telemetry/opentelemetry-cpp
+[submodule "exporters/user_events/third_party/LinuxTracepoints"]
+	path = exporters/user_events/third_party/LinuxTracepoints
+	url = https://github.com/microsoft/LinuxTracepoints
