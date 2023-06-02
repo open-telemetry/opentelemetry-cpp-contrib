@@ -20,6 +20,9 @@ endif()
 add_definitions(-DHAVE_CONSOLE_LOG -DENABLE_LOGS_PREVIEW)
 
 if(MAIN_PROJECT)
+  find_package(protobuf REQUIRED)
+  find_package(CURL REQUIRED)
+  find_package(nlohmann_json REQUIRED)
   find_package(opentelemetry-cpp REQUIRED)
 endif()
 
