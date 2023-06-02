@@ -74,10 +74,13 @@ endif()
 
 if(BUILD_EXAMPLE)
 
-  add_executable(user_events_logs example/main.cc example/foo_library.cc)
+  add_executable(user_events_logs example/logs/main.cc example/logs/foo_library.cc)
   target_link_libraries(
-    user_events_logs ${CMAKE_THREAD_LIBS_INIT} opentelemetry_logs
-    opentelemetry_exporter_user_events_logs)
+    user_events_logs ${CMAKE_THREAD_LIBS_INIT} opentelemetry_exporter_user_events_logs)
+
+  add_executable(user_events_metrics example/metrics/main.cc example/metrics/foo_library.cc)
+  target_link_libraries(
+    user_events_metrics ${CMAKE_THREAD_LIBS_INIT} opentelemetry_exporter_user_events_metrics)
 
 endif(BUILD_EXAMPLE)
 
