@@ -17,6 +17,10 @@ namespace api_common = opentelemetry::common;
 
 const int kAttributeValueSize = 16;
 
+//
+// Iterator which convers "nostd::string_view *" to "std::string_view *".
+// This is needed to pass a span of "nostd::string_view" to EventBuilder::AddStringRange.
+//
 struct StringViewIterator
 {
   const nostd::string_view *m_ptr;
