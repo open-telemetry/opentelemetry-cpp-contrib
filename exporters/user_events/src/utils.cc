@@ -17,6 +17,23 @@ namespace api_common = opentelemetry::common;
 
 const int kAttributeValueSize = 16;
 
+struct StringViewIterator
+{
+  const nostd::string_view *m_ptr;
+  explicit StringViewIterator(const nostd::string_view *ptr) noexcept : m_ptr(ptr) {}
+  bool operator==(StringViewIterator other) const noexcept { return m_ptr == other.m_ptr; }
+  bool operator!=(StringViewIterator other) const noexcept { return m_ptr != other.m_ptr; }
+  const std::string_view operator*() const noexcept
+  {
+    return std::string_view(m_ptr->data(), m_ptr->size());
+  }
+  StringViewIterator &operator++() noexcept
+  {
+    m_ptr += 1;
+    return *this;
+  }
+};
+
 void PopulateAttribute(nostd::string_view key,
                        const api_common::AttributeValue &value,
                        ehd::EventBuilder &event_builder) noexcept
@@ -106,7 +123,10 @@ void PopulateAttribute(nostd::string_view key,
   }
   else if (nostd::holds_alternative<nostd::span<const nostd::string_view>>(value))
   {
-    // TODO, implement this
+    auto value_span = nostd::get<nostd::span<const nostd::string_view>>(value);
+    event_builder.AddStringRange<char>(key_name, StringViewIterator(value_span.data()),
+                                       StringViewIterator(value_span.data() + value_span.size()),
+                                       event_field_format_default);
   }
 }
 
