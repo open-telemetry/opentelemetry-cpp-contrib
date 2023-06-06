@@ -19,7 +19,7 @@ endif()
 
 if(MAIN_PROJECT)
   # TODO: cleanup the dependent packages
-  find_package(protobuf REQUIRED)
+  find_package(Protobuf REQUIRED)
   find_package(CURL REQUIRED)
   find_package(nlohmann_json REQUIRED)
   find_package(opentelemetry-cpp REQUIRED)
