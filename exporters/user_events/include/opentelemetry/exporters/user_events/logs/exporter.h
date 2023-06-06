@@ -29,7 +29,7 @@ namespace sdk_logs = opentelemetry::sdk::logs;
 class Exporter final : public opentelemetry::sdk::logs::LogRecordExporter
 {
 public:
-  Exporter(const ExporterOptions &options) noexcept;
+  explicit Exporter(const ExporterOptions &options) noexcept;
 
   /**
    * Exports a span of logs sent from the processor.
