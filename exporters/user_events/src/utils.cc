@@ -26,17 +26,19 @@ void PopulateAttribute(nostd::string_view key,
 
   const char *key_name = key.data();
 
+  // TODO: implement this with a visitor
+
   if (nostd::holds_alternative<bool>(value))
   {
-    event_builder.AddValue(key_name, nostd::get<bool>(value), event_field_format_default);
+    event_builder.AddValue(key_name, nostd::get<bool>(value), event_field_format_boolean);
   }
   else if (nostd::holds_alternative<int>(value))
   {
-    event_builder.AddValue(key_name, nostd::get<int>(value), event_field_format_default);
+    event_builder.AddValue(key_name, nostd::get<int>(value), event_field_format_signed_int);
   }
   else if (nostd::holds_alternative<int64_t>(value))
   {
-    event_builder.AddValue(key_name, nostd::get<int64_t>(value), event_field_format_default);
+    event_builder.AddValue(key_name, nostd::get<int64_t>(value), event_field_format_signed_int);
   }
   else if (nostd::holds_alternative<unsigned int>(value))
   {
@@ -48,7 +50,7 @@ void PopulateAttribute(nostd::string_view key,
   }
   else if (nostd::holds_alternative<double>(value), event_field_format_default)
   {
-    event_builder.AddValue(key_name, nostd::get<double>(value), event_field_format_default);
+    event_builder.AddValue(key_name, nostd::get<double>(value), event_field_format_float);
   }
   else if (nostd::holds_alternative<const char *>(value))
   {
@@ -62,22 +64,50 @@ void PopulateAttribute(nostd::string_view key,
   }
   else if (nostd::holds_alternative<nostd::span<const uint8_t>>(value))
   {
-    // TODO: implement
+    auto value_span = nostd::get<nostd::span<const uint8_t>>(value);
+    event_builder.AddValueRange(key_name, value_span.begin(), value_span.end(),
+                                event_field_format_default);
   }
   else if (nostd::holds_alternative<nostd::span<const int>>(value))
-  {}
+  {
+    auto value_span = nostd::get<nostd::span<const int>>(value);
+    event_builder.AddValueRange(key_name, value_span.begin(), value_span.end(),
+                                event_field_format_signed_int);
+  }
   else if (nostd::holds_alternative<nostd::span<const int64_t>>(value))
-  {}
+  {
+    auto value_span = nostd::get<nostd::span<const int64_t>>(value);
+    event_builder.AddValueRange(key_name, value_span.begin(), value_span.end(),
+                                event_field_format_signed_int);
+  }
   else if (nostd::holds_alternative<nostd::span<const unsigned int>>(value))
-  {}
+  {
+    auto value_span = nostd::get<nostd::span<const unsigned int>>(value);
+    event_builder.AddValueRange(key_name, value_span.begin(), value_span.end(),
+                                event_field_format_default);
+  }
   else if (nostd::holds_alternative<nostd::span<const uint64_t>>(value))
-  {}
+  {
+    auto value_span = nostd::get<nostd::span<const unsigned int>>(value);
+    event_builder.AddValueRange(key_name, value_span.begin(), value_span.end(),
+                                event_field_format_default);
+  }
   else if (nostd::holds_alternative<nostd::span<const double>>(value))
-  {}
+  {
+    auto value_span = nostd::get<nostd::span<const double>>(value);
+    event_builder.AddValueRange(key_name, value_span.begin(), value_span.end(),
+                                event_field_format_float);
+  }
   else if (nostd::holds_alternative<nostd::span<const bool>>(value))
-  {}
+  {
+    auto value_span = nostd::get<nostd::span<const bool>>(value);
+    event_builder.AddValueRange(key_name, value_span.begin(), value_span.end(),
+                                event_field_format_boolean);
+  }
   else if (nostd::holds_alternative<nostd::span<const nostd::string_view>>(value))
-  {}
+  {
+    // TODO, implement this
+  }
 }
 
 }  // namespace utils
