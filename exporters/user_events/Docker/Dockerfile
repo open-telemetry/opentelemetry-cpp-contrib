@@ -43,13 +43,6 @@ RUN cd /work && \
     ninja install
 
 RUN cd /work && \
-    git clone --recursive --depth=1 https://github.com/protocolbuffers/protobuf.git && \
-    cd protobuf && mkdir build && cd build && \
-    cmake -G Ninja -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_EXAMPLES=OFF .. && \
-    ninja && \
-    ninja install
-
-RUN cd /work && \
     git clone --recursive --depth=1 https://github.com/open-telemetry/opentelemetry-cpp-contrib
 
 RUN cd /work && \
