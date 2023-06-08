@@ -29,9 +29,6 @@ add_subdirectory(third_party/LinuxTracepoints)
 
 include_directories(include)
 
-find_package(CURL REQUIRED)
-find_package(nlohmann_json CONFIG REQUIRED)
-
 add_library(opentelemetry_exporter_user_events_logs
             src/logs_exporter.cc src/recordable.cc src/utils.cc)
 
