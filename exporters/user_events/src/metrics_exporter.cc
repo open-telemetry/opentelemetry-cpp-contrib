@@ -24,6 +24,8 @@ Exporter::Exporter(const ExporterOptions &options)
 {
   int err;
 
+  err = tracepoint_open_provider(&provider_);
+
   err = tracepoint_connect(&otlp_metrics_, &provider_, "otlp_metrics");
   if (err) {
       OTEL_INTERNAL_LOG_ERROR("[user_events Metrics Exporter] Failed to connect to tracepoint provider");
