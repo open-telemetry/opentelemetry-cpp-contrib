@@ -25,7 +25,7 @@ namespace fluentd_common = opentelemetry::exporter::fluentd::common;
 /**
  * The fluentd exporter exports span data in JSON format as expected by fluentd
  */
-class FluentdExporter final : public logs_sdk::LogExporter {
+class FluentdExporter final : public logs_sdk::LogRecordExporter {
 public:
   /**
    * Create a FluentdExporter using all default options.

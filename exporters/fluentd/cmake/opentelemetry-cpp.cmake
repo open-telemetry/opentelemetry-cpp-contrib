@@ -1,5 +1,5 @@
 if("${opentelemetry-cpp-tag}" STREQUAL "")
-	set(opentelemetry-cpp-tag "v1.6.0")
+	set(opentelemetry-cpp-tag "v1.9.1")
 endif()
 function(target_create _target _lib)
   add_library(${_target} STATIC IMPORTED)
