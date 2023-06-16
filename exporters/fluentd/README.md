@@ -12,7 +12,7 @@ Refer to install instructions [INSTALL.md](../../INSTALL.md#building-as-standalo
 Modify step 2 to create `cmake` build configuration for compiling fluentd as below:
 
 ```console
-   $ cmake -DWITH_fluentd=ON ..
+   $ cmake ..
    -- The C compiler identification is GNU 9.3.0
    -- The CXX compiler identification is GNU 9.3.0
    ...
