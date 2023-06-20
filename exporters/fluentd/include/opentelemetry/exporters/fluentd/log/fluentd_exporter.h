@@ -76,31 +76,6 @@ protected:
   bool is_shutdown_{false};
   nostd::unique_ptr<SocketTools::SocketAddr> addr_;
   bool connected_{false};
-
-private:
-static std::string AttributeValueToString(
-    const opentelemetry::sdk::common::OwnedAttributeValue &value) {
-  std::string result;
-  if (nostd::holds_alternative<bool>(value)) {
-    result = nostd::get<bool>(value) ? "true" : "false";
-  } else if (nostd::holds_alternative<int>(value)) {
-    result = std::to_string(nostd::get<int>(value));
-  } else if (nostd::holds_alternative<int64_t>(value)) {
-    result = std::to_string(nostd::get<int64_t>(value));
-  } else if (nostd::holds_alternative<unsigned int>(value)) {
-    result = std::to_string(nostd::get<unsigned int>(value));
-  } else if (nostd::holds_alternative<uint64_t>(value)) {
-    result = std::to_string(nostd::get<uint64_t>(value));
-  } else if (nostd::holds_alternative<double>(value)) {
-    result = std::to_string(nostd::get<double>(value));
-  } else if (nostd::holds_alternative<std::string>(value)) {
-    result = nostd::get<std::string>(value);
-  } else {
-    LOG_WARN("[Geneva Metrics Exporter] AttributeValueToString - "
-             " Nested attributes not supported - ignored");
-  }
-  return result;
-}
 };
 
 } // namespace logs
