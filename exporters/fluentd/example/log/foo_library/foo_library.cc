@@ -14,12 +14,24 @@ nostd::shared_ptr<logs::Logger> get_logger() {
 }
 
 void f1() {
-  get_logger()->EmitLogRecord(opentelemetry::logs::Severity::kDebug,
-    opentelemetry::common::MakeAttributes({{"k1", "v1"}, {"k2", "v2"}}), std::chrono::system_clock::now());
+  auto log_record = get_logger()->CreateLogRecord();
+  log_record->SetSeverity(opentelemetry::logs::Severity::kDebug);
+  log_record->SetAttribute("k1", "v1");
+  log_record->SetAttribute("k2", "v2");
+  log_record->SetTimestamp(std::chrono::system_clock::now());
+  log_record->SetEventId(2, "logName2");
+
+  get_logger()->EmitLogRecord(std::move(log_record));
 }
 
 void f2() {
-  get_logger()->EmitLogRecord(opentelemetry::logs::Severity::kDebug, nostd::string_view("log body - 3"), std::chrono::system_clock::now());
+  auto log_record = get_logger()->CreateLogRecord();
+  log_record->SetSeverity(opentelemetry::logs::Severity::kDebug);
+  log_record->SetBody("log body - 3");
+  log_record->SetTimestamp(std::chrono::system_clock::now());
+  log_record->SetEventId(3, "logName3");
+
+  get_logger()->EmitLogRecord(std::move(log_record));
 
   f1();
   f1();
@@ -27,6 +39,11 @@ void f2() {
 } // namespace
 
 void foo_library() {
-  get_logger()->EmitLogRecord(opentelemetry::logs::Severity::kDebug, nostd::string_view("log body - 1"), std::chrono::system_clock::now());
+  auto log_record = get_logger()->CreateLogRecord();
+  log_record->SetSeverity(opentelemetry::logs::Severity::kDebug);
+  log_record->SetBody("log body - 1");
+  log_record->SetTimestamp(std::chrono::system_clock::now());
+  log_record->SetEventId(1, "logName1");
 
+  get_logger()->EmitLogRecord(std::move(log_record));
 }

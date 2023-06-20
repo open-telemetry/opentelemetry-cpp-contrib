@@ -139,11 +139,24 @@ TEST(FluentdExporter, SendLogEvents) {
   std::string providerName = "MyInstrumentationName";
   auto logger = provider->GetLogger(providerName);
 
-  // Span attributes
-  Properties attribs = {{"attrib1", 1}, {"attrib2", 2}};
+  auto f2 = logger->CreateLogRecord();
+  f2->SetSeverity(opentelemetry::logs::Severity::kDebug);
+  f2->SetAttribute("attrib1", 1);
+  f2->SetAttribute("attrib2", 2);
+  f2->SetBody("f2");
+  f2->SetTimestamp(std::chrono::system_clock::now());
+  f2->SetEventId(2, "f2");
 
-  logger->Log(logs::Severity::kDebug, "f2");
-  logger->Log(logs::Severity::kDebug, "f3");
+  auto f3 = logger->CreateLogRecord();
+  f3->SetSeverity(opentelemetry::logs::Severity::kDebug);
+  f3->SetAttribute("attrib1", 1);
+  f3->SetAttribute("attrib2", 2);
+  f3->SetBody("f3");
+  f3->SetTimestamp(std::chrono::system_clock::now());
+  f3->SetEventId(3, "f3");
+
+  logger->EmitLogRecord(std::move(f2));
+  logger->EmitLogRecord(std::move(f3));
 
   testServer.WaitForEvents(2, 200); // 2 batches must arrive in 200ms
   testServer.Stop();

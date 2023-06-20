@@ -91,7 +91,8 @@ sdk::common::ExportResult FluentdExporter::Export(
         auto log = rec->Log();
         // Emit "log" as fluentd event
         json record = json::array();
-        record.push_back(log[FLUENT_FIELD_TIMESTAMP]);
+        // ObservedTimestamp is now set when Log/EmitLogRecord is invoked rather than Timestamp.
+        record.push_back(log[FLUENT_FIELD_OBSERVEDTIMESTAMP]);
         json fields = {};
         for (auto &kv : log.items()) {
           fields[kv.key()] = kv.value();

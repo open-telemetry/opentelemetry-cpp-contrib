@@ -52,6 +52,7 @@ else()
 endif()
 
 find_package(CURL REQUIRED)
+find_package(Threads REQUIRED)
 
 include_directories(include)
 # create fluentd trace exporter
