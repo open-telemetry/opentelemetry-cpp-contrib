@@ -28,7 +28,7 @@
 #include "opentelemetry/logs/provider.h"
 #include "opentelemetry/sdk/logs/logger_provider.h"
 #include "opentelemetry/sdk/logs/recordable.h"
-#include "opentelemetry/sdk/logs/simple_log_processor.h"
+#include "opentelemetry/sdk/logs/simple_log_record_processor.h"
 
 #include "opentelemetry/sdk/logs/exporter.h"
 
@@ -80,7 +80,6 @@ struct TestServer {
       std::vector<uint8_t> msg(conn.request_buffer.data(),
                                conn.request_buffer.data() +
                                    conn.request_buffer.size());
-
       try {
         auto j = nlohmann::json::from_msgpack(msg);
         std::cout << "[" << count.fetch_add(1)
@@ -126,18 +125,13 @@ TEST(FluentdExporter, SendLogEvents) {
   options.endpoint = "tcp://127.0.0.1:24222";
   options.tag = "tag.my_service";
 
-  auto exporter = std::unique_ptr<sdklogs::LogExporter>(
+  auto exporter = std::unique_ptr<sdklogs::LogRecordExporter>(
       new opentelemetry::exporter::fluentd::logs::FluentdExporter(options));
-  auto processor = std::shared_ptr<sdklogs::LogProcessor>(
-      new sdklogs::SimpleLogProcessor(std::move(exporter)));
+  auto processor = std::unique_ptr<sdklogs::LogRecordProcessor>(
+      new sdklogs::SimpleLogRecordProcessor(std::move(exporter)));
 
   auto provider = std::shared_ptr<opentelemetry::logs::LoggerProvider>(
-      new opentelemetry::sdk::logs::LoggerProvider());
-
-  auto pr =
-      static_cast<opentelemetry::sdk::logs::LoggerProvider *>(provider.get());
-
-  pr->SetProcessor(processor);
+      new opentelemetry::sdk::logs::LoggerProvider(std::move(processor)));
 
   // Set the global trace provider
   opentelemetry::logs::Provider::SetLoggerProvider(provider);

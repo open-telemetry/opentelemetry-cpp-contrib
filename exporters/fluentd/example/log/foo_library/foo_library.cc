@@ -14,13 +14,12 @@ nostd::shared_ptr<logs::Logger> get_logger() {
 }
 
 void f1() {
-  get_logger()->Log(opentelemetry::logs::Severity::kDebug, "logName2",
-                    {{"k1", "v1"}, {"k2", "v2"}});
+  get_logger()->EmitLogRecord(opentelemetry::logs::Severity::kDebug,
+    opentelemetry::common::MakeAttributes({{"k1", "v1"}, {"k2", "v2"}}), std::chrono::system_clock::now());
 }
 
 void f2() {
-  get_logger()->Log(opentelemetry::logs::Severity::kDebug, "logName3",
-                    "log body - 3");
+  get_logger()->EmitLogRecord(opentelemetry::logs::Severity::kDebug, nostd::string_view("log body - 3"), std::chrono::system_clock::now());
 
   f1();
   f1();
@@ -28,6 +27,6 @@ void f2() {
 } // namespace
 
 void foo_library() {
-  get_logger()->Log(opentelemetry::logs::Severity::kDebug, "logName1",
-                    "log body - 1");
+  get_logger()->EmitLogRecord(opentelemetry::logs::Severity::kDebug, nostd::string_view("log body - 1"), std::chrono::system_clock::now());
+
 }
