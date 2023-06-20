@@ -5,6 +5,7 @@
 #include "opentelemetry/exporters/fluentd/log/fluentd_exporter.h"
 #include "opentelemetry/exporters/fluentd/log/recordable.h"
 #include "opentelemetry/ext/http/common/url_parser.h"
+#include "opentelemetry/sdk/logs/read_write_log_record.h"
 
 #include "opentelemetry/exporters/fluentd/common/fluentd_logging.h"
 
@@ -60,7 +61,7 @@ FluentdExporter::FluentdExporter()
  */
 std::unique_ptr<logs_sdk::Recordable>
 FluentdExporter::MakeRecordable() noexcept {
-  return std::unique_ptr<sdk::logs::Recordable>(new Recordable);
+  return std::unique_ptr<logs_sdk::Recordable>(new opentelemetry::exporter::fluentd::logs::Recordable());
 }
 
 /**
@@ -150,7 +151,7 @@ bool FluentdExporter::Send(std::vector<uint8_t> &packet) {
       return true;
     }
 
-    LOG_WARN("send failed, retrying %u ...", retryCount);
+    LOG_WARN("send failed, retrying %lu ...", retryCount);
     // Retry to connect and/or send
   }
 
