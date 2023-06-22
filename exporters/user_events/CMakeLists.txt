@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(WIN32)
-  message(FATAL_ERROR "user_events is Linux only for now")
+  message(FATAL_ERROR "user_events exporter is Linux only for now")
 endif()
 
 option(BUILD_EXAMPLE "Build example" ON)
@@ -13,7 +13,7 @@ option(BUILD_TESTING "Build tests" ON)
 set(MAIN_PROJECT OFF)
 
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-  project(opentelemetry-userevents-exporter)
+  project(opentelemetry-user_events-exporter)
   set(MAIN_PROJECT ON)
 endif()
 
