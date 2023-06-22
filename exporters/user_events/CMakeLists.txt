@@ -100,15 +100,15 @@ if(BUILD_TESTING)
   enable_testing()
   include(GoogleTest)
   # build tests for user_events logs
-  add_executable(userevents_logs_exporter_test test/logs_exporter_test.cc)
+  add_executable(user_events_logs_exporter_test test/logs_exporter_test.cc)
   target_link_libraries(
-    userevents_logs_exporter_test ${GTEST_BOTH_LIBRARIES}
+    user_events_logs_exporter_test ${GTEST_BOTH_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT} opentelemetry_exporter_user_events_logs)
 
   gtest_add_tests(
-    TARGET userevents_logs_exporter_test
+    TARGET user_events_logs_exporter_test
     TEST_PREFIX exporter.
-    TEST_LIST userevents_logs_exporter_test)
+    TEST_LIST user_events_logs_exporter_test)
 endif()
 
 find_package(benchmark CONFIG REQUIRED)
@@ -126,7 +126,7 @@ install(
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 install(
-  DIRECTORY include/opentelemetry/exporters/userevents
+  DIRECTORY include/opentelemetry/exporters/user_events
   DESTINATION include/opentelemetry/exporters
   FILES_MATCHING
   PATTERN "*.h")
