@@ -54,7 +54,7 @@ jobs:
           bazel --output_user_root=$HOME/.cache/bazel build --copt=-DENABLE_TEST --@io_opentelemetry_cpp//api:with_abseil //...
           bazel --output_user_root=$HOME/.cache/bazel test --copt=-DENABLE_TEST --@io_opentelemetry_cpp//api:with_abseil //...
   prometheus_cmake_window:
-    name: Bazel on Windows
+    name: CMake on Windows
     runs-on: windows-latest
     steps:
       - name: checkout otel contrib prometheus
@@ -76,18 +76,18 @@ jobs:
           vcpkg install "prometheus-cpp[pull,push]" nlohmann-json gtest benchmark --triplet=x64-windows-static-md
           New-Item -Path "$ENV:GITHUB_WORKSPACE/otel_cpp/build" -ItemType "directory" -Force 
           Set-Location "$ENV:GITHUB_WORKSPACE/otel_cpp/build"
-          cmake .. -DWITH_PROMETHEUS=ON -DWITH_METRICS_PREVIEW=OFF -DCMAKE_BUILD_TYPE=Debug \
-            -DVCPKG_TARGET_TRIPLET=x64-windows-static-md \
-            "-DCMAKE_TOOLCHAIN_FILE=$ENV:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" \
-            "-DCMAKE_INSTALL_PREFIX=$HOME/prebuilt-otel" \
+          cmake .. -DWITH_PROMETHEUS=ON -DWITH_METRICS_PREVIEW=OFF -DCMAKE_BUILD_TYPE=Debug `
+            -DVCPKG_TARGET_TRIPLET=x64-windows-static-md `
+            "-DCMAKE_TOOLCHAIN_FILE=$ENV:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" `
+            "-DCMAKE_INSTALL_PREFIX=$HOME/prebuilt-otel" `
             "-DBUILD_SHARED_LIBS=OFF"
           cmake --build . -j --config Debug
           cmake --install . --prefix "$HOME/prebuilt-otel" --config Debug
           New-Item -Path "$ENV:GITHUB_WORKSPACE/otel_cpp_contrib/exporters/prometheus/build" -ItemType "directory" -Force
           Set-Location "$ENV:GITHUB_WORKSPACE/otel_cpp_contrib/exporters/prometheus/build"
-          cmake .. "-DCMAKE_PREFIX_PATH=$HOME/prebuilt-otel" -DCMAKE_BUILD_TYPE=Debug \
-            -DVCPKG_TARGET_TRIPLET=x64-windows-static-md \
-            "-DCMAKE_TOOLCHAIN_FILE=$ENV:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" \
+          cmake .. "-DCMAKE_PREFIX_PATH=$HOME/prebuilt-otel" -DCMAKE_BUILD_TYPE=Debug `
+            -DVCPKG_TARGET_TRIPLET=x64-windows-static-md `
+            "-DCMAKE_TOOLCHAIN_FILE=$ENV:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" `
             "-DBUILD_SHARED_LIBS=OFF"
           cmake --build . -j --config Debug
           ctest -VV -C Debug -R "opentelemetry_cpp_ecosystem_test.*" .
