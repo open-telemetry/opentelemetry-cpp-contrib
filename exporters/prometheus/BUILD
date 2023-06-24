@@ -17,6 +17,7 @@ cc_library(
         "@io_opentelemetry_cpp//exporters/prometheus:prometheus_collector",
         "@io_opentelemetry_cpp//exporters/prometheus:prometheus_exporter_utils",
         "@io_opentelemetry_cpp//sdk:headers",
+        "@io_opentelemetry_cpp//sdk/src/metrics",
     ],
 )
 
