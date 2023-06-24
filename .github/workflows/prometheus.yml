@@ -74,8 +74,8 @@ jobs:
           New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" `
             -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
           vcpkg install "prometheus-cpp[pull,push]" nlohmann-json gtest benchmark --triplet=x64-windows-static-md
-          New-Item -Path "$ENV:GITHUB_WORKSPACE/otel_cpp/build" -ItemType "directory" -Force 
-          Set-Location "$ENV:GITHUB_WORKSPACE/otel_cpp/build"
+          New-Item -Path "$ENV:GITHUB_WORKSPACE/otel_cpp/build_jobs_ci" -ItemType "directory" -Force 
+          Set-Location "$ENV:GITHUB_WORKSPACE/otel_cpp/build_jobs_ci"
           cmake .. -DWITH_PROMETHEUS=ON -DWITH_METRICS_PREVIEW=OFF -DCMAKE_BUILD_TYPE=Debug `
             -DVCPKG_TARGET_TRIPLET=x64-windows-static-md `
             "-DCMAKE_TOOLCHAIN_FILE=$ENV:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" `
@@ -83,8 +83,8 @@ jobs:
             "-DBUILD_SHARED_LIBS=OFF"
           cmake --build . -j --config Debug
           cmake --install . --prefix "$HOME/prebuilt-otel" --config Debug
-          New-Item -Path "$ENV:GITHUB_WORKSPACE/otel_cpp_contrib/exporters/prometheus/build" -ItemType "directory" -Force
-          Set-Location "$ENV:GITHUB_WORKSPACE/otel_cpp_contrib/exporters/prometheus/build"
+          New-Item -Path "$ENV:GITHUB_WORKSPACE/otel_cpp_contrib/exporters/prometheus/build_jobs_ci" -ItemType "directory" -Force
+          Set-Location "$ENV:GITHUB_WORKSPACE/otel_cpp_contrib/exporters/prometheus/build_jobs_ci"
           cmake .. "-DCMAKE_PREFIX_PATH=$HOME/prebuilt-otel" -DCMAKE_BUILD_TYPE=Debug `
             -DVCPKG_TARGET_TRIPLET=x64-windows-static-md `
             "-DCMAKE_TOOLCHAIN_FILE=$ENV:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" `
@@ -114,16 +114,16 @@ jobs:
       - name: run tests
         run: |
           vcpkg install 'prometheus-cpp[pull,push]' nlohmann-json gtest benchmark --triplet=x64-linux
-          mkdir -p "$GITHUB_WORKSPACE/otel_cpp/build"
-          cd "$GITHUB_WORKSPACE/otel_cpp/build"
+          mkdir -p "$GITHUB_WORKSPACE/otel_cpp/build_jobs_ci"
+          cd "$GITHUB_WORKSPACE/otel_cpp/build_jobs_ci"
           cmake .. -DWITH_PROMETHEUS=ON -DWITH_METRICS_PREVIEW=OFF -DCMAKE_BUILD_TYPE=Debug \
             -DVCPKG_TARGET_TRIPLET=x64-linux \
             "-DCMAKE_INSTALL_PREFIX=$HOME/prebuilt-otel" \
             "-DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
           cmake --build . -j --config Debug
           cmake --install . --prefix "$HOME/prebuilt-otel" --config Debug
-          mkdir -p "$GITHUB_WORKSPACE/otel_cpp_contrib/exporters/prometheus/build"
-          cd "$GITHUB_WORKSPACE/otel_cpp_contrib/exporters/prometheus/build"
+          mkdir -p "$GITHUB_WORKSPACE/otel_cpp_contrib/exporters/prometheus/build_jobs_ci"
+          cd "$GITHUB_WORKSPACE/otel_cpp_contrib/exporters/prometheus/build_jobs_ci"
           cmake .. "-DCMAKE_PREFIX_PATH=$HOME/prebuilt-otel" -DCMAKE_BUILD_TYPE=Debug \
             -DVCPKG_TARGET_TRIPLET=x64-linux \
             "-DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
