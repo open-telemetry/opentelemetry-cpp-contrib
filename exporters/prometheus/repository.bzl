@@ -19,10 +19,10 @@ def io_opentelemetry_cpp_contrib_deps():
     maybe(
         http_archive,
         name = "io_opentelemetry_cpp",
-        sha256 = "1fc371be049b3220b8b9571c8b713f03e9a84f3c5684363f64ccc814638391a5",
-        strip_prefix = "opentelemetry-cpp-1.6.1",
+        sha256 = "668de24f81c8d36d75092ad9dcb02a97cd41473adbe72485ece05e336db48249",
+        strip_prefix = "opentelemetry-cpp-1.9.1",
         urls = [
-            "https://github.com/open-telemetry/opentelemetry-cpp/archive/v1.6.1.tar.gz",
+            "https://github.com/open-telemetry/opentelemetry-cpp/archive/v1.9.1.tar.gz",
         ],
     )
 
@@ -30,10 +30,24 @@ def io_opentelemetry_cpp_contrib_deps():
     maybe(
         http_archive,
         name = "com_github_jupp0r_prometheus_cpp",
-        sha256 = "593e028d401d3298eada804d252bc38d8cab3ea1c9e88bcd72095281f85e6d16",
-        strip_prefix = "prometheus-cpp-1.0.1",
+        sha256 = "b4eff62bcdba10efd6210b9fa8a5b2505ad8ea6c211968be79aeb2c4c2f97338",
+        # strip_prefix = "prometheus-cpp-1.1.0",
+        # 1.1.0 with bazel 6 support
+        strip_prefix = "prometheus-cpp-81e208c250748657f1d5dab247e82c4429a931af",
         urls = [
-            "https://github.com/jupp0r/prometheus-cpp/archive/refs/tags/v1.0.1.tar.gz",
+            # "https://github.com/jupp0r/prometheus-cpp/archive/refs/tags/v1.1.0.tar.gz",
+            "https://github.com/jupp0r/prometheus-cpp/archive/81e208c250748657f1d5dab247e82c4429a931af.tar.gz",
+        ],
+    )
+
+    # bazel platforms
+    maybe(
+        http_archive,
+        name = "platforms",
+        sha256 = "5308fc1d8865406a49427ba24a9ab53087f17f5266a7aabbfc28823f3916e1ca",
+        urls = [
+            "https://mirror.bazel.build/github.com/bazelbuild/platforms/releases/download/0.0.6/platforms-0.0.6.tar.gz",
+            "https://github.com/bazelbuild/platforms/releases/download/0.0.6/platforms-0.0.6.tar.gz",
         ],
     )
 
@@ -64,4 +78,13 @@ def io_opentelemetry_cpp_contrib_deps():
             "https://github.com/google/googletest/archive/release-1.12.1.tar.gz",
             # "https://github.com/google/googletest/archive/release-1.10.0.tar.gz",
         ],
+    )
+
+    # Some versions of GoogleTest depend com_googlesource_code_re2.
+    maybe(
+        http_archive,
+        name = "com_googlesource_code_re2",  # 2023-06-01
+        sha256 = "1726508efc93a50854c92e3f7ac66eb28f0e57652e413f11d7c1e28f97d997ba",
+        strip_prefix = "re2-03da4fc0857c285e3a26782f6bc8931c4c950df4",
+        urls = ["https://github.com/google/re2/archive/03da4fc0857c285e3a26782f6bc8931c4c950df4.zip"],
     )
