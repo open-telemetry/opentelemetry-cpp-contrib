@@ -22,6 +22,18 @@ Modify step 2 to create `cmake` build configuration for compiling fluentd as bel
    $
 ```
 
+### VCPKG Integration
+
+If integrating with VCPKG, make sure the cmake invocation defines the additional CMAKE_TOOLCHAIN_FILE.
+
+For example:
+
+```console
+    $ .../opentelemetry-cpp-contrib2/exporters/fluentd$ ~/vcpkg/vcpkg install
+    $ .../opentelemetry-cpp-contrib2/exporters/fluentd$ cd cmake
+    $ .../opentelemetry-cpp-contrib2/exporters/fluentd/cmake$ cmake .. -D CMAKE_TOOLCHAIN_FILE=/home/niande/vcpkg/scripts/buildsystems/vcpkg.cmake 
+```
+
 ### Bazel Install Instructions
 
 TODO
