@@ -28,7 +28,7 @@
 #include "opentelemetry/logs/provider.h"
 #include "opentelemetry/sdk/logs/logger_provider.h"
 #include "opentelemetry/sdk/logs/recordable.h"
-#include "opentelemetry/sdk/logs/simple_log_processor.h"
+#include "opentelemetry/sdk/logs/simple_log_record_processor.h"
 
 #include "opentelemetry/sdk/logs/exporter.h"
 
@@ -80,7 +80,6 @@ struct TestServer {
       std::vector<uint8_t> msg(conn.request_buffer.data(),
                                conn.request_buffer.data() +
                                    conn.request_buffer.size());
-
       try {
         auto j = nlohmann::json::from_msgpack(msg);
         std::cout << "[" << count.fetch_add(1)
@@ -126,18 +125,13 @@ TEST(FluentdExporter, SendLogEvents) {
   options.endpoint = "tcp://127.0.0.1:24222";
   options.tag = "tag.my_service";
 
-  auto exporter = std::unique_ptr<sdklogs::LogExporter>(
+  auto exporter = std::unique_ptr<sdklogs::LogRecordExporter>(
       new opentelemetry::exporter::fluentd::logs::FluentdExporter(options));
-  auto processor = std::shared_ptr<sdklogs::LogProcessor>(
-      new sdklogs::SimpleLogProcessor(std::move(exporter)));
+  auto processor = std::unique_ptr<sdklogs::LogRecordProcessor>(
+      new sdklogs::SimpleLogRecordProcessor(std::move(exporter)));
 
   auto provider = std::shared_ptr<opentelemetry::logs::LoggerProvider>(
-      new opentelemetry::sdk::logs::LoggerProvider());
-
-  auto pr =
-      static_cast<opentelemetry::sdk::logs::LoggerProvider *>(provider.get());
-
-  pr->SetProcessor(processor);
+      new opentelemetry::sdk::logs::LoggerProvider(std::move(processor)));
 
   // Set the global trace provider
   opentelemetry::logs::Provider::SetLoggerProvider(provider);
@@ -145,11 +139,24 @@ TEST(FluentdExporter, SendLogEvents) {
   std::string providerName = "MyInstrumentationName";
   auto logger = provider->GetLogger(providerName);
 
-  // Span attributes
-  Properties attribs = {{"attrib1", 1}, {"attrib2", 2}};
+  auto f2 = logger->CreateLogRecord();
+  f2->SetSeverity(opentelemetry::logs::Severity::kDebug);
+  f2->SetAttribute("attrib1", 1);
+  f2->SetAttribute("attrib2", 2);
+  f2->SetBody("f2");
+  f2->SetTimestamp(std::chrono::system_clock::now());
+  f2->SetEventId(2, "f2");
 
-  logger->Log(logs::Severity::kDebug, "f2");
-  logger->Log(logs::Severity::kDebug, "f3");
+  auto f3 = logger->CreateLogRecord();
+  f3->SetSeverity(opentelemetry::logs::Severity::kDebug);
+  f3->SetAttribute("attrib1", 1);
+  f3->SetAttribute("attrib2", 2);
+  f3->SetBody("f3");
+  f3->SetTimestamp(std::chrono::system_clock::now());
+  f3->SetEventId(3, "f3");
+
+  logger->EmitLogRecord(std::move(f2));
+  logger->EmitLogRecord(std::move(f3));
 
   testServer.WaitForEvents(2, 200); // 2 batches must arrive in 200ms
   testServer.Stop();

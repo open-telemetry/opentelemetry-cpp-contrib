@@ -12,7 +12,7 @@ Refer to install instructions [INSTALL.md](../../INSTALL.md#building-as-standalo
 Modify step 2 to create `cmake` build configuration for compiling fluentd as below:
 
 ```console
-   $ cmake -DWITH_fluentd=ON ..
+   $ cmake ..
    -- The C compiler identification is GNU 9.3.0
    -- The CXX compiler identification is GNU 9.3.0
    ...
@@ -20,6 +20,18 @@ Modify step 2 to create `cmake` build configuration for compiling fluentd as bel
    -- Generating done
    -- Build files have been written to: /home/<user>/source/opentelemetry-cpp/build
    $
+```
+
+### VCPKG Integration
+
+If integrating with VCPKG, make sure the cmake invocation defines the additional CMAKE_TOOLCHAIN_FILE.
+
+For example:
+
+```console
+    $ .../opentelemetry-cpp-contrib2/exporters/fluentd$ ~/vcpkg/vcpkg install
+    $ .../opentelemetry-cpp-contrib2/exporters/fluentd$ cmake -D CMAKE_TOOLCHAIN_FILE=/home/niande/vcpkg/scripts/buildsystems/vcpkg.cmake
+    $ .../opentelemetry-cpp-contrib2/exporters/fluentd$ make
 ```
 
 ### Bazel Install Instructions

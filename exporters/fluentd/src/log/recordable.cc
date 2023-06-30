@@ -26,17 +26,25 @@ void Recordable::SetName(nostd::string_view name) noexcept {
   json_["name"] = name.data();
 }
 
-void Recordable::SetBody(nostd::string_view message) noexcept {
-  json_["body"] = message.data();
+void Recordable::SetBody(const opentelemetry::common::AttributeValue &message) noexcept {
+  json_["body"] = fluentd_common::AttributeValueToString(message).data();
 }
 
-void Recordable::SetTraceId(opentelemetry::trace::TraceId trace_id) noexcept {
+void Recordable::SetEventId(int64_t id, nostd::string_view name) noexcept {
+  json_["EventId"] = id;
+
+  if (!name.empty()) {
+    json_["name"] = name.data();
+  }
+}
+
+void Recordable::SetTraceId(const opentelemetry::trace::TraceId &trace_id) noexcept {
   char trace_id_lower_base16[opentelemetry::trace::TraceId::kSize * 2] = {0};
   trace_id.ToLowerBase16(trace_id_lower_base16);
   json_[FLUENT_FIELD_TRACE_ID] = std::string(trace_id_lower_base16, 32);
 }
 
-void Recordable::SetSpanId(opentelemetry::trace::SpanId span_id) noexcept {
+void Recordable::SetSpanId(const opentelemetry::trace::SpanId &span_id) noexcept {
   char span_id_lower_base16[opentelemetry::trace::SpanId::kSize * 2] = {0};
   span_id.ToLowerBase16(span_id_lower_base16);
   json_[FLUENT_FIELD_SPAN_ID] = std::string(span_id_lower_base16, 16);
@@ -52,16 +60,28 @@ void Recordable::SetAttribute(
   fluentd_common::PopulateAttribute(json_[FLUENT_FIELD_PROPERTIES], key, value);
 }
 
-void Recordable::SetTimestamp(
-    opentelemetry::common::SystemTimestamp timestamp) noexcept {
-  json_["Timestamp"] = fluentd_common::get_msgpack_eventtimeext(
+static inline nlohmann::byte_container_with_subtype<std::vector<std::uint8_t>>
+    GetMsgPackEventTimeFromSystemTimestamp(opentelemetry::common::SystemTimestamp timestamp) noexcept {
+  return fluentd_common::get_msgpack_eventtimeext(
+      // Add all whole seconds to the event time
       static_cast<int32_t>(std::chrono::duration_cast<std::chrono::seconds>(
                                timestamp.time_since_epoch())
                                .count()),
+      // Add any remaining nanoseconds past the last whole second
       std::chrono::duration_cast<std::chrono::nanoseconds>(
           timestamp.time_since_epoch())
               .count() %
           1000000000);
+}
+
+void Recordable::SetTimestamp(
+    opentelemetry::common::SystemTimestamp timestamp) noexcept {
+  json_["Timestamp"] = GetMsgPackEventTimeFromSystemTimestamp(timestamp);
+}
+
+void Recordable::SetObservedTimestamp(
+    opentelemetry::common::SystemTimestamp timestamp) noexcept {
+  json_["ObservedTimestamp"] = GetMsgPackEventTimeFromSystemTimestamp(timestamp);
 }
 
 } // namespace logs

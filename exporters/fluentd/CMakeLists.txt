@@ -26,8 +26,8 @@ add_definitions(-DHAVE_CONSOLE_LOG)
 add_definitions(-DENABLE_LOGS_PREVIEW)
 
 if (MAIN_PROJECT)
-  find_package(opentelemetry-cpp QUIET)
-  if(opentelemetry_cpp_FOUND)
+  find_package(opentelemetry-cpp CONFIG QUIET)
+  if(opentelemetry-cpp_FOUND)
     message("Using external opentelemetry-cpp")
   else()
     include(cmake/opentelemetry-cpp.cmake)
@@ -52,6 +52,7 @@ else()
 endif()
 
 find_package(CURL REQUIRED)
+find_package(Threads REQUIRED)
 
 include_directories(include)
 # create fluentd trace exporter

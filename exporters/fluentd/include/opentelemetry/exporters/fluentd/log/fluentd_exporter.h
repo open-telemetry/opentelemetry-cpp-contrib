@@ -9,7 +9,7 @@
 #include "opentelemetry/exporters/fluentd/trace/recordable.h"
 #include "opentelemetry/ext/http/common/url_parser.h"
 #include "opentelemetry/sdk/logs/exporter.h"
-#include "opentelemetry/sdk/logs/log_record.h"
+#include "opentelemetry/logs/log_record.h"
 
 #include <vector>
 
@@ -25,7 +25,7 @@ namespace fluentd_common = opentelemetry::exporter::fluentd::common;
 /**
  * The fluentd exporter exports span data in JSON format as expected by fluentd
  */
-class FluentdExporter final : public logs_sdk::LogExporter {
+class FluentdExporter final : public logs_sdk::LogRecordExporter {
 public:
   /**
    * Create a FluentdExporter using all default options.

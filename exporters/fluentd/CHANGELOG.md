@@ -13,6 +13,10 @@ Increment the:
 * MINOR version when you add functionality in a backwards compatible manner, and
 * PATCH version when you make backwards compatible bug fixes.
 
+## [2.0.0] 2023-06-30
+
+* [EXPORTER] OpenTelemetry SDK v1.9.1 compatibility. Migrate to ObservedTimestamp from Timestamp.
+
 ## [1.2.0] 2022-08-29
 
 * [EXPORTER] OpenTelemetry SDK v1.6.0 compatibility
