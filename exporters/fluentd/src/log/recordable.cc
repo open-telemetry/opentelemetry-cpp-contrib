@@ -58,30 +58,30 @@ void Recordable::SetAttribute(
   }
 
   fluentd_common::PopulateAttribute(json_[FLUENT_FIELD_PROPERTIES], key, value);
-} 
+}
 
-void Recordable::SetTimestamp(
-    opentelemetry::common::SystemTimestamp timestamp) noexcept {
-  json_["Timestamp"] = fluentd_common::get_msgpack_eventtimeext(
+static inline nlohmann::byte_container_with_subtype<std::vector<std::uint8_t>>
+    GetMsgPackEventTimeFromSystemTimestamp(opentelemetry::common::SystemTimestamp timestamp) noexcept {
+  return fluentd_common::get_msgpack_eventtimeext(
+      // Add all whole seconds to the event time
       static_cast<int32_t>(std::chrono::duration_cast<std::chrono::seconds>(
                                timestamp.time_since_epoch())
                                .count()),
+      // Add any remaining nanoseconds past the last whole second
       std::chrono::duration_cast<std::chrono::nanoseconds>(
           timestamp.time_since_epoch())
               .count() %
           1000000000);
 }
 
+void Recordable::SetTimestamp(
+    opentelemetry::common::SystemTimestamp timestamp) noexcept {
+  json_["Timestamp"] = GetMsgPackEventTimeFromSystemTimestamp(timestamp);
+}
+
 void Recordable::SetObservedTimestamp(
     opentelemetry::common::SystemTimestamp timestamp) noexcept {
-  json_["ObservedTimestamp"] = fluentd_common::get_msgpack_eventtimeext(
-      static_cast<int32_t>(std::chrono::duration_cast<std::chrono::seconds>(
-                               timestamp.time_since_epoch())
-                               .count()),
-      std::chrono::duration_cast<std::chrono::nanoseconds>(
-          timestamp.time_since_epoch())
-              .count() %
-          1000000000);
+  json_["ObservedTimestamp"] = GetMsgPackEventTimeFromSystemTimestamp(timestamp);
 }
 
 } // namespace logs
