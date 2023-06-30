@@ -12,9 +12,10 @@ option(BUILD_TESTING "Build tests" ON)
 
 set(MAIN_PROJECT OFF)
 
+project(opentelemetry-user_events-exporter)
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-  project(opentelemetry-user_events-exporter)
   set(MAIN_PROJECT ON)
+  message(STATUS "${PROJECT_NAME} is main project")
 endif()
 
 if(MAIN_PROJECT)
@@ -52,34 +53,33 @@ target_link_libraries(opentelemetry_exporter_user_events_logs
 set_target_properties(opentelemetry_exporter_user_events_logs
                       PROPERTIES EXPORT_NAME logs)
 
-
-find_package(Protobuf REQUIRED)
-
-add_library(opentelemetry_exporter_user_events_metrics
-            src/metrics_exporter.cc)
+add_library(opentelemetry_exporter_user_events_metrics src/metrics_exporter.cc)
 
 if(MAIN_PROJECT)
   target_include_directories(opentelemetry_exporter_user_events_metrics
                              PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
-  target_link_libraries(opentelemetry_exporter_user_events_metrics
-                        PUBLIC ${OPENTELEMETRY_CPP_LIBRARIES} tracepoint protobuf::libprotobuf)     
+  target_link_libraries(
+    opentelemetry_exporter_user_events_metrics
+    PUBLIC ${OPENTELEMETRY_CPP_LIBRARIES} tracepoint protobuf::libprotobuf)
   # TODO: link to opentelemetry_otlp_recordable
 else()
-  target_link_libraries(opentelemetry_exporter_user_events_metrics
-    PUBLIC opentelemetry_metrics opentelemetry_resources opentelemetry_common)
+  target_link_libraries(
+    opentelemetry_exporter_user_events_metrics
+    PUBLIC opentelemetry_metrics opentelemetry_resources opentelemetry_common
+           opentelemetry_otlp_recordable tracepoint)
 endif()
 
 if(BUILD_EXAMPLE)
+  add_executable(user_events_logs example/logs/main.cc
+                                  example/logs/foo_library.cc)
+  target_link_libraries(user_events_logs ${CMAKE_THREAD_LIBS_INIT}
+                        opentelemetry_exporter_user_events_logs)
 
-  add_executable(user_events_logs example/logs/main.cc example/logs/foo_library.cc)
-  target_link_libraries(
-    user_events_logs ${CMAKE_THREAD_LIBS_INIT} opentelemetry_exporter_user_events_logs)
-
-  add_executable(user_events_metrics example/metrics/main.cc example/metrics/foo_library.cc)
-  target_link_libraries(
-    user_events_metrics ${CMAKE_THREAD_LIBS_INIT} opentelemetry_exporter_user_events_metrics)
-
-endif(BUILD_EXAMPLE)
+  add_executable(user_events_metrics example/metrics/main.cc
+                                     example/metrics/foo_library.cc)
+  target_link_libraries(user_events_metrics ${CMAKE_THREAD_LIBS_INIT}
+                        opentelemetry_exporter_user_events_metrics)
+endif()
 
 if(BUILD_TESTING)
   if(EXISTS ${CMAKE_BINARY_DIR}/lib/libgtest.a)
