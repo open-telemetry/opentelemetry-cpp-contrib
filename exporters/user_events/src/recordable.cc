@@ -29,7 +29,6 @@ void Recordable::SetSeverity(api_logs::Severity severity) noexcept
   uint8_t severity_value = static_cast<uint8_t>(severity);
   if (severity_value == 0 || severity_value > 24)
   {
-    // TODO: log error
     OTEL_INTERNAL_LOG_ERROR(
         "[user_events Log Exporter] Recordable: invalid severity value: " << severity_value);
     severity_value = 1;
@@ -40,9 +39,8 @@ void Recordable::SetSeverity(api_logs::Severity severity) noexcept
   cs_part_b_bookmark_size_ += 2;
   event_builder_.AddValue("severityNumber", static_cast<uint16_t>(severity_value),
                           event_field_format_default);
-  event_builder_.AddString<char>(
-      "severityText", api_logs::SeverityNumToText[static_cast<uint32_t>(severity_value)].data(),
-      event_field_format_default);
+  auto severity_text = api_logs::SeverityNumToText[static_cast<uint32_t>(severity_value)].data();
+  event_builder_.AddString<char>("severityText", severity_text, event_field_format_default);
 }
 
 void Recordable::SetBody(const opentelemetry::common::AttributeValue &message) noexcept
@@ -66,12 +64,12 @@ void Recordable::SetEventId(int64_t id, nostd::string_view name) noexcept
 
 void Recordable::SetTraceId(const opentelemetry::trace::TraceId &trace_id) noexcept
 {
-  // TODO: implement
+  // optional for logs.
 }
 
 void Recordable::SetSpanId(const opentelemetry::trace::SpanId &span_id) noexcept
 {
-  // TODO: implement
+  // optional for logs.
 }
 
 //
@@ -92,7 +90,7 @@ void Recordable::SetAttribute(nostd::string_view key,
 
 void Recordable::SetTimestamp(opentelemetry::common::SystemTimestamp timestamp) noexcept
 {
-  // TODO: convert to nanoseconds
+  // Timestamp is optional because timestamp is always recorded in the header of user_events.
 }
 
 bool Recordable::PrepareExport() noexcept
