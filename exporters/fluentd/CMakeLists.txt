@@ -14,6 +14,8 @@
 
 cmake_minimum_required(VERSION 3.12)
 
+include(CMakePrintHelpers)
+
 # MAIN_PROJECT CHECK
 ## determine if fluentd exporter is built as a subproject (using add_subdirectory) or if it is the main project
 ##
@@ -26,8 +28,8 @@ add_definitions(-DHAVE_CONSOLE_LOG)
 add_definitions(-DENABLE_LOGS_PREVIEW)
 
 if (MAIN_PROJECT)
-  find_package(opentelemetry-cpp CONFIG REQUIRED)
-  if(opentelemetry_cpp_FOUND)
+  find_package(opentelemetry-cpp CONFIG QUIET)
+  if(opentelemetry-cpp_FOUND)
     message("Using external opentelemetry-cpp")
   else()
     include(cmake/opentelemetry-cpp.cmake)
@@ -38,7 +40,7 @@ if (MAIN_PROJECT)
   endif()
 endif()
 
-find_package(nlohmann_json CONFIG QUIET)
+find_package(nlohmann_json QUIET)
 set(nlohmann_json_clone FALSE)
 if(nlohmann_json_FOUND)
   message("Using external nlohmann::json")
