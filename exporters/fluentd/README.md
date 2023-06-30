@@ -30,8 +30,8 @@ For example:
 
 ```console
     $ .../opentelemetry-cpp-contrib2/exporters/fluentd$ ~/vcpkg/vcpkg install
-    $ .../opentelemetry-cpp-contrib2/exporters/fluentd$ cd cmake
-    $ .../opentelemetry-cpp-contrib2/exporters/fluentd/cmake$ cmake .. -D CMAKE_TOOLCHAIN_FILE=/home/niande/vcpkg/scripts/buildsystems/vcpkg.cmake 
+    $ .../opentelemetry-cpp-contrib2/exporters/fluentd$ cmake -D CMAKE_TOOLCHAIN_FILE=/home/niande/vcpkg/scripts/buildsystems/vcpkg.cmake
+    $ .../opentelemetry-cpp-contrib2/exporters/fluentd$ make
 ```
 
 ### Bazel Install Instructions

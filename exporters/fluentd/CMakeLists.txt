@@ -14,8 +14,6 @@
 
 cmake_minimum_required(VERSION 3.12)
 
-include(CMakePrintHelpers)
-
 # MAIN_PROJECT CHECK
 ## determine if fluentd exporter is built as a subproject (using add_subdirectory) or if it is the main project
 ##
@@ -35,7 +33,7 @@ if (MAIN_PROJECT)
     include(cmake/opentelemetry-cpp.cmake)
     build_opentelemetry()
     set(OPENTELEMETRY_CPP_INCLUDE_DIRS "")
-    set(OPENTELEMETRY_CPP_LIBRARIES "opentelemetry::libopentelemetry") 
+    set(OPENTELEMETRY_CPP_LIBRARIES "opentelemetry::libopentelemetry")
     message("\nopentelemetry-cpp package was not found. Cloned from github")
   endif()
 endif()
