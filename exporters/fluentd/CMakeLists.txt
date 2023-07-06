@@ -194,4 +194,10 @@ if (MAIN_PROJECT)
     NAMESPACE "${PROJECT_NAME}::"
     FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-target.cmake"
   )
+
+  install(
+    EXPORT "${PROJECT_NAME}-target"
+    NAMESPACE "${PROJECT_NAME}::"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
+    
 endif()
