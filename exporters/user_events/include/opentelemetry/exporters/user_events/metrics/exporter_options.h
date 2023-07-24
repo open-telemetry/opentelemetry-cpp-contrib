@@ -3,8 +3,9 @@
 
 #pragma once
 
-#include "opentelemetry/version.h"
 #include <string>
+
+#include "opentelemetry/version.h"
 
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter
@@ -18,10 +19,11 @@ namespace sdk_metrics = opentelemetry::sdk::metrics;
 
 struct ExporterOptions
 {
-  sdk_metrics::AggregationTemporality aggregation_temporality = sdk_metrics::AggregationTemporality::kCumulative;
+  opentelemetry::exporter::otlp::PreferredAggregationTemporality aggregation_temporality =
+      opentelemetry::exporter::otlp::PreferredAggregationTemporality::kCumulative;
 };
 
-} // namespace metrics
-} // namespace user_events
-} // namespace exporter
+}  // namespace metrics
+}  // namespace user_events
+}  // namespace exporter
 OPENTELEMETRY_END_NAMESPACE
