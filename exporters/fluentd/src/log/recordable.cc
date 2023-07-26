@@ -5,6 +5,10 @@
 #include "opentelemetry/exporters/fluentd/common/fluentd_common.h"
 #include "opentelemetry/exporters/fluentd/common/fluentd_logging.h"
 
+#include "opentelemetry/logs/severity.h"
+#include "opentelemetry/trace/span_id.h"
+#include "opentelemetry/trace/trace_id.h"
+
 #include <chrono>
 #include <map>
 
