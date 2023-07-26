@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 #pragma once
 
-#define ENABLE_LOGS_PREVIEW 1
-
 #include "opentelemetry/exporters/fluentd/common/socket_tools.h"
 
 #include "opentelemetry/exporters/fluentd/trace/recordable.h"

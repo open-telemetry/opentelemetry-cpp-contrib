@@ -22,8 +22,6 @@ if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   project(opentelemetry-fluentd)
   set(MAIN_PROJECT ON)
 endif()
-add_definitions(-DHAVE_CONSOLE_LOG)
-add_definitions(-DENABLE_LOGS_PREVIEW)
 
 if (MAIN_PROJECT)
   find_package(opentelemetry-cpp CONFIG QUIET)

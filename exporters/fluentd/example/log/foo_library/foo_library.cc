@@ -1,7 +1,6 @@
 // Copyright The OpenTelemetry Authors
 // SPDX-License-Identifier: Apache-2.0
 
-#define ENABLE_LOGS_PREVIEW
 #include "opentelemetry/logs/provider.h"
 
 namespace logs = opentelemetry::logs;
