@@ -10,12 +10,12 @@ endif()
 option(BUILD_EXAMPLE "Build example" ON)
 option(BUILD_TESTING "Build tests" ON)
 
-set(MAIN_PROJECT OFF)
-
 project(opentelemetry-user_events-exporter)
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   set(MAIN_PROJECT ON)
   message(STATUS "${PROJECT_NAME} is main project")
+else()
+  set(MAIN_PROJECT OFF)
 endif()
 
 if(MAIN_PROJECT)
@@ -26,6 +26,9 @@ if(MAIN_PROJECT)
   find_package(opentelemetry-cpp REQUIRED)
 endif()
 
+# don't build samples and tools from LinuxTracepoints.
+set(BUILD_SAMPLES OFF)
+set(BUILD_TOOLS OFF)
 add_subdirectory(third_party/LinuxTracepoints)
 
 include_directories(include)
