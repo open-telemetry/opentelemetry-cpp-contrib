@@ -22,7 +22,7 @@ class binary_writer2 : public binary_writer<BasicJsonType, CharType> {
   output_adapter_t<CharType> oa = nullptr;
 
   /// whether we can assume little endianess
-  const bool is_little_endian = little_endianess();
+  const bool is_little_endian = this->little_endianess();
 
 public:
   /*
