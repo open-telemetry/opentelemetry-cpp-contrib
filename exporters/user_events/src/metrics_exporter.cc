@@ -26,7 +26,7 @@ Exporter::Exporter(const ExporterOptions &options)
 
   err = tracepoint_open_provider(&provider_);
 
-  err = tracepoint_connect(&otlp_metrics_, &provider_, "otlp_metrics");
+  err = tracepoint_connect(&otlp_metrics_, &provider_, "otlp_metrics u32 protocol;char[8] version;__rel_loc u8[] buffer;");
   if (err) {
       OTEL_INTERNAL_LOG_ERROR("[user_events Metrics Exporter] Failed to connect to tracepoint provider");
   }
@@ -68,14 +68,21 @@ sdk_common::ExportResult Exporter::Export(
   proto::collector::metrics::v1::ExportMetricsServiceRequest request;
   otlp_exporter::OtlpMetricUtils::PopulateRequest(data, &request);
 
-  int size = (int)request.ByteSizeLong();
-  char *buffer = new char[size+sizeof(int)];
-  request.SerializeToArray(buffer+sizeof(int), size);
-  memcpy(buffer, &size, sizeof(int));
+  char version[] = "0.19.0";
+  unsigned int protocol = 0;
+
+  size_t size = request.ByteSizeLong();
+  unsigned int loc = size << 16;
+
+  char *buffer = new char[size];
+  request.SerializeToArray(buffer, size);
 
   struct iovec data_vecs[] = {
     {},
-    { buffer, size+sizeof(int)},
+    {&protocol, sizeof(protocol)},
+    {version, sizeof(version)},
+    {&loc, sizeof(loc)},
+    {buffer, size},
   };
 
   int err = tracepoint_write(&otlp_metrics_, sizeof(data_vecs)/sizeof(data_vecs[0]), data_vecs);
