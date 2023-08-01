@@ -12,6 +12,10 @@
 
 #include <chrono>
 
+#ifndef ENABLE_LOGS_PREVIEW
+#define ENABLE_LOGS_PREVIEW 1
+#endif
+
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter {
 namespace fluentd {
