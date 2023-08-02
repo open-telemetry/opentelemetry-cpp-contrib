@@ -26,7 +26,7 @@ Exporter::Exporter(const ExporterOptions &options)
 
   err = tracepoint_open_provider(&provider_);
 
-  err = tracepoint_connect(&otlp_metrics_, &provider_, "otlp_metrics u32 protocol;char[8] version;u8 __rel_loc; u8[] buffer;");
+  err = tracepoint_connect(&otlp_metrics_, &provider_, "otlp_metrics u32 protocol;char[8] version;__rel_loc u8[] buffer;");
   if (err) {
       OTEL_INTERNAL_LOG_ERROR("[user_events Metrics Exporter] Failed to connect to tracepoint provider");
   }
@@ -68,7 +68,7 @@ sdk_common::ExportResult Exporter::Export(
   proto::collector::metrics::v1::ExportMetricsServiceRequest request;
   otlp_exporter::OtlpMetricUtils::PopulateRequest(data, &request);
 
-  char version[] = "0.19.00";
+  static char version[] = "0.19.00";
   unsigned int protocol = 0;
 
   size_t size = request.ByteSizeLong();
