@@ -4,6 +4,3 @@
 [submodule "exporters/user_events/third_party/LinuxTracepoints"]
 	path = exporters/user_events/third_party/LinuxTracepoints
 	url = https://github.com/microsoft/LinuxTracepoints
-[submodule "examples/cpprust"]
-	path = examples/cpprust
-	url = https://github.com/gscalderonl/cpprust.git
