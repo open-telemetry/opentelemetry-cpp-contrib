@@ -27,6 +27,7 @@ extern ngx_module_t otel_ngx_module;
 #include <opentelemetry/context/context.h>
 #include <opentelemetry/nostd/shared_ptr.h>
 #include <opentelemetry/sdk/trace/batch_span_processor.h>
+#include <opentelemetry/sdk/trace/batch_span_processor_options.h>
 #include <opentelemetry/sdk/trace/id_generator.h>
 #include <opentelemetry/sdk/trace/samplers/always_off.h>
 #include <opentelemetry/sdk/trace/samplers/always_on.h>
