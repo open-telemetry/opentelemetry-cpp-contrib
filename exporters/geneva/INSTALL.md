@@ -102,9 +102,9 @@ for instructions.
 
 1. Create the following directory structure in the root directory of the application. Clone the
 opentelemetry-cpp and opentelemetry-cpp-contrib under the `deps` directory as given below. And
-copy the script and patch file from to the `tools` directory.
+copy the script and patch file from the `build_tools` directory to the `tools` directory.
 
-    ```
+    ```console
     # <project-repo-root>
     #    |
     #     -  tools
@@ -119,7 +119,7 @@ copy the script and patch file from to the `tools` directory.
     #               -   opentelemetry-cpp-contrib/exporters/geneva
     #
     ```
-2. Execute `build_geneva_metrics_exporter.sh` script from the `tools` directory
+2. Execute `build_geneva_metrics_exporter.sh` script from the `tools` directory.
 
     ```console
     $ cd <project-root>/tools && ./build_geneva_metrics_exporter.sh
