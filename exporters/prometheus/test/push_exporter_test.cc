@@ -11,7 +11,15 @@
 #include "opentelemetry/exporters/prometheus/collector.h"
 
 #include "opentelemetry/exporters/prometheus/push_exporter.h"
+#include "opentelemetry/exporters/prometheus/push_exporter_factory.h"
+#include "opentelemetry/exporters/prometheus/push_exporter_options.h"
 #include "prometheus_test_helper.h"
+
+using opentelemetry::exporter::metrics::PrometheusCollector;
+using opentelemetry::exporter::metrics::PrometheusPushExporter;
+using opentelemetry::exporter::metrics::PrometheusPushExporterFactory;
+using opentelemetry::exporter::metrics::PrometheusPushExporterOptions;
+using opentelemetry::sdk::common::ExportResult;
 
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter
@@ -22,15 +30,23 @@ class PrometheusPushExporterTest
 {  // : public ::testing::Test
 public:
   PrometheusPushExporter GetExporter() { return PrometheusPushExporter(); }
+
+  void CheckFactory(PrometheusPushExporter &exporter, const PrometheusPushExporterOptions &options)
+  {
+    ASSERT_EQ(exporter.options_.host, options.host);
+    ASSERT_EQ(exporter.options_.port, options.port);
+    ASSERT_EQ(exporter.options_.jobname, options.jobname);
+    ASSERT_EQ(exporter.options_.username, options.username);
+    ASSERT_EQ(exporter.options_.password, options.password);
+    ASSERT_EQ(exporter.options_.max_collection_size, options.max_collection_size);
+    ASSERT_EQ(exporter.options_.labels.size(), options.labels.size());
+  }
 };
 }  // namespace metrics
 }  // namespace exporter
 OPENTELEMETRY_END_NAMESPACE
 
-using opentelemetry::exporter::metrics::PrometheusCollector;
-using opentelemetry::exporter::metrics::PrometheusPushExporter;
 using opentelemetry::exporter::metrics::PrometheusPushExporterTest;
-using opentelemetry::sdk::common::ExportResult;
 
 /**
  * When a PrometheusPushExporter is initialized,
@@ -156,4 +172,25 @@ TEST(PrometheusPushExporter, InvalidArgumentWhenPassedEmptyRecordCollection)
   // the result code should be kFailureInvalidArgument = 3
   ExportResult code = ExportResult::kFailureInvalidArgument;
   ASSERT_EQ(res, code);
+}
+
+TEST(PrometheusPushExporterFactory, Create)
+{
+  PrometheusPushExporterOptions options;
+  options.host                 = "localhost";
+  options.port                 = 4138;
+  options.jobname              = "jobname";
+  options.labels["test_label"] = "test_value";
+  options.username             = "user";
+  options.password             = "pawword";
+  options.max_collection_size  = 2345;
+
+  PrometheusPushExporterTest p;
+  auto exporter = PrometheusPushExporterFactory::Create(options);
+  ASSERT_TRUE(!!exporter);
+
+  ASSERT_EQ(static_cast<PrometheusPushExporter *>(exporter.get())->GetMaxCollectionSize(),
+            options.max_collection_size);
+
+  p.CheckFactory(*static_cast<PrometheusPushExporter *>(exporter.get()), options);
 }

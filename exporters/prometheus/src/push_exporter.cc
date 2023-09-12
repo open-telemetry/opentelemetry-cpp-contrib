@@ -1,7 +1,14 @@
-// Copyright 2022, OpenTelemetry Authors
+// Copyright 2023, OpenTelemetry Authors
 // SPDX-License-Identifier: Apache-2.0
 
 #include "opentelemetry/exporters/prometheus/push_exporter.h"
+
+#include <prometheus/labels.h>
+
+#include <algorithm>
+#include <atomic>
+#include <mutex>
+#include <string>
 
 OPENTELEMETRY_BEGIN_NAMESPACE
 
@@ -9,6 +16,63 @@ namespace exporter
 {
 namespace metrics
 {
+
+namespace
+{
+static std::string SanitizePrometheusNames(std::string name, bool label)
+{
+  constexpr const auto replacement     = '_';
+  constexpr const auto replacement_dup = '=';
+
+  bool (*valid)(std::size_t, char);
+  if (label)
+  {
+    valid = [](std::size_t i, char c) {
+      if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9' && i > 0))
+      {
+        return true;
+      }
+      return false;
+    };
+  }
+  else
+  {
+    valid = [](std::size_t i, char c) {
+      if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == ':' ||
+          (c >= '0' && c <= '9' && i > 0))
+      {
+        return true;
+      }
+      return false;
+    };
+  }
+
+  bool has_dup = false;
+  for (std::size_t i = 0; i < name.size(); ++i)
+  {
+    if (valid(i, name[i]))
+    {
+      continue;
+    }
+    if (i > 0 && (name[i - 1] == replacement || name[i - 1] == replacement_dup))
+    {
+      has_dup = true;
+      name[i] = replacement_dup;
+    }
+    else
+    {
+      name[i] = replacement;
+    }
+  }
+  if (has_dup)
+  {
+    auto end = std::remove(name.begin(), name.end(), replacement_dup);
+    return std::string{name.begin(), end};
+  }
+
+  return name;
+}
+}  // namespace
 
 class PrometheusPushCollector : public ::prometheus::Collectable
 {
@@ -19,10 +83,10 @@ public:
    * This constructor initializes the collection for metrics to export
    * in this class with default capacity
    */
-  explicit PrometheusPushCollector(size_t max_collection_size = 2048)
+  explicit PrometheusPushCollector(std::size_t max_collection_size = 2048)
       : max_collection_size_(max_collection_size)
   {
-    metrics_to_collect_.reserve(max_collection_size_);
+    metrics_to_collect_.reserve(max_collection_size_.load(std::memory_order_acquire));
   }
 
   /**
@@ -40,7 +104,7 @@ public:
     // copy the intermediate collection, and then clear it
     std::vector<::prometheus::MetricFamily> moved_data;
     moved_data.swap(metrics_to_collect_);
-    metrics_to_collect_.reserve(max_collection_size_);
+    metrics_to_collect_.reserve(max_collection_size_.load(std::memory_order_acquire));
 
     collection_lock_.unlock();
 
@@ -63,7 +127,7 @@ public:
 
     for (auto &item : translated)
     {
-      if (metrics_to_collect_.size() + 1 <= max_collection_size_)
+      if (metrics_to_collect_.size() + 1 <= max_collection_size_.load(std::memory_order_acquire))
       {
         // We can not use initializer lists here due to broken variadic capture
         // on GCC 4.8.5
@@ -84,7 +148,10 @@ public:
    *
    * @return max collection size
    */
-  std::size_t GetMaxCollectionSize() const noexcept { return max_collection_size_; }
+  std::size_t GetMaxCollectionSize() const noexcept
+  {
+    return max_collection_size_.load(std::memory_order_acquire);
+  }
 
 private:
   /**
@@ -98,7 +165,7 @@ private:
   /**
    * Maximum size of the metricsToCollect collection.
    */
-  std::size_t max_collection_size_;
+  std::atomic<std::size_t> max_collection_size_;
 
   /*
    * Lock when operating the metricsToCollect collection
@@ -114,8 +181,13 @@ private:
 PrometheusPushExporter::PrometheusPushExporter(const PrometheusPushExporterOptions &options)
     : options_(options), is_shutdown_(false)
 {
+  ::prometheus::Labels labels;
+  for (auto &label : options_.labels)
+  {
+    labels[SanitizePrometheusNames(label.first, true)] = label.second;
+  }
   gateway_ = std::unique_ptr<::prometheus::Gateway>(
-      new ::prometheus::Gateway{options_.host, options_.port, options_.jobname, options_.labels,
+      new ::prometheus::Gateway{options_.host, options_.port, options_.jobname, labels,
                                 options_.username, options_.password});
   collector_ = std::make_shared<PrometheusPushCollector>(options.max_collection_size);
 

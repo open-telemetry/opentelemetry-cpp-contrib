@@ -16,7 +16,7 @@ cmake_minimum_required(VERSION 3.12)
 
 project(
   opentelemetry-cpp-contrib
-  VERSION "1.9.1" # opentelemetry-cpp-contrib 1.9.1
+  VERSION "1.11.0" # opentelemetry-cpp-contrib 1.11.0
   HOMEPAGE_URL "https://github.com/open-telemetry/opentelemetry-cpp-contrib"
   LANGUAGES CXX)
 
@@ -79,7 +79,7 @@ if(BUILD_TESTING)
   endif()
 endif()
 
-add_library(opentelemetry_prometheus_push_exporter src/push_exporter.cc)
+add_library(opentelemetry_prometheus_push_exporter src/push_exporter.cc src/push_exporter_factory.cc)
 set_target_properties(opentelemetry_prometheus_push_exporter
                       PROPERTIES EXPORT_NAME prometheus_push_exporter)
 

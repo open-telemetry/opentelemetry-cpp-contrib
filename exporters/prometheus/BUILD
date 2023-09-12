@@ -4,9 +4,12 @@ cc_library(
     name = "prometheus_push_exporter",
     srcs = [
         "src/push_exporter.cc",
+        "src/push_exporter_factory.cc",
     ],
     hdrs = [
         "include/opentelemetry/exporters/prometheus/push_exporter.h",
+        "include/opentelemetry/exporters/prometheus/push_exporter_factory.h",
+        "include/opentelemetry/exporters/prometheus/push_exporter_options.h",
     ],
     strip_include_prefix = "include",
     tags = ["prometheus"],

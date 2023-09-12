@@ -14,6 +14,14 @@ namespace exportermetrics = opentelemetry::exporter::metrics;
 
 namespace
 {  // NOLINT
+
+inline opentelemetry::sdk::resource::Resource &GetEmptyResource()
+{
+  static auto resource = opentelemetry::sdk::resource::Resource::Create(
+      opentelemetry::sdk::resource::ResourceAttributes{});
+  return resource;
+}
+
 /**
  * Helper function to create ResourceMetrics
  */
@@ -24,9 +32,7 @@ inline metric_sdk::ResourceMetrics CreateSumPointData()
   metric_sdk::SumPointData sum_point_data2{};
   sum_point_data2.value_ = 20.0;
   metric_sdk::ResourceMetrics data;
-  auto resource = opentelemetry::sdk::resource::Resource::Create(
-      opentelemetry::sdk::resource::ResourceAttributes{});
-  data.resource_ = &resource;
+  data.resource_ = &GetEmptyResource();
   auto instrumentation_scope =
       opentelemetry::sdk::instrumentationscope::InstrumentationScope::Create("library_name",
                                                                              "1.9.1");
@@ -47,38 +53,18 @@ inline metric_sdk::ResourceMetrics CreateSumPointData()
 inline metric_sdk::ResourceMetrics CreateHistogramPointData()
 {
   metric_sdk::HistogramPointData histogram_point_data{};
-#if defined(OPENTELEMETRY_VERSION_MAJOR) ||                                             \
-    (OPENTELEMTRY_CPP_MAJOR_VERSION * 1000000 + OPENTELEMTRY_CPP_MINOR_VERSION * 1000 + \
-     OPENTELEMTRY_CPP_PATCH_VERSION) >= 1008002
   histogram_point_data.boundaries_ = std::vector<double>{10.1, 20.2, 30.2};
-#else
-  histogram_point_data.boundaries_  = std::list<double>{10.1, 20.2, 30.2};
-#endif
-  histogram_point_data.count_  = 3;
-  histogram_point_data.counts_ = {200, 300, 400, 500};
-  histogram_point_data.sum_    = 900.5;
+  histogram_point_data.count_      = 3;
+  histogram_point_data.counts_     = {200, 300, 400, 500};
+  histogram_point_data.sum_        = 900.5;
   metric_sdk::HistogramPointData histogram_point_data2{};
-#if defined(OPENTELEMETRY_VERSION_MAJOR) ||                                             \
-    (OPENTELEMTRY_CPP_MAJOR_VERSION * 1000000 + OPENTELEMTRY_CPP_MINOR_VERSION * 1000 + \
-     OPENTELEMTRY_CPP_PATCH_VERSION) >= 1008002
   histogram_point_data2.boundaries_ = std::vector<double>{10, 20, 30};  // NOLINT
-#elif (OPENTELEMTRY_CPP_MAJOR_VERSION * 1000 + OPENTELEMTRY_CPP_MINOR_VERSION) >= 1007
-  histogram_point_data2.boundaries_ = std::list<double>{10, 20, 30};  // NOLINT
-#else
-  histogram_point_data2.boundaries_ = std::list<long>{10, 20, 30};  // NOLINT
-#endif
-  histogram_point_data2.count_  = 3;
-  histogram_point_data2.counts_ = {200, 300, 400, 500};
-#if defined(OPENTELEMETRY_VERSION_MAJOR) || \
-    (OPENTELEMTRY_CPP_MAJOR_VERSION * 1000 + OPENTELEMTRY_CPP_MINOR_VERSION) >= 1007
-  histogram_point_data2.sum_ = static_cast<int64_t>(900);
-#else
-  histogram_point_data2.sum_        = 900l;
-#endif
+  histogram_point_data2.count_      = 3;
+  histogram_point_data2.counts_     = {200, 300, 400, 500};
+  histogram_point_data2.sum_        = static_cast<int64_t>(900);
+
   metric_sdk::ResourceMetrics data;
-  auto resource = opentelemetry::sdk::resource::Resource::Create(
-      opentelemetry::sdk::resource::ResourceAttributes{});
-  data.resource_ = &resource;
+  data.resource_ = &GetEmptyResource();
   auto instrumentation_scope =
       opentelemetry::sdk::instrumentationscope::InstrumentationScope::Create("library_name",
                                                                              "1.9.1");
@@ -99,9 +85,7 @@ inline metric_sdk::ResourceMetrics CreateHistogramPointData()
 inline metric_sdk::ResourceMetrics CreateLastValuePointData()
 {
   metric_sdk::ResourceMetrics data;
-  auto resource = opentelemetry::sdk::resource::Resource::Create(
-      opentelemetry::sdk::resource::ResourceAttributes{});
-  data.resource_ = &resource;
+  data.resource_ = &GetEmptyResource();
   auto instrumentation_scope =
       opentelemetry::sdk::instrumentationscope::InstrumentationScope::Create("library_name",
                                                                              "1.2.0");
@@ -110,12 +94,7 @@ inline metric_sdk::ResourceMetrics CreateLastValuePointData()
   last_value_point_data.is_lastvalue_valid_ = true;
   last_value_point_data.sample_ts_          = opentelemetry::common::SystemTimestamp{};
   metric_sdk::LastValuePointData last_value_point_data2{};
-#if defined(OPENTELEMETRY_VERSION_MAJOR) || \
-    (OPENTELEMTRY_CPP_MAJOR_VERSION * 1000 + OPENTELEMTRY_CPP_MINOR_VERSION) >= 1007
-  last_value_point_data2.value_ = static_cast<int64_t>(20);
-#else
-  last_value_point_data2.value_     = 20l;
-#endif
+  last_value_point_data2.value_              = static_cast<int64_t>(20);
   last_value_point_data2.is_lastvalue_valid_ = true;
   last_value_point_data2.sample_ts_          = opentelemetry::common::SystemTimestamp{};
   metric_sdk::MetricData metric_data{
@@ -135,9 +114,7 @@ inline metric_sdk::ResourceMetrics CreateLastValuePointData()
 inline metric_sdk::ResourceMetrics CreateDropPointData()
 {
   metric_sdk::ResourceMetrics data;
-  auto resource = opentelemetry::sdk::resource::Resource::Create(
-      opentelemetry::sdk::resource::ResourceAttributes{});
-  data.resource_ = &resource;
+  data.resource_ = &GetEmptyResource();
   auto instrumentation_scope =
       opentelemetry::sdk::instrumentationscope::InstrumentationScope::Create("library_name",
                                                                              "1.2.0");
