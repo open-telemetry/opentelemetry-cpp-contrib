@@ -4,6 +4,7 @@
 #include "opentelemetry/exporters/user_events/logs/exporter.h"
 #include "opentelemetry/logs/provider.h"
 #include "opentelemetry/sdk/logs/logger_provider_factory.h"
+#include "opentelemetry/sdk/logs/processor.h"
 #include "opentelemetry/sdk/logs/simple_log_record_processor_factory.h"
 
 #include <chrono>

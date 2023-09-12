@@ -248,7 +248,7 @@ bool FluentdExporter::Send(std::vector<uint8_t> &packet) {
       return true;
     }
 
-    LOG_WARN("send failed, retrying %u ...", retryCount);
+    LOG_WARN("send failed, retrying %u ...", (unsigned int)retryCount);
     // Retry to connect and/or send
   }
 

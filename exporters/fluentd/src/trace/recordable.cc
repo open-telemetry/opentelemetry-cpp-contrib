@@ -5,6 +5,8 @@
 #include "opentelemetry/exporters/fluentd/common/fluentd_common.h"
 #include "opentelemetry/exporters/fluentd/common/fluentd_logging.h"
 
+#include "opentelemetry/sdk/resource/resource.h"
+
 #include <map>
 #include <string>
 

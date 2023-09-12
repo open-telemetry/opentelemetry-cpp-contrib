@@ -12,6 +12,10 @@
 
 #include <chrono>
 
+#ifndef ENABLE_LOGS_PREVIEW
+#define ENABLE_LOGS_PREVIEW 1
+#endif
+
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter {
 namespace fluentd {
@@ -93,6 +97,32 @@ void inline PopulateAttribute(
       attribute[key.data()].push_back(std::string(val.data(), val.size()));
     }
   }
+}
+
+inline std::string AttributeValueToString(
+    const opentelemetry::common::AttributeValue &value) {
+  std::string result;
+  if (nostd::holds_alternative<bool>(value)) {
+    result = nostd::get<bool>(value) ? "true" : "false";
+  } else if (nostd::holds_alternative<int>(value)) {
+    result = std::to_string(nostd::get<int>(value));
+  } else if (nostd::holds_alternative<int64_t>(value)) {
+    result = std::to_string(nostd::get<int64_t>(value));
+  } else if (nostd::holds_alternative<unsigned int>(value)) {
+    result = std::to_string(nostd::get<unsigned int>(value));
+  } else if (nostd::holds_alternative<uint64_t>(value)) {
+    result = std::to_string(nostd::get<uint64_t>(value));
+  } else if (nostd::holds_alternative<double>(value)) {
+    result = std::to_string(nostd::get<double>(value));
+  } else if (nostd::holds_alternative<const char*>(value)) {
+    result = std::string(nostd::get<const char*>(value));
+  } else if (nostd::holds_alternative<opentelemetry::v1::nostd::string_view>(value)) {
+    result = std::string(nostd::get<opentelemetry::v1::nostd::string_view>(value).data());
+  } else {
+    LOG_WARN("[Fluentd Exporter] AttributeValueToString - "
+             " Nested attributes not supported - ignored");
+  }
+  return result;
 }
 
 // Ref. https://github.com/fluent/fluentd/wiki/Forward-Protocol-Specification-v1

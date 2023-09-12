@@ -4,20 +4,19 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(WIN32)
-  message(FATAL_ERROR "user_events is Linux only for now")
+  message(FATAL_ERROR "user_events exporter is Linux only for now")
 endif()
 
 option(BUILD_EXAMPLE "Build example" ON)
 option(BUILD_TESTING "Build tests" ON)
 
-set(MAIN_PROJECT OFF)
-
+project(opentelemetry-user_events-exporter)
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-  project(opentelemetry-userevents-logs)
   set(MAIN_PROJECT ON)
+  message(STATUS "${PROJECT_NAME} is main project")
+else()
+  set(MAIN_PROJECT OFF)
 endif()
-
-add_definitions(-DHAVE_CONSOLE_LOG -DENABLE_LOGS_PREVIEW)
 
 if(MAIN_PROJECT)
   # TODO: cleanup the dependent packages
@@ -27,12 +26,18 @@ if(MAIN_PROJECT)
   find_package(opentelemetry-cpp REQUIRED)
 endif()
 
+# don't build samples and tools from LinuxTracepoints.
+set(BUILD_SAMPLES OFF)
+set(BUILD_TOOLS OFF)
 add_subdirectory(third_party/LinuxTracepoints)
 
 include_directories(include)
 
 add_library(opentelemetry_exporter_user_events_logs
             src/logs_exporter.cc src/recordable.cc src/utils.cc)
+
+target_compile_definitions(opentelemetry_exporter_user_events_logs
+                           PUBLIC HAVE_CONSOLE_LOG HAVE_LOGS_PREVIEW)
 
 if(MAIN_PROJECT)
   target_include_directories(opentelemetry_exporter_user_events_logs
@@ -51,14 +56,33 @@ target_link_libraries(opentelemetry_exporter_user_events_logs
 set_target_properties(opentelemetry_exporter_user_events_logs
                       PROPERTIES EXPORT_NAME logs)
 
-if(BUILD_EXAMPLE)
+add_library(opentelemetry_exporter_user_events_metrics src/metrics_exporter.cc)
 
-  add_executable(user_events_logs example/main.cc example/foo_library.cc)
+if(MAIN_PROJECT)
+  target_include_directories(opentelemetry_exporter_user_events_metrics
+                             PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
   target_link_libraries(
-    user_events_logs ${CMAKE_THREAD_LIBS_INIT} opentelemetry_logs
-    opentelemetry_exporter_user_events_logs)
+    opentelemetry_exporter_user_events_metrics
+    PUBLIC ${OPENTELEMETRY_CPP_LIBRARIES} tracepoint protobuf::libprotobuf)
+  # TODO: link to opentelemetry_otlp_recordable
+else()
+  target_link_libraries(
+    opentelemetry_exporter_user_events_metrics
+    PUBLIC opentelemetry_metrics opentelemetry_resources opentelemetry_common
+           opentelemetry_otlp_recordable tracepoint)
+endif()
 
-endif(BUILD_EXAMPLE)
+if(BUILD_EXAMPLE)
+  add_executable(user_events_logs example/logs/main.cc
+                                  example/logs/foo_library.cc)
+  target_link_libraries(user_events_logs ${CMAKE_THREAD_LIBS_INIT}
+                        opentelemetry_exporter_user_events_logs)
+
+  add_executable(user_events_metrics example/metrics/main.cc
+                                     example/metrics/foo_library.cc)
+  target_link_libraries(user_events_metrics ${CMAKE_THREAD_LIBS_INIT}
+                        opentelemetry_exporter_user_events_metrics)
+endif()
 
 if(BUILD_TESTING)
   if(EXISTS ${CMAKE_BINARY_DIR}/lib/libgtest.a)
@@ -79,23 +103,25 @@ if(BUILD_TESTING)
   enable_testing()
   include(GoogleTest)
   # build tests for user_events logs
-  add_executable(userevents_logs_exporter_test test/logs_exporter_test.cc)
+  add_executable(user_events_logs_exporter_test test/logs_exporter_test.cc)
   target_link_libraries(
-    userevents_logs_exporter_test ${GTEST_BOTH_LIBRARIES}
+    user_events_logs_exporter_test ${GTEST_BOTH_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT} opentelemetry_exporter_user_events_logs)
 
   gtest_add_tests(
-    TARGET userevents_logs_exporter_test
+    TARGET user_events_logs_exporter_test
     TEST_PREFIX exporter.
-    TEST_LIST userevents_logs_exporter_test)
+    TEST_LIST user_events_logs_exporter_test)
 endif()
 
-find_package(benchmark CONFIG REQUIRED)
-add_executable(user_events_logger_benchmark benchmark/logger_benchmark.cc)
-target_link_libraries(
-  user_events_logger_benchmark benchmark::benchmark ${CMAKE_THREAD_LIBS_INIT}
-  ${CMAKE_THREAD_LIBS_INIT} opentelemetry_logs
-  opentelemetry_exporter_user_events_logs)
+if(WITH_BENCHMARK)
+  find_package(benchmark CONFIG REQUIRED)
+  add_executable(user_events_logger_benchmark benchmark/logger_benchmark.cc)
+  target_link_libraries(
+    user_events_logger_benchmark benchmark::benchmark ${CMAKE_THREAD_LIBS_INIT}
+    ${CMAKE_THREAD_LIBS_INIT} opentelemetry_logs
+    opentelemetry_exporter_user_events_logs)
+endif()
 
 install(
   TARGETS opentelemetry_exporter_user_events_logs
@@ -105,7 +131,7 @@ install(
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 install(
-  DIRECTORY include/opentelemetry/exporters/userevents
+  DIRECTORY include/opentelemetry/exporters/user_events
   DESTINATION include/opentelemetry/exporters
   FILES_MATCHING
   PATTERN "*.h")
