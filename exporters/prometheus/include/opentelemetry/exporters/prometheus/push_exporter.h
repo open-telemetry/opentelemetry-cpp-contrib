@@ -1,48 +1,49 @@
-// Copyright 2022, OpenTelemetry Authors
+// Copyright 2023, OpenTelemetry Authors
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
 
-#  ifdef _WIN32
-#    include <io.h>        // NOLINT
-#    include <winsock2.h>  // NOLINT
-#  else
-#    include <unistd.h>  // NOLINT
-#  endif
+#ifndef WIN32_LEAN_AND_MEAN
+#  define WIN32_LEAN_AND_MEAN
+#endif
 
-#  include <chrono>
-#  include <memory>
-#  include <string>
-#  include <vector>
+#ifndef NOMINMAX
+#  define NOMINMAX
+#endif
 
-#  include "prometheus/gateway.h"
+#ifdef _WIN32
+#  include <io.h>        // NOLINT
+#  include <winsock2.h>  // NOLINT
+#else
+#  include <unistd.h>  // NOLINT
+#endif
 
-#  include "opentelemetry/exporters/prometheus/collector.h"
-#  include "opentelemetry/nostd/span.h"
-#  include "opentelemetry/sdk/common/env_variables.h"
-#  include "opentelemetry/sdk/metrics/metric_exporter.h"
-#  include "opentelemetry/version.h"
+#include <chrono>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "prometheus/gateway.h"
+
+#include "opentelemetry/exporters/prometheus/exporter_utils.h"
+#include "opentelemetry/exporters/prometheus/push_exporter_options.h"
+#include "opentelemetry/nostd/span.h"
+#include "opentelemetry/sdk/common/env_variables.h"
+#include "opentelemetry/sdk/metrics/push_metric_exporter.h"
+#include "opentelemetry/version.h"
+
 
 OPENTELEMETRY_BEGIN_NAMESPACE
-namespace exporter {
-namespace metrics {
-/**
- * Struct to hold Prometheus exporter options.
- */
-struct PrometheusPushExporterOptions {
-  std::string host;
-  std::string port;
-  std::string jobname;
-  ::prometheus::Labels labels;
-  std::string username;
-  std::string password;
+namespace exporter
+{
+namespace metrics
+{
 
-  ::opentelemetry::sdk::metrics::AggregationTemporality aggregation_temporality =
-      ::opentelemetry::sdk::metrics::AggregationTemporality::kDelta;
-};
+class PrometheusPushCollector;
 
-class PrometheusPushExporter : public ::opentelemetry::sdk::metrics::MetricExporter {
- public:
+class PrometheusPushExporter : public ::opentelemetry::sdk::metrics::PushMetricExporter
+{
+public:
   /**
    * Constructor - binds an exposer and collector to the exporter
    * @param options: options for an exposer that exposes
@@ -69,7 +70,8 @@ class PrometheusPushExporter : public ::opentelemetry::sdk::metrics::MetricExpor
   /**
    * Force flush the exporter.
    */
-  bool ForceFlush(std::chrono::microseconds timeout = (std::chrono::microseconds::max)()) noexcept override;
+  bool ForceFlush(
+      std::chrono::microseconds timeout = (std::chrono::microseconds::max)()) noexcept override;
 
   /**
    * Shuts down the exporter and does cleanup.
@@ -81,17 +83,18 @@ class PrometheusPushExporter : public ::opentelemetry::sdk::metrics::MetricExpor
   bool Shutdown(std::chrono::microseconds timeout = std::chrono::microseconds(0)) noexcept override;
 
   /**
-   * @return: returns a shared_ptr to
-   * the PrometheusCollector instance
+   * Gets the maximum size of the collection.
+   *
+   * @return max collection size
    */
-  std::shared_ptr<::opentelemetry::exporter::metrics::PrometheusCollector> &GetCollector();
+  std::size_t GetMaxCollectionSize() const noexcept;
 
   /**
    * @return: Gets the shutdown status of the exporter
    */
   bool IsShutdown() const;
 
- private:
+private:
   // The configuration options associated with this exporter.
   const PrometheusPushExporterOptions options_;
   /**
@@ -103,7 +106,7 @@ class PrometheusPushExporter : public ::opentelemetry::sdk::metrics::MetricExpor
    * Pointer to a
    * PrometheusCollector instance
    */
-  std::shared_ptr<::opentelemetry::exporter::metrics::PrometheusCollector> collector_;
+  std::shared_ptr<PrometheusPushCollector> collector_;
 
   /**
    * Pointer to an

@@ -1,39 +1,59 @@
 // Copyright 2022, OpenTelemetry Authors
 // SPDX-License-Identifier: Apache-2.0
 
-#  include <gtest/gtest.h>
+#include <gtest/gtest.h>
 
-#  include <chrono>
-#  include <cstddef>
-#  include <memory>
-#  include <thread>
+#include <chrono>
+#include <cstddef>
+#include <memory>
+#include <thread>
 
-#  include "opentelemetry/exporters/prometheus/collector.h"
+#include "opentelemetry/exporters/prometheus/collector.h"
 
-#  include "opentelemetry/exporters/prometheus/push_exporter.h"
-#  include "prometheus_test_helper.h"
+#include "opentelemetry/exporters/prometheus/push_exporter.h"
+#include "opentelemetry/exporters/prometheus/push_exporter_factory.h"
+#include "opentelemetry/exporters/prometheus/push_exporter_options.h"
+#include "prometheus_test_helper.h"
+
+using opentelemetry::exporter::metrics::PrometheusCollector;
+using opentelemetry::exporter::metrics::PrometheusPushExporter;
+using opentelemetry::exporter::metrics::PrometheusPushExporterFactory;
+using opentelemetry::exporter::metrics::PrometheusPushExporterOptions;
+using opentelemetry::sdk::common::ExportResult;
 
 OPENTELEMETRY_BEGIN_NAMESPACE
-namespace exporter {
-namespace metrics {
-class PrometheusPushExporterTest {  // : public ::testing::Test
- public:
+namespace exporter
+{
+namespace metrics
+{
+class PrometheusPushExporterTest
+{  // : public ::testing::Test
+public:
   PrometheusPushExporter GetExporter() { return PrometheusPushExporter(); }
+
+  void CheckFactory(PrometheusPushExporter &exporter, const PrometheusPushExporterOptions &options)
+  {
+    ASSERT_EQ(exporter.options_.host, options.host);
+    ASSERT_EQ(exporter.options_.port, options.port);
+    ASSERT_EQ(exporter.options_.jobname, options.jobname);
+    ASSERT_EQ(exporter.options_.username, options.username);
+    ASSERT_EQ(exporter.options_.password, options.password);
+    ASSERT_EQ(exporter.options_.max_collection_size, options.max_collection_size);
+    ASSERT_EQ(exporter.options_.labels.size(), options.labels.size());
+  }
 };
 }  // namespace metrics
 }  // namespace exporter
 OPENTELEMETRY_END_NAMESPACE
 
-using opentelemetry::exporter::metrics::PrometheusCollector;
-using opentelemetry::sdk::common::ExportResult;
-using opentelemetry::exporter::metrics::PrometheusPushExporter;
 using opentelemetry::exporter::metrics::PrometheusPushExporterTest;
 
 /**
  * When a PrometheusPushExporter is initialized,
  * isShutdown should be false.
  */
-TEST(PrometheusPushExporter, InitializeConstructorIsNotShutdown) {
+TEST(PrometheusPushExporter, InitializeConstructorIsNotShutdown)
+{
   PrometheusPushExporterTest p;
   PrometheusPushExporter exporter = p.GetExporter();
 
@@ -44,7 +64,8 @@ TEST(PrometheusPushExporter, InitializeConstructorIsNotShutdown) {
 /**
  * The shutdown() function should set the isShutdown field to true.
  */
-TEST(PrometheusPushExporter, ShutdownSetsIsShutdownToTrue) {
+TEST(PrometheusPushExporter, ShutdownSetsIsShutdownToTrue)
+{
   PrometheusPushExporterTest p;
   PrometheusPushExporter exporter = p.GetExporter();
 
@@ -65,7 +86,8 @@ TEST(PrometheusPushExporter, ShutdownSetsIsShutdownToTrue) {
  * The Export() function should return kSuccess = 0
  *  when data is exported successfully.
  */
-TEST(PrometheusPushExporter, ExportSuccessfully) {
+TEST(PrometheusPushExporter, ExportSuccessfully)
+{
   PrometheusPushExporterTest p;
   PrometheusPushExporter exporter = p.GetExporter();
 
@@ -80,7 +102,8 @@ TEST(PrometheusPushExporter, ExportSuccessfully) {
  * If the exporter is shutdown, it cannot process
  * any more export requests and returns kFailure = 1.
  */
-TEST(PrometheusPushExporter, ExporterIsShutdown) {
+TEST(PrometheusPushExporter, ExporterIsShutdown)
+{
   PrometheusPushExporterTest p;
   PrometheusPushExporter exporter = p.GetExporter();
 
@@ -100,7 +123,8 @@ TEST(PrometheusPushExporter, ExporterIsShutdown) {
  * or when the collection is not full but does not have enough
  * space to hold the batch data.
  */
-TEST(PrometheusPushExporter, CollectionNotEnoughSpace) {
+TEST(PrometheusPushExporter, CollectionNotEnoughSpace)
+{
   PrometheusPushExporterTest p;
   PrometheusPushExporter exporter = p.GetExporter();
 
@@ -108,12 +132,13 @@ TEST(PrometheusPushExporter, CollectionNotEnoughSpace) {
   // one close to max size and another one that, when added
   // to the first, will exceed the size of the collection
 
-  int max_collection_size = exporter.GetCollector()->GetMaxCollectionSize();
+  int max_collection_size = exporter.GetMaxCollectionSize();
 
   // send export request to fill the
   // collection in the collector
   ExportResult code = ExportResult::kSuccess;
-  for (int count = 1; count <= max_collection_size; ++count) {
+  for (int count = 1; count <= max_collection_size; ++count)
+  {
     auto res = exporter.Export(CreateSumPointData());
     ASSERT_EQ(res, code);
   }
@@ -132,7 +157,8 @@ TEST(PrometheusPushExporter, CollectionNotEnoughSpace) {
  *  kFailureInvalidArgument = 3 when an empty collection
  *  of records is passed to the Export() function.
  */
-TEST(PrometheusPushExporter, InvalidArgumentWhenPassedEmptyRecordCollection) {
+TEST(PrometheusPushExporter, InvalidArgumentWhenPassedEmptyRecordCollection)
+{
   PrometheusPushExporterTest p;
   PrometheusPushExporter exporter = p.GetExporter();
 
@@ -146,4 +172,25 @@ TEST(PrometheusPushExporter, InvalidArgumentWhenPassedEmptyRecordCollection) {
   // the result code should be kFailureInvalidArgument = 3
   ExportResult code = ExportResult::kFailureInvalidArgument;
   ASSERT_EQ(res, code);
+}
+
+TEST(PrometheusPushExporterFactory, Create)
+{
+  PrometheusPushExporterOptions options;
+  options.host                 = "localhost";
+  options.port                 = 4138;
+  options.jobname              = "jobname";
+  options.labels["test_label"] = "test_value";
+  options.username             = "user";
+  options.password             = "pawword";
+  options.max_collection_size  = 2345;
+
+  PrometheusPushExporterTest p;
+  auto exporter = PrometheusPushExporterFactory::Create(options);
+  ASSERT_TRUE(!!exporter);
+
+  ASSERT_EQ(static_cast<PrometheusPushExporter *>(exporter.get())->GetMaxCollectionSize(),
+            options.max_collection_size);
+
+  p.CheckFactory(*static_cast<PrometheusPushExporter *>(exporter.get()), options);
 }
