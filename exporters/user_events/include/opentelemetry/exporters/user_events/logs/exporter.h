@@ -3,15 +3,13 @@
 
 #pragma once
 
-#ifdef ENABLE_LOGS_PREVIEW
+#include "exporter_options.h"
+#include "opentelemetry/common/spin_lock_mutex.h"
+#include "opentelemetry/sdk/logs/exporter.h"
 
-#  include "exporter_options.h"
-#  include "opentelemetry/common/spin_lock_mutex.h"
-#  include "opentelemetry/sdk/logs/exporter.h"
-
-#  include <eventheader/EventHeaderDynamic.h>
-#  include <array>
-#  include <mutex>
+#include <eventheader/EventHeaderDynamic.h>
+#include <array>
+#include <mutex>
 
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter
@@ -66,5 +64,3 @@ private:
 }  // namespace user_events
 }  // namespace exporter
 OPENTELEMETRY_END_NAMESPACE
-
-#endif
