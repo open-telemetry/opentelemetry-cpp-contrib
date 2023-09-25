@@ -3,10 +3,8 @@
 
 #pragma once
 
-#ifdef ENABLE_LOGS_PREVIEW
-
-#  include <string>
-#  include "opentelemetry/version.h"
+#include <string>
+#include "opentelemetry/version.h"
 
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter
@@ -22,5 +20,3 @@ struct ExporterOptions
 }  // namespace user_events
 }  // namespace exporter
 OPENTELEMETRY_END_NAMESPACE
-
-#endif

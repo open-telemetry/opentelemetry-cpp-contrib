@@ -1,11 +1,9 @@
 // Copyright The OpenTelemetry Authors
 // SPDX-License-Identifier: Apache-2.0
 
-#ifdef ENABLE_LOGS_PREVIEW
-
-#  include "opentelemetry/logs/event_id.h"
-#  include "opentelemetry/logs/provider.h"
-#  include "opentelemetry/sdk/version/version.h"
+#include "opentelemetry/logs/event_id.h"
+#include "opentelemetry/logs/provider.h"
+#include "opentelemetry/sdk/version/version.h"
 
 namespace logs  = opentelemetry::logs;
 namespace nostd = opentelemetry::nostd;
@@ -42,5 +40,3 @@ void sell_fruit(std::string_view fruit)
                     {{"fruit_name", fruit.data()},
                      {"fruit_price", static_cast<int>(fruit_inventory[fruit.data()])}}));
 }
-
-#endif

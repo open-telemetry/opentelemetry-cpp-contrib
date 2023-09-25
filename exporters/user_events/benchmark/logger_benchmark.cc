@@ -1,27 +1,25 @@
 // Copyright The OpenTelemetry Authors
 // SPDX-License-Identifier: Apache-2.0
 
-#ifdef ENABLE_LOGS_PREVIEW
+#include "opentelemetry/common/timestamp.h"
+#include "opentelemetry/logs/logger.h"
+#include "opentelemetry/logs/provider.h"
+#include "opentelemetry/nostd/shared_ptr.h"
 
-#  include "opentelemetry/common/timestamp.h"
-#  include "opentelemetry/logs/logger.h"
-#  include "opentelemetry/logs/provider.h"
-#  include "opentelemetry/nostd/shared_ptr.h"
+#include "opentelemetry/exporters/user_events/logs/exporter.h"
+#include "opentelemetry/logs/provider.h"
+#include "opentelemetry/sdk/logs/logger_provider_factory.h"
+#include "opentelemetry/sdk/logs/processor.h"
+#include "opentelemetry/sdk/logs/simple_log_record_processor_factory.h"
 
-#  include "opentelemetry/exporters/user_events/logs/exporter.h"
-#  include "opentelemetry/logs/provider.h"
-#  include "opentelemetry/sdk/logs/logger_provider_factory.h"
-#  include "opentelemetry/sdk/logs/processor.h"
-#  include "opentelemetry/sdk/logs/simple_log_record_processor_factory.h"
+#include <chrono>
+#include <condition_variable>
+#include <functional>
+#include <mutex>
+#include <thread>
+#include <vector>
 
-#  include <chrono>
-#  include <condition_variable>
-#  include <functional>
-#  include <mutex>
-#  include <thread>
-#  include <vector>
-
-#  include <benchmark/benchmark.h>
+#include <benchmark/benchmark.h>
 
 using opentelemetry::logs::EventId;
 using opentelemetry::logs::Logger;
@@ -167,5 +165,3 @@ int main(int argc, char **argv)
   benchmark::Initialize(&argc, argv);
   benchmark::RunSpecifiedBenchmarks();
 }
-
-#endif
