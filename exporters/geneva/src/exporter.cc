@@ -7,7 +7,7 @@
 #ifdef _WIN32
 #include "opentelemetry/exporters/geneva/metrics/etw_data_transport.h"
 #endif
-#include "opentelemetry/metrics/meter_provider.h"
+#include "opentelemetry/sdk/metrics/export/metric_producer.h"
 #include "opentelemetry/sdk_config.h"
 
 #include <memory>
@@ -46,6 +46,10 @@ Exporter::Exporter(const ExporterOptions &options)
 
 sdk::metrics::AggregationTemporality Exporter::GetAggregationTemporality(
     sdk::metrics::InstrumentType instrument_type) const noexcept {
+  if (instrument_type == sdk::metrics::InstrumentType::kUpDownCounter)
+    {
+      return sdk::metrics::AggregationTemporality::kCumulative;
+    }
   return sdk::metrics::AggregationTemporality::kDelta;
 }
 
