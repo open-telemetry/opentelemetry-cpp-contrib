@@ -2,6 +2,7 @@
 #include "opentelemetry/sdk/metrics/export/metric_producer.h"
 #include "opentelemetry/sdk/metrics/instruments.h"
 #include "opentelemetry/sdk/resource/resource.h"
+#include "opentelemetry/sdk/instrumentationscope/instrumentation_scope.h"
 
 #include<vector>
 
@@ -178,7 +179,7 @@ GenerateSumDataLongMetricsNonMonotonic(
           kUpDownCounterLongInstrumentUnit,
           opentelemetry::sdk::metrics::InstrumentType::kUpDownCounter,
           opentelemetry::sdk::metrics::InstrumentValueType::kLong},
-      opentelemetry::sdk::metrics::AggregationTemporality::kDelta,
+      opentelemetry::sdk::metrics::AggregationTemporality::kCumulative,
       opentelemetry::common::SystemTimestamp{std::chrono::system_clock::now()},
       opentelemetry::common::SystemTimestamp{std::chrono::system_clock::now()},
       std::vector<opentelemetry::sdk::metrics::PointDataAttributes>{
@@ -233,7 +234,7 @@ GenerateSumDataDoubleMetricsNonMonotonic(
           kUpDownCounterDoubleInstrumentUnit,
           opentelemetry::sdk::metrics::InstrumentType::kUpDownCounter,
           opentelemetry::sdk::metrics::InstrumentValueType::kDouble},
-      opentelemetry::sdk::metrics::AggregationTemporality::kDelta,
+      opentelemetry::sdk::metrics::AggregationTemporality::kCumulative,
       opentelemetry::common::SystemTimestamp{std::chrono::system_clock::now()},
       opentelemetry::common::SystemTimestamp{std::chrono::system_clock::now()},
       std::vector<opentelemetry::sdk::metrics::PointDataAttributes>{

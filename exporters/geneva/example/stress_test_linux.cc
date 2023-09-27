@@ -28,9 +28,11 @@
 #include <chrono>
 #include <sys/times.h>
 
+#ifdef HAVE_BOOST
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#endif
 
 namespace metrics_sdk      = opentelemetry::sdk::metrics;
 namespace nostd           = opentelemetry::nostd;
