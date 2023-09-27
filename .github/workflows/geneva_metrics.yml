@@ -34,7 +34,7 @@ jobs:
             ca-certificates wget git valgrind lcov
       - name: run tests
         run: |
-          $GITHUB_WORKSPACE/otel_cpp/ci/setup_cmake.sh
+          sudo $GITHUB_WORKSPACE/otel_cpp/ci/setup_cmake.sh
           mkdir -p "$GITHUB_WORKSPACE/otel_cpp/build"
           cd "$GITHUB_WORKSPACE/otel_cpp/build"
           cmake .. -DCMAKE_BUILD_TYPE=Debug 
