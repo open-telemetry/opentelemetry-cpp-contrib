@@ -37,12 +37,12 @@ jobs:
           sudo $GITHUB_WORKSPACE/otel_cpp/ci/setup_cmake.sh
           mkdir -p "$GITHUB_WORKSPACE/otel_cpp/build"
           cd "$GITHUB_WORKSPACE/otel_cpp/build"
-          cmake .. -DCMAKE_BUILD_TYPE=Debug -DOPENTELEMETRY_INSTALL=ON
-          cmake --build . -j${nproc} --config Debug
-          cmake --install . --prefix "$HOME/prebuilt-otel" --config Debug
+          cmake .. -DOPENTELEMETRY_INSTALL=ON
+          cmake --build . -j${nproc}
+          cmake --install . --prefix "$HOME/prebuilt-otel"
           mkdir -p "$GITHUB_WORKSPACE/otel_cpp_contrib/exporters/geneva/build"
           cd "$GITHUB_WORKSPACE/otel_cpp_contrib/exporters/geneva/build"
-          cmake .. "-DCMAKE_PREFIX_PATH=$HOME/prebuilt-otel" -DCMAKE_BUILD_TYPE=Debug \
+          cmake .. "-DCMAKE_PREFIX_PATH=$HOME/prebuilt-otel" \
             -DBUILD_TESTING=ON -DBUILD_EXAMPLE=ON
-          cmake --build . -j${nproc} --config Debug
+          cmake --build . -j${nproc}
           ctest
