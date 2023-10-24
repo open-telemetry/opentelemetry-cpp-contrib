@@ -25,7 +25,7 @@ template <typename T> static inline json create_message(T ts, json body) {
 }
 
 // constexpr needs keys to be constexpr, const is next best to use.
-static const std::map<opentelemetry::trace::SpanKind, std::string>
+static const std::map<opentelemetry::trace::SpanKind, int>
     kSpanKindMap = {
         {opentelemetry::trace::SpanKind::kServer, 1},
         {opentelemetry::trace::SpanKind::kClient, 2},
