@@ -51,8 +51,8 @@ Monitoring individual modules is crucial to the instrumentation of Apache web se
 |*ApacheModuleOtelScheduledDelayMillis*          | 5000            | OPTIONAL: The delay interval in milliseconds between two consecutive exports|
 |*ApacheModuleOtelExportTimeoutMillis*           | 30000           | OPTIONAL: How long the export can run in milliseconds before it is cancelled|
 |*ApacheModuleOtelMaxExportBatchSize*            | 512             | OPTIONAL: The maximum batch size of every export. It must be smaller or equal to maxQueueSize |
-|*ApacheModuleServiceName*                       |                 | REQUIRED: A namespace for the ServiceName|
-|*ApacheModuleServiceNamespace*                  |                 | REQUIRED: Logical name of the service |
+|*ApacheModuleServiceName*                       |                 | REQUIRED: Logical name of the service |
+|*ApacheModuleServiceNamespace*                  |                 | REQUIRED: A namespace for the ServiceName |
 |*ApacheModuleServiceInstanceId*                 |                 | REQUIRED: The string ID of the service instance |
 |*ApacheModuleTraceAsError*                      |                 | OPTIONAL: Trace level for logging to Apache log|
 |*ApacheModuleWebserverContext*                  |                 | OPTIONAL: Takes 3 values(space-seperated) ServiceName, ServiceNamespace and ServiceInstanceId|
@@ -166,8 +166,8 @@ Currently, Nginx Webserver module monitores some fixed set of modules, which get
 |*NginxModuleOtelScheduledDelayMillis*          | 5000            | OPTIONAL: The delay interval in milliseconds between two consecutive exports|
 |*NginxModuleOtelExportTimeoutMillis*           | 30000           | OPTIONAL: How long the export can run in milliseconds before it is cancelled|
 |*NginxModuleOtelMaxExportBatchSize*            | 512             | OPTIONAL: The maximum batch size of every export. It must be smaller or equal to maxQueueSize |
-|*NginxModuleServiceName*                       |                 | REQUIRED: A namespace for the ServiceName|
-|*NginxModuleServiceNamespace*                  |                 | REQUIRED: Logical name of the service |
+|*NginxModuleServiceName*                       |                 | REQUIRED: Logical name of the service |
+|*NginxModuleServiceNamespace*                  |                 | REQUIRED: A namespace for the ServiceName |
 |*NginxModuleServiceInstanceId*                 |                 | REQUIRED: The string ID of the service instance |
 |*NginxModuleTraceAsError*                      |                 | OPTIONAL: Trace level for logging to Apache log|
 |*NginxModuleWebserverContext*                  |                 | OPTIONAL: Takes 3 values(space-seperated) ServiceName, ServiceNamespace and ServiceInstanceId|
