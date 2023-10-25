@@ -93,7 +93,7 @@ void Recordable::AddLink(
 void Recordable::SetStatus(opentelemetry::trace::StatusCode code,
                            nostd::string_view description) noexcept {
   options_[FLUENT_FIELD_SUCCESS] = code != opentelemetry::trace::StatusCode::kError;
-  if (code != opentelemetry::Trace::StatusCode::kUnset) {
+  if (code != opentelemetry::trace::StatusCode::kUnset) {
     options_["tags"]["otel.status_code"] = code;
     if (code == opentelemetry::trace::StatusCode::kError) {
       options_[FLUENT_FIELD_STATUSMESSAGE] = description;
