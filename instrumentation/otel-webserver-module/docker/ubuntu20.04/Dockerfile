@@ -38,7 +38,7 @@ ARG APRUTIL_VERSION="1.6.1"
 ARG LOG4CXX_VERSION="0.11.0"
 ARG GTEST_VERSION="1.10.0"
 ARG PCRE_VERSION="8.44"
-ARG NGINX_VERSION="1.22.0"
+ARG NGINX_VERSION="1.24.0"
 
 # Install GRPC
 RUN git clone --shallow-submodules --depth 1 --recurse-submodules -b v${GRPC_VERSION} \
@@ -213,7 +213,7 @@ RUN cd /otel-webserver-module/build \
 
 RUN cd /otel-webserver-module/build \
     && cp ../conf/nginx/opentelemetry_module.conf /opt/ \
-    && sed -i '5i load_module /opt/opentelemetry-webserver-sdk/WebServerModule/Nginx/1.22.0/ngx_http_opentelemetry_module.so;' /etc/nginx/nginx.conf \
+    && sed -i '5i load_module /opt/opentelemetry-webserver-sdk/WebServerModule/Nginx/1.24.0/ngx_http_opentelemetry_module.so;' /etc/nginx/nginx.conf \
     && sed -i '33i include /opt/opentelemetry_module.conf;' /etc/nginx/nginx.conf \
     && cd /opt/opentelemetry-webserver-sdk \
     && ./install.sh \

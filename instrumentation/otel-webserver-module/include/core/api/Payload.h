@@ -71,18 +71,18 @@ public:
     void set_port(long aPort) {port = aPort; }
 
 
-	std::string get_uri() {	return uri; }
-	std::string get_request_protocol() { return request_protocol; }
-	std::string get_http_get_parameter() { return http_get_parameter; }
-	std::string get_http_post_parameter() { return http_post_parameter; }
-	std::string get_http_request_method() { return http_request_method; }
+	std::string& get_uri() {	return uri; }
+	std::string& get_request_protocol() { return request_protocol; }
+	std::string& get_http_get_parameter() { return http_get_parameter; }
+	std::string& get_http_post_parameter() { return http_post_parameter; }
+	std::string& get_http_request_method() { return http_request_method; }
 	std::unordered_map<std::string, std::string> get_http_headers() { return http_headers; }
-	std::string get_server_name() { return server_name; }
-    std::string get_scheme() {return scheme; }
-    std::string get_host() {return host; }
-    std::string get_target() {return target; }
-    std::string get_flavor() {return flavor; }
-    std::string get_client_ip() {return client_ip; }
+	std::string& get_server_name() { return server_name; }
+    std::string& get_scheme() {return scheme; }
+    std::string& get_host() {return host; }
+    std::string& get_target() {return target; }
+    std::string& get_flavor() {return flavor; }
+    std::string& get_client_ip() {return client_ip; }
     long get_port() {return port; }
     std::unordered_map<std::string, std::string>& get_request_headers() {
     	return request_headers;
