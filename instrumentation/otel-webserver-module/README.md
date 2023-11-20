@@ -150,7 +150,7 @@ Currently, Nginx Webserver module monitores some fixed set of modules, which get
 
 | Library                                        | Present Version |
 | ---------------------------------------------- | -----------     |
-| Nginx                                          | 1.22.0, 1.23.0,1.23.1          |
+| Nginx                                          | 1.24.0, 1.25.3          |
 | Apr                                            | 1.7.0           |
 | Apr-util                                       | 1.6.1           |
 
@@ -182,7 +182,7 @@ Currently, Nginx Webserver module monitores some fixed set of modules, which get
 - Docker Desktop should be installed on the system
 
 #### Platform Supported
-- Supports both stable(1.22.0) and mainline(1.23.1).
+- Supports both stable(1.24.0) and mainline(1.25.3).
 - Earlier support of v1.18.0 is deprecated.
 - The build is supported for **x86-64** platforms.
 - OS support: **Centos6**, **Centos7, ubuntu20.04**.
