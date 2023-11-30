@@ -1,5 +1,5 @@
 /*
-* Copyright 2021 AppDynamics LLC. 
+* Copyright 2022, OpenTelemetry Authors. 
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -20,13 +20,12 @@
 #include "sdkwrapper/SdkUtils.h"
 #include "sdkwrapper/SdkHelperFactory.h"
 
-namespace appd {
+namespace otel {
 namespace core {
 namespace sdkwrapper {
 
 namespace {
 
-constexpr const char* BAGGAGE_HEADER_NAME = "baggage";
 constexpr const char* TRACEPARENT_HEADER_NAME = "traceparent";
 constexpr const char* TRACESTATE_HEADER_NAME = "tracestate";
 
@@ -81,7 +80,6 @@ void SdkWrapper::PopulatePropagationHeaders(
 	}
 
   // copy all relevant kv pairs into carrier
-  carrier[BAGGAGE_HEADER_NAME] = otelCarrier.Get(BAGGAGE_HEADER_NAME).data();
   carrier[TRACEPARENT_HEADER_NAME] = otelCarrier.Get(TRACEPARENT_HEADER_NAME).data();
   carrier[TRACESTATE_HEADER_NAME] = otelCarrier.Get(TRACESTATE_HEADER_NAME).data();
 }
@@ -105,4 +103,4 @@ trace::SpanKind SdkWrapper::GetTraceSpanKind(const SpanKind& kind)
 
 } //sdkwrapper
 } //core
-} //appd
+} //otel

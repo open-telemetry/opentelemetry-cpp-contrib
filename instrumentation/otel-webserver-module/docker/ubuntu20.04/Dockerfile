@@ -37,6 +37,8 @@ ARG EXPAT_RVERSION="R_2_3_0"
 ARG APRUTIL_VERSION="1.6.1"
 ARG LOG4CXX_VERSION="0.11.0"
 ARG GTEST_VERSION="1.10.0"
+ARG PCRE_VERSION="8.44"
+ARG NGINX_VERSION="1.24.0"
 
 # Install GRPC
 RUN git clone --shallow-submodules --depth 1 --recurse-submodules -b v${GRPC_VERSION} \
@@ -81,7 +83,7 @@ RUN mkdir -p dependencies/opentelemetry/${OPENTELEMETRY_VERSION}/lib \
 
 #install Apr
 RUN mkdir -p dependencies/apr/${APR_VERSION} \
-    && wget https://dlcdn.apache.org//apr/apr-${APR_VERSION}.tar.gz --no-check-certificate \
+    && wget https://archive.apache.org/dist/apr/apr-${APR_VERSION}.tar.gz --no-check-certificate \
     && tar -xf apr-${APR_VERSION}.tar.gz \
     && cd apr-${APR_VERSION} \
     && ./configure --prefix=/dependencies/apr/${APR_VERSION} --enable-static=yes --enable-shared=no --with-pic && echo $? \
@@ -101,7 +103,7 @@ RUN mkdir -p dependencies/expat/${EXPAT_VERSION} \
 
 # install Apr-util
 RUN mkdir -p dependencies/apr-util/${APRUTIL_VERSION} \
-    && wget https://dlcdn.apache.org//apr/apr-util-${APRUTIL_VERSION}.tar.gz --no-check-certificate \
+    && wget https://archive.apache.org/dist/apr/apr-util-${APRUTIL_VERSION}.tar.gz --no-check-certificate \
     && tar -xf apr-util-${APRUTIL_VERSION}.tar.gz \
     && cd apr-util-${APRUTIL_VERSION} \
     && ./configure --prefix=/dependencies/apr-util/${APRUTIL_VERSION} --enable-static=yes --enable-shared=no --with-pic --with-apr=/dependencies/apr/1.7.0 --with-expat=/dependencies/expat/2.3.0 && echo $? \
@@ -164,13 +166,39 @@ RUN wget https://boostorg.jfrog.io/artifactory/main/release/${BOOST_VERSION}/sou
     && ./b2 install define=BOOST_ERROR_CODE_HEADER_ONLY link=static threading=multi cxxflags="-fvisibility=hidden -fPIC" cflags="-fvisibility=hidden -fPIC" \
     && cd .. && rm -rf ${BOOST_FILENAME} && rm ${BOOST_FILENAME}.tar.gz
 
+# install pcre
+RUN mkdir -p dependencies/pcre/${PCRE_VERSION}/ \
+    && wget https://ftp.exim.org/pub/pcre/pcre-${PCRE_VERSION}.tar.gz --no-check-certificate \
+    && tar -xvf pcre-${PCRE_VERSION}.tar.gz \
+    && cd pcre-${PCRE_VERSION} \
+    && ./configure --prefix=/dependencies/pcre/${PCRE_VERSION} --enable-jit \
+    && make && make install \
+    && cd .. && rm -rf ${PCRE_VERSION}.tar.gz && rm -rf pcre-${PCRE_VERSION}
+
+# install nginx
+RUN wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
+    && tar -xvf nginx-${NGINX_VERSION}.tar.gz -C /build-dependencies \
+    && rm -rf nginx-${NGINX_VERSION}.tar.gz
+
+# Install Nginx stable version
+RUN apt install curl gnupg2 ca-certificates lsb-release ubuntu-keyring -y \
+    && curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor \
+    | tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null \
+    && gpg --dry-run --quiet --import --import-options import-show /usr/share/keyrings/nginx-archive-keyring.gpg; exit 0
+RUN echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
+    http://nginx.org/packages/ubuntu `lsb_release -cs` nginx" \
+    | tee /etc/apt/sources.list.d/nginx.list \
+    && echo "Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900\n" \
+    | tee /etc/apt/preferences.d/99nginx \
+    && apt update -y && apt install nginx -y
+
 # Build Webserver Module
 COPY . /otel-webserver-module
 
 RUN cp -r /dependencies /otel-webserver-module/ \
     && cp -r /build-dependencies /otel-webserver-module/ \
     && cd otel-webserver-module \
-    && ./gradlew assembleApacheModule -DtargetSystem=ubuntu
+    && ./gradlew assembleWebServerModule -DtargetSystem=ubuntu
 
 RUN cd /otel-webserver-module/build \
     && tar -xf opentelemetry-webserver-sdk-x64-linux.tgz \
@@ -179,6 +207,14 @@ RUN cd /otel-webserver-module/build \
     && cp opentelemetry_module.conf /etc/apache2/opentelemetry_module.conf \
     && sed -i "s/libmod_apache_otel22.so/libmod_apache_otel.so/g" /etc/apache2/opentelemetry_module.conf \
     && echo 'Include opentelemetry_module.conf' >> /etc/apache2/apache2.conf \
+    && cd /opt/opentelemetry-webserver-sdk \
+    && ./install.sh \
+    && cd /
+
+RUN cd /otel-webserver-module/build \
+    && cp ../conf/nginx/opentelemetry_module.conf /opt/ \
+    && sed -i '5i load_module /opt/opentelemetry-webserver-sdk/WebServerModule/Nginx/1.24.0/ngx_http_opentelemetry_module.so;' /etc/nginx/nginx.conf \
+    && sed -i '33i include /opt/opentelemetry_module.conf;' /etc/nginx/nginx.conf \
     && cd /opt/opentelemetry-webserver-sdk \
     && ./install.sh \
     && cd /

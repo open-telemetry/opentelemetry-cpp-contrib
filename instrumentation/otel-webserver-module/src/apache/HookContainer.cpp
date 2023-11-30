@@ -1,5 +1,5 @@
 /*
-* Copyright 2021 AppDynamics LLC. 
+* Copyright 2022, OpenTelemetry Authors. 
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ HookContainer& HookContainer::getInstance()
 }
 
 void HookContainer::addHook(
-        appd_endpoint_indexes index,
+        otel_endpoint_indexes index,
         const std::string& stage,
         const std::string& module,
         int order)
@@ -38,21 +38,21 @@ void HookContainer::addHook(
     hooks.insert(std::pair<int, HookInfo>(index, HookInfo(stage, module, order)));
 }
 
-const std::string& HookContainer::getStage(appd_endpoint_indexes index) const
+const std::string& HookContainer::getStage(otel_endpoint_indexes index) const
 {
     static std::string blank;
     auto it = hooks.find(index);
     return (it == hooks.end() ? blank : it->second.stage);
 }
 
-const std::string& HookContainer::getModule(appd_endpoint_indexes index) const
+const std::string& HookContainer::getModule(otel_endpoint_indexes index) const
 {
     static std::string blank;
     auto it = hooks.find(index);
     return (it == hooks.end() ? blank : it->second.module);
 }
 
-const char* const* HookContainer::getModuleList(appd_endpoint_indexes index) const
+const char* const* HookContainer::getModuleList(otel_endpoint_indexes index) const
 {
     auto it = hooks.find(index);
     return (it == hooks.end() ? NULL : it->second.moduleList);
@@ -71,5 +71,4 @@ void HookContainer::traceHooks(request_rec* r) const
         modules += ":";
         modules += ii->second.module;
     }
-    //AppdTracing::writeTrace(r->server, __func__, "%s", modules.c_str());
 }

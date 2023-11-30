@@ -1,3 +1,10 @@
+// clang-format off
+// otlp_grpc_exporter header has to be included before any other API header to 
+// avoid conflict between Abseil library and OpenTelemetry C++ absl::variant.
+// https://github.com/open-telemetry/opentelemetry-cpp/tree/main/examples/otlp#additional-notes-regarding-abseil-library
+#include <opentelemetry/exporters/otlp/otlp_grpc_exporter.h>
+// clang-format on
+
 #include <opentelemetry/sdk/trace/processor.h>
 #include <opentelemetry/trace/span.h>
 #include <algorithm>
@@ -18,9 +25,9 @@ extern ngx_module_t otel_ngx_module;
 #include "nginx_utils.h"
 #include "propagate.h"
 #include <opentelemetry/context/context.h>
-#include <opentelemetry/exporters/otlp/otlp_grpc_exporter.h>
 #include <opentelemetry/nostd/shared_ptr.h>
 #include <opentelemetry/sdk/trace/batch_span_processor.h>
+#include <opentelemetry/sdk/trace/batch_span_processor_options.h>
 #include <opentelemetry/sdk/trace/id_generator.h>
 #include <opentelemetry/sdk/trace/samplers/always_off.h>
 #include <opentelemetry/sdk/trace/samplers/always_on.h>
@@ -190,17 +197,21 @@ TraceContext* GetTraceContext(ngx_http_request_t* req) {
   ngx_http_variable_value_t* val = ngx_http_get_indexed_variable(req, otel_ngx_variables[0].index);
 
   if (val == nullptr || val->not_found) {
-    ngx_log_error(NGX_LOG_ERR, req->connection->log, 0, "TraceContext not found");
+    ngx_log_error(NGX_LOG_INFO, req->connection->log, 0, "TraceContext not found");
     return nullptr;
   }
 
   std::unordered_map<ngx_http_request_t*, TraceContext*>* map = (std::unordered_map<ngx_http_request_t*, TraceContext*>*)val->data;
-auto it = map->find(req);
-if (it != map->end()) {
-  return it->second;
-}
-ngx_log_error(NGX_LOG_ERR, req->connection->log, 0, "TraceContext not found");
-return nullptr;
+  if (map == nullptr){
+    ngx_log_error(NGX_LOG_INFO, req->connection->log, 0, "TraceContext not found");
+    return nullptr;
+  }
+  auto it = map->find(req);
+  if (it != map->end()) {
+    return it->second;
+  }
+  ngx_log_error(NGX_LOG_INFO, req->connection->log, 0, "TraceContext not found");
+  return nullptr;
 }
 
 nostd::string_view WithoutOtelVarPrefix(ngx_str_t value) {
@@ -225,7 +236,7 @@ OtelGetTraceContextVar(ngx_http_request_t* req, ngx_http_variable_value_t* v, ui
 
   if (traceContext == nullptr || !traceContext->request_span) {
     ngx_log_error(
-      NGX_LOG_ERR, req->connection->log, 0,
+      NGX_LOG_INFO, req->connection->log, 0,
       "Unable to get trace context when expanding tracecontext var");
     return NGX_OK;
   }
@@ -265,7 +276,7 @@ OtelGetTraceId(ngx_http_request_t* req, ngx_http_variable_value_t* v, uintptr_t 
 
   if (traceContext == nullptr || !traceContext->request_span) {
     ngx_log_error(
-      NGX_LOG_ERR, req->connection->log, 0,
+      NGX_LOG_INFO, req->connection->log, 0,
       "Unable to get trace context when getting trace id");
     return NGX_OK;
   }
@@ -320,7 +331,7 @@ OtelGetSpanId(ngx_http_request_t* req, ngx_http_variable_value_t* v, uintptr_t d
 
   if (traceContext == nullptr || !traceContext->request_span) {
     ngx_log_error(
-      NGX_LOG_ERR, req->connection->log, 0,
+      NGX_LOG_INFO, req->connection->log, 0,
       "Unable to get trace context when getting span id");
     return NGX_OK;
   }
@@ -429,6 +440,11 @@ TraceContext* CreateTraceContext(ngx_http_request_t* req, ngx_http_variable_valu
 
 ngx_int_t StartNgxSpan(ngx_http_request_t* req) {
   if (!IsOtelEnabled(req)) {
+    return NGX_DECLINED;
+  }
+
+  // Internal requests must be called from another location in nginx, that should already have a trace. Without this check, a call would generate an extra (unrelated) span without much information
+  if (req->internal) {
     return NGX_DECLINED;
   }
 

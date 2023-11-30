@@ -1,5 +1,5 @@
 /*
-* Copyright 2021 AppDynamics LLC. 
+* Copyright 2022, OpenTelemetry Authors.  
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -16,17 +16,17 @@
 
 #include "api/WSAgent.h"
 #include "api/RequestProcessingEngine.h"
-#include "api/AppdynamicsSdk.h"
+#include "api/OpentelemetrySdk.h"
 #include "api/ApiUtils.h"
 #include "RequestContext.h"
 #include <sstream>
 #include "AgentCore.h"
 #include "api/SpanNamer.h"
 
-namespace appd {
+namespace otel {
 namespace core {
 
-inline void apiFuncTraceError(const char* funcName, APPD_SDK_STATUS_CODE ret)
+inline void apiFuncTraceError(const char* funcName, OTEL_SDK_STATUS_CODE ret)
 {
     std::ostringstream errMsg;
     errMsg << "Error: " << funcName << ": Error Code: " << ret;
@@ -43,18 +43,18 @@ inline void apiFuncTraceError(const char* funcName, APPD_SDK_STATUS_CODE ret)
 WSAgent::WSAgent() : initPid(0)
 {}
 
-APPD_SDK_STATUS_CODE
-WSAgent::init(APPD_SDK_ENV_RECORD* env, unsigned numberOfRecords)
+OTEL_SDK_STATUS_CODE
+WSAgent::init(OTEL_SDK_ENV_RECORD* env, unsigned numberOfRecords)
 {
     std::lock_guard<std::mutex> lock(initMutex);
-    APPD_SDK_STATUS_CODE res = validateAndInitialise();
-    if (APPD_ISFAIL(res))
+    OTEL_SDK_STATUS_CODE res = validateAndInitialise();
+    if (OTEL_ISFAIL(res))
     {
         return res;
     }
 
     res = mApiUtils->init_boilerplate();
-    if(APPD_ISFAIL(res))
+    if(OTEL_ISFAIL(res))
     {
         apiFuncTraceError(BOOST_CURRENT_FUNCTION, res);
         return(res);
@@ -64,7 +64,7 @@ WSAgent::init(APPD_SDK_ENV_RECORD* env, unsigned numberOfRecords)
     std::shared_ptr<TenantConfig> tenantConfig(std::make_shared<TenantConfig>());
     std::shared_ptr<SpanNamer> spanNamer(std::make_shared<SpanNamer>());
     res = readConfig(env, numberOfRecords, tenantConfig, spanNamer);
-    if(APPD_ISFAIL(res))
+    if(OTEL_ISFAIL(res))
     {
         apiFuncTraceError(BOOST_CURRENT_FUNCTION, res);
         return(res);
@@ -73,16 +73,16 @@ WSAgent::init(APPD_SDK_ENV_RECORD* env, unsigned numberOfRecords)
     // Start the Agent Core.
     if (!mAgentCore->start(tenantConfig, spanNamer, mUserAddedTenant))
     {
-        apiFuncTraceError(BOOST_CURRENT_FUNCTION, APPD_STATUS(agent_failed_to_start));
-        return(APPD_STATUS(agent_failed_to_start));
+        apiFuncTraceError(BOOST_CURRENT_FUNCTION, OTEL_STATUS(agent_failed_to_start));
+        return(OTEL_STATUS(agent_failed_to_start));
     }
 
     initialisePid();
 
-    return APPD_SUCCESS;
+    return OTEL_SUCCESS;
 }
 
-APPD_SDK_STATUS_CODE
+OTEL_SDK_STATUS_CODE
 WSAgent::term()
 {
     if (mAgentCore)
@@ -91,11 +91,11 @@ WSAgent::term()
     }
 }
 
-APPD_SDK_STATUS_CODE
+OTEL_SDK_STATUS_CODE
 WSAgent::startRequest(
     const char* wscontext,
     RequestPayload* requestPayload,
-    APPD_SDK_HANDLE_REQ* reqHandle)
+    OTEL_SDK_HANDLE_REQ* reqHandle)
 {
     std::string context {wscontext};
     auto *engine = mAgentCore->getRequestProcessor(context);
@@ -104,13 +104,13 @@ WSAgent::startRequest(
         return engine->startRequest(context, requestPayload, reqHandle);
     }
 
-    return APPD_STATUS(fail);
+    return OTEL_STATUS(fail);
 }
 
-APPD_SDK_STATUS_CODE
+OTEL_SDK_STATUS_CODE
 WSAgent::endRequest(
-    APPD_SDK_HANDLE_REQ reqHandle,
-    const char* error)
+    OTEL_SDK_HANDLE_REQ reqHandle,
+    const char* error, const ResponsePayload* payload)
 {
     // TODO: How to get the context here?
     // one solution is get it from reqHandle.
@@ -121,14 +121,14 @@ WSAgent::endRequest(
     auto *engine = mAgentCore->getRequestProcessor(context);
     if (nullptr != engine)
     {
-        return engine->endRequest(reqHandle, error);
+        return engine->endRequest(reqHandle, error, payload);
     }
-    return APPD_STATUS(fail);
+    return OTEL_STATUS(fail);
 }
 
-APPD_SDK_STATUS_CODE
+OTEL_SDK_STATUS_CODE
 WSAgent::startInteraction(
-    APPD_SDK_HANDLE_REQ reqHandle,
+    OTEL_SDK_HANDLE_REQ reqHandle,
     const InteractionPayload* payload,
     std::unordered_map<std::string, std::string>& propagationHeaders)
 {
@@ -139,12 +139,12 @@ WSAgent::startInteraction(
     {
         return engine->startInteraction(reqHandle, payload, propagationHeaders);
     }
-    return APPD_STATUS(fail);
+    return OTEL_STATUS(fail);
 }
 
-APPD_SDK_STATUS_CODE
+OTEL_SDK_STATUS_CODE
 WSAgent::endInteraction(
-    APPD_SDK_HANDLE_REQ reqHandle,
+    OTEL_SDK_HANDLE_REQ reqHandle,
     bool ignoreBackend,
     EndInteractionPayload *payload)
 {
@@ -155,7 +155,7 @@ WSAgent::endInteraction(
     {
         return engine->endInteraction(reqHandle, ignoreBackend, payload);
     }
-    return APPD_STATUS(fail);
+    return OTEL_STATUS(fail);
 }
 
 int
@@ -166,13 +166,13 @@ WSAgent::addWSContextToCore(
     std::string contextName {wscontext};
     if (contextName.empty() || contextName == COREINIT_CONTEXT)
     {
-        apiFuncTraceError("Invalid context name", APPD_STATUS(cannot_add_ws_context_to_core));
+        apiFuncTraceError("Invalid context name", OTEL_STATUS(cannot_add_ws_context_to_core));
         return -1;
     }
 
     if (!contextConfig)
     {
-        apiFuncTraceError("Invalid context config", APPD_STATUS(cannot_add_ws_context_to_core));
+        apiFuncTraceError("Invalid context config", OTEL_STATUS(cannot_add_ws_context_to_core));
         return -1;
     }
     std::string serviceNamespace = contextConfig->serviceNamespace;
@@ -181,19 +181,19 @@ WSAgent::addWSContextToCore(
 
     if (serviceNamespace.empty())
     {
-        apiFuncTraceError("Invalid serviceNamespace", APPD_STATUS(cannot_add_ws_context_to_core));
+        apiFuncTraceError("Invalid serviceNamespace", OTEL_STATUS(cannot_add_ws_context_to_core));
         return -1;
     }
 
     if (serviceName.empty())
     {
-        apiFuncTraceError("Invalid serviceName", APPD_STATUS(cannot_add_ws_context_to_core));
+        apiFuncTraceError("Invalid serviceName", OTEL_STATUS(cannot_add_ws_context_to_core));
         return -1;
     }
 
     if (serviceInstanceId.empty())
     {
-        apiFuncTraceError("Invalid serviceInstanceId", APPD_STATUS(cannot_add_ws_context_to_core));
+        apiFuncTraceError("Invalid serviceInstanceId", OTEL_STATUS(cannot_add_ws_context_to_core));
         return -1;
     }
 
@@ -260,20 +260,20 @@ WSAgent::initDependency() {
     }
 }
 
-APPD_SDK_STATUS_CODE
+OTEL_SDK_STATUS_CODE
 WSAgent::checkPID()
 {
     if (!initPid)
     {
-        return appd_sdk_status_uninitialized;
+        return otel_sdk_status_uninitialized;
     }
     else if (initPid != getpid())
     {
-        return appd_sdk_status_wrong_process_id;
+        return otel_sdk_status_wrong_process_id;
     }
     else
     {
-        return appd_sdk_status_success;
+        return otel_sdk_status_success;
     }
 }
 
@@ -283,22 +283,22 @@ WSAgent::initialisePid()
     initPid = getpid();
 }
 
-APPD_SDK_STATUS_CODE
+OTEL_SDK_STATUS_CODE
 WSAgent::validateAndInitialise()
 {
-    APPD_SDK_STATUS_CODE res = checkPID();
-    if (res == appd_sdk_status_uninitialized)
+    OTEL_SDK_STATUS_CODE res = checkPID();
+    if (res == otel_sdk_status_uninitialized)
     {
         // this is expected and means it is a valid sdk_init call.
-        res = appd_sdk_status_success;
+        res = otel_sdk_status_success;
     }
-    else if (res == appd_sdk_status_success)
+    else if (res == otel_sdk_status_success)
     {
         // this means sdk_init was already called
-        apiFuncTraceError(BOOST_CURRENT_FUNCTION, appd_sdk_status_already_initialized);
-        return(appd_sdk_status_already_initialized);
+        apiFuncTraceError(BOOST_CURRENT_FUNCTION, otel_sdk_status_already_initialized);
+        return(otel_sdk_status_already_initialized);
     }
-    else if(APPD_ISFAIL(res))
+    else if(OTEL_ISFAIL(res))
     {
         apiFuncTraceError(BOOST_CURRENT_FUNCTION, res);
         return(res);
@@ -307,15 +307,15 @@ WSAgent::validateAndInitialise()
     return res;
 }
 
-APPD_SDK_STATUS_CODE
+OTEL_SDK_STATUS_CODE
 WSAgent::readConfig(
-    APPD_SDK_ENV_RECORD* env,
+    OTEL_SDK_ENV_RECORD* env,
     unsigned numberOfRecords,
     std::shared_ptr<TenantConfig> tenantConfig,
     std::shared_ptr<SpanNamer> spanNamer)
 {
     // Read all Config passed in env or from environment
-    APPD_SDK_STATUS_CODE res = APPD_SUCCESS;
+    OTEL_SDK_STATUS_CODE res = OTEL_SUCCESS;
     /*if(!env || numberOfRecords == 0)
     {
         res = mApiUtils->ReadFromEnvinronment(*tenantConfig);

@@ -1,5 +1,5 @@
 /*
-* Copyright 2021 AppDynamics LLC. 
+* Copyright 2022, OpenTelemetry Authors. 
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@
 
 #include <unordered_map>
 
-std::shared_ptr<appd::core::TenantConfig> getConfig() {
-  auto config =  std::shared_ptr<appd::core::TenantConfig>(new appd::core::TenantConfig());
+std::shared_ptr<otel::core::TenantConfig> getConfig() {
+  auto config =  std::shared_ptr<otel::core::TenantConfig>(new otel::core::TenantConfig());
   config->setServiceName("dummy_webserver");
   config->setServiceNamespace("dummy_service_namespace");
   config->setServiceInstanceId("dummy_instance_id");
@@ -35,20 +35,20 @@ std::shared_ptr<appd::core::TenantConfig> getConfig() {
 
 TEST(IntegrationTest, StartRequest)
 {
-	appd::core::RequestProcessingEngine engine;
-    auto spanNamer = std::make_shared<appd::core::SpanNamer>();
+	otel::core::RequestProcessingEngine engine;
+    auto spanNamer = std::make_shared<otel::core::SpanNamer>();
 	auto config = getConfig();
 	engine.init(config, spanNamer);
 	std::string wscontext = "ws_context";
-	appd::core::RequestPayload payload;
+	otel::core::RequestPayload payload;
 	payload.set_http_headers("key", "value");
 	payload.set_uri("dummy_span");
 	payload.set_request_protocol("GET");
 
-	appd::core::sdkwrapper::OtelKeyValueMap keyValueMap;
+	otel::core::sdkwrapper::OtelKeyValueMap keyValueMap;
   	keyValueMap["request_protocol"] = "GET";
 
-  	std::shared_ptr<appd::core::sdkwrapper::IScopedSpan> span;
+  	std::shared_ptr<otel::core::sdkwrapper::IScopedSpan> span;
   	span.reset(new MockScopedSpan);
 
 	int* dummy = new int(2);
@@ -56,12 +56,12 @@ TEST(IntegrationTest, StartRequest)
   std::cout << "calling startReq" << std::endl;
   for (int i = 0; i < 20; i++) {
 	  auto res = engine.startRequest("ws_context", &payload, &reqHandle);
-	  EXPECT_EQ(res, APPD_SUCCESS);
-    appd::core::InteractionPayload iPayload;
+	  EXPECT_EQ(res, OTEL_SUCCESS);
+    otel::core::InteractionPayload iPayload;
     iPayload.moduleName = "module";
     iPayload.phaseName = "phase";
 
-    appd::core::sdkwrapper::OtelKeyValueMap keyValueMap;
+    otel::core::sdkwrapper::OtelKeyValueMap keyValueMap;
     keyValueMap["interactionType"] = "EXIT_CALL";
 
 

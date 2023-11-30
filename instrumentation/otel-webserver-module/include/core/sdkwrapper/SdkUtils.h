@@ -1,5 +1,5 @@
 /*
-* Copyright 2021 AppDynamics LLC. 
+* Copyright 2022, OpenTelemetry Authors.  
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 #include <opentelemetry/context/propagation/text_map_propagator.h>
 #include <opentelemetry/nostd/string_view.h>
 
-namespace appd {
+namespace otel {
 namespace core {
 namespace sdkwrapper {
 
@@ -55,6 +55,6 @@ private:
 
 } //sdkwrapper
 } //core
-} //appd
+} //otel
 
 #endif

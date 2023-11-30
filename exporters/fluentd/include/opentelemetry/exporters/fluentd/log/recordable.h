@@ -3,8 +3,6 @@
 
 #pragma once
 
-#define ENABLE_LOGS_PREVIEW 1
-
 #include "nlohmann/json.hpp"
 #include "opentelemetry/sdk/common/attribute_utils.h"
 #include "opentelemetry/sdk/logs/recordable.h"
@@ -33,13 +31,13 @@ public:
    * Set name for this log
    * @param name the name to set
    */
-  void SetName(nostd::string_view name) noexcept override;
+  void SetName(nostd::string_view name) noexcept;
 
   /**
    * Set body field for this log.
    * @param message the body to set
    */
-  void SetBody(nostd::string_view message) noexcept override;
+  void SetBody(const opentelemetry::common::AttributeValue &message) noexcept override;
 
   /**
    * Set a resource for this log.
@@ -58,24 +56,31 @@ public:
       const opentelemetry::common::AttributeValue &value) noexcept override;
 
   /**
+   * Set the Event Id.
+   * @param id The event id to set
+   * @param name Optional event name to set
+   */
+  void SetEventId(int64_t id, nostd::string_view name = {}) noexcept override;
+
+  /**
    * Set trace id for this log.
    * @param trace_id the trace id to set
    */
-  void SetTraceId(opentelemetry::trace::TraceId trace_id) noexcept override;
+  void SetTraceId(const opentelemetry::trace::TraceId &trace_id) noexcept override;
 
   /**
    * Set span id for this log.
    * @param span_id the span id to set
    */
   virtual void
-  SetSpanId(opentelemetry::trace::SpanId span_id) noexcept override;
+  SetSpanId(const opentelemetry::trace::SpanId &span_id) noexcept override;
 
   /**
    * Inject a trace_flags  for this log.
    * @param trace_flags the span id to set
    */
   void SetTraceFlags(
-      opentelemetry::trace::TraceFlags trace_flags) noexcept override {
+      const opentelemetry::trace::TraceFlags &trace_flags) noexcept override {
   } // Not Supported
 
   /**
@@ -86,12 +91,19 @@ public:
       opentelemetry::common::SystemTimestamp timestamp) noexcept override;
 
   /**
-   * Set instrumentation_library for this log.
-   * @param instrumentation_library the instrumentation library to set
+   * Set the observed timestamp for this log.
+   * @param timestamp the timestamp to set
    */
-  void SetInstrumentationLibrary(
-      const opentelemetry::sdk::instrumentationlibrary::InstrumentationLibrary
-          &instrumentation_library) noexcept override {} // Not Supported
+  void SetObservedTimestamp(
+      opentelemetry::common::SystemTimestamp timestamp) noexcept override;
+
+  /**
+   * Set instrumentation_scope for this log.
+   * @param instrumentation_scope the instrumentation scope to set
+   */
+  void SetInstrumentationScope(
+      const opentelemetry::sdk::instrumentationscope::InstrumentationScope
+          &instrumentation_scope) noexcept override {} // Not Supported
 
   nlohmann::json &Log() { return json_; }
 

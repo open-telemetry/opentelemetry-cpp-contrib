@@ -1,5 +1,5 @@
 /*
-* Copyright 2021 AppDynamics LLC. 
+* Copyright 2022, OpenTelemetry Authors.  
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -17,18 +17,19 @@
 #ifndef REQUEST_PROCESSOR_ENGINE_H
 #define REQUEST_PROCESSOR_ENGINE_H
 
-#include "api/AppdynamicsSdk.h"
+#include "api/OpentelemetrySdk.h"
 #include "api/SpanNamer.h"
 #include "RequestContext.h"
 #include "AgentLogger.h"
 #include <unordered_map>
 
 
-namespace appd {
+namespace otel {
 namespace core {
 
 class TenantConfig;
 class RequestPayload;
+class ResponsePayload;
 class InteractionPayload;
 class EndInteractionPayload;
 
@@ -44,19 +45,20 @@ public:
     virtual ~IRequestProcessingEngine() {}
     virtual void init(std::shared_ptr<TenantConfig>& config,
         std::shared_ptr<SpanNamer> spanNamer) = 0;
-    virtual APPD_SDK_STATUS_CODE startRequest(
+    virtual OTEL_SDK_STATUS_CODE startRequest(
         const std::string& wscontext,
         RequestPayload* payload,
-        APPD_SDK_HANDLE_REQ* reqHandle) = 0;
-    virtual APPD_SDK_STATUS_CODE endRequest(
-        APPD_SDK_HANDLE_REQ reqHandle,
-        const char* error) = 0;
-    virtual APPD_SDK_STATUS_CODE startInteraction(
-        APPD_SDK_HANDLE_REQ reqHandle,
+        OTEL_SDK_HANDLE_REQ* reqHandle) = 0;
+    virtual OTEL_SDK_STATUS_CODE endRequest(
+        OTEL_SDK_HANDLE_REQ reqHandle,
+        const char* error,
+        const ResponsePayload* payload = nullptr) = 0;
+    virtual OTEL_SDK_STATUS_CODE startInteraction(
+        OTEL_SDK_HANDLE_REQ reqHandle,
         const InteractionPayload* payload,
         std::unordered_map<std::string, std::string>& propagationHeaders) = 0;
-    virtual APPD_SDK_STATUS_CODE endInteraction(
-        APPD_SDK_HANDLE_REQ reqHandle,
+    virtual OTEL_SDK_STATUS_CODE endInteraction(
+        OTEL_SDK_HANDLE_REQ reqHandle,
         bool ignoreBackend,
         EndInteractionPayload *payload) = 0;
 };
@@ -69,30 +71,31 @@ public:
 
     void init(std::shared_ptr<TenantConfig>& config,
         std::shared_ptr<SpanNamer> spanNamer) override;
-    APPD_SDK_STATUS_CODE startRequest(
+    OTEL_SDK_STATUS_CODE startRequest(
         const std::string& wscontext,
         RequestPayload* payload,
-        APPD_SDK_HANDLE_REQ* reqHandle) override;
-    APPD_SDK_STATUS_CODE endRequest(
-        APPD_SDK_HANDLE_REQ reqHandle,
-        const char* error) override;
-    APPD_SDK_STATUS_CODE startInteraction(
-        APPD_SDK_HANDLE_REQ reqHandle,
+        OTEL_SDK_HANDLE_REQ* reqHandle) override;
+    OTEL_SDK_STATUS_CODE endRequest(
+        OTEL_SDK_HANDLE_REQ reqHandle,
+        const char* error,
+        const ResponsePayload* payload = nullptr) override;
+    OTEL_SDK_STATUS_CODE startInteraction(
+        OTEL_SDK_HANDLE_REQ reqHandle,
         const InteractionPayload* payload,
         std::unordered_map<std::string, std::string>& propagationHeaders) override;
-    APPD_SDK_API APPD_SDK_STATUS_CODE endInteraction(
-        APPD_SDK_HANDLE_REQ reqHandle,
+    OTEL_SDK_API OTEL_SDK_STATUS_CODE endInteraction(
+        OTEL_SDK_HANDLE_REQ reqHandle,
         bool ignoreBackend,
         EndInteractionPayload *payload) override;
 
 protected:
-    std::shared_ptr<appd::core::sdkwrapper::ISdkWrapper> m_sdkWrapper;
-    std::shared_ptr<appd::core::SpanNamer> m_spanNamer;
+    std::shared_ptr<otel::core::sdkwrapper::ISdkWrapper> m_sdkWrapper;
+    std::shared_ptr<otel::core::SpanNamer> m_spanNamer;
 private:
     AgentLogger mLogger;
 };
 
 } // core
-} // appd
+} // otel
 
 #endif

@@ -1,8 +1,14 @@
+plugins {
+    id "de.undercouch.download" version "3.4.3"
+}
+
 apply plugin: 'cpp'
 apply from: 'common.gradle'
+apply plugin: 'de.undercouch.download'
 
 def coverageEnabled = System.getenv('enableCoverage')
 def target_system = System.getProperty('targetSystem') ?: 'centos6'
+def buildType = System.getProperty('buildType') ?: 'release'
 
 project.ext {
     // To do a 32-bit build, pass "-Dos.arch=x86"
@@ -10,10 +16,6 @@ project.ext {
     modDepDir = "${platBuildDir}/module-dependencies"
 
     debug = false
-    if (!Project.hasProperty('buildType')) {
-        buildType = 'release'
-    }
-
     if (buildType != 'release') {
         buildType = 'debug'
         debug = true;
@@ -37,6 +39,7 @@ project.ext {
     props.load(new FileInputStream(file("version.properties")))
     moduleVersion = props.get("server-module-version")
     moduleRelease = props.get("release")
+    cppSDKVersion = props.get("CPP-SDK-version")
     moduleName = "WebServer Module"
     buildType = "Release Build"
     fullVersion = "${moduleName} ${moduleVersion} ${moduleRelease} ${headSHA1}: ${buildType}"
@@ -49,9 +52,11 @@ project.ext {
     
     apache22Version = "2.2.31"
     apache24Version = "2.4.23"
+    nginxSupportedVersions=props.get("nginxSupportedVersions").split(',')
 
     libraryStageDir = "${platBuildDir}/opentelemetry-webserver-sdk"
     apacheStageDir = "${libraryStageDir}/WebServerModule/Apache"
+    nginxStageDir = "${libraryStageDir}/WebServerModule/Nginx"
 
     coverageCompilerFlags = '-g -fprofile-arcs -ftest-coverage'
     coverageLinkerFlags = '-lgcov --coverage'
@@ -83,6 +88,7 @@ task generateModuleVersionHeader(type: Copy) {
         headSHA1: headSHA1,
         moduleVersion: moduleVersion,
         moduleRelease: moduleRelease,
+        cppSDKVersion: cppSDKVersion,
         fullVersion: fullVersion)
 }
 
@@ -96,6 +102,7 @@ task generateVersionFile(type: Copy) {
         headSHA1: headSHA1,
         moduleVersion: moduleVersion,
         moduleRelease: moduleRelease,
+        cppSDKVersion: cppSDKVersion,
         fullVersion: fullVersion)
 }
 
@@ -138,6 +145,7 @@ task gypLibrary(type: Exec) {
         BOOST_LIB: BOOST_LIB,
         BOOST_INCLUDE: BOOST_INCLUDE,
         LIBRARY_FLAGS: libraryFlags,
+        CPP_SDK_VERSION: cppSDKVersion,
     ]
 
     environment libraryBuildEnvironment
@@ -174,15 +182,14 @@ task stageLibrary(type: Copy) {
 
     from("dist/runSDKProxy.sh") { it.fileMode 0770 }
 
-    from("src/sdk_lib/src/api/include/appdynamics.h") { it.into "sdk_lib" }
     from(buildLibrary) { it.into "sdk_lib/lib" }
-    from("${modDepDir}/opentelemetry/1.2.0/lib/libopentelemetry_common.so") { it.into "sdk_lib/lib" }
-    from("${modDepDir}/opentelemetry/1.2.0/lib/libopentelemetry_resources.so") { it.into "sdk_lib/lib" }
-    from("${modDepDir}/opentelemetry/1.2.0/lib/libopentelemetry_trace.so") { it.into "sdk_lib/lib" }
-    from("${modDepDir}/opentelemetry/1.2.0/lib/libopentelemetry_otlp_recordable.so") { it.into "sdk_lib/lib" }    
-    from("${modDepDir}/opentelemetry/1.2.0/lib/libopentelemetry_exporter_ostream_span.so") { it.into "sdk_lib/lib" }
-    from("${modDepDir}/opentelemetry/1.2.0/lib/libopentelemetry_exporter_otlp_grpc.so") { it.into "sdk_lib/lib" }
-    from("dist/appdynamics_sdk_log4cxx.xml.template") { it.into "conf" }
+    from("${modDepDir}/opentelemetry/${cppSDKVersion}/lib/libopentelemetry_common.so") { it.into "sdk_lib/lib" }
+    from("${modDepDir}/opentelemetry/${cppSDKVersion}/lib/libopentelemetry_resources.so") { it.into "sdk_lib/lib" }
+    from("${modDepDir}/opentelemetry/${cppSDKVersion}/lib/libopentelemetry_trace.so") { it.into "sdk_lib/lib" }
+    from("${modDepDir}/opentelemetry/${cppSDKVersion}/lib/libopentelemetry_otlp_recordable.so") { it.into "sdk_lib/lib" }
+    from("${modDepDir}/opentelemetry/${cppSDKVersion}/lib/libopentelemetry_exporter_ostream_span.so") { it.into "sdk_lib/lib" }
+    from("${modDepDir}/opentelemetry/${cppSDKVersion}/lib/libopentelemetry_exporter_otlp_grpc.so") { it.into "sdk_lib/lib" }
+    from("dist/opentelemetry_sdk_log4cxx.xml.template") { it.into "conf" }
     from("dist/install.${scriptExt}") { it.fileMode 0700 }
 
     into libraryStageDir
@@ -288,7 +295,7 @@ task gypApacheModule(type: Exec) {
         ARCH_FLAG: gccArchFlag,
         APACHE22_INCLUDE_DIR: "${platBuildDir}/httpd-${apache22Version}/include",
         APACHE24_INCLUDE_DIR: "${platBuildDir}/httpd-${apache24Version}/include",
-        APPD_SDK_LIB_DIR: "${libraryStageDir}/sdk_lib",
+        OTEL_SDK_LIB_DIR: "${libraryStageDir}/sdk_lib",
         ANSDK_DIR: modDepDir,
         COMPILER_FLAGS: (coverageEnabled) ? coverageCompilerFlags : '',
         LINKER_FLAGS: (coverageEnabled) ? coverageLinkerFlags : '',
@@ -360,6 +367,125 @@ task assembleApacheModule(type: Tar) {
     compression Compression.GZIP
 }
 
+// NGINX
+nginxSupportedVersions.each { nginxVersion ->
+    task("downloadNginx${nginxVersion}", type: Download) {
+        src "http://nginx.org/download/nginx-${nginxVersion}.tar.gz"
+        dest buildDir
+        overwrite false
+    }
+
+    task("extractNginx${nginxVersion}", type: Copy) {
+        dependsOn "downloadNginx${nginxVersion}"
+        from tarTree(resources.gzip("build/nginx-${nginxVersion}.tar.gz"))
+        into buildDir
+    }
+
+    task("configureNginx${nginxVersion}", type: Exec) {
+        group = 'OpenTelemetry module for Nginx'
+        description = 'Run configure to generate the build files for OpenTelemetry Module for Nginx'
+
+        dependsOn "extractNginx${nginxVersion}"
+        workingDir "${buildDir}/nginx-${nginxVersion}"
+        commandLine './configure', "--with-compat", "--with-cc-opt=-Wno-error -Wno-unused-variable -Wno-unused-but-set-variable", "--with-ld-opt=-L${libraryStageDir}/sdk_lib/lib", "--add-dynamic-module=${projectDir}/src/nginx"
+    }
+
+    task("delMakefile${nginxVersion}", type: Exec) {
+        group = 'OpenTelemetry module for Nginx'
+        description = 'Deleting old Makefile'
+
+        workingDir "${buildDir}/nginx-${nginxVersion}/objs"
+        commandLine 'rm', '-rf', 'Makefile'
+    }
+
+    task("copyMakefile${nginxVersion}", type: Copy) {
+        group = 'OpenTelemetry module for Nginx'
+        description = 'Copying Makefile for compiling Nginx Web Server Agent'
+
+        dependsOn "delMakefile${nginxVersion}"
+        from "src/nginx/Makefile"
+        into "${buildDir}/nginx-${nginxVersion}/objs/"
+    }
+
+    task("updateMakefile${nginxVersion}", type: Exec) {
+        group = 'OpenTelemetry module for Nginx'
+        description = 'Updating the Makefile for dynamic build'
+
+        commandLine 'bash', '-c', "src/nginx/script.sh ${buildDir}/nginx-${nginxVersion}/objs/Makefile"
+    }
+
+    task("buildNginxModule${nginxVersion}",type: Exec) {
+        group = 'OpenTelemetry module for Nginx'
+        description = 'Build the Nginx Web Server Agent'
+
+        dependsOn "configureNginx${nginxVersion}"
+        dependsOn stageLibrary
+        dependsOn "updateMakefile${nginxVersion}"
+
+        outputs.file "${buildDir}/nginx-${nginxVersion}/objs/ngx_http_opentelemetry_module.so"
+        workingDir "${buildDir}/nginx-${nginxVersion}"
+        commandLine 'make', 'modules'
+    }
+
+    task("stageNginxModule${nginxVersion}", type: Copy) {
+        group = 'OpenTelemetry module for Nginx'
+        description = 'Stage the Nginx Web Server Agent distribution directory'
+
+        dependsOn "buildNginxModule${nginxVersion}"
+        def nginxStageDirVersion = "${nginxStageDir}/${nginxVersion}"
+        from "${buildDir}/nginx-${nginxVersion}/objs/ngx_http_opentelemetry_module.so"
+        into nginxStageDirVersion
+    }
+
+    task("stripNginxModule${nginxVersion}", type: Exec) {
+        group = 'OpenTelemetry module for Nginx'
+        description = 'Strip the production Nginx Web Server Agent'
+
+        dependsOn "stageNginxModule${nginxVersion}"
+        onlyIf { !debug }
+
+        inputs.dir "stageNginxModule${nginxVersion}"
+        outputs.file "${nginxStageDir}/${nginxVersion}/ngx_http_opentelemetry_module.${sharedLibraryExt}"
+
+        workingDir "${nginxStageDir}/${nginxVersion}"
+        commandLine 'strip', '-x', "ngx_http_opentelemetry_module.${sharedLibraryExt}"
+    }
+}
+
+task assembleNginxModule(type: Tar) {
+    group = 'Nginx Web Server Module'
+    description = 'Assemble the Nginx Web Server module artifact (tgz)'
+
+    nginxSupportedVersions.each {
+        nginxVersion ->
+        dependsOn "stripNginxModule${nginxVersion}"
+    }
+
+    from libraryStageDir
+    baseName "opentelemetry-webserver-sdk-${osArch}-${osName}"
+    into 'opentelemetry-webserver-sdk'
+    destinationDir file(buildDir)
+    compression Compression.GZIP
+}
+
+// Packages the complete Web Server Agent
+task assembleWebServerModule(type: Tar) {
+    group = 'Web Server Agent'
+    description = 'Assemble the Web Server agent artifact (tgz)'
+
+    dependsOn stripApacheModule
+    nginxSupportedVersions.each {
+        nginxVersion ->
+        dependsOn "stripNginxModule${nginxVersion}"
+    }
+
+    from libraryStageDir
+    baseName "opentelemetry-webserver-sdk-${osArch}-${osName}"
+    into 'opentelemetry-webserver-sdk'
+    destinationDir file(buildDir)
+    compression Compression.GZIP
+}
+
 // Tests
 
 task gypUnitTest(type: Exec) {
@@ -369,13 +495,14 @@ task gypUnitTest(type: Exec) {
     outputs.file "${platBuildDir}/unit_test/Makefile"
 
     ext.testBuildEnvironment = [
-        APPD_SDK_LIB_DIR: "${libraryStageDir}/sdk_lib",
+        OTEL_SDK_LIB_DIR: "${libraryStageDir}/sdk_lib",
         ANSDK_DIR: modDepDir,
         BOOST_LIB: BOOST_LIB,
         BOOST_INCLUDE: BOOST_INCLUDE,
         GTEST_LIB_DIR: target_system == "ubuntu" ?
             "${modDepDir}/googletest/1.10.0/lib" : "${modDepDir}/googletest/1.10.0/lib64",
         LIBRARY_FLAGS: libraryFlags,
+        CPP_SDK_VERSION: cppSDKVersion,
     ]
 
     environment testBuildEnvironment
@@ -508,9 +635,9 @@ model {
 
     repositories {
         libs(PrebuiltLibraries) { libs ->
-            appd {
+            otel {
                 headers.srcDirs "${libraryStageDir}/sdk_lib"
-                // See FIXME on sources.cpp.lib library: 'appd' above
+                // See FIXME on sources.cpp.lib library: 'otel' above
                 // binaries.withType(SharedLibraryBinary) {
                 //     sharedLibraryFile = file("${libraryStageDir}/sdk_lib/lib/libopentelemetry_webserver_sdk.so")
                 // }

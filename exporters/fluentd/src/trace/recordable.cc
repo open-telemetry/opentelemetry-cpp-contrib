@@ -5,6 +5,8 @@
 #include "opentelemetry/exporters/fluentd/common/fluentd_common.h"
 #include "opentelemetry/exporters/fluentd/common/fluentd_logging.h"
 
+#include "opentelemetry/sdk/resource/resource.h"
+
 #include <map>
 #include <string>
 
@@ -23,12 +25,13 @@ template <typename T> static inline json create_message(T ts, json body) {
 }
 
 // constexpr needs keys to be constexpr, const is next best to use.
-static const std::map<opentelemetry::trace::SpanKind, std::string>
+static const std::map<opentelemetry::trace::SpanKind, int>
     kSpanKindMap = {
-        {opentelemetry::trace::SpanKind::kClient, "CLIENT"},
-        {opentelemetry::trace::SpanKind::kServer, "SERVER"},
-        {opentelemetry::trace::SpanKind::kConsumer, "CONSUMER"},
-        {opentelemetry::trace::SpanKind::kProducer, "PRODUCER"},
+        {opentelemetry::trace::SpanKind::kInternal, 0},
+        {opentelemetry::trace::SpanKind::kServer, 1},
+        {opentelemetry::trace::SpanKind::kClient, 2},
+        {opentelemetry::trace::SpanKind::kProducer, 3},
+        {opentelemetry::trace::SpanKind::kConsumer, 4},
 };
 
 //
@@ -89,10 +92,11 @@ void Recordable::AddLink(
 
 void Recordable::SetStatus(opentelemetry::trace::StatusCode code,
                            nostd::string_view description) noexcept {
+  options_[FLUENT_FIELD_SUCCESS] = code != opentelemetry::trace::StatusCode::kError;
   if (code != opentelemetry::trace::StatusCode::kUnset) {
     options_["tags"]["otel.status_code"] = code;
     if (code == opentelemetry::trace::StatusCode::kError) {
-      options_["tags"]["error"] = description;
+      options_[FLUENT_FIELD_STATUSMESSAGE] = description;
     }
   }
 }
@@ -136,12 +140,12 @@ void Recordable::SetSpanKind(
   }
 }
 
-void Recordable::SetInstrumentationLibrary(
-    const opentelemetry::sdk::instrumentationlibrary::InstrumentationLibrary
-        &instrumentation_library) noexcept {
-  options_["tags"]["otel.library.name"] = instrumentation_library.GetName();
+void Recordable::SetInstrumentationScope(
+    const opentelemetry::sdk::instrumentationscope::InstrumentationScope
+        &instrumentation_scope) noexcept {
+  options_["tags"]["otel.library.name"] = instrumentation_scope.GetName();
   options_["tags"]["otel.library.version"] =
-      instrumentation_library.GetVersion();
+      instrumentation_scope.GetVersion();
 }
 
 } // namespace trace

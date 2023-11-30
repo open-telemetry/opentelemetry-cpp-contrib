@@ -8,7 +8,7 @@
  <param name="MaxBackupIndex" value="5"/>
  <layout class="org.apache.log4j.PatternLayout">
   <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS z} %-5p %X{pid}[%t] [%c{2}] %m%n" />
-  <param name="HeaderPattern" value="AppDynamics Native SDK %X{version} %X{pid}%n" />
+  <param name="HeaderPattern" value="Opentelemetry Webserver %X{version} %X{pid}%n" />
  </layout>
 </appender>
 
@@ -19,7 +19,7 @@
  <param name="MaxBackupIndex" value="5"/>
  <layout class="org.apache.log4j.PatternLayout">
   <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS z} %-5p %X{pid} [%t] [%c{2}] %m%n" />
-  <param name="HeaderPattern" value="AppDynamics Native SDK %X{version} %X{pid}%n" />
+  <param name="HeaderPattern" value="Opentelemetry Webserver %X{version} %X{pid}%n" />
  </layout>
 </appender>
 
@@ -30,7 +30,7 @@
  <param name="MaxBackupIndex" value="5"/>
  <layout class="org.apache.log4j.PatternLayout">
   <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS z} %-5p %X{pid} [%t] [%c{2}] %m%n" />
-  <param name="HeaderPattern" value="AppDynamics Native SDK %X{version} %X{pid}%n" />
+  <param name="HeaderPattern" value="Opentelemetry Webserver %X{version} %X{pid}%n" />
  </layout>
 </appender>
 

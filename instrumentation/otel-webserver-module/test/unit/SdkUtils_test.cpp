@@ -1,5 +1,5 @@
 /*
-* Copyright 2021 AppDynamics LLC. 
+* Copyright 2022, OpenTelemetry Authors. 
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ TEST(Get, ReturnsExpectedValueWhenKeyFound)
 	std::unordered_map<std::string, std::string> carrier
 		{{"TestKey", "TestValue"}};
 	opentelemetry::nostd::string_view key = "TestKey";
-	appd::core::sdkwrapper::OtelCarrier otelCarrier(carrier);
+	otel::core::sdkwrapper::OtelCarrier otelCarrier(carrier);
 	auto value = otelCarrier.Get(key);
 	EXPECT_EQ(value, "TestValue");
 }
@@ -31,7 +31,7 @@ TEST(Get, ReturnsEmptyWhenKeyNotFound)
 	std::unordered_map<std::string, std::string> carrier
 		{{"TestKey", "TestValue"}};
 	opentelemetry::nostd::string_view key = "TestKey1";
-	appd::core::sdkwrapper::OtelCarrier otelCarrier(carrier);
+	otel::core::sdkwrapper::OtelCarrier otelCarrier(carrier);
 	auto value = otelCarrier.Get(key);
 	EXPECT_EQ(value, "");
 }
@@ -41,7 +41,7 @@ TEST(Set, InsertsExpectedKeyAndValue)
 	std::unordered_map<std::string, std::string> carrier;
 	opentelemetry::nostd::string_view key = "TestKey";
 	opentelemetry::nostd::string_view value = "TestValue";
-	appd::core::sdkwrapper::OtelCarrier otelCarrier;
+	otel::core::sdkwrapper::OtelCarrier otelCarrier;
 	otelCarrier.Set(key, value);
 	EXPECT_EQ(otelCarrier.Get(key), value);
 }

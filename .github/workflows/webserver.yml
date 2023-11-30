@@ -1,0 +1,195 @@
+name: webserver instrumentation CI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'instrumentation/otel-webserver-module/**'
+      - '.github/workflows/webserver.yml'
+  pull_request:
+    branches: [ main, webserver-dev ]
+    paths:
+      - 'instrumentation/otel-webserver-module/**'
+      - '.github/workflows/webserver.yml'
+
+jobs:
+  webserver-build-test-ubuntu:
+    name: webserver-ubuntu-build
+    runs-on: ubuntu-20.04
+    steps:
+      - name: checkout otel webserver
+        uses: actions/checkout@v3
+      - name: setup buildx
+        id: buildx
+        uses: docker/setup-buildx-action@master
+        with:
+          install: true
+      - name: cache docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/buildx-cache/
+          key: apache-ubuntu-20.04-${{ github.sha }}
+          restore-keys: |
+            apache-ubuntu-20.04
+      - name: setup docker image
+        run: |
+          cd instrumentation/otel-webserver-module
+          docker buildx build -t apache_ubuntu -f docker/ubuntu20.04/Dockerfile \
+            --cache-from type=local,src=/tmp/buildx-cache/apache_ubuntu \
+            --cache-to type=local,dest=/tmp/buildx-cache/apache_ubuntu-new \
+            --load .
+      - name: build
+        run: |
+          docker run -idt --name apache_ubuntu_container apache_ubuntu /bin/bash
+          cd instrumentation/otel-webserver-module
+          docker exec apache_ubuntu_container bash -c \
+            'cd /otel-webserver-module; rm -rf *;'
+          docker cp . $(docker inspect --format="{{.Id}}" apache_ubuntu_container):/otel-webserver-module/
+          docker exec apache_ubuntu_container bash -c              \
+            'cd /otel-webserver-module; rm -rf build;              \
+            cp -r /dependencies /otel-webserver-module/;           \
+            cp -r /build-dependencies /otel-webserver-module/;     \
+
+            ./gradlew assembleWebServerModule -DtargetSystem=ubuntu'
+
+      - name: update cache
+        run: |
+          rm -rf /tmp/buildx-cache/apache_ubuntu
+          mv /tmp/buildx-cache/apache_ubuntu-new /tmp/buildx-cache/apache_ubuntu
+
+  webserver-build-test-centos7:
+    name: webserver-centos7-build
+    runs-on: ubuntu-20.04
+    steps:
+      - name: checkout otel webserver
+        uses: actions/checkout@v3
+      - name: setup buildx
+        id: buildx
+        uses: docker/setup-buildx-action@master
+        with:
+          install: true
+      - name: cache docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/buildx-cache/
+          key: apache-centos7-${{ github.sha }}
+          restore-keys: |
+            apache-centos7
+      - name: setup docker image
+        run: |
+          cd instrumentation/otel-webserver-module
+          docker buildx build -t apache_centos7 -f docker/centos7/Dockerfile \
+            --cache-from type=local,src=/tmp/buildx-cache/apache_centos7 \
+            --cache-to type=local,dest=/tmp/buildx-cache/apache_centos7-new \
+            --load .
+      - name: build
+        run: |
+          docker run -idt --name apache_centos7_container apache_centos7 /bin/bash
+          cd instrumentation/otel-webserver-module
+          docker exec apache_centos7_container bash -c \
+            'cd /otel-webserver-module; rm -rf *;'
+          docker cp . $(docker inspect --format="{{.Id}}" apache_centos7_container):/otel-webserver-module/
+          docker exec apache_centos7_container bash -c \
+            'cd /otel-webserver-module; rm -rf build; \
+            cp -r /dependencies /otel-webserver-module/;           \
+            cp -r /build-dependencies /otel-webserver-module/;     \
+            ./gradlew assembleWebServerModule'
+      - name: unit test
+        run: |
+          docker exec apache_centos7_container bash -c \
+            'cd /otel-webserver-module; ./gradlew runUnitTest'
+      - name: update cache
+        run: |
+          rm -rf /tmp/buildx-cache/apache_centos7
+          mv /tmp/buildx-cache/apache_centos7-new /tmp/buildx-cache/apache_centos7
+      - name: copy artifacts
+        id: artifacts
+        run: |
+          cd instrumentation/otel-webserver-module
+          mkdir -p /tmp/apache_centos7/
+          docker cp apache_centos7_container:/otel-webserver-module/build/opentelemetry-webserver-sdk-x64-linux.tgz \
+            /tmp/apache_centos7/
+      - name: upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: opentelemetry-webserver-sdk-x64-linux.tgz
+          path: /tmp/apache_centos7/opentelemetry-webserver-sdk-x64-linux.tgz
+      - name: run integrationtest
+        run: |
+          docker rm -f apache_centos7_container
+          cd instrumentation/otel-webserver-module
+          docker-compose --profile centos7 up -d
+          docker ps -a
+          sleep 30
+          ./gradlew :test:integration:integrationTests -i
+
+  webserver-build-test-centos6:
+    name: webserver-centos6-build
+    runs-on: ubuntu-20.04
+    steps:
+      - name: checkout otel webserver
+        uses: actions/checkout@v3
+      - name: setup buildx
+        id: buildx
+        uses: docker/setup-buildx-action@master
+        with:
+          install: true
+      - name: cache docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/buildx-cache/
+          key: apache-centos6-${{ github.sha }}
+          restore-keys: |
+            apache-centos6
+      - name: setup docker image
+        run: |
+          cd instrumentation/otel-webserver-module
+          docker buildx build -t apache_centos6 -f Dockerfile \
+            --cache-from type=local,src=/tmp/buildx-cache/apache_centos6 \
+            --cache-to type=local,dest=/tmp/buildx-cache/apache_centos6-new \
+            --load .
+      - name: build
+        run: |
+          docker run -idt --name apache_centos6_container apache_centos6 /bin/bash
+          cd instrumentation/otel-webserver-module
+          docker exec apache_centos6_container bash -c \
+            'cd /otel-webserver-module; rm -rf *;'
+          docker cp . $(docker inspect --format="{{.Id}}" apache_centos6_container):/otel-webserver-module/
+          docker exec apache_centos6_container bash -c \
+            'cd /otel-webserver-module; rm -rf build; \
+            cp -r /dependencies /otel-webserver-module/;           \
+            cp -r /build-dependencies /otel-webserver-module/;     \
+            ./gradlew assembleWebServerModule'
+      - name: unit test
+        run: |
+          docker exec apache_centos6_container bash -c \
+            'cd /otel-webserver-module; ./gradlew runUnitTest'
+      - name: update cache
+        run: |
+          rm -rf /tmp/buildx-cache/apache_centos6
+          mv /tmp/buildx-cache/apache_centos6-new /tmp/buildx-cache/apache_centos6
+
+  Codeql-build:
+    name: static-analysis
+    runs-on: ubuntu-20.04
+    steps:
+      - name: checkout otel webserver
+        uses: actions/checkout@v3
+      - name: setup environment
+        run: |
+          cd ..
+          cp opentelemetry-cpp-contrib/instrumentation/otel-webserver-module/codeql-env.sh .
+          sudo ./codeql-env.sh
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: cpp
+      - name: build
+        run: |
+          cd instrumentation/otel-webserver-module
+          cp -r /dependencies ../otel-webserver-module/
+          cp -r /build-dependencies ../otel-webserver-module/
+          ./gradlew assembleWebserverModule -DtargetSystem=ubuntu --info
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+

@@ -1,5 +1,5 @@
 /*
-* Copyright 2021 AppDynamics LLC. 
+* Copyright 2022, OpenTelemetry Authors. 
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -20,19 +20,19 @@
 #include "mocks/mock_RequestProcessingEngine.h"
 #include <memory>
 
-class FakeContext : public appd::core::WebServerContext
+class FakeContext : public otel::core::WebServerContext
 {
 public:
-	FakeContext(std::shared_ptr<appd::core::TenantConfig> config)
-		: appd::core::WebServerContext(config)
+	FakeContext(std::shared_ptr<otel::core::TenantConfig> config)
+		: otel::core::WebServerContext(config)
 	{}
-	void initContext(std::shared_ptr<appd::core::SpanNamer> spanNamer)
+	void initContext(std::shared_ptr<otel::core::SpanNamer> spanNamer)
 	{
 		mAgentKernel.reset(new MockAgentKernel);
 	}
 };
 
-class FakeAgentCore : public appd::core::AgentCore
+class FakeAgentCore : public otel::core::AgentCore
 {
 public:
 	FakeAgentCore(
@@ -45,7 +45,7 @@ public:
 protected:
 	void createContext(
         const std::string& contextName,
-        std::shared_ptr<appd::core::TenantConfig> config)
+        std::shared_ptr<otel::core::TenantConfig> config)
 	{
 		if (contextName == COREINIT_CONTEXT)
 		{
@@ -62,15 +62,15 @@ private:
 	std::shared_ptr<MockContext> mDummyContext;
 };
 
-class FakeKernel : public appd::core::AgentKernel
+class FakeKernel : public otel::core::AgentKernel
 {
 public:
 	FakeKernel(MockRequestProcessingEngine* engine)
 	: mEngine(engine)
 	{}
 
-	void initKernel(std::shared_ptr<appd::core::TenantConfig> config,
-        std::shared_ptr<appd::core::SpanNamer> spanNamer)
+	void initKernel(std::shared_ptr<otel::core::TenantConfig> config,
+        std::shared_ptr<otel::core::SpanNamer> spanNamer)
 	{
 		mRequestProcessingEngine.reset(mEngine);
 	}
@@ -79,7 +79,7 @@ private:
 };
 
 
-void fillTenantConfig(std::shared_ptr<appd::core::TenantConfig> config)
+void fillTenantConfig(std::shared_ptr<otel::core::TenantConfig> config)
 {
 	config->setServiceNamespace("serviceNamespace");
     config->setServiceName("serviceName");
@@ -99,14 +99,14 @@ using testing::_;
 
 TEST(WebserverContext, webserver_context_creation_success)
 {
-	auto tenantConfig = std::make_shared<appd::core::TenantConfig>();
+	auto tenantConfig = std::make_shared<otel::core::TenantConfig>();
 	fillTenantConfig(tenantConfig);
 
-    auto spanNamer = std::make_shared<appd::core::SpanNamer>();
+    auto spanNamer = std::make_shared<otel::core::SpanNamer>();
 	FakeContext context(tenantConfig);
 	context.initContext(spanNamer);
 
-	appd::core::IKernel* kernel = context.getKernel();
+	otel::core::IKernel* kernel = context.getKernel();
 	EXPECT_NE(nullptr, kernel);
 
 	MockAgentKernel* mockKernel = dynamic_cast<MockAgentKernel*>(kernel);
@@ -119,30 +119,30 @@ TEST(WebserverContext, webserver_context_creation_success)
 
 TEST(AgentCore, agent_core_start_returns_true)
 {
-	auto initConfig = std::make_shared<appd::core::TenantConfig>();
+	auto initConfig = std::make_shared<otel::core::TenantConfig>();
 	fillTenantConfig(initConfig);
 
-	auto dummyConfig = std::make_shared<appd::core::TenantConfig>();
+	auto dummyConfig = std::make_shared<otel::core::TenantConfig>();
 	fillTenantConfig(dummyConfig);
 	dummyConfig->setServiceInstanceId("dummyInstanceId");
 
 	std::unordered_map<
 		std::string,
-		std::shared_ptr<appd::core::TenantConfig>> mapTenantConfig;
+		std::shared_ptr<otel::core::TenantConfig>> mapTenantConfig;
 	mapTenantConfig["dummyConfig"] = dummyConfig;
 
 	auto initContext = std::make_shared<MockContext>();
 	auto dummyContext = std::make_shared<MockContext>();
 
 	EXPECT_CALL(*initContext, getConfig()).Times(1)
-		.WillOnce(InvokeWithoutArgs([&]()->std::shared_ptr<appd::core::TenantConfig>{
+		.WillOnce(InvokeWithoutArgs([&]()->std::shared_ptr<otel::core::TenantConfig>{
 			return initConfig;
 		}));
 
 	EXPECT_CALL(*initContext, initContext(_)).Times(1);
 	EXPECT_CALL(*dummyContext, initContext(_)).Times(1);
 
-    auto spanNamer = std::make_shared<appd::core::SpanNamer>();
+    auto spanNamer = std::make_shared<otel::core::SpanNamer>();
 	FakeAgentCore agentCore(initContext, dummyContext);
 	bool ret = agentCore.start(initConfig, spanNamer, mapTenantConfig);
 	EXPECT_EQ(ret, true);
@@ -150,30 +150,30 @@ TEST(AgentCore, agent_core_start_returns_true)
 
 TEST(AgentCore, get_request_processor_returns_valid_object)
 {
-	auto initConfig = std::make_shared<appd::core::TenantConfig>();
+	auto initConfig = std::make_shared<otel::core::TenantConfig>();
 	fillTenantConfig(initConfig);
 
-	auto dummyConfig = std::make_shared<appd::core::TenantConfig>();
+	auto dummyConfig = std::make_shared<otel::core::TenantConfig>();
 	fillTenantConfig(dummyConfig);
 	dummyConfig->setServiceInstanceId("dummyInstanceId");
 
 	std::unordered_map<
 		std::string,
-		std::shared_ptr<appd::core::TenantConfig>> mapTenantConfig;
+		std::shared_ptr<otel::core::TenantConfig>> mapTenantConfig;
 	mapTenantConfig["dummyConfig"] = dummyConfig;
 
 	auto initContext = std::make_shared<MockContext>();
 	auto dummyContext = std::make_shared<MockContext>();
 
 	EXPECT_CALL(*initContext, getConfig()).Times(1)
-		.WillOnce(InvokeWithoutArgs([&]()->std::shared_ptr<appd::core::TenantConfig>{
+		.WillOnce(InvokeWithoutArgs([&]()->std::shared_ptr<otel::core::TenantConfig>{
 			return initConfig;
 		}));
 
 	EXPECT_CALL(*initContext, initContext(_)).Times(1);
 	EXPECT_CALL(*dummyContext, initContext(_)).Times(1);
 
-    auto spanNamer = std::make_shared<appd::core::SpanNamer>();
+    auto spanNamer = std::make_shared<otel::core::SpanNamer>();
 	FakeAgentCore agentCore(initContext, dummyContext);
 	bool ret = agentCore.start(initConfig, spanNamer, mapTenantConfig);
 	EXPECT_EQ(ret, true);
@@ -181,12 +181,12 @@ TEST(AgentCore, get_request_processor_returns_valid_object)
 	MockAgentKernel mockKernel;
 	MockRequestProcessingEngine mockEngine;
 	EXPECT_CALL(*dummyContext, getKernel()).Times(1)
-		.WillOnce(InvokeWithoutArgs([&]()->appd::core::IKernel*{
+		.WillOnce(InvokeWithoutArgs([&]()->otel::core::IKernel*{
 			return &mockKernel;
 		}));
 
 	EXPECT_CALL(mockKernel, getRequestProcessingEngine()).Times(1)
-		.WillOnce(InvokeWithoutArgs([&]()->appd::core::IRequestProcessingEngine*{
+		.WillOnce(InvokeWithoutArgs([&]()->otel::core::IRequestProcessingEngine*{
 			return &mockEngine;
 		}));
 
@@ -197,30 +197,30 @@ TEST(AgentCore, get_request_processor_returns_valid_object)
 
 TEST(AgentCore, get_request_processor_returns_nullptr)
 {
-	auto initConfig = std::make_shared<appd::core::TenantConfig>();
+	auto initConfig = std::make_shared<otel::core::TenantConfig>();
 	fillTenantConfig(initConfig);
 
-	auto dummyConfig = std::make_shared<appd::core::TenantConfig>();
+	auto dummyConfig = std::make_shared<otel::core::TenantConfig>();
 	fillTenantConfig(dummyConfig);
 	dummyConfig->setServiceInstanceId("dummyInstanceId");
 
 	std::unordered_map<
 		std::string,
-		std::shared_ptr<appd::core::TenantConfig>> mapTenantConfig;
+		std::shared_ptr<otel::core::TenantConfig>> mapTenantConfig;
 	mapTenantConfig["dummyConfig"] = dummyConfig;
 
 	auto initContext = std::make_shared<MockContext>();
 	auto dummyContext = std::make_shared<MockContext>();
 
 	EXPECT_CALL(*initContext, getConfig()).Times(1)
-		.WillOnce(InvokeWithoutArgs([&]()->std::shared_ptr<appd::core::TenantConfig>{
+		.WillOnce(InvokeWithoutArgs([&]()->std::shared_ptr<otel::core::TenantConfig>{
 			return initConfig;
 		}));
 
 	EXPECT_CALL(*initContext, initContext(_)).Times(1);
 	EXPECT_CALL(*dummyContext, initContext(_)).Times(1);
 
-    auto spanNamer = std::make_shared<appd::core::SpanNamer>();
+    auto spanNamer = std::make_shared<otel::core::SpanNamer>();
 	FakeAgentCore agentCore(initContext, dummyContext);
 	bool ret = agentCore.start(initConfig, spanNamer, mapTenantConfig);
 	EXPECT_EQ(ret, true);
@@ -232,30 +232,30 @@ TEST(AgentCore, get_request_processor_returns_nullptr)
 
 TEST(AgentCore, get_webserver_context_returns_valid_object)
 {
-	auto initConfig = std::make_shared<appd::core::TenantConfig>();
+	auto initConfig = std::make_shared<otel::core::TenantConfig>();
 	fillTenantConfig(initConfig);
 
-	auto dummyConfig = std::make_shared<appd::core::TenantConfig>();
+	auto dummyConfig = std::make_shared<otel::core::TenantConfig>();
 	fillTenantConfig(dummyConfig);
 	dummyConfig->setServiceInstanceId("dummyInstanceId");
 
 	std::unordered_map<
 		std::string,
-		std::shared_ptr<appd::core::TenantConfig>> mapTenantConfig;
+		std::shared_ptr<otel::core::TenantConfig>> mapTenantConfig;
 	mapTenantConfig["dummyConfig"] = dummyConfig;
 
 	auto initContext = std::make_shared<MockContext>();
 	auto dummyContext = std::make_shared<MockContext>();
 
 	EXPECT_CALL(*initContext, getConfig()).Times(1)
-		.WillOnce(InvokeWithoutArgs([&]()->std::shared_ptr<appd::core::TenantConfig>{
+		.WillOnce(InvokeWithoutArgs([&]()->std::shared_ptr<otel::core::TenantConfig>{
 			return initConfig;
 		}));
 
 	EXPECT_CALL(*initContext, initContext(_)).Times(1);
 	EXPECT_CALL(*dummyContext, initContext(_)).Times(1);
 
-    auto spanNamer = std::make_shared<appd::core::SpanNamer>();
+    auto spanNamer = std::make_shared<otel::core::SpanNamer>();
 	FakeAgentCore agentCore(initContext, dummyContext);
 	bool ret = agentCore.start(initConfig, spanNamer, mapTenantConfig);
 	EXPECT_EQ(ret, true);
@@ -273,30 +273,30 @@ TEST(AgentCore, get_webserver_context_returns_valid_object)
 
 TEST(AgentCore, get_webserver_context_returns_nullptr)
 {
-	auto initConfig = std::make_shared<appd::core::TenantConfig>();
+	auto initConfig = std::make_shared<otel::core::TenantConfig>();
 	fillTenantConfig(initConfig);
 
-	auto dummyConfig = std::make_shared<appd::core::TenantConfig>();
+	auto dummyConfig = std::make_shared<otel::core::TenantConfig>();
 	fillTenantConfig(dummyConfig);
 	dummyConfig->setServiceInstanceId("dummyInstanceId");
 
 	std::unordered_map<
 		std::string,
-		std::shared_ptr<appd::core::TenantConfig>> mapTenantConfig;
+		std::shared_ptr<otel::core::TenantConfig>> mapTenantConfig;
 	mapTenantConfig["dummyConfig"] = dummyConfig;
 
 	auto initContext = std::make_shared<MockContext>();
 	auto dummyContext = std::make_shared<MockContext>();
 
 	EXPECT_CALL(*initContext, getConfig()).Times(1)
-		.WillOnce(InvokeWithoutArgs([&]()->std::shared_ptr<appd::core::TenantConfig>{
+		.WillOnce(InvokeWithoutArgs([&]()->std::shared_ptr<otel::core::TenantConfig>{
 			return initConfig;
 		}));
 
 	EXPECT_CALL(*initContext, initContext(_)).Times(1);
 	EXPECT_CALL(*dummyContext, initContext(_)).Times(1);
 
-    auto spanNamer = std::make_shared<appd::core::SpanNamer>();
+    auto spanNamer = std::make_shared<otel::core::SpanNamer>();
 	FakeAgentCore agentCore(initContext, dummyContext);
 	bool ret = agentCore.start(initConfig, spanNamer, mapTenantConfig);
 	EXPECT_EQ(ret, true);
@@ -308,13 +308,13 @@ TEST(AgentCore, get_webserver_context_returns_nullptr)
 
 TEST(AgentKernel, agent_kernel_creation_success)
 {
-	auto initConfig = std::make_shared<appd::core::TenantConfig>();
+	auto initConfig = std::make_shared<otel::core::TenantConfig>();
 	fillTenantConfig(initConfig);
 
 	MockRequestProcessingEngine *engine = new MockRequestProcessingEngine();
 	testing::Mock::AllowLeak(engine);
 
-    auto spanNamer = std::make_shared<appd::core::SpanNamer>();
+    auto spanNamer = std::make_shared<otel::core::SpanNamer>();
 	FakeKernel agentKernel(engine);
 	agentKernel.initKernel(initConfig, spanNamer);
 	auto *rEngine = dynamic_cast<MockRequestProcessingEngine*>

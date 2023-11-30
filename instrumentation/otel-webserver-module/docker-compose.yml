@@ -43,6 +43,49 @@ services:
             - "9000:80"
         depends_on:
             - otel-collector
+    nginx_centos:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        image: nginx_centos
+        hostname: webserver
+        container_name: nginx_centos
+        command: bash -c "export LD_LIBRARY_PATH=/opt/opentelemetry-webserver-sdk/sdk_lib/lib && nginx && tail -f /dev/null"
+        profiles:
+            - centos_nginx
+        ports:
+            - "8008:80"
+        depends_on:
+            - otel-collector
+    nginx_centos7:
+        build:
+            context: .
+            dockerfile: docker/centos7/Dockerfile
+        image: nginx_centos7
+        hostname: webserver
+        container_name: nginx_centos7
+        command: bash -c "export LD_LIBRARY_PATH=/opt/opentelemetry-webserver-sdk/sdk_lib/lib && nginx && tail -f /dev/null"
+        profiles:
+            - centos7_nginx
+        ports:
+            - "8012:80"
+        depends_on:
+            - otel-collector
+    nginx_ubuntu:
+        build:
+            context: .
+            dockerfile: docker/ubuntu20.04/Dockerfile
+        image: nginx_ubuntu
+        hostname: webserver
+        container_name: nginx_ubuntu
+        command: bash -c "export LD_LIBRARY_PATH=/opt/opentelemetry-webserver-sdk/sdk_lib/lib && nginx && tail -f /dev/null"
+        profiles:
+            - ubuntu20.04_nginx
+        ports:
+            - "8016:80"
+        depends_on:
+            - otel-collector
+
 
 # Collector
     otel-collector:
@@ -52,7 +95,10 @@ services:
             - default
             - ubuntu20.04
             - centos7
-        command: ["--config=/etc/otel-config.yml", "--log-level=DEBUG", "${OTELCOL_ARGS}"]
+            - centos_nginx
+            - centos7_nginx
+            - ubuntu20.04_nginx
+        command: ["--config=/etc/otel-config.yml"]
         volumes:
             - ./otel-config.yml:/etc/otel-config.yml
         ports:
@@ -70,6 +116,9 @@ services:
             - default
             - ubuntu20.04
             - centos7
+            - centos_nginx
+            - centos7_nginx
+            - ubuntu20.04_nginx
         ports:
             - "9411:9411"
             - "9410:9410"

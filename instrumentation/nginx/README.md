@@ -100,12 +100,29 @@ schedule_delay_millis = 5000
 max_export_batch_size = 512
 
 [service]
+# Can also be set by the OTEL_SERVICE_NAME environment variable.
 name = "nginx-proxy" # Opentelemetry resource name
 
 [sampler]
 name = "AlwaysOn" # Also: AlwaysOff, TraceIdRatioBased
 ratio = 0.1
 parent_based = false
+```
+
+Here's what it would look like if you used the OTLP exporter, but only set the endpoint with an environment variables (e.g. `OTEL_EXPORTER_OTLP_ENDPOINT="localhost:4317"`).
+```toml
+exporter = "otlp"
+processor = "batch"
+
+[exporters.otlp]
+
+[processors.batch]
+max_queue_size = 2048
+schedule_delay_millis = 5000
+max_export_batch_size = 512
+
+[service]
+name = "nginx-proxy" # Opentelemetry resource name
 ```
 
 To use other environment variables defined in the [specification](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/exporter.md), must add the "env" directive.
@@ -167,6 +184,8 @@ Set the operation name when starting a new span.
 
 Enable propagation of distributed tracing headers, e.g. `traceparent`. When no parent trace is given, a new trace will
 be started. The default propagator is W3C.
+
+The same inheritance rules as [`proxy_set_header`](http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_set_header) apply, which means this directive is applied at the current configuration level if and only if there are no `proxy_set_header` directives defined on a lower level.
 
 - **required**: `false`
 - **syntax**: `opentelemetry_propagate` or `opentelemetry_propagate b3`

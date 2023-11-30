@@ -1,5 +1,5 @@
 /*
-* Copyright 2021 AppDynamics LLC. 
+* Copyright 2022, OpenTelemetry Authors. 
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 // file header
 #include "api/ApiUtils.h"
-#include "api/AppdynamicsSdk.h"
+#include "api/OpentelemetrySdk.h"
 #include "AgentLogger.h"
 #include <api/TenantConfig.h>
 #include <boost/lexical_cast.hpp>
@@ -24,7 +24,7 @@
 #include <dlfcn.h>
 #endif
 
-namespace appd {
+namespace otel {
 namespace core {
 
 AgentLogger ApiUtils::apiLogger = 0;
@@ -36,13 +36,13 @@ void ApiUtils::cleanup()
     apiUserLogger = 0;
 }
 
-APPD_SDK_STATUS_CODE ApiUtils::init_boilerplate()
+OTEL_SDK_STATUS_CODE ApiUtils::init_boilerplate()
 {
     try
     {
         boost::filesystem::path logConfigPath;
 
-        char* envLogConfigPath = getenv(APPD_SDK_ENV_LOG_CONFIG_PATH);
+        char* envLogConfigPath = getenv(OTEL_SDK_ENV_LOG_CONFIG_PATH);
         if(envLogConfigPath)
         {
             logConfigPath = envLogConfigPath;
@@ -52,7 +52,7 @@ APPD_SDK_STATUS_CODE ApiUtils::init_boilerplate()
             logConfigPath =
                     getSDKInstallPath()
                     / boost::filesystem::path("conf")
-                    / boost::filesystem::path("appdynamics_sdk_log4cxx.xml");
+                    / boost::filesystem::path("opentelemetry_sdk_log4cxx.xml");
         }
 
         boost::system::error_code ec;
@@ -60,28 +60,28 @@ APPD_SDK_STATUS_CODE ApiUtils::init_boilerplate()
         {
             std::cerr << (boost::format( "Error: %1%: Invalid logging config file: %2%")
                     % BOOST_CURRENT_FUNCTION % logConfigPath) << std::endl;
-            return APPD_STATUS(no_log_config);
+            return OTEL_STATUS(no_log_config);
         }
 
         bool res = initLogging(logConfigPath);
         if(!res)
         {
-            return APPD_STATUS(log_init_failed);
+            return OTEL_STATUS(log_init_failed);
         }
 
-        ApiUtils::apiLogger = getLogger(APPD_LOG_API_LOGGER);
+        ApiUtils::apiLogger = getLogger(OTEL_LOG_API_LOGGER);
         if(!ApiUtils::apiLogger)
         {
-            return APPD_STATUS(log_init_failed);
+            return OTEL_STATUS(log_init_failed);
         }
 
         LOG4CXX_INFO(ApiUtils::apiLogger,
         	"API logger initialized using log configuration file: " << logConfigPath.string());
 
-        ApiUtils::apiUserLogger = getLogger(APPD_LOG_API_USER_LOGGER);
+        ApiUtils::apiUserLogger = getLogger(OTEL_LOG_API_USER_LOGGER);
         if(!ApiUtils::apiUserLogger)
         {
-            return APPD_STATUS(log_init_failed);
+            return OTEL_STATUS(log_init_failed);
         }
         LOG4CXX_INFO(ApiUtils::apiUserLogger,
         	"API User logger initialized using log configuration file:" << logConfigPath.string());
@@ -90,10 +90,10 @@ APPD_SDK_STATUS_CODE ApiUtils::init_boilerplate()
     }
     catch(...)
     {
-        return APPD_STATUS(fail);
+        return OTEL_STATUS(fail);
     }
 
-    return APPD_SUCCESS;
+    return OTEL_SUCCESS;
 }
 
 boost::filesystem::path ApiUtils::getSDKInstallPath()
@@ -101,7 +101,7 @@ boost::filesystem::path ApiUtils::getSDKInstallPath()
 #ifdef _WIN32
     char path[FILENAME_MAX];
     HMODULE hm = NULL;
-    if (!(hm = GetModuleHandleA("appdynamics_native_sdk")))
+    if (!(hm = GetModuleHandleA("opentelemetry_webserver_sdk")))
     {
         int ret = GetLastError();
         // Logger not initialized it
@@ -135,15 +135,15 @@ boost::filesystem::path ApiUtils::getSDKInstallPath()
     return installPath;
 }
 
-APPD_SDK_STATUS_CODE ApiUtils::ReadFromPassedSettings(
-        APPD_SDK_ENV_RECORD* envIn,
+OTEL_SDK_STATUS_CODE ApiUtils::ReadFromPassedSettings(
+        OTEL_SDK_ENV_RECORD* envIn,
         unsigned numberOfRecords,
         TenantConfig& tenantConfig,
         SpanNamer& spanNamer)
 {
     PassedEnvinronmentReader env;
-    APPD_SDK_STATUS_CODE res = env.Init(envIn, numberOfRecords);
-    if(APPD_ISFAIL(res))
+    OTEL_SDK_STATUS_CODE res = env.Init(envIn, numberOfRecords);
+    if(OTEL_ISFAIL(res))
     {
         return res;
     }
@@ -151,13 +151,13 @@ APPD_SDK_STATUS_CODE ApiUtils::ReadFromPassedSettings(
     return ReadSettingsFromReader(env, tenantConfig, spanNamer);
 }
 
-/*APPD_SDK_STATUS_CODE ApiUtils::ReadFromEnvinronment(TenantConfig& tenantConfig)
+/*OTEL_SDK_STATUS_CODE ApiUtils::ReadFromEnvinronment(TenantConfig& tenantConfig)
 {
     RealEnvinronmentReader env;
     return ReadSettingsFromReader(env, tenantConfig);
 }*/
 
-APPD_SDK_STATUS_CODE ApiUtils::ReadSettingsFromReader(
+OTEL_SDK_STATUS_CODE ApiUtils::ReadSettingsFromReader(
     IEnvReader& reader, TenantConfig& tenantConfig,
     SpanNamer& spanNamer)
 {
@@ -167,6 +167,7 @@ APPD_SDK_STATUS_CODE ApiUtils::ReadSettingsFromReader(
 
     std::string otelExporterType;
     std::string otelExporterEndpoint;
+    std::string otelExporterOtlpHeaders;
     bool otelSslEnabled;
     std::string otelSslCertPath;
     std::string otelLibraryName;
@@ -181,79 +182,82 @@ APPD_SDK_STATUS_CODE ApiUtils::ReadSettingsFromReader(
     std::string segmentType;
     std::string segmentParameter;
 
-    APPD_SDK_STATUS_CODE status;
+    OTEL_SDK_STATUS_CODE status;
 
     status = reader.ReadMandatory(
-        std::string(APPD_SDK_ENV_SERVICE_NAMESPACE), serviceNamespace);
-    if(APPD_ISFAIL(status))
+        std::string(OTEL_SDK_ENV_SERVICE_NAMESPACE), serviceNamespace);
+    if(OTEL_ISFAIL(status))
         return status;
 
     status = reader.ReadMandatory(
-        std::string(APPD_SDK_ENV_SERVICE_NAME), serviceName);
-    if(APPD_ISFAIL(status))
+        std::string(OTEL_SDK_ENV_SERVICE_NAME), serviceName);
+    if(OTEL_ISFAIL(status))
         return status;
 
     status = reader.ReadMandatory(
-        std::string(APPD_SDK_ENV_SERVICE_INSTANCE_ID), serviceInstanceId);
-    if(APPD_ISFAIL(status))
+        std::string(OTEL_SDK_ENV_SERVICE_INSTANCE_ID), serviceInstanceId);
+    if(OTEL_ISFAIL(status))
         return status;
 
     status = reader.ReadOptional(
-        std::string(APPD_SDK_ENV_OTEL_EXPORTER_TYPE), otelExporterType);
-    if(APPD_ISFAIL(status))
+        std::string(OTEL_SDK_ENV_OTEL_EXPORTER_TYPE), otelExporterType);
+    if(OTEL_ISFAIL(status))
         return status;
 
     status = reader.ReadMandatory(
-        std::string(APPD_SDK_ENV_OTEL_EXPORTER_ENDPOINT), otelExporterEndpoint);
-    if(APPD_ISFAIL(status))
+        std::string(OTEL_SDK_ENV_OTEL_EXPORTER_ENDPOINT), otelExporterEndpoint);
+    if(OTEL_ISFAIL(status))
         return status;
 
     status = ReadOptionalFromReader(
-        reader, std::string(APPD_SDK_ENV_OTEL_SSL_ENABLED), otelSslEnabled);
-    if(APPD_ISFAIL(status))
+        reader, std::string(OTEL_SDK_ENV_OTEL_SSL_ENABLED), otelSslEnabled);
+    if(OTEL_ISFAIL(status))
         return status;
 
     status = reader.ReadOptional(
-        std::string(APPD_SDK_ENV_OTEL_SSL_CERTIFICATE_PATH), otelSslCertPath);
-    if(APPD_ISFAIL(status))
+        std::string(OTEL_SDK_ENV_OTEL_SSL_CERTIFICATE_PATH), otelSslCertPath);
+    if(OTEL_ISFAIL(status))
         return status;
 
     status = reader.ReadMandatory(
-        std::string(APPD_SDK_ENV_OTEL_LIBRARY_NAME), otelLibraryName);
-    if(APPD_ISFAIL(status))
+        std::string(OTEL_SDK_ENV_OTEL_LIBRARY_NAME), otelLibraryName);
+    if(OTEL_ISFAIL(status))
         return status;
 
     reader.ReadOptional(
-        std::string(APPD_SDK_ENV_OTEL_PROCESSOR_TYPE), otelProcessorType);
+        std::string(OTEL_SDK_ENV_OTEL_PROCESSOR_TYPE), otelProcessorType);
 
     reader.ReadOptional(
-        std::string(APPD_SDK_ENV_OTEL_SAMPLER_TYPE), otelSamplerType);
+        std::string(OTEL_SDK_ENV_OTEL_SAMPLER_TYPE), otelSamplerType);
 
     status = ReadOptionalFromReader(
-        reader, std::string(APPD_SDK_ENV_MAX_QUEUE_SIZE), otelMaxQueueSize);
-    if(APPD_ISFAIL(status))
+        reader, std::string(OTEL_SDK_ENV_MAX_QUEUE_SIZE), otelMaxQueueSize);
+    if(OTEL_ISFAIL(status))
         return status;
 
     status = ReadOptionalFromReader(
-        reader, std::string(APPD_SDK_ENV_SCHEDULED_DELAY), otelScheduledDelayMillis);
-    if(APPD_ISFAIL(status))
+        reader, std::string(OTEL_SDK_ENV_SCHEDULED_DELAY), otelScheduledDelayMillis);
+    if(OTEL_ISFAIL(status))
         return status;
 
     status = ReadOptionalFromReader(
-        reader, std::string(APPD_SDK_ENV_EXPORT_BATCH_SIZE), otelMaxExportBatchSize);
-    if(APPD_ISFAIL(status))
+        reader, std::string(OTEL_SDK_ENV_EXPORT_BATCH_SIZE), otelMaxExportBatchSize);
+    if(OTEL_ISFAIL(status))
         return status;
 
     /*status = reader.ReadOptionalFromReader(
-        reader, std::string(APPD_SDK_ENV_EXPORT_BATCH_SIZE), setOtelExportTimeoutMillis);
-    if(APPD_ISFAIL(status))
+        reader, std::string(OTEL_SDK_ENV_EXPORT_BATCH_SIZE), setOtelExportTimeoutMillis);
+    if(OTEL_ISFAIL(status))
         return status;*/
 
     reader.ReadOptional(
-        std::string(APPD_SDK_ENV_SEGMENT_TYPE), segmentType);
+        std::string(OTEL_SDK_ENV_SEGMENT_TYPE), segmentType);
 
     reader.ReadOptional(
-        std::string(APPD_SDK_ENV_SEGMENT_PARAMETER), segmentParameter);
+        std::string(OTEL_SDK_ENV_SEGMENT_PARAMETER), segmentParameter);
+
+    reader.ReadOptional(
+            std::string(OTEL_SDK_ENV_OTEL_EXPORTER_OTLPHEADERS), otelExporterOtlpHeaders);
 
 
     tenantConfig.setServiceNamespace(serviceNamespace);
@@ -261,6 +265,7 @@ APPD_SDK_STATUS_CODE ApiUtils::ReadSettingsFromReader(
     tenantConfig.setServiceInstanceId(serviceInstanceId);
     tenantConfig.setOtelExporterType(otelExporterType);
     tenantConfig.setOtelExporterEndpoint(otelExporterEndpoint);
+    tenantConfig.setOtelExporterOtlpHeaders(otelExporterOtlpHeaders);
     tenantConfig.setOtelLibraryName(otelLibraryName);
     tenantConfig.setOtelProcessorType(otelProcessorType);
     tenantConfig.setOtelSamplerType(otelSamplerType);
@@ -273,17 +278,17 @@ APPD_SDK_STATUS_CODE ApiUtils::ReadSettingsFromReader(
 
     spanNamer.setSegmentRules(segmentType, segmentParameter);
 
-    return APPD_SUCCESS;
+    return OTEL_SUCCESS;
 }
 
-APPD_SDK_STATUS_CODE ApiUtils::ReadOptionalFromReader(
+OTEL_SDK_STATUS_CODE ApiUtils::ReadOptionalFromReader(
 	IEnvReader& reader, const std::string& varName, bool& result)
 {
     std::string value;
-    APPD_SDK_STATUS_CODE status = reader.ReadOptional(varName, value);
+    OTEL_SDK_STATUS_CODE status = reader.ReadOptional(varName, value);
     if (value.empty())
     {
-        return APPD_SUCCESS;
+        return OTEL_SUCCESS;
     }
 
     try
@@ -298,20 +303,20 @@ APPD_SDK_STATUS_CODE ApiUtils::ReadOptionalFromReader(
                             % value
                             % e.target_type().name());
 
-        return APPD_STATUS(environment_variable_invalid_value);
+        return OTEL_STATUS(environment_variable_invalid_value);
     }
 
 
-    return APPD_SUCCESS;
+    return OTEL_SUCCESS;
 }
 
-/*APPD_SDK_STATUS_CODE ApiUtils::ReadMandatoryFromReader(
+/*OTEL_SDK_STATUS_CODE ApiUtils::ReadMandatoryFromReader(
 	IEnvReader& reader, const std::string& varName, unsigned short& result)
 {
     std::string value;
-    APPD_SDK_STATUS_CODE status = reader.ReadMandatory(varName, value);
+    OTEL_SDK_STATUS_CODE status = reader.ReadMandatory(varName, value);
 
-    if (APPD_ISFAIL(status))
+    if (OTEL_ISFAIL(status))
     {
         return status;
     }
@@ -328,21 +333,21 @@ APPD_SDK_STATUS_CODE ApiUtils::ReadOptionalFromReader(
                             % value
                             % e.target_type().name());
 
-        return APPD_STATUS(environment_variable_invalid_value);
+        return OTEL_STATUS(environment_variable_invalid_value);
     }
 
-    return APPD_SUCCESS;
+    return OTEL_SUCCESS;
 }*/
 
-APPD_SDK_STATUS_CODE ApiUtils::ReadOptionalFromReader(
+OTEL_SDK_STATUS_CODE ApiUtils::ReadOptionalFromReader(
 	IEnvReader& reader, const std::string& varName, unsigned int& result)
 {
     std::string value;
-    APPD_SDK_STATUS_CODE status = reader.ReadOptional(varName, value);
+    OTEL_SDK_STATUS_CODE status = reader.ReadOptional(varName, value);
 
     if (value.empty())
     {
-        return APPD_SUCCESS;
+        return OTEL_SUCCESS;
     }
 
     try
@@ -357,13 +362,13 @@ APPD_SDK_STATUS_CODE ApiUtils::ReadOptionalFromReader(
                             % value
                             % e.target_type().name());
 
-        return APPD_STATUS(environment_variable_invalid_value);
+        return OTEL_STATUS(environment_variable_invalid_value);
     }
 
-    return APPD_SUCCESS;
+    return OTEL_SUCCESS;
 }
 
-/*APPD_SDK_STATUS_CODE RealEnvinronmentReader::ReadMandatory(
+/*OTEL_SDK_STATUS_CODE RealEnvinronmentReader::ReadMandatory(
 	const std::string& varName, std::string& result)
 {
     result.clear();
@@ -372,22 +377,22 @@ APPD_SDK_STATUS_CODE ApiUtils::ReadOptionalFromReader(
     if(!pValue)
     {
         LOG4CXX_ERROR(ApiUtils::apiLogger, boost::format("Environment variable %1% must be specified") % varName.c_str());
-        return APPD_STATUS(unspecified_environment_variable);
+        return OTEL_STATUS(unspecified_environment_variable);
     }
 
     std::string value = pValue;
     if(value.empty())
     {
         LOG4CXX_ERROR(ApiUtils::apiLogger, boost::format("Environment variable %1% must be non-empty") % varName.c_str());
-        return APPD_STATUS(unspecified_environment_variable);
+        return OTEL_STATUS(unspecified_environment_variable);
     }
 
     result = value;
 
-    return APPD_SUCCESS;
+    return OTEL_SUCCESS;
 }
 
-APPD_SDK_STATUS_CODE RealEnvinronmentReader::ReadOptional(
+OTEL_SDK_STATUS_CODE RealEnvinronmentReader::ReadOptional(
 	const std::string& varName, std::string& result)
 {
     result.clear();
@@ -396,27 +401,27 @@ APPD_SDK_STATUS_CODE RealEnvinronmentReader::ReadOptional(
     if(!varValue)
     {
         LOG4CXX_TRACE(ApiUtils::apiLogger, boost::format("Environment variable %1% is not specified") % varName.c_str());
-        return APPD_SUCCESS;
+        return OTEL_SUCCESS;
     }
 
     std::string value = varValue;
     if(value.empty())
     {
         LOG4CXX_TRACE(ApiUtils::apiLogger, boost::format("Environment variable %1% is non-empty") % varName.c_str());
-        return APPD_SUCCESS;
+        return OTEL_SUCCESS;
     }
 
     result = value;
 
-    return APPD_SUCCESS;
+    return OTEL_SUCCESS;
 }*/
 
-APPD_SDK_STATUS_CODE PassedEnvinronmentReader::Init(
-	APPD_SDK_ENV_RECORD* envIn, unsigned numberOfRecords)
+OTEL_SDK_STATUS_CODE PassedEnvinronmentReader::Init(
+	OTEL_SDK_ENV_RECORD* envIn, unsigned numberOfRecords)
 {
     if(!envIn)
     {
-        return APPD_STATUS(environment_records_are_invalid);
+        return OTEL_STATUS(environment_records_are_invalid);
     }
 
     env.clear();
@@ -424,22 +429,22 @@ APPD_SDK_STATUS_CODE PassedEnvinronmentReader::Init(
     {
         if (!envIn[i].name || (strlen(envIn[i].name) == 0))
         {
-            return APPD_STATUS(environment_record_name_is_not_specified_or_empty);
+            return OTEL_STATUS(environment_record_name_is_not_specified_or_empty);
         }
         std::string sName = envIn[i].name;
 
         if (!envIn[i].value) // we allow empty string for value
         {
-            return APPD_STATUS(environment_record_value_is_not_specified);
+            return OTEL_STATUS(environment_record_value_is_not_specified);
         }
         std::string sValue = envIn[i].value;
 
         env[sName] = sValue;
     }
-    return APPD_SUCCESS;
+    return OTEL_SUCCESS;
 }
 
-APPD_SDK_STATUS_CODE PassedEnvinronmentReader::ReadMandatory(
+OTEL_SDK_STATUS_CODE PassedEnvinronmentReader::ReadMandatory(
 	const std::string& varName, std::string& result)
 {
     result.clear();
@@ -448,22 +453,22 @@ APPD_SDK_STATUS_CODE PassedEnvinronmentReader::ReadMandatory(
     if(found == env.end())
     {
         LOG4CXX_ERROR(ApiUtils::apiLogger, boost::format("Environment variable %1% must be specified") % varName.c_str());
-        return APPD_STATUS(unspecified_environment_variable);
+        return OTEL_STATUS(unspecified_environment_variable);
     }
 
     std::string value = (*found).second;
     if(value.empty())
     {
        LOG4CXX_ERROR(ApiUtils::apiLogger, boost::format("Environment variable %1% must be non-empty") % varName.c_str());
-       return APPD_STATUS(environment_variable_invalid_value);
+       return OTEL_STATUS(environment_variable_invalid_value);
     }
 
     result = value;
 
-    return APPD_SUCCESS;
+    return OTEL_SUCCESS;
 }
 
-APPD_SDK_STATUS_CODE PassedEnvinronmentReader::ReadOptional(
+OTEL_SDK_STATUS_CODE PassedEnvinronmentReader::ReadOptional(
 	const std::string& varName, std::string& result)
 {
     result.clear();
@@ -472,19 +477,19 @@ APPD_SDK_STATUS_CODE PassedEnvinronmentReader::ReadOptional(
     if(found == env.end())
     {
         LOG4CXX_TRACE(ApiUtils::apiLogger, boost::format("Environment variable %1% is not specified") % varName.c_str());
-        return APPD_SUCCESS;
+        return OTEL_SUCCESS;
     }
 
     std::string value = (*found).second;
     if(value.empty())
     {
         LOG4CXX_TRACE(ApiUtils::apiLogger, boost::format("Environment variable %1% is non-empty") % varName.c_str());
-        return APPD_SUCCESS;
+        return OTEL_SUCCESS;
     }
 
     result = value;
 
-    return APPD_SUCCESS;
+    return OTEL_SUCCESS;
 
 }
 
