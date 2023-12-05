@@ -376,6 +376,13 @@ static ngx_command_t ngx_http_opentelemetry_commands[] = {
       NGX_HTTP_LOC_CONF_OFFSET,
       offsetof(ngx_http_opentelemetry_loc_conf_t, nginxModuleResponseHeaders),
       NULL},
+    
+    { ngx_string("NginxTrustIncomingSpans"),
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_FLAG,
+      ngx_conf_set_flag_slot,
+      NGX_HTTP_LOC_CONF_OFFSET,
+      offsetof(ngx_http_opentelemetry_loc_conf_t, nginxTrustIncomingSpans),
+      NULL},
 
     ngx_null_command	/* command termination */
 };
@@ -437,6 +444,7 @@ static void* ngx_http_opentelemetry_create_loc_conf(ngx_conf_t *cf)
     conf->nginxModuleTraceAsError              = NGX_CONF_UNSET;
     conf->nginxModuleOtelMaxQueueSize          = NGX_CONF_UNSET;
     conf->nginxModuleOtelSslEnabled            = NGX_CONF_UNSET;
+    conf->nginxTrustIncomingSpans              = NGX_CONF_UNSET;
 
     return conf;
 }
@@ -453,6 +461,8 @@ static char* ngx_http_opentelemetry_merge_loc_conf(ngx_conf_t *cf, void *parent,
     ngx_conf_merge_value(conf->nginxModuleTraceAsError, prev->nginxModuleTraceAsError, 0);
     ngx_conf_merge_value(conf->nginxModuleMaskCookie, prev->nginxModuleMaskCookie, 0);
     ngx_conf_merge_value(conf->nginxModuleMaskSmUser, prev->nginxModuleMaskSmUser, 0);
+    ngx_conf_merge_value(conf->nginxTrustIncomingSpans, prev->nginxTrustIncomingSpans, 1);
+
 
     ngx_conf_merge_str_value(conf->nginxModuleOtelSpanExporter, prev->nginxModuleOtelSpanExporter, "");
     ngx_conf_merge_str_value(conf->nginxModuleOtelExporterEndpoint, prev->nginxModuleOtelExporterEndpoint, "");
@@ -1637,7 +1647,7 @@ static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t*
     for (ngx_uint_t j = 0; j < nelts; j++) {
 
         h = &header[j];
-        for (int i = 0; i < headers_len; i++) {
+        for (int i = 0; i < headers_len && conf->nginxTrustIncomingSpans ; i++) {
 
             if (strcmp(h->key.data, httpHeaders[i]) == 0) {
                 req_payload->propagation_headers[propagation_headers_idx].name = httpHeaders[i];
