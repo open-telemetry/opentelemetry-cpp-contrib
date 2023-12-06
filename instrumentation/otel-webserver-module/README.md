@@ -176,6 +176,7 @@ Currently, Nginx Webserver module monitores some fixed set of modules, which get
 |*NginxModuleRequestHeaders*                    |                 | OPTIONAL: Specify the request headers to be captured in the span attributes. The headers are Case-Sensitive and should be comma-separated. e.g.```NginxModuleRequestHeaders               Accept-Charset,Accept-Encoding,User-Agent;```|
 |*NginxModuleResponseHeaders*                   |                  | OPTIONAL: Specify the response headers to be captured in the span attributes. The headers are Case-Sensitive and should be comma-separated. e.g.```NginxModuleResponseHeaders                  Content-Length,Content-Type;```|
 |*NginxModuleOtelExporterOtlpHeaders*           |                  | OPTIONAL: OTEL exporter headers like Meta data related exposrted end point. a list of key value pairs, and these are expected to be represented in a format matching to the W3C Correlation-Context, except that additional semi-colon delimited metadata is not supported, i.e.: key1=value1,key2=value2.|
+|*NginxTrustIncomingSpans*           | ON               | OPTIONAL: Specify if you want to correlate Nginx instrumented traces and spans with incoming requests.|
 
 ### Build and Installation
 #### Prerequisites
