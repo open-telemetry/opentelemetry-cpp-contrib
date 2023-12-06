@@ -82,7 +82,7 @@ if(BUILD_TESTING)
   enable_testing()
   include(GoogleTest)
   # build geneva metrics tests
-  add_compile_definitions(KS_STR_ENCODING_NONE HAVE_UNIX_DOMAIN)
+  add_compile_definitions(KS_STR_ENCODING_NONE)
   add_executable(
     geneva_metrics_exporter_test
     test/metrics_exporter_test.cc test/decoder/ifx_metrics_bin.cpp
