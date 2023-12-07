@@ -12,6 +12,12 @@
 #include "decoder/kaitai/kaitaistream.h"
 #include <gtest/gtest.h>
 
+#if defined(_WIN32)
+
+// TODO: implement windows tests
+
+#else
+
 using namespace SOCKET_SERVER_NS;
 using namespace kaitai;
 using namespace opentelemetry::sdk::metrics;
@@ -310,4 +316,4 @@ TEST_P(GenericMetricsExporterTextFixture, BasicTests) {
 INSTANTIATE_TEST_SUITE_P(GenericMetricsExporterText, GenericMetricsExporterTextFixture,
     ::testing::Values(kUnixDomainPathUDS, kUnixDomainPathAbstractSocket));
 
-
+#endif
