@@ -41,8 +41,6 @@ void initMetrics(const std::string &name, const std::string &account_name) {
 
   // Initialize and set the global MeterProvider
   metric_sdk::PeriodicExportingMetricReaderOptions reader_options;
-  reader_options.export_interval_millis = std::chrono::milliseconds(1000);
-  reader_options.export_timeout_millis = std::chrono::milliseconds(500);
   std::unique_ptr<metric_sdk::MetricReader> reader{
       new metric_sdk::PeriodicExportingMetricReader(std::move(exporter),
                                                     reader_options)};
