@@ -8,8 +8,8 @@
 ## Requirements
 
 - Current release tested only with Ubuntu 20.04.6 LTS
-- OpenTelemetry at least v1.12.0 
-- log4cxx (Apache) least v1.0.0
+- OpenTelemetry >= v1.12.0 
+- log4cxx (Apache) >= v1.0.0
 
 ### Usage
 
