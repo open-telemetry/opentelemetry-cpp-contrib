@@ -23,6 +23,14 @@ public:
   LOG4CXX_CAST_ENTRY_CHAIN(AppenderSkeleton)
   END_LOG4CXX_CAST_MAP()
 
+  static const std::string& libraryVersion()
+  {
+    static const std::string kLibraryVersion = std::to_string(LOG4CXX_VERSION_MAJOR) + "." +
+                                               std::to_string(LOG4CXX_VERSION_MINOR) + "." +
+                                               std::to_string(LOG4CXX_VERSION_PATCH);
+    return kLibraryVersion;
+  }
+
   static inline opentelemetry::logs::Severity levelToSeverty(int level) noexcept
   {
     using log4cxx::Level;

@@ -5,9 +5,11 @@
 
 #include <opentelemetry/instrumentation/log4cxx/appender.h>
 
-#include "opentelemetry/logs/logger.h"
-#include "opentelemetry/logs/logger_provider.h"
-#include "opentelemetry/logs/provider.h"
+#include <opentelemetry/logs/logger.h>
+#include <opentelemetry/logs/logger_provider.h>
+#include <opentelemetry/logs/provider.h>
+
+#include <log4cxx/logger.h>
 
 #include <gtest/gtest.h>
 
@@ -100,7 +102,7 @@ struct TestLogger : public logs_api::Logger
     log_record_ = dynamic_cast<TestLogRecord *>(log_record.release());
   }
 
-  bool create_log_record_;
+  bool create_log_record_    = false;
   TestLogRecord *log_record_ = nullptr;
 };
 
@@ -132,23 +134,19 @@ TEST(OpenTelemetryAppenderTest, Append_Success)
   auto provider = new TestLoggerProvider(true);
   logs_api::Provider::SetLoggerProvider(nostd::shared_ptr<logs_api::LoggerProvider>(provider));
   log4cxx::spi::LocationInfo location;
-  auto pre_append = common::SystemTimestamp(std::chrono::system_clock::now());
+  auto pre_append = std::chrono::system_clock::now();
   auto event      = std::make_shared<log4cxx::spi::LoggingEvent>(
       "test_logger", log4cxx::Level::getDebug(), "test message", location);
-  auto post_append = common::SystemTimestamp(std::chrono::system_clock::now());
+  auto post_append = std::chrono::system_clock::now();
   log4cxx::helpers::Pool pool;
   log4cxx::OpenTelemetryAppender ota;
   ota.append(event, pool);
 
-  const auto library_version = std::to_string(LOG4CXX_VERSION_MAJOR) + "." +
-                               std::to_string(LOG4CXX_VERSION_MINOR) + "." +
-                               std::to_string(LOG4CXX_VERSION_PATCH);
   ASSERT_TRUE(provider != nullptr);
   ASSERT_EQ(provider->logger_name_, "test_logger");
   ASSERT_EQ(provider->library_name_, "log4cxx");
-  ASSERT_EQ(provider->library_version_, library_version);
+  ASSERT_EQ(provider->library_version_, log4cxx::OpenTelemetryAppender::libraryVersion());
   ASSERT_TRUE(provider->logger_ != nullptr);
-  ASSERT_TRUE(provider->logger_->create_log_record_);
   ASSERT_TRUE(provider->logger_->log_record_ != nullptr);
 
   auto log_record = provider->logger_->log_record_;
@@ -170,14 +168,35 @@ TEST(OpenTelemetryAppenderTest, Append_Failure)
   log4cxx::OpenTelemetryAppender ota;
   ota.append(event, pool);
 
-  const auto library_version = std::to_string(LOG4CXX_VERSION_MAJOR) + "." +
-                               std::to_string(LOG4CXX_VERSION_MINOR) + "." +
-                               std::to_string(LOG4CXX_VERSION_PATCH);
   ASSERT_TRUE(provider != nullptr);
   ASSERT_EQ(provider->logger_name_, "test_logger");
   ASSERT_EQ(provider->library_name_, "log4cxx");
-  ASSERT_EQ(provider->library_version_, library_version);
+  ASSERT_EQ(provider->library_version_, log4cxx::OpenTelemetryAppender::libraryVersion());
   ASSERT_TRUE(provider->logger_ != nullptr);
-  ASSERT_FALSE(provider->logger_->create_log_record_);
   ASSERT_FALSE(provider->logger_->log_record_ != nullptr);
+}
+
+TEST(OpenTelemetryAppenderTest, Configure_Logger)
+{
+  auto provider = new TestLoggerProvider(true);
+  logs_api::Provider::SetLoggerProvider(nostd::shared_ptr<logs_api::LoggerProvider>(provider));
+
+  auto root_logger = log4cxx::Logger::getRootLogger();
+  LOG4CXX_INFO(root_logger, "This message will be ignored");
+  ASSERT_TRUE(provider != nullptr);
+  ASSERT_TRUE(provider->logger_ != nullptr);
+  ASSERT_FALSE(provider->logger_->log_record_ != nullptr);
+
+  auto otel_logger = log4cxx::Logger::getLogger("OTelLogger");
+  otel_logger->addAppender(std::make_shared<log4cxx::OpenTelemetryAppender>());
+  LOG4CXX_DEBUG(otel_logger, "This message will be processed");
+  ASSERT_EQ(provider->logger_name_, "OTelLogger");
+  ASSERT_EQ(provider->library_name_, "log4cxx");
+  ASSERT_EQ(provider->library_version_, log4cxx::OpenTelemetryAppender::libraryVersion());
+  ASSERT_TRUE(provider->logger_ != nullptr);
+  ASSERT_TRUE(provider->logger_->log_record_ != nullptr);
+
+  auto log_record = provider->logger_->log_record_;
+  ASSERT_EQ(log_record->body_, "This message will be processed");
+  ASSERT_TRUE(log_record->severity_ == logs_api::Severity::kDebug);
 }

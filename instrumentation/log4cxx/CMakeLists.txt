@@ -58,28 +58,30 @@ if(OPENTELEMETRY_INSTALL)
 endif() # OPENTELEMETRY_INSTALL
 
 if(BUILD_TESTING)
+  set(testname appender_test)
+
   include(GoogleTest)
-  
-  foreach(testname appender_test)
-    add_executable(${testname} "test/${testname}.cc")
 
-    target_include_directories(${testname} PUBLIC
-      $<TARGET_PROPERTY:log4cxx,INTERFACE_INCLUDE_DIRECTORIES>
-      ${CMAKE_CURRENT_LIST_DIR}/include
-      ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
-    )
+  add_executable(${testname} "test/${testname}.cc")
 
-    target_link_libraries(${testname}
-      gtest
-      gtest_main
-      log4cxx
-      ${this_target})
+  target_include_directories(${testname} PUBLIC
+    $<TARGET_PROPERTY:log4cxx,INTERFACE_INCLUDE_DIRECTORIES>
+    ${CMAKE_CURRENT_LIST_DIR}/include
+    ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
+  )
 
-    gtest_add_tests(
-      TARGET ${testname}
-      TEST_PREFIX intrumentation.log4cxx.
-      TEST_LIST ${testname})
-  endforeach()
+  target_link_libraries(${testname} PRIVATE
+    gtest
+    gtest_main
+    log4cxx
+    ${this_target}
+  )
+
+  gtest_add_tests(
+    TARGET ${testname}
+    TEST_PREFIX intrumentation.log4cxx.
+    TEST_LIST ${testname}
+  )
 endif() # BUILD_TESTING
 
 if(WITH_EXAMPLES)

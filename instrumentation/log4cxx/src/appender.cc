@@ -14,14 +14,10 @@ namespace log4cxx
 void OpenTelemetryAppender::append(const spi::LoggingEventPtr &event, helpers::Pool &)
 {
   using namespace opentelemetry::trace::SemanticConventions;
-
-  static const auto kLibraryVersion = std::to_string(LOG4CXX_VERSION_MAJOR) + "." +
-                                      std::to_string(LOG4CXX_VERSION_MINOR) + "." +
-                                      std::to_string(LOG4CXX_VERSION_PATCH);
   static constexpr auto kLibraryName = "log4cxx";
 
   auto provider   = opentelemetry::logs::Provider::GetLoggerProvider();
-  auto logger     = provider->GetLogger(event->getLoggerName(), kLibraryName, kLibraryVersion);
+  auto logger     = provider->GetLogger(event->getLoggerName(), kLibraryName, libraryVersion());
   auto log_record = logger->CreateLogRecord();
 
   if (log_record)
