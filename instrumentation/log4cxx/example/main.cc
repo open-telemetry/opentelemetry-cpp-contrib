@@ -67,7 +67,7 @@ int main(int argc, char **argv)
   auto otel_logger = log4cxx::Logger::getLogger("OTelLogger");
 
   const auto has_xml_config = argc > 1;
-  const auto xml_config     = argv[1];
+  const auto xml_config     = has_xml_config ? argv[1] : "";
 
   if (has_xml_config)
   {
