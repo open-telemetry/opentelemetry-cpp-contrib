@@ -2,7 +2,7 @@
 
 ## Features
 
-- Supports log4cxx appender programatically or via config file
+- Supports log4cxx appender both, programatically and via config file
 - Supports OpenTelemetry SDK without any changes
 
 ## Requirements
@@ -52,7 +52,7 @@ For more details, refer to the [examples](#examples) section.
 - vcpkg **_(optional)_**
 
 ### Build
-As a preparation step, both depedencies need to be built and available in the development environment. This can be a manual build, by following the instructions for the corresponding package, or one could opt to use a package management system such as _vcpkg_ or _conan_.
+As a preparation step, both dependencies need to be built and available in the development environment. This can be a manual build, by following the instructions for the corresponding package, or one could opt to use a package management system such as _vcpkg_ or _conan_.
 
 Assuming the packages are available on the system, configure CMake as usual:
 
@@ -123,6 +123,6 @@ Both scenarios, whether that be programatically or via configuration file, would
 
 The above excerpt shows that the log line containing "**root INFO  - This message will be ignored**" was not set up to use the OpenTelemetry appender and, thus, did not make it into the log exporter. 
 
-Similarly, the DEBUG log message "**This message will be processed**" was invoked from a logger that was set up to use the Opentelemetry appender and it was successfully processed by the SDK. 
+Similarly, the DEBUG log message "**This message will be processed**" was invoked from a logger that was set up to use the OpenTelemetry appender and it was successfully processed by the SDK. 
 
 This example will also output a span with the same ID as the log record, to showcase how the two signals can be correlated via trace and/or span ID.
