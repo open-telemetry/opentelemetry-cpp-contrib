@@ -71,9 +71,11 @@ if(BUILD_TESTING)
   )
 
   target_link_libraries(${testname} PRIVATE
+    gmock
     gtest
     gtest_main
     log4cxx
+    opentelemetry-cpp::ostream_log_record_exporter
     ${this_target}
   )
 
