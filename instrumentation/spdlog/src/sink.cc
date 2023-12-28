@@ -9,8 +9,6 @@
 #include <opentelemetry/trace/semantic_conventions.h>
 #include <opentelemetry/version.h>
 
-#include <iostream>
-
 namespace spdlog
 {
 namespace sinks
