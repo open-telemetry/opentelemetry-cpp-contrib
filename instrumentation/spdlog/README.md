@@ -42,7 +42,7 @@ For more details, refer to the [examples](#examples) section.
 - vcpkg **_(optional)_**
 
 ### Build
-As a preparation step, both depedencies need to be built and available in the development environment. This can be a manual build, by following the instructions for the corresponding package, or one could opt to use a package management system such as _vcpkg_ or _conan_.
+As a preparation step, both dependencies need to be built and available in the development environment. This can be a manual build, by following the instructions for the corresponding package, or one could opt to use a package management system such as _vcpkg_ or _conan_.
 
 Assuming the packages are available on the system, configure CMake as usual:
 
@@ -58,7 +58,7 @@ Optionally, if the packages were provided via vcpkg, pass in to the _cmake_ comm
 Now, simply link the target source (i.e., main.cc in the example below) against _spdlog_, possibly also its dependency lib _fmt_, as well as _opentelemetry_spdlog_:
 
 ```bash
-g++ main.cc -lspdlog -lopentelemetry_spdlog -o main
+g++ main.cc -lfmt -lspdlog -lopentelemetry_spdlog -o main
 ```
 
 ### Installation ###
@@ -106,6 +106,6 @@ Running  `./otel_sink_example` would produce an output similar to below:
 
 The above excerpt shows that the log line containing "**[debug] This message will be ignored**" was not set up to use the OpenTelemetry sink and, thus, did not make it into the log exporter. 
 
-Similarly, the DEBUG log message "**[info] This message will be processed**" was invoked from a logger that was set up to use the Opentelemetry sink and it was successfully processed by the SDK. 
+Similarly, the DEBUG log message "**[info] This message will be processed**" was invoked from a logger that was set up to use the OpenTelemetry sink and it was successfully processed by the SDK. 
 
 This example will also output a span with the same ID as the log record, to showcase how the two signals can be correlated via trace and/or span ID.
