@@ -25,6 +25,8 @@ void OpenTelemetryAppender::append(const spi::LoggingEventPtr &event, helpers::P
     log_record->SetSeverity(levelToSeverity(event->getLevel()->toInt()));
     log_record->SetBody(event->getMessage());
     log_record->SetTimestamp(event->getChronoTimeStamp());
+    log_record->SetAttribute(kCodeFilepath, event->getLocationInformation().getFileName());
+    log_record->SetAttribute(kCodeLineno, event->getLocationInformation().getLineNumber());
     log_record->SetAttribute(kThreadName, event->getThreadName());
     logger->EmitLogRecord(std::move(log_record));
   }

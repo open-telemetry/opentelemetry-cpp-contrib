@@ -121,6 +121,8 @@ TEST_F(OpenTelemetryAppenderTest, Log_Success)
   logs_api::Severity severity = {};
   common::AttributeValue message;
   common::SystemTimestamp timestamp;
+  common::AttributeValue file_name;
+  common::AttributeValue line_number;
   common::AttributeValue thread_name;
 
   auto pre_log = std::chrono::system_clock::now();
@@ -131,6 +133,10 @@ TEST_F(OpenTelemetryAppenderTest, Log_Success)
   EXPECT_CALL(*logrecord_mock, SetSeverity(_)).WillOnce(SaveArg<0>(&severity));
   EXPECT_CALL(*logrecord_mock, SetBody(_)).WillOnce(SaveArg<0>(&message));
   EXPECT_CALL(*logrecord_mock, SetTimestamp(_)).WillOnce(SaveArg<0>(&timestamp));
+  EXPECT_CALL(*logrecord_mock, SetAttribute(nostd::string_view("code.lineno"), _))
+      .WillOnce(SaveArg<1>(&line_number));
+  EXPECT_CALL(*logrecord_mock, SetAttribute(nostd::string_view("code.filepath"), _))
+      .WillOnce(SaveArg<1>(&file_name));
   EXPECT_CALL(*logrecord_mock, SetAttribute(nostd::string_view("thread.name"), _))
       .WillOnce(SaveArg<1>(&thread_name));
   EXPECT_CALL(*logger_mock, EmitLogRecord(_)).Times(1);
@@ -145,6 +151,10 @@ TEST_F(OpenTelemetryAppenderTest, Log_Success)
   ASSERT_TRUE(severity == logs_api::Severity::kInfo);
   ASSERT_TRUE(timestamp.time_since_epoch() >= pre_log.time_since_epoch());
   ASSERT_TRUE(timestamp.time_since_epoch() <= post_log.time_since_epoch());
+  ASSERT_TRUE(nostd::holds_alternative<const char *>(file_name));
+  ASSERT_TRUE(std::strstr(nostd::get<const char *>(file_name), "appender_test.cc") != nullptr);
+  ASSERT_TRUE(nostd::holds_alternative<int>(line_number));
+  ASSERT_GE(nostd::get<int>(line_number), 0);
   ASSERT_TRUE(nostd::holds_alternative<nostd::string_view>(thread_name));
   ASSERT_FALSE(nostd::get<nostd::string_view>(thread_name).empty());
 }
