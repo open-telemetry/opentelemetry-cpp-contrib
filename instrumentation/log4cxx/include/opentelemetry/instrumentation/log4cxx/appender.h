@@ -31,7 +31,7 @@ public:
     return kLibraryVersion;
   }
 
-  static inline opentelemetry::logs::Severity levelToSeverty(int level) noexcept
+  static inline opentelemetry::logs::Severity levelToSeverity(int level) noexcept
   {
     using log4cxx::Level;
     using opentelemetry::logs::Severity;
