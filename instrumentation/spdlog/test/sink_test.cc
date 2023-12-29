@@ -27,7 +27,6 @@ namespace trace_api = opentelemetry::trace;
 
 using ::testing::_;
 using ::testing::DoAll;
-using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::SaveArg;
 
@@ -92,21 +91,21 @@ TEST_F(OpenTelemetrySinkTest, LevelToSeverity)
   using logs_api::Severity;
   using ots = spdlog::sinks::opentelemetry_sink_st;
 
-  ASSERT_TRUE(Severity::kFatal == ots::levelToSeverty(Level::critical));
-  ASSERT_TRUE(Severity::kError == ots::levelToSeverty(Level::err));
-  ASSERT_TRUE(Severity::kWarn == ots::levelToSeverty(Level::warn));
-  ASSERT_TRUE(Severity::kInfo == ots::levelToSeverty(Level::info));
-  ASSERT_TRUE(Severity::kDebug == ots::levelToSeverty(Level::debug));
-  ASSERT_TRUE(Severity::kTrace == ots::levelToSeverty(Level::trace));
-  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverty(Level::off));
-  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverty(Level::n_levels));
-  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverty(std::numeric_limits<int>::lowest()));
-  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverty(std::numeric_limits<int>::lowest() + 1));
-  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverty(-42));
-  ASSERT_TRUE(Severity::kTrace == ots::levelToSeverty(0));
-  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverty(42));
-  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverty(std::numeric_limits<int>::max() - 1));
-  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverty(std::numeric_limits<int>::max()));
+  ASSERT_TRUE(Severity::kFatal == ots::levelToSeverity(Level::critical));
+  ASSERT_TRUE(Severity::kError == ots::levelToSeverity(Level::err));
+  ASSERT_TRUE(Severity::kWarn == ots::levelToSeverity(Level::warn));
+  ASSERT_TRUE(Severity::kInfo == ots::levelToSeverity(Level::info));
+  ASSERT_TRUE(Severity::kDebug == ots::levelToSeverity(Level::debug));
+  ASSERT_TRUE(Severity::kTrace == ots::levelToSeverity(Level::trace));
+  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverity(Level::off));
+  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverity(Level::n_levels));
+  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverity(std::numeric_limits<int>::lowest()));
+  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverity(std::numeric_limits<int>::lowest() + 1));
+  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverity(-42));
+  ASSERT_TRUE(Severity::kTrace == ots::levelToSeverity(0));
+  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverity(42));
+  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverity(std::numeric_limits<int>::max() - 1));
+  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverity(std::numeric_limits<int>::max()));
 }
 
 TEST_F(OpenTelemetrySinkTest, Log_Success)

@@ -26,7 +26,7 @@ void OpenTelemetrySink<Mutex>::sink_it_(const spdlog::details::log_msg &msg)
   
   if (log_record)
   {
-    log_record->SetSeverity(levelToSeverty(msg.level));
+    log_record->SetSeverity(levelToSeverity(msg.level));
     log_record->SetBody(opentelemetry::nostd::string_view(msg.payload.data()));
     log_record->SetTimestamp(msg.time);
     log_record->SetAttribute(kThreadId, msg.thread_id);

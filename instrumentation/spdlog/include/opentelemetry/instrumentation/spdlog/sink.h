@@ -30,7 +30,7 @@ public:
     return kLibraryVersion;
   }
 
-  static inline opentelemetry::logs::Severity levelToSeverty(int level) noexcept
+  static inline opentelemetry::logs::Severity levelToSeverity(int level) noexcept
   {
     namespace Level = spdlog::level;
     using opentelemetry::logs::Severity;
