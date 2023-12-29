@@ -123,6 +123,8 @@ TEST_F(OpenTelemetrySinkTest, Log_Success)
   logs_api::Severity severity = {};
   common::AttributeValue message;
   common::SystemTimestamp timestamp;
+  common::AttributeValue file_name;
+  common::AttributeValue line_number;
   common::AttributeValue thread_id;
 
   auto pre_log = std::chrono::system_clock::now();
@@ -133,11 +135,15 @@ TEST_F(OpenTelemetrySinkTest, Log_Success)
   EXPECT_CALL(*logrecord_mock, SetSeverity(_)).WillOnce(SaveArg<0>(&severity));
   EXPECT_CALL(*logrecord_mock, SetBody(_)).WillOnce(SaveArg<0>(&message));
   EXPECT_CALL(*logrecord_mock, SetTimestamp(_)).WillOnce(SaveArg<0>(&timestamp));
+  EXPECT_CALL(*logrecord_mock, SetAttribute(nostd::string_view("code.lineno"), _))
+      .WillOnce(SaveArg<1>(&line_number));
+  EXPECT_CALL(*logrecord_mock, SetAttribute(nostd::string_view("code.filepath"), _))
+      .WillOnce(SaveArg<1>(&file_name));
   EXPECT_CALL(*logrecord_mock, SetAttribute(nostd::string_view("thread.id"), _))
       .WillOnce(SaveArg<1>(&thread_id));
   EXPECT_CALL(*logger_mock, EmitLogRecord(_)).Times(1);
 
-  logger_->info("test message");
+  SPDLOG_LOGGER_INFO(logger_, "test message");
   auto post_log = std::chrono::system_clock::now();
   ASSERT_EQ(logger_name, "OTelLogger");
   ASSERT_EQ(library_name, "spdlog");
@@ -147,6 +153,10 @@ TEST_F(OpenTelemetrySinkTest, Log_Success)
   ASSERT_TRUE(severity == logs_api::Severity::kInfo);
   ASSERT_TRUE(timestamp.time_since_epoch() >= pre_log.time_since_epoch());
   ASSERT_TRUE(timestamp.time_since_epoch() <= post_log.time_since_epoch());
+  ASSERT_TRUE(nostd::holds_alternative<const char *>(file_name));
+  ASSERT_TRUE(std::strstr(nostd::get<const char *>(file_name), "sink_test.cc") != nullptr);
+  ASSERT_TRUE(nostd::holds_alternative<int>(line_number));
+  ASSERT_GE(nostd::get<int>(line_number), 0);
   ASSERT_TRUE(nostd::holds_alternative<uint64_t>(thread_id));
   ASSERT_GT(nostd::get<uint64_t>(thread_id), 0);
 }
@@ -168,7 +178,7 @@ TEST_F(OpenTelemetrySinkTest, Log_Failure)
   EXPECT_CALL(*logger_mock, CreateLogRecord()).WillOnce(Return(nullptr));
   EXPECT_CALL(*logger_mock, EmitLogRecord(_)).Times(0);
 
-  logger_->info("test message");
+  SPDLOG_LOGGER_INFO(logger_, "test message");
   ASSERT_EQ(logger_name, "OTelLogger");
   ASSERT_EQ(library_name, "spdlog");
   ASSERT_EQ(library_version, spdlog::sinks::opentelemetry_sink_mt::libraryVersion());
@@ -198,7 +208,8 @@ TEST_F(OpenTelemetrySinkTest, Multi_Threaded)
 
   for (size_t index = 0; index < count; ++index)
   {
-    threads.emplace_back([this, index]() { logger_->info("Test message {}", index); });
+    threads.emplace_back(
+        [this, index]() { SPDLOG_LOGGER_INFO(logger_, "Test message {}", index); });
   }
 
   for (auto &task : threads)
