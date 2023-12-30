@@ -9,7 +9,7 @@
 
 - Current release tested only with Ubuntu 20.04.6 LTS
 - OpenTelemetry >= v1.12.0 
-- spdlog >= v1.11.0
+- spdlog >= v1.5.0
 
 ### Usage
 
@@ -35,7 +35,7 @@ For more details, refer to the [examples](#examples) section.
 
 ### Requirements
 
-- C++11
+- C++14
 - CMake 3.x
 - [OpenTelemetry-cpp](https://github.com/open-telemetry/opentelemetry-cpp)
 - [spdlog](https://github.com/gabime/spdlog)
@@ -91,6 +91,8 @@ Running  `./otel_sink_example` would produce an output similar to below:
     telemetry.sdk.language: cpp
   attributes         :
     thread.id: 15644
+    code.lineno: 73
+    code.filepath: /otel-contrib/instrumentation/spdlog/example/main.cc
   event_id           : 0
   event_name         :
   trace_id           : d2695462067d7aab7e0ed163d27d54f8

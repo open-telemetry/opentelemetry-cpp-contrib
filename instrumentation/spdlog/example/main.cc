@@ -69,6 +69,6 @@ int main(int /* argc */, char ** /* argv */)
   auto logger = spdlog::logger("OTelLogger", {console_sink, otel_sink});
   logger.set_level(spdlog::level::debug);
 
-  logger.debug("This message will be ignored");
-  logger.info("This message will be processed");
+  SPDLOG_LOGGER_DEBUG(&logger, "This message will be ignored");
+  SPDLOG_LOGGER_INFO(&logger, "This message will be processed");
 }

@@ -50,7 +50,6 @@ public:
       case Level::trace:
         return Severity::kTrace;
       case Level::off:
-      case Level::n_levels:
       default:
         return Severity::kInvalid;
     }
