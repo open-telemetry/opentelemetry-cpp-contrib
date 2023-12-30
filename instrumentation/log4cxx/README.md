@@ -45,7 +45,7 @@ For more details, refer to the [examples](#examples) section.
 
 ### Requirements
 
-- C++11
+- C++14
 - CMake 3.x
 - [OpenTelemetry-cpp](https://github.com/open-telemetry/opentelemetry-cpp)
 - [Log4cxx](https://github.com/apache/logging-log4cxx)
@@ -108,6 +108,8 @@ Both scenarios, whether that be programatically or via configuration file, would
     telemetry.sdk.language: cpp
   attributes         :
     thread.name: 0x7fae5f373bc0
+    code.lineno: 88
+    code.filepath: /otel-contrib/instrumentation/log4cxx/example/main.cc
   event_id           : 0
   event_name         :
   trace_id           : dc62ae8020403633fcce3d50eeb34b3c
