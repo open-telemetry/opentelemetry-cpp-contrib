@@ -55,10 +55,10 @@ make
 
 Optionally, if the packages were provided via vcpkg, pass in to the _cmake_ command above the flag `-DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake` where VCPKG_ROOT is where vcpkg was installed. 
 
-Now, simply link the target source (i.e., main.cc in the example below) against _spdlog_, possibly also its dependency lib _fmt_, as well as _opentelemetry_spdlog_:
+Now, simply link the target source (i.e., main.cc in the example below) against _spdlog_, possibly also its dependency lib _fmt_, as well as _opentelemetry_spdlog_sink_:
 
 ```bash
-g++ main.cc -lfmt -lspdlog -lopentelemetry_spdlog -o main
+g++ main.cc -lfmt -lspdlog -lopentelemetry_spdlog_sink -o main
 ```
 
 ### Installation ###
