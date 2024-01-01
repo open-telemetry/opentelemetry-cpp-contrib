@@ -65,10 +65,10 @@ make
 
 Optionally, if the packages were provided via vcpkg, pass in to the _cmake_ command above the flag `-DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake` where VCPKG_ROOT is where vcpkg was installed. 
 
-Now, simply link the target source (i.e., main.cc in the example below) against _log4cxx_ and _opentelemetry_log4cxx_:
+Now, simply link the target source (i.e., main.cc in the example below) against _log4cxx_ and _opentelemetry_log4cxx_appender_:
 
 ```bash
-g++ main.cc -llog4cxx -lopentelemetry_log4cxx -o main
+g++ main.cc -llog4cxx -lopentelemetry_log4cxx_appender -o main
 ```
 
 ### Installation ###

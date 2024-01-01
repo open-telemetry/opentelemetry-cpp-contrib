@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 3.12)
 
-set(this_target opentelemetry_log4cxx)
+set(this_target opentelemetry_log4cxx_appender)
 
 project(${this_target})
 
