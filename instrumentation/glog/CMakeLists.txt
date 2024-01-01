@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 3.12)
 
-set(this_target opentelemetry_glog)
+set(this_target opentelemetry_glog_sink)
 
 project(${this_target})
 

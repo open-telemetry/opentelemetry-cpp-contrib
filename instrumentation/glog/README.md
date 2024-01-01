@@ -55,10 +55,10 @@ make
 
 Optionally, if the packages were provided via vcpkg, pass in to the _cmake_ command above the flag `-DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake` where VCPKG_ROOT is where vcpkg was installed. 
 
-Now, simply link the target source (i.e., main.cc in the example below) against _glog_ and  _opentelemetry_glog_:
+Now, simply link the target source (i.e., main.cc in the example below) against _glog_ and  _opentelemetry_glog_sink_:
 
 ```bash
-g++ main.cc -lglog -lopentelemetry_glog -o main
+g++ main.cc -lglog -lopentelemetry_glog_sink -o main
 ```
 
 ### Installation ###
