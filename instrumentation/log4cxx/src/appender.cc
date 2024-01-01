@@ -13,7 +13,6 @@ namespace log4cxx
 
 void OpenTelemetryAppender::append(const spi::LoggingEventPtr &event, helpers::Pool &)
 {
-  using namespace opentelemetry::trace::SemanticConventions;
   static constexpr auto kLibraryName = "log4cxx";
 
   auto provider   = opentelemetry::logs::Provider::GetLoggerProvider();
@@ -22,6 +21,8 @@ void OpenTelemetryAppender::append(const spi::LoggingEventPtr &event, helpers::P
 
   if (log_record)
   {
+    using namespace opentelemetry::trace::SemanticConventions;
+
     log_record->SetSeverity(levelToSeverity(event->getLevel()->toInt()));
     log_record->SetBody(event->getMessage());
     log_record->SetTimestamp(event->getChronoTimeStamp());
