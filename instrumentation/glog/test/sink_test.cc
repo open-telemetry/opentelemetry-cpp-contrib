@@ -230,7 +230,7 @@ TEST_F(OpenTelemetrySinkTest, Multi_Threaded)
   {
     const auto &message = "Test message " + std::to_string(index);
     const auto &entry   = std::find(messages.begin(), messages.end(), message);
-    ASSERT_TRUE(entry != messages.end());
+    ASSERT_TRUE(entry != messages.end()) << message;
 
     const auto offset = std::distance(messages.begin(), entry);
     ASSERT_GE(timestamps[offset], pre_log);
