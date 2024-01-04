@@ -28,7 +28,7 @@ void OpenTelemetrySink<Mutex>::sink_it_(const spdlog::details::log_msg &msg)
     using namespace opentelemetry::trace::SemanticConventions;
 
     log_record->SetSeverity(levelToSeverity(msg.level));
-    log_record->SetBody(opentelemetry::nostd::string_view(msg.payload.data()));
+    log_record->SetBody(opentelemetry::nostd::string_view(msg.payload.data(), msg.payload.size()));
     log_record->SetTimestamp(msg.time);
     if (!msg.source.empty())
     {

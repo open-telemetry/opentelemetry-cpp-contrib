@@ -20,6 +20,7 @@ set_target_properties(${this_target} PROPERTIES EXPORT_NAME ${this_target})
 
 target_include_directories(${this_target} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
 )
 
@@ -28,18 +29,43 @@ target_link_libraries(${this_target} PRIVATE
 )
 
 if(OPENTELEMETRY_INSTALL)
+  include(GNUInstallDirs)
+  include(CMakePackageConfigHelpers)
+
   install(
     TARGETS ${this_target}
     EXPORT "${PROJECT_NAME}-target"
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
   install(
     DIRECTORY include/opentelemetry/instrumentation/spdlog
     DESTINATION include/opentelemetry/instrumentation
     FILES_MATCHING
     PATTERN "*.h")
+
+  configure_package_config_file(
+    "${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}-config.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake"
+    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
+    NO_CHECK_REQUIRED_COMPONENTS_MACRO)
+
+  install(
+    FILES
+      "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
+
+  export(
+    EXPORT "${PROJECT_NAME}-target"
+    NAMESPACE ${PROJECT_NAME}::
+    FILE "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-target.cmake")
+
+  install(
+    EXPORT "${PROJECT_NAME}-target"
+    NAMESPACE ${PROJECT_NAME}::
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 endif() # OPENTELEMETRY_INSTALL
 
 if(BUILD_TESTING)
