@@ -2,7 +2,7 @@
 
 ## Features
 
-- Supports Boost.Log sink backend mechanism both, single- and multi-threaded
+- Supports Boost.Log sink backend mechanism and allows for some customizations
 - Supports OpenTelemetry SDK without any changes
 
 ## Requirements
@@ -42,8 +42,7 @@ This will create a backend with the following assumptions about the attributes i
 | FunctionName | std::string                 |
 | LineNumber   | int                         |
 
-If, however, one or more of these attributes have a different name or type, it is possible to communicate this to the backend via the `ValueMappers` struct.
-It contains a function for each attribute describe above, with the following signatures:
+If, however, one or more of these attributes have a different name or type, it is possible to communicate this to the backend via the `ValueMappers` struct. It contains a function for each attribute described above, with their signatures as follows:
 
 ```cpp
 opentelemetry::logs::Severity ToSeverity(const boost::log::record_view &);
@@ -54,9 +53,9 @@ bool ToFuncName(const boost::log::record_view &record, std::string &value);
 bool ToLineNumber(const boost::log::record_view &record, int &value);
 ```
 
-With the exception of `ToSeverity`, which retrieves the value from the **record** for the attribute with *"Severity"* keyword, and is required to return some OpenTelemetry severity type, the other methods take an additional *out* parameter and return a boolean to indicate success or failure.
+With the exception of `ToSeverity`, which is always required to return some OpenTelemetry severity type, the requirements for the other methods are more relaxed, essentially making them optional. They take an additional *out* parameter **value** and return a boolean to indicate success or failure.
 
-As an example of usage, below is one way to create the OTel sink backend with a custom `ToSeverity` method that maps to an enum class `CustomSeverity`` and reads the value from the attribute *"LogLevel"* instead of the default *"Severity"*:
+As an example of usage, below is one way to create the OTel sink backend with a custom `ToSeverity` method that maps to an enum class `CustomSeverity` and reads the value from the attribute *"LogLevel"* instead of the default *"Severity"*:
 
 ```cpp
 enum class CustomSeverity
@@ -95,6 +94,16 @@ mappers.ToSeverity = [](const boost::log::record_view &record) {
 auto backend = boost::make_shared<OpenTelemetrySinkBackend>(mappers);
 auto sink    = boost::make_shared<sinks::synchronous_sink<OpenTelemetrySinkBackend>>(backend);
 logging::core::get()->add_sink(sink);
+```
+
+Another, although somewhat impractical, example of setting a custom timestamp:
+
+```cpp
+mappers.ToTimeStamp = [](const boost::log::record_view &,
+                         std::chrono::system_clock::time_point &value) {
+  value = std::chrono::system_clock::now() - std::chrono::milliseconds(42);
+  return true;
+};
 ```
 
 For more details, refer to the [examples](#examples) section.
