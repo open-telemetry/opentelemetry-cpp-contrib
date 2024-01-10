@@ -32,8 +32,8 @@ namespace trace_api = opentelemetry::trace;
 
 using ::testing::_;
 using ::testing::DoAll;
+using ::testing::Invoke;
 using ::testing::Return;
-using ::testing::SaveArg;
 
 struct LogRecordMock final : public logs_api::LogRecord
 {
@@ -119,59 +119,61 @@ TEST_F(OpenTelemetrySinkTest, Log_Success)
   auto logrecord_mock = new LogRecordMock();
   auto logrecord_ptr  = nostd::unique_ptr<logs_api::LogRecord>(logrecord_mock);
 
-  nostd::string_view logger_name;
-  nostd::string_view library_name;
-  nostd::string_view library_version;
-  logs_api::Severity severity = {};
-  common::AttributeValue message;
-  common::SystemTimestamp timestamp;
-  common::AttributeValue line_number;
-  common::AttributeValue file_name;
-  common::AttributeValue func_name;
-  common::AttributeValue thread_id;
-
   boost::log::sources::severity_logger<int> logger;
   auto pre_log = std::chrono::system_clock::now();
+
   EXPECT_CALL(*provider_mock, GetLogger(_, _, _, _, _))
-      .WillOnce(DoAll(SaveArg<0>(&logger_name), SaveArg<1>(&library_name),
-                      SaveArg<2>(&library_version), Return(logger_ptr)));
+      .WillOnce(DoAll(Invoke([](nostd::string_view logger_name, nostd::string_view library_name,
+                                nostd::string_view library_version, nostd::string_view,
+                                const common::KeyValueIterable &) {
+                        ASSERT_EQ(logger_name, "Boost logger");
+                        ASSERT_EQ(library_name, "Boost.Log");
+                        ASSERT_EQ(library_version,
+                                  instr::boost_log::OpenTelemetrySinkBackend::libraryVersion());
+                      }),
+                      Return(logger_ptr)));
   EXPECT_CALL(*logger_mock, CreateLogRecord()).WillOnce(Return(std::move(logrecord_ptr)));
-  EXPECT_CALL(*logrecord_mock, SetSeverity(_)).WillOnce(SaveArg<0>(&severity));
-  EXPECT_CALL(*logrecord_mock, SetBody(_)).WillOnce(SaveArg<0>(&message));
-  EXPECT_CALL(*logrecord_mock, SetTimestamp(_)).WillOnce(SaveArg<0>(&timestamp));
+  EXPECT_CALL(*logrecord_mock, SetSeverity(_)).WillOnce(Invoke([](logs_api::Severity severity) {
+    ASSERT_TRUE(severity == logs_api::Severity::kInfo);
+  }));
+  EXPECT_CALL(*logrecord_mock, SetBody(_))
+      .WillOnce(Invoke([](const common::AttributeValue &message) {
+        ASSERT_TRUE(nostd::holds_alternative<nostd::string_view>(message));
+        ASSERT_EQ(nostd::get<nostd::string_view>(message), "test message");
+      }));
+  EXPECT_CALL(*logrecord_mock, SetTimestamp(_))
+      .WillOnce(Invoke([pre_log](common::SystemTimestamp timestamp) {
+        auto post_log = std::chrono::system_clock::now();
+        ASSERT_TRUE(timestamp.time_since_epoch() >= pre_log.time_since_epoch());
+        ASSERT_TRUE(timestamp.time_since_epoch() <= post_log.time_since_epoch());
+      }));
   EXPECT_CALL(*logrecord_mock, SetAttribute(nostd::string_view("code.lineno"), _))
-      .WillOnce(SaveArg<1>(&line_number));
+      .WillOnce(Invoke([](nostd::string_view, const common::AttributeValue &line_number) {
+        ASSERT_TRUE(nostd::holds_alternative<int>(line_number));
+        ASSERT_GE(nostd::get<int>(line_number), 0);
+      }));
   EXPECT_CALL(*logrecord_mock, SetAttribute(nostd::string_view("code.filepath"), _))
-      .WillOnce(SaveArg<1>(&file_name));
+      .WillOnce(Invoke([](nostd::string_view, const common::AttributeValue &file_name) {
+        ASSERT_TRUE(nostd::holds_alternative<nostd::string_view>(file_name));
+        ASSERT_TRUE(std::string(nostd::get<nostd::string_view>(file_name)).find("sink_test.cc") !=
+                    std::string::npos);
+      }));
   EXPECT_CALL(*logrecord_mock, SetAttribute(nostd::string_view("code.function"), _))
-      .WillOnce(SaveArg<1>(&func_name));
+      .WillOnce(Invoke([](nostd::string_view, const common::AttributeValue &func_name) {
+        ASSERT_TRUE(nostd::holds_alternative<nostd::string_view>(func_name));
+        ASSERT_TRUE(nostd::get<nostd::string_view>(func_name) == "TestBody");
+      }));
   EXPECT_CALL(*logrecord_mock, SetAttribute(nostd::string_view("thread.id"), _))
-      .WillOnce(SaveArg<1>(&thread_id));
+      .WillOnce(Invoke([](nostd::string_view, const common::AttributeValue &thread_id) {
+        ASSERT_TRUE(nostd::holds_alternative<nostd::string_view>(thread_id));
+        ASSERT_FALSE(nostd::get<nostd::string_view>(thread_id).empty());
+      }));
   EXPECT_CALL(*logger_mock, EmitLogRecord(_)).Times(1);
 
   BOOST_LOG_SEV(logger, boost::log::trivial::info)
       << boost::log::add_value("FileName", __FILE__)
       << boost::log::add_value("FunctionName", __FUNCTION__)
       << boost::log::add_value("LineNumber", __LINE__) << "test message";
-  auto post_log = std::chrono::system_clock::now();
-  ASSERT_EQ(logger_name, "Boost logger");
-  ASSERT_EQ(library_name, "Boost.Log");
-  ASSERT_EQ(library_version, instr::boost_log::OpenTelemetrySinkBackend::libraryVersion());
-  ASSERT_TRUE(nostd::holds_alternative<nostd::string_view>(message));
-  ASSERT_EQ(nostd::get<nostd::string_view>(message), "test message");
-  ASSERT_TRUE(severity == logs_api::Severity::kInfo);
-  ASSERT_TRUE(timestamp.time_since_epoch() >= pre_log.time_since_epoch());
-  ASSERT_TRUE(timestamp.time_since_epoch() <= post_log.time_since_epoch());
-  ASSERT_TRUE(nostd::holds_alternative<nostd::string_view>(file_name));
-  ASSERT_TRUE(std::string(nostd::get<nostd::string_view>(file_name)).find("sink_test.cc") !=
-              std::string::npos);
-  ASSERT_TRUE(nostd::holds_alternative<nostd::string_view>(func_name));
-  ASSERT_TRUE(std::string(nostd::get<nostd::string_view>(func_name)).find("TestBody") !=
-              std::string::npos);
-  ASSERT_TRUE(nostd::holds_alternative<int>(line_number));
-  ASSERT_GE(nostd::get<int>(line_number), 0);
-  ASSERT_TRUE(nostd::holds_alternative<nostd::string_view>(thread_id));
-  ASSERT_FALSE(nostd::get<nostd::string_view>(thread_id).empty());
 }
 
 TEST_F(OpenTelemetrySinkTest, Log_Failure)
@@ -180,22 +182,22 @@ TEST_F(OpenTelemetrySinkTest, Log_Failure)
   logs_api::Provider::SetLoggerProvider(nostd::shared_ptr<logs_api::LoggerProvider>(provider_mock));
   auto logger_mock = new LoggerMock();
   auto logger_ptr  = nostd::shared_ptr<logs_api::Logger>(logger_mock);
-
-  nostd::string_view logger_name;
-  nostd::string_view library_name;
-  nostd::string_view library_version;
-
   boost::log::sources::severity_logger<int> logger;
+
   EXPECT_CALL(*provider_mock, GetLogger(_, _, _, _, _))
-      .WillOnce(DoAll(SaveArg<0>(&logger_name), SaveArg<1>(&library_name),
-                      SaveArg<2>(&library_version), Return(logger_ptr)));
+      .WillOnce(DoAll(Invoke([](nostd::string_view logger_name, nostd::string_view library_name,
+                                nostd::string_view library_version, nostd::string_view,
+                                const common::KeyValueIterable &) {
+                        ASSERT_EQ(logger_name, "Boost logger");
+                        ASSERT_EQ(library_name, "Boost.Log");
+                        ASSERT_EQ(library_version,
+                                  instr::boost_log::OpenTelemetrySinkBackend::libraryVersion());
+                      }),
+                      Return(logger_ptr)));
   EXPECT_CALL(*logger_mock, CreateLogRecord()).WillOnce(Return(nullptr));
   EXPECT_CALL(*logger_mock, EmitLogRecord(_)).Times(0);
 
   BOOST_LOG_SEV(logger, boost::log::trivial::info) << "test message";
-  ASSERT_EQ(logger_name, "Boost logger");
-  ASSERT_EQ(library_name, "Boost.Log");
-  ASSERT_EQ(library_version, instr::boost_log::OpenTelemetrySinkBackend::libraryVersion());
 }
 
 TEST_F(OpenTelemetrySinkTest, Log_WithoutSeverity)
@@ -207,35 +209,38 @@ TEST_F(OpenTelemetrySinkTest, Log_WithoutSeverity)
   auto logrecord_mock = new LogRecordMock();
   auto logrecord_ptr  = nostd::unique_ptr<logs_api::LogRecord>(logrecord_mock);
 
-  nostd::string_view logger_name;
-  nostd::string_view library_name;
-  nostd::string_view library_version;
-  logs_api::Severity severity = {};
-  common::AttributeValue message;
-  common::SystemTimestamp timestamp;
-
   boost::log::sources::logger logger;
   auto pre_log = std::chrono::system_clock::now();
+
   EXPECT_CALL(*provider_mock, GetLogger(_, _, _, _, _))
-      .WillOnce(DoAll(SaveArg<0>(&logger_name), SaveArg<1>(&library_name),
-                      SaveArg<2>(&library_version), Return(logger_ptr)));
+      .WillOnce(DoAll(Invoke([](nostd::string_view logger_name, nostd::string_view library_name,
+                                nostd::string_view library_version, nostd::string_view,
+                                const common::KeyValueIterable &) {
+                        ASSERT_EQ(logger_name, "Boost logger");
+                        ASSERT_EQ(library_name, "Boost.Log");
+                        ASSERT_EQ(library_version,
+                                  instr::boost_log::OpenTelemetrySinkBackend::libraryVersion());
+                      }),
+                      Return(logger_ptr)));
   EXPECT_CALL(*logger_mock, CreateLogRecord()).WillOnce(Return(std::move(logrecord_ptr)));
-  EXPECT_CALL(*logrecord_mock, SetSeverity(_)).WillOnce(SaveArg<0>(&severity));
-  EXPECT_CALL(*logrecord_mock, SetBody(_)).WillOnce(SaveArg<0>(&message));
-  EXPECT_CALL(*logrecord_mock, SetTimestamp(_)).WillOnce(SaveArg<0>(&timestamp));
+  EXPECT_CALL(*logrecord_mock, SetSeverity(_)).WillOnce(Invoke([](logs_api::Severity severity) {
+    ASSERT_TRUE(severity == logs_api::Severity::kInvalid);
+  }));
+  EXPECT_CALL(*logrecord_mock, SetBody(_))
+      .WillOnce(Invoke([](const common::AttributeValue &message) {
+        ASSERT_TRUE(nostd::holds_alternative<nostd::string_view>(message));
+        ASSERT_EQ(nostd::get<nostd::string_view>(message), "no severity");
+      }));
+  EXPECT_CALL(*logrecord_mock, SetTimestamp(_))
+      .WillOnce(Invoke([pre_log](common::SystemTimestamp timestamp) {
+        auto post_log = std::chrono::system_clock::now();
+        ASSERT_TRUE(timestamp.time_since_epoch() >= pre_log.time_since_epoch());
+        ASSERT_TRUE(timestamp.time_since_epoch() <= post_log.time_since_epoch());
+      }));
   EXPECT_CALL(*logrecord_mock, SetAttribute(nostd::string_view("thread.id"), _)).Times(1);
   EXPECT_CALL(*logger_mock, EmitLogRecord(_)).Times(1);
 
   BOOST_LOG(logger) << "no severity";
-  auto post_log = std::chrono::system_clock::now();
-  ASSERT_EQ(logger_name, "Boost logger");
-  ASSERT_EQ(library_name, "Boost.Log");
-  ASSERT_EQ(library_version, instr::boost_log::OpenTelemetrySinkBackend::libraryVersion());
-  ASSERT_TRUE(nostd::holds_alternative<nostd::string_view>(message));
-  ASSERT_EQ(std::string(nostd::get<nostd::string_view>(message)), "no severity");
-  ASSERT_TRUE(severity == logs_api::Severity::kInvalid);
-  ASSERT_TRUE(timestamp.time_since_epoch() >= pre_log.time_since_epoch());
-  ASSERT_TRUE(timestamp.time_since_epoch() <= post_log.time_since_epoch());
 }
 
 TEST_F(OpenTelemetrySinkTest, Multi_Threaded)
@@ -354,51 +359,52 @@ TEST(OpenTelemetrySinkTestSuite, CustomMappers)
   auto logrecord_mock = new LogRecordMock();
   auto logrecord_ptr  = nostd::unique_ptr<logs_api::LogRecord>(logrecord_mock);
 
-  nostd::string_view logger_name;
-  nostd::string_view library_name;
-  nostd::string_view library_version;
-  logs_api::Severity severity = {};
-  common::AttributeValue message;
-  common::AttributeValue line_number;
-  common::AttributeValue file_name;
-  common::AttributeValue func_name;
-  common::AttributeValue thread_id;
-
   SetUpBackendWithDummyMappers();
   boost::log::sources::severity_logger<int> logger;
 
   EXPECT_CALL(*provider_mock, GetLogger(_, _, _, _, _))
-      .WillOnce(DoAll(SaveArg<0>(&logger_name), SaveArg<1>(&library_name),
-                      SaveArg<2>(&library_version), Return(logger_ptr)));
+      .WillOnce(DoAll(Invoke([](nostd::string_view logger_name, nostd::string_view library_name,
+                                nostd::string_view library_version, nostd::string_view,
+                                const common::KeyValueIterable &) {
+                        ASSERT_EQ(logger_name, "Boost logger");
+                        ASSERT_EQ(library_name, "Boost.Log");
+                        ASSERT_EQ(library_version,
+                                  instr::boost_log::OpenTelemetrySinkBackend::libraryVersion());
+                      }),
+                      Return(logger_ptr)));
   EXPECT_CALL(*logger_mock, CreateLogRecord()).WillOnce(Return(std::move(logrecord_ptr)));
-  EXPECT_CALL(*logrecord_mock, SetSeverity(_)).WillOnce(SaveArg<0>(&severity));
-  EXPECT_CALL(*logrecord_mock, SetBody(_)).WillOnce(SaveArg<0>(&message));
-  EXPECT_CALL(*logrecord_mock, SetTimestamp(_)).Times(0);
+  EXPECT_CALL(*logrecord_mock, SetSeverity(_)).WillOnce(Invoke([](logs_api::Severity severity) {
+    ASSERT_TRUE(severity == logs_api::Severity::kTrace4);
+  }));
+  EXPECT_CALL(*logrecord_mock, SetBody(_))
+      .WillOnce(Invoke([](const common::AttributeValue &message) {
+        ASSERT_TRUE(nostd::holds_alternative<nostd::string_view>(message));
+        ASSERT_EQ(nostd::get<nostd::string_view>(message), "custom mappers");
+      }));
+  EXPECT_CALL(*logrecord_mock, SetTimestamp(_)).Times(0);  // Intended - test returning false
   EXPECT_CALL(*logrecord_mock, SetAttribute(nostd::string_view("code.lineno"), _))
-      .WillOnce(SaveArg<1>(&line_number));
+      .WillOnce(Invoke([](nostd::string_view, const common::AttributeValue &line_number) {
+        ASSERT_TRUE(nostd::holds_alternative<int>(line_number));
+        ASSERT_EQ(nostd::get<int>(line_number), 42);
+      }));
   EXPECT_CALL(*logrecord_mock, SetAttribute(nostd::string_view("code.filepath"), _))
-      .WillOnce(SaveArg<1>(&file_name));
+      .WillOnce(Invoke([](nostd::string_view, const common::AttributeValue &file_name) {
+        ASSERT_TRUE(nostd::holds_alternative<nostd::string_view>(file_name));
+        ASSERT_TRUE(nostd::get<nostd::string_view>(file_name) == "bar.cpp");
+      }));
   EXPECT_CALL(*logrecord_mock, SetAttribute(nostd::string_view("code.function"), _))
-      .WillOnce(SaveArg<1>(&func_name));
+      .WillOnce(Invoke([](nostd::string_view, const common::AttributeValue &func_name) {
+        ASSERT_TRUE(nostd::holds_alternative<nostd::string_view>(func_name));
+        ASSERT_TRUE(nostd::get<nostd::string_view>(func_name) == "doFoo");
+      }));
   EXPECT_CALL(*logrecord_mock, SetAttribute(nostd::string_view("thread.id"), _))
-      .WillOnce(SaveArg<1>(&thread_id));
+      .WillOnce(Invoke([](nostd::string_view, const common::AttributeValue &thread_id) {
+        ASSERT_TRUE(nostd::holds_alternative<nostd::string_view>(thread_id));
+        ASSERT_TRUE(nostd::get<nostd::string_view>(thread_id) == "0x600df457c0d3");
+      }));
   EXPECT_CALL(*logger_mock, EmitLogRecord(_)).Times(1);
 
   BOOST_LOG(logger) << "custom mappers";
-  ASSERT_EQ(logger_name, "Boost logger");
-  ASSERT_EQ(library_name, "Boost.Log");
-  ASSERT_EQ(library_version, instr::boost_log::OpenTelemetrySinkBackend::libraryVersion());
-  ASSERT_TRUE(nostd::holds_alternative<nostd::string_view>(message));
-  ASSERT_EQ(nostd::get<nostd::string_view>(message), "custom mappers");
-  ASSERT_TRUE(severity == logs_api::Severity::kTrace4);
-  ASSERT_TRUE(nostd::holds_alternative<nostd::string_view>(file_name));
-  ASSERT_TRUE(std::string(nostd::get<nostd::string_view>(file_name)).find("bar.cpp") == 0);
-  ASSERT_TRUE(nostd::holds_alternative<nostd::string_view>(func_name));
-  ASSERT_TRUE(std::string(nostd::get<nostd::string_view>(func_name)).find("doFoo") == 0);
-  ASSERT_TRUE(nostd::holds_alternative<int>(line_number));
-  ASSERT_EQ(nostd::get<int>(line_number), 42);
-  ASSERT_TRUE(nostd::holds_alternative<nostd::string_view>(thread_id));
-  ASSERT_TRUE(std::string(nostd::get<nostd::string_view>(thread_id)).find("0x600df457c0d3") == 0);
   boost::log::core::get()->remove_all_sinks();
 }
 
@@ -468,20 +474,20 @@ TEST_P(CustomSeverityTest, LevelMapping)
   auto logger_ptr     = nostd::shared_ptr<logs_api::Logger>(logger_mock);
   auto logrecord_mock = new LogRecordMock();
   auto logrecord_ptr  = nostd::unique_ptr<logs_api::LogRecord>(logrecord_mock);
-
-  logs_api::Severity severity = {};
+  boost::log::sources::severity_logger<CustomSeverity> logger;
 
   EXPECT_CALL(*provider_mock, GetLogger(_, _, _, _, _)).WillOnce(Return(logger_ptr));
   EXPECT_CALL(*logger_mock, CreateLogRecord()).WillOnce(Return(std::move(logrecord_ptr)));
-  EXPECT_CALL(*logrecord_mock, SetSeverity(_)).WillOnce(SaveArg<0>(&severity));
+  EXPECT_CALL(*logrecord_mock, SetSeverity(_))
+      .WillOnce(Invoke([expected_level](logs_api::Severity severity) {
+        ASSERT_TRUE(severity == expected_level);
+      }));
   EXPECT_CALL(*logrecord_mock, SetTimestamp(_)).Times(1);
   EXPECT_CALL(*logrecord_mock, SetAttribute(nostd::string_view("thread.id"), _)).Times(1);
   EXPECT_CALL(*logrecord_mock, SetBody(_)).Times(1);
   EXPECT_CALL(*logger_mock, EmitLogRecord(_)).Times(1);
 
-  boost::log::sources::severity_logger<CustomSeverity> logger;
   BOOST_LOG_SEV(logger, input_level);
-  ASSERT_TRUE(severity == expected_level);
 }
 
 INSTANTIATE_TEST_SUITE_P(
