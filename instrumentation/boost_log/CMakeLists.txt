@@ -13,7 +13,7 @@ find_package(Boost COMPONENTS log REQUIRED)
 add_library(${this_target} src/sink.cc)
 
 target_compile_options(${this_target} PUBLIC
-  -Wall -Wextra -Werror -Wpedantic -fPIC -std=c++14
+  -Wall -Wextra -Werror -Wpedantic -fPIC
 )
 
 set_target_properties(${this_target} PROPERTIES EXPORT_NAME ${this_target})
