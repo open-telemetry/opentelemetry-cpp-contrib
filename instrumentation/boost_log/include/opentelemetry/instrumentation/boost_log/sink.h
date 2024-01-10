@@ -46,7 +46,7 @@ struct ValueMappers
 };
 
 class OpenTelemetrySinkBackend
-    : public boost::log::sinks::basic_sink_backend<boost::log::sinks::synchronized_feeding>
+    : public boost::log::sinks::basic_sink_backend<boost::log::sinks::concurrent_feeding>
 {
 public:
   static const std::string &libraryVersion()
