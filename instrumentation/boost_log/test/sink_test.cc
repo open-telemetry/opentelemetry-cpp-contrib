@@ -30,10 +30,6 @@ namespace nostd     = opentelemetry::nostd;
 namespace logs_api  = opentelemetry::logs;
 namespace trace_api = opentelemetry::trace;
 
-namespace logging = boost::log;
-namespace sinks   = boost::log::sinks;
-namespace src     = boost::log::sources;
-
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Return;
@@ -82,19 +78,20 @@ class OpenTelemetrySinkTest : public testing::Test
 protected:
   void SetUp() override
   {
+    using boost::log::sinks::synchronous_sink;
     using opentelemetry::instrumentation::boost_log::OpenTelemetrySinkBackend;
     auto backend = boost::make_shared<OpenTelemetrySinkBackend>();
-    auto sink    = boost::make_shared<sinks::synchronous_sink<OpenTelemetrySinkBackend>>(backend);
-    logging::core::get()->add_sink(sink);
-    logging::add_common_attributes();
+    auto sink    = boost::make_shared<synchronous_sink<OpenTelemetrySinkBackend>>(backend);
+    boost::log::core::get()->add_sink(sink);
+    boost::log::add_common_attributes();
   }
 
-  void TearDown() override { logging::core::get()->remove_all_sinks(); }
+  void TearDown() override { boost::log::core::get()->remove_all_sinks(); }
 };
 
 TEST_F(OpenTelemetrySinkTest, LevelToSeverity)
 {
-  namespace Level = logging::trivial;
+  namespace Level = boost::log::trivial;
   using logs_api::Severity;
   using ots = instr::boost_log::OpenTelemetrySinkBackend;
 
@@ -133,7 +130,7 @@ TEST_F(OpenTelemetrySinkTest, Log_Success)
   common::AttributeValue func_name;
   common::AttributeValue thread_id;
 
-  src::severity_logger<int> logger;
+  boost::log::sources::severity_logger<int> logger;
   auto pre_log = std::chrono::system_clock::now();
   EXPECT_CALL(*provider_mock, GetLogger(_, _, _, _, _))
       .WillOnce(DoAll(SaveArg<0>(&logger_name), SaveArg<1>(&library_name),
@@ -152,10 +149,10 @@ TEST_F(OpenTelemetrySinkTest, Log_Success)
       .WillOnce(SaveArg<1>(&thread_id));
   EXPECT_CALL(*logger_mock, EmitLogRecord(_)).Times(1);
 
-  BOOST_LOG_SEV(logger, logging::trivial::info)
+  BOOST_LOG_SEV(logger, boost::log::trivial::info)
       << boost::log::add_value("FileName", __FILE__)
       << boost::log::add_value("FunctionName", __FUNCTION__)
-      << boost::log::add_value("LineNumber", int{__LINE__}) << "test message";
+      << boost::log::add_value("LineNumber", __LINE__) << "test message";
   auto post_log = std::chrono::system_clock::now();
   ASSERT_EQ(logger_name, "Boost logger");
   ASSERT_EQ(library_name, "Boost.Log");
@@ -188,14 +185,14 @@ TEST_F(OpenTelemetrySinkTest, Log_Failure)
   nostd::string_view library_name;
   nostd::string_view library_version;
 
-  src::severity_logger<int> logger;
+  boost::log::sources::severity_logger<int> logger;
   EXPECT_CALL(*provider_mock, GetLogger(_, _, _, _, _))
       .WillOnce(DoAll(SaveArg<0>(&logger_name), SaveArg<1>(&library_name),
                       SaveArg<2>(&library_version), Return(logger_ptr)));
   EXPECT_CALL(*logger_mock, CreateLogRecord()).WillOnce(Return(nullptr));
   EXPECT_CALL(*logger_mock, EmitLogRecord(_)).Times(0);
 
-  BOOST_LOG_SEV(logger, logging::trivial::info) << "test message";
+  BOOST_LOG_SEV(logger, boost::log::trivial::info) << "test message";
   ASSERT_EQ(logger_name, "Boost logger");
   ASSERT_EQ(library_name, "Boost.Log");
   ASSERT_EQ(library_version, instr::boost_log::OpenTelemetrySinkBackend::libraryVersion());
@@ -217,7 +214,7 @@ TEST_F(OpenTelemetrySinkTest, Log_WithoutSeverity)
   common::AttributeValue message;
   common::SystemTimestamp timestamp;
 
-  src::logger logger;
+  boost::log::sources::logger logger;
   auto pre_log = std::chrono::system_clock::now();
   EXPECT_CALL(*provider_mock, GetLogger(_, _, _, _, _))
       .WillOnce(DoAll(SaveArg<0>(&logger_name), SaveArg<1>(&library_name),
@@ -261,13 +258,13 @@ TEST_F(OpenTelemetrySinkTest, Multi_Threaded)
   std::vector<std::thread> threads;
   threads.reserve(count);
 
-  src::severity_logger<int> logger;
+  boost::log::sources::severity_logger<int> logger;
   const auto pre_log = std::chrono::system_clock::now().time_since_epoch().count();
 
   for (size_t index = 0; index < count; ++index)
   {
     threads.emplace_back([&logger, index]() {
-      BOOST_LOG_SEV(logger, logging::trivial::info) << "Test message " << index;
+      BOOST_LOG_SEV(logger, boost::log::trivial::info) << "Test message " << index;
     });
   }
 
@@ -341,10 +338,11 @@ void SetUpBackendWithDummyMappers()
     return true;
   };
 
+  using boost::log::sinks::synchronous_sink;
   using opentelemetry::instrumentation::boost_log::OpenTelemetrySinkBackend;
   auto backend = boost::make_shared<OpenTelemetrySinkBackend>(mappers);
-  auto sink    = boost::make_shared<sinks::synchronous_sink<OpenTelemetrySinkBackend>>(backend);
-  logging::core::get()->add_sink(sink);
+  auto sink    = boost::make_shared<synchronous_sink<OpenTelemetrySinkBackend>>(backend);
+  boost::log::core::get()->add_sink(sink);
 }
 
 TEST(OpenTelemetrySinkTestSuite, CustomMappers)
@@ -367,7 +365,7 @@ TEST(OpenTelemetrySinkTestSuite, CustomMappers)
   common::AttributeValue thread_id;
 
   SetUpBackendWithDummyMappers();
-  src::severity_logger<int> logger;
+  boost::log::sources::severity_logger<int> logger;
 
   EXPECT_CALL(*provider_mock, GetLogger(_, _, _, _, _))
       .WillOnce(DoAll(SaveArg<0>(&logger_name), SaveArg<1>(&library_name),
@@ -401,7 +399,7 @@ TEST(OpenTelemetrySinkTestSuite, CustomMappers)
   ASSERT_EQ(nostd::get<int>(line_number), 42);
   ASSERT_TRUE(nostd::holds_alternative<nostd::string_view>(thread_id));
   ASSERT_TRUE(std::string(nostd::get<nostd::string_view>(thread_id)).find("0x600df457c0d3") == 0);
-  logging::core::get()->remove_all_sinks();
+  boost::log::core::get()->remove_all_sinks();
 }
 
 enum class CustomSeverity
@@ -449,13 +447,14 @@ protected:
       return opentelemetry::logs::Severity::kInvalid;
     };
 
+    using boost::log::sinks::synchronous_sink;
     using opentelemetry::instrumentation::boost_log::OpenTelemetrySinkBackend;
     auto backend = boost::make_shared<OpenTelemetrySinkBackend>(mappers);
-    auto sink    = boost::make_shared<sinks::synchronous_sink<OpenTelemetrySinkBackend>>(backend);
-    logging::core::get()->add_sink(sink);
+    auto sink    = boost::make_shared<synchronous_sink<OpenTelemetrySinkBackend>>(backend);
+    boost::log::core::get()->add_sink(sink);
   }
 
-  void TearDown() override { logging::core::get()->remove_all_sinks(); }
+  void TearDown() override { boost::log::core::get()->remove_all_sinks(); }
 };
 
 TEST_P(CustomSeverityTest, LevelMapping)
@@ -480,7 +479,7 @@ TEST_P(CustomSeverityTest, LevelMapping)
   EXPECT_CALL(*logrecord_mock, SetBody(_)).Times(1);
   EXPECT_CALL(*logger_mock, EmitLogRecord(_)).Times(1);
 
-  src::severity_logger<CustomSeverity> logger;
+  boost::log::sources::severity_logger<CustomSeverity> logger;
   BOOST_LOG_SEV(logger, input_level);
   ASSERT_TRUE(severity == expected_level);
 }

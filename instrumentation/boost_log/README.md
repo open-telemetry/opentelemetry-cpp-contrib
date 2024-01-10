@@ -27,8 +27,8 @@ The simplest scenario is by creating a logger with the `OpenTelemetrySinkBackend
 using opentelemetry::instrumentation::boost_log::OpenTelemetrySinkBackend;
 
 auto backend = boost::make_shared<OpenTelemetrySinkBackend>();
-auto sink    = boost::make_shared<sinks::synchronous_sink<OpenTelemetrySinkBackend>>(backend);
-logging::core::get()->add_sink(sink);
+auto sink    = boost::make_shared<boost::log::sinks::synchronous_sink<OpenTelemetrySinkBackend>>(backend);
+boost::log::core::get()->add_sink(sink);
 ```
 
 This will create a backend with the following assumptions about the attributes it collects, more precisely:
@@ -92,8 +92,8 @@ mappers.ToSeverity = [](const boost::log::record_view &record) {
 };
 
 auto backend = boost::make_shared<OpenTelemetrySinkBackend>(mappers);
-auto sink    = boost::make_shared<sinks::synchronous_sink<OpenTelemetrySinkBackend>>(backend);
-logging::core::get()->add_sink(sink);
+auto sink    = boost::make_shared<boost::log::sinks::synchronous_sink<OpenTelemetrySinkBackend>>(backend);
+boost::log::core::get()->add_sink(sink);
 ```
 
 Another, although somewhat impractical, example of setting a custom timestamp:
@@ -243,10 +243,10 @@ The above calls the same macro as in the previous example, with the values added
 The default behavior to log the source location is by adding attributes values to the BOOST_LOG* macro with the following keywords:
 
 ```cpp
-BOOST_LOG_SEV(logger, logging::trivial::debug)
+BOOST_LOG_SEV(logger, boost::log::trivial::debug)
     << boost::log::add_value("FileName", __FILE__)
     << boost::log::add_value("FunctionName", __FUNCTION__)
-    << boost::log::add_value("LineNumber", int{__LINE__}) << "Test message with source location";
+    << boost::log::add_value("LineNumber", __LINE__) << "Test message with source location";
 ```
 
 If logging with a different keyword or type, a custom mapping method has to be provided when instantiating the backend sink, as shown in [configuration](#configuration) section.

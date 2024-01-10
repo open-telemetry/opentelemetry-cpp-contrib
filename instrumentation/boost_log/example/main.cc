@@ -35,10 +35,6 @@ namespace trace_exp = opentelemetry::exporter::trace;
 namespace trace_api = opentelemetry::trace;
 namespace trace_sdk = opentelemetry::sdk::trace;
 
-namespace logging = boost::log;
-namespace sinks   = boost::log::sinks;
-namespace src     = boost::log::sources;
-
 int main(int /* argc */, char ** /* argv */)
 {
   // Set up logger provider
@@ -69,21 +65,22 @@ int main(int /* argc */, char ** /* argv */)
 
   // Set up loggers
   {
+    using boost::log::sinks::synchronous_sink;
     using opentelemetry::instrumentation::boost_log::OpenTelemetrySinkBackend;
     auto backend = boost::make_shared<OpenTelemetrySinkBackend>();
-    auto sink    = boost::make_shared<sinks::synchronous_sink<OpenTelemetrySinkBackend>>(backend);
-    logging::core::get()->add_sink(sink);
-    logging::add_common_attributes();
+    auto sink    = boost::make_shared<synchronous_sink<OpenTelemetrySinkBackend>>(backend);
+    boost::log::core::get()->add_sink(sink);
+    boost::log::add_common_attributes();
   }
 
-  src::logger simple;
+  boost::log::sources::logger simple;
   BOOST_LOG(simple) << "Test simplest message";
 
-  src::severity_logger<int> logger;
-  BOOST_LOG_SEV(logger, logging::trivial::info) << "Test message with severity";
+  boost::log::sources::severity_logger<int> logger;
+  BOOST_LOG_SEV(logger, boost::log::trivial::info) << "Test message with severity";
 
-  BOOST_LOG_SEV(logger, logging::trivial::debug)
+  BOOST_LOG_SEV(logger, boost::log::trivial::debug)
       << boost::log::add_value("FileName", __FILE__)
       << boost::log::add_value("FunctionName", __FUNCTION__)
-      << boost::log::add_value("LineNumber", int{__LINE__}) << "Test message with source location";
+      << boost::log::add_value("LineNumber", __LINE__) << "Test message with source location";
 }
