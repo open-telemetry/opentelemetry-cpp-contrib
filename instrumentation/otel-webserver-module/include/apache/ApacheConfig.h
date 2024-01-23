@@ -42,6 +42,9 @@ public:
     const char* getOtelExporterOtlpHeaders() { return otelExporterOtlpHeaders; }
     int otelExporterOtlpHeadersInitialized() { return otelExporterOtlpHeaders_initialized; }
 
+    const char* getOtelResourceAttributes() { return otelResourceAttributes; }
+    int otelResourceAttributesInitialized() { return otelResourceAttributes_initialized; }
+
     int getOtelSslEnabled() { return otelSslEnabled; }
     int getOtelSslEnabledInitialized() { return otelSslEnabled_initialized; }
 
@@ -128,6 +131,9 @@ private:
 
     const char *otelExporterOtlpHeaders;   // OPTIONAL: AppDynamics  Custom metadata for OTEL Exporter EX: OTEL_EXPORTER_OTLP_HEADERS="api-key=key,other-config-value=value"
     int otelExporterOtlpHeaders_initialized;
+
+    const char *otelResourceAttributes;   // OPTIONAL:  Custom resource attributes for OTEL Exporter EX: OTEL_RESOURCE_ATTRIBUTES="subsystem=key,other.value=value"
+    int otelResourceAttributes_initialized;
 
     int otelSslEnabled;      // OPTIONAL: Decision whether connection to the Exporter endpoint is secured
     int otelSslEnabled_initialized;
@@ -231,6 +237,7 @@ public:
     static const char* otel_set_otelExporterType(cmd_parms *cmd, void *conf, const char *arg);
     static const char* otel_set_otelExporterEndpoint(cmd_parms *cmd, void *conf, const char *arg);
     static const char* otel_set_otelExporterOtlpHeaders(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* otel_set_otelResourceAttributes(cmd_parms *cmd, void *conf, const char *arg);
     static const char* otel_set_otelSslEnabled(cmd_parms *cmd, void *conf, const char *arg);
     static const char* otel_set_otelSslCertificatePath(cmd_parms *cmd, void *conf, const char *arg);
     static const char* otel_set_otelProcessorType(cmd_parms *cmd, void *conf, const char *arg);

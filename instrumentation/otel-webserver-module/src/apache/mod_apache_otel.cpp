@@ -71,6 +71,12 @@ static const command_rec otel_cmds[] =
             OR_ALL,
             "AppDynamics Otel export Headers key value pairs"),
     AP_INIT_TAKE1(
+            "apacheModuleOtelResourceAttributes",
+            (CMD_HAND_TYPE)ApacheConfigHandlers::otel_set_otelResourceAttributes,
+            NULL,
+            OR_ALL,
+            "Otel resource attributes key value pairs"),
+    AP_INIT_TAKE1(
             "apacheModuleOtelSslEnabled",
             (CMD_HAND_TYPE)ApacheConfigHandlers::otel_set_otelSslEnabled,
             NULL,

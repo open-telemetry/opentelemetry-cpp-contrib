@@ -129,6 +129,14 @@ const char* ApacheConfigHandlers::otel_set_otelExporterOtlpHeaders(cmd_parms *cm
     return helperChar(cmd, cfg, arg, cfg->otelExporterOtlpHeaders, cfg->otelExporterOtlpHeaders_initialized, "otel_set_otelExporterOtlpHeaders");
 }
 
+//  char *otelResourceAttributes;
+//  int otelResourceAttributes_initialized;
+const char* ApacheConfigHandlers::otel_set_otelResourceAttributes(cmd_parms *cmd, void *conf, const char *arg)
+{
+    otel_cfg* cfg = (otel_cfg*) conf;
+    return helperChar(cmd, cfg, arg, cfg->otelResourceAttributes, cfg->otelResourceAttributes_initialized, "otel_set_otelResourceAttributes");
+}
+
 //  char *otelSslEnabled;
 //  int otelSslEnabled_initialized;
 const char* ApacheConfigHandlers::otel_set_otelSslEnabled(cmd_parms *cmd, void *conf, const char *arg)
@@ -443,6 +451,10 @@ void otel_cfg::init()
     // otelExporterOtlpHeaders         Optional: OTLP headers as key value pairs
     otelExporterOtlpHeaders = "";
     otelExporterOtlpHeaders_initialized = 0;
+
+    // otelResourceAttributes         Optional: OTLP resource attributes as key value pairs
+    otelResourceAttributes = "";
+    otelResourceAttributes_initialized = 0;
 
     // otelSslEnabled       OPTIONAL: Decides whether the connection to the endpoint is secured
     otelSslEnabled = 0;
@@ -785,6 +797,9 @@ otel_cfg* ApacheConfigHandlers::getProcessConfig(const request_rec* r)
 
     process_cfg->otelExporterOtlpHeaders = apr_pstrdup(r->server->process->pool, our_config->otelExporterOtlpHeaders);
     process_cfg->otelExporterOtlpHeaders_initialized = our_config->otelExporterOtlpHeaders_initialized;
+
+    process_cfg->otelResourceAttributes = apr_pstrdup(r->server->process->pool, our_config->otelResourceAttributes);
+    process_cfg->otelResourceAttributes_initialized = our_config->otelResourceAttributes_initialized;
 
     process_cfg->otelSslEnabled = our_config->otelSslEnabled;
     process_cfg->otelSslEnabled_initialized = our_config->otelSslEnabled_initialized;

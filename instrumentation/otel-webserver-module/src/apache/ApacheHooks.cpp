@@ -431,6 +431,11 @@ bool ApacheHooks::initialize_opentelemetry(const request_rec *r)
         env_config[ix].value = our_config->getOtelExporterOtlpHeaders();
         ++ix;
 
+        // Resource attributes
+        env_config[ix].name = OTEL_SDK_ENV_OTEL_RESOURCE_ATTRIBUTES;
+        env_config[ix].value = our_config->getOtelResourceAttributes();
+        ++ix;
+
         // !!!
         // Remember to update the apr_pcalloc call size if we add another parameter to the input array!
         // !!!

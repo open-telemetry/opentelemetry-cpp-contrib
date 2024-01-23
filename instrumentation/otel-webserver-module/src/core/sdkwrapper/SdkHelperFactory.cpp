@@ -65,6 +65,22 @@ SdkHelperFactory::SdkHelperFactory(
     attributes[kServiceNamespace] = config->getServiceNamespace();
     attributes[kServiceInstanceId] = config->getServiceInstanceId();
 
+    opentelemetry::common::KeyValueStringTokenizer tokenizer{config->getOtelResourceAttributes()};
+    opentelemetry::nostd::string_view resource_key;
+    opentelemetry::nostd::string_view resource_value;
+    bool resource_valid = true;
+
+    while (tokenizer.next(resource_valid, resource_key, resource_value))
+    {
+        if (resource_valid)
+        {
+            std::string key = static_cast<std::string>(resource_key);
+            std::string value = static_cast<std::string>(resource_value);
+            attributes[key] = value;
+        }
+    }
+
+
     // NOTE : resource attribute values are nostd::variant and so we need to explicitely set it to std::string
     std::string libraryVersion = MODULE_VERSION;
     std::string cppSDKVersion = CPP_SDK_VERSION;

@@ -46,6 +46,7 @@ public:
     const std::string& getOtelExporterType() const {return otelExporterType;}
     const std::string& getOtelExporterEndpoint() const {return otelExporterEndpoint;}
     const std::string& getOtelExporterOtlpHeaders() const {return otelExporterOtlpHeaders;}
+    const std::string& getOtelResourceAttributes() const {return otelResourceAttributes;}
     const std::string& getOtelProcessorType() const {return otelProcessorType;}
     const unsigned getOtelMaxQueueSize() const {return otelMaxQueueSize;}
     const unsigned getOtelScheduledDelayMillis() const {return otelScheduledDelayMillis;}
@@ -63,6 +64,7 @@ public:
     void setOtelExporterType(const std::string& otelExporterType) { this->otelExporterType = otelExporterType; }
     void setOtelExporterEndpoint(const std::string& otelExporterEndpoint) { this->otelExporterEndpoint = otelExporterEndpoint; }
     void setOtelExporterOtlpHeaders(const std::string& otelExporterOtlpHeaders) { this->otelExporterOtlpHeaders = otelExporterOtlpHeaders; }
+    void setOtelResourceAttributes(const std::string& otelResourceAttributes) { this->otelResourceAttributes = otelResourceAttributes; }
     void setOtelProcessorType(const std::string& otelProcessorType) { this->otelProcessorType = otelProcessorType; }
     void setOtelMaxQueueSize(const unsigned int otelMaxQueueSize) { this->otelMaxQueueSize = otelMaxQueueSize; }
     void setOtelScheduledDelayMillis(const unsigned int otelScheduledDelayMillis) { this->otelScheduledDelayMillis = otelScheduledDelayMillis; }
@@ -83,6 +85,7 @@ private:
     std::string otelExporterType;
     std::string otelExporterEndpoint;
     std::string otelExporterOtlpHeaders;
+    std::string otelResourceAttributes;
     bool otelSslEnabled;
     std::string otelSslCertPath;
 
@@ -112,6 +115,7 @@ inline std::ostream& operator<< (std::ostream &os, const otel::core::TenantConfi
         << "\n OtelSslEnabled                   " << config.getOtelSslEnabled()
         << "\n OtelSslCertPath                  " << config.getOtelSslCertPath()
         << "\n OtelExportOtlpHeaders            " << config.getOtelExporterOtlpHeaders()
+        << "\n OtelResourceAttributes           " << config.getOtelResourceAttributes()
         << "";
     return os;
 }
