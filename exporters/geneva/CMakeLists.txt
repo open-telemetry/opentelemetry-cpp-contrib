@@ -59,8 +59,6 @@ else()
                       PUBLIC opentelemetry_metrics opentelemetry_resources opentelemetry_common)
 endif()
 
-set_target_properties(opentelemetry_exporter_geneva_metrics
-                      PROPERTIES EXPORT_NAME metrics)
 set_target_version(opentelemetry_exporter_geneva_metrics)
 
 if(BUILD_TESTING)
@@ -97,18 +95,20 @@ if(BUILD_TESTING)
     TEST_LIST geneva_metrics_exporter_test)
 endif()
 
-install(
-  TARGETS opentelemetry_exporter_geneva_metrics
-  EXPORT "${PROJECT_NAME}-target"
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+if(OPENTELEMETRY_INSTALL)
+  install(
+    TARGETS opentelemetry_exporter_geneva_metrics
+    EXPORT "${PROJECT_NAME}-target"
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-install(
-  DIRECTORY include/opentelemetry/exporters/geneva
-  DESTINATION include/opentelemetry/exporters
-  FILES_MATCHING
-  PATTERN "*.h")
+  install(
+    DIRECTORY include/opentelemetry/exporters/geneva
+    DESTINATION include/opentelemetry/exporters
+    FILES_MATCHING
+    PATTERN "*.h")
+endif()
 
 if(BUILD_EXAMPLE)
   add_executable(example_metrics example/example_metrics.cc
