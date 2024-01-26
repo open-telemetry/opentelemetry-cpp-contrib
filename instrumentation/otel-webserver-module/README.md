@@ -46,7 +46,7 @@ Monitoring individual modules is crucial to the instrumentation of Apache web se
 |*ApacheModuleOtelSpanExporter*                 | otlp             | OPTIONAL: Specify the span exporter to be used. Supported values are "otlp" and "ostream". All other supported values would be added in future. |
 |*ApacheModuleOtelExporterEndpoint:*             |                 | REQUIRED: The endpoint otel exporter exports to. Example "docker.for.mac.localhost:4317" |
 |*ApacheModuleOtelSpanProcessor*                 | batch           | OPTIONAL: Specify the processor to select to. Supported values are "simple" and "batch".|
-|*ApacheModuleOtelSampler*                       | always_on       | OPTIONAL: Supported values are "always_on", "always_off", "traceidratio", "parentbased_always_on", parentbased_always_off", "parentbased_traceidratio |
+|*ApacheModuleOtelSampler*                       | always_on       | OPTIONAL: Supported values are "always_on","always_off","traceidratio","parentbased_always_on","parentbased_always_off","parentbased_traceidratio"|
 |*ApacheModuleOtelSamplerRatio*                  | 0.0             | OPTIONAL: Supported values range from 0.0 to 1.0 and represent percent sampled|
 |*ApacheModuleOtelMaxQueueSize*                  | 2048            | OPTIONAL: The maximum queue size. After the size is reached spans are dropped|
 |*ApacheModuleOtelScheduledDelayMillis*          | 5000            | OPTIONAL: The delay interval in milliseconds between two consecutive exports|
