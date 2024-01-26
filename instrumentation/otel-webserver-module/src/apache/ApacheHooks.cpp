@@ -381,6 +381,11 @@ bool ApacheHooks::initialize_opentelemetry(const request_rec *r)
         env_config[ix].value = our_config->getOtelSamplerType();
         ++ix;
 
+        // Otel Sampler Ratio
+        env_config[ix].name = OTEL_SDK_ENV_OTEL_SAMPLER_RATIO;
+        env_config[ix].value = our_config->getOtelSamplerRatio();
+        ++ix;
+
         // Service Namespace
         env_config[ix].name = OTEL_SDK_ENV_SERVICE_NAMESPACE;
         env_config[ix].value = our_config->getServiceNamespace();

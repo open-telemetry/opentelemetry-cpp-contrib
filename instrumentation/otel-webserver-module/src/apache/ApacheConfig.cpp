@@ -169,6 +169,14 @@ const char* ApacheConfigHandlers::otel_set_otelSamplerType(cmd_parms *cmd, void 
     return helperChar(cmd, cfg, arg, cfg->otelSamplerType, cfg->otelSamplerType_initialized, "otel_set_otelSamplerType");
 }
 
+//  char *otelSamplerRatio;
+//  int otelSamplerRatio_initialized;
+const char* ApacheConfigHandlers::otel_set_otelSamplerRatio(cmd_parms *cmd, void *conf, const char *arg)
+{
+    otel_cfg* cfg = (otel_cfg*) conf;
+    return helperChar(cmd, cfg, arg, cfg->otelSamplerRatio, cfg->otelSamplerRatio_initialized, "otel_set_otelSamplerRatio");
+}
+
 //  char *serviceNamespace;
 //  int serviceNamespace_initialized;
 const char* ApacheConfigHandlers::otel_set_serviceNamespace(cmd_parms *cmd, void *conf, const char *arg)
@@ -464,6 +472,10 @@ void otel_cfg::init()
     otelSamplerType = "ALWAYSON";
     otelSamplerType_initialized = 0;
 
+    // otelSamplerRatio              OPTIONAL: Otel Sampler Ratio
+    otelSamplerRatio = "0.0";
+    otelSamplerRatio_initialized = 0;
+
     // serviceNamespace             REQUIRED: A namespace for the ServiceName;
     serviceNamespace = "";
     serviceNamespace_initialized = 0;
@@ -672,6 +684,11 @@ void* ApacheConfigHandlers::otel_merge_dir_config(apr_pool_t* p, void* parent_co
             apr_pstrdup(p, nconf->otelSamplerType) : apr_pstrdup(p, pconf->otelSamplerType);
     merged_config->otelSamplerType_initialized = 1;
 
+    // otelSamplerRatio             OPTIONAL: Otel Sampler Ratio
+    merged_config->otelSamplerRatio = nconf->otelSamplerRatio_initialized ?
+            apr_pstrdup(p, nconf->otelSamplerRatio) : apr_pstrdup(p, pconf->otelSamplerRatio);
+    merged_config->otelSamplerRatio_initialized = 1;
+
     // serviceNamespace          REQUIRED: A namespace for the ServiceName;
     merged_config->serviceNamespace = nconf->serviceNamespace_initialized ?
             apr_pstrdup(p, nconf->serviceNamespace) : apr_pstrdup(p, pconf->serviceNamespace);
@@ -800,6 +817,9 @@ otel_cfg* ApacheConfigHandlers::getProcessConfig(const request_rec* r)
 
     process_cfg->otelSamplerType = apr_pstrdup(r->server->process->pool, our_config->otelSamplerType);
     process_cfg->otelSamplerType_initialized = our_config->otelSamplerType_initialized;
+
+    process_cfg->otelSamplerRatio = apr_pstrdup(r->server->process->pool, our_config->otelSamplerRatio);
+    process_cfg->otelSamplerRatio_initialized = our_config->otelSamplerRatio_initialized;
 
     process_cfg->serviceNamespace = apr_pstrdup(r->server->process->pool, our_config->serviceNamespace);
     process_cfg->serviceNamespace_initialized = our_config->serviceNamespace_initialized;

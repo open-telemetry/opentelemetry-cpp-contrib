@@ -54,6 +54,9 @@ public:
     const char* getOtelSamplerType() { return otelSamplerType; }
     int getOtelSamplerTypeInitialized() { return otelSamplerType_initialized; }
 
+    const char* getOtelSamplerRatio() { return otelSamplerRatio; }
+    int getOtelSamplerRatioInitialized() { return otelSamplerRatio_initialized; }
+
     const char* getServiceNamespace() { return serviceNamespace; }
     int getServiceNamespaceInitialized() { return serviceNamespace_initialized; }
 
@@ -140,6 +143,9 @@ private:
 
     const char *otelSamplerType;        // OPTIONAL: Type of Otel Sampler
     int otelSamplerType_initialized;
+
+    const char *otelSamplerRatio;       // OPTIONAL: Otel Sampler Ratio
+    int otelSamplerRatio_initialized;
 
     const char *serviceNamespace;       // REQUIRED: A namespace for the ServiceName;
     int serviceNamespace_initialized;
@@ -235,6 +241,7 @@ public:
     static const char* otel_set_otelSslCertificatePath(cmd_parms *cmd, void *conf, const char *arg);
     static const char* otel_set_otelProcessorType(cmd_parms *cmd, void *conf, const char *arg);
     static const char* otel_set_otelSamplerType(cmd_parms *cmd, void *conf, const char *arg);
+    static const char* otel_set_otelSamplerRatio(cmd_parms *cmd, void *conf, const char *arg);
     static const char* otel_set_serviceNamespace(cmd_parms *cmd, void *conf, const char *arg);
     static const char* otel_set_serviceName(cmd_parms *cmd, void *conf, const char *arg);
     static const char* otel_set_serviceInstanceId(cmd_parms *cmd, void *conf, const char *arg);
