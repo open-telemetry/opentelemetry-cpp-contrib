@@ -80,7 +80,7 @@ docker-compose --profile default up
 ```
 Alternatively, replace the value of *profile* from **'default'** to **'centos7'** or **'ubuntu20.04'** to build in respective supported platforms.
 
-This would start the container alongwith the the Opentelemetry Collector and Zipkin. You can check the traces on Zipkin dashboard by checking the port number of Zipkin using ```docker ps``` command. Multiple requests can be sent using the browser.
+This would start the container alongwith the Opentelemetry Collector and Zipkin. You can check the traces on Zipkin dashboard by checking the port number of Zipkin using ```docker ps``` command. Multiple requests can be sent using the browser.
 
 #### Manual build and Installation
 
@@ -198,7 +198,7 @@ docker-compose --profile centos_nginx up
 ```
 Alternatively, replace the value of *centos_nginx* from **'centos_nginx'** to **'centos7_nginx'** or **'ubuntu20.04_nginx'** to build in respective supported platforms.
 
-This would start the container alongwith the the Opentelemetry Collector and Zipkin. You can check the traces on Zipkin dashboard by checking the port number of Zipkin using ```docker ps``` command. Multiple requests can be sent using the browser.
+This would start the container alongwith the Opentelemetry Collector and Zipkin. You can check the traces on Zipkin dashboard by checking the port number of Zipkin using ```docker ps``` command. Multiple requests can be sent using the browser.
 
 #### Manual build and Installation
 
