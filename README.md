@@ -23,6 +23,7 @@ For edit access, get in touch on
 ([@open-telemetry/cpp-contrib-maintainers](https://github.com/orgs/open-telemetry/teams/cpp-contrib-maintainers)):
 
 * [Lalit Kumar Bhasin](https://github.com/lalitb), Microsoft
+* [Marc Alff](https://github.com/marcalff), Oracle
 
 [Approvers](https://github.com/open-telemetry/community/blob/main/community-membership.md#approver)
 ([@open-telemetry/cpp-contrib-approvers](https://github.com/orgs/open-telemetry/teams/cpp-contrib-approvers)):
@@ -32,7 +33,6 @@ For edit access, get in touch on
 * [Johannes Tax](https://github.com/pyohannes), Grafana Labs
 * [Josh Suereth](https://github.com/jsuereth), Google
 * [Kumar Pratyush](https://github.com/kpratyus), Cisco
-* [Marc Alff](https://github.com/marcalff), Oracle
 * [Max Golovanov](https://github.com/maxgolov), Microsoft
 * [Siim Kallas](https://github.com/seemk), Splunk
 * [Tobias Stadler](https://github.com/tobiasstadler)
