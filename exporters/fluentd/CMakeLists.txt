@@ -49,10 +49,13 @@ else()
   message("nlohmann_json package was not found. Cloning from github")
 endif()
 
-find_package(CURL REQUIRED)
-find_package(Threads REQUIRED)
+if(MAIN_PROJECT)
+  find_package(CURL REQUIRED)
+  find_package(Threads REQUIRED)
+endif()
 
 include_directories(include)
+
 # create fluentd trace exporter
 add_library(opentelemetry_exporter_fluentd_trace src/trace/fluentd_exporter.cc
                                                  src/trace/recordable.cc)
@@ -63,15 +66,14 @@ if(MAIN_PROJECT)
     opentelemetry_exporter_fluentd_trace
     PUBLIC ${OPENTELEMETRY_CPP_LIBRARIES}
     INTERFACE nlohmann_json::nlohmann_json)
+  set_target_properties(opentelemetry_exporter_fluentd_trace
+                        PROPERTIES EXPORT_NAME trace)
 else()
   target_link_libraries(
     opentelemetry_exporter_fluentd_trace
     PUBLIC opentelemetry_trace opentelemetry_resources opentelemetry_common
     INTERFACE nlohmann_json::nlohmann_json)
 endif()
-
-set_target_properties(opentelemetry_exporter_fluentd_trace
-                      PROPERTIES EXPORT_NAME trace)
 
 # create fluentd logs exporter
 
@@ -84,14 +86,16 @@ if(MAIN_PROJECT)
     opentelemetry_exporter_fluentd_logs
     PUBLIC ${OPENTELEMETRY_CPP_LIBRARIES}
     INTERFACE nlohmann_json::nlohmann_json)
+
+  set_target_properties(opentelemetry_exporter_fluentd_logs
+                        PROPERTIES EXPORT_NAME logs)
 else()
     target_link_libraries(
       opentelemetry_exporter_fluentd_logs
       PUBLIC opentelemetry_logs opentelemetry_resources opentelemetry_common
       INTERFACE nlohmann_json::nlohmann_json)
 endif()
-set_target_properties(opentelemetry_exporter_fluentd_logs PROPERTIES EXPORT_NAME
-                                                                     logs)
+
 if(nlohmann_json_clone)
   add_dependencies(opentelemetry_exporter_fluentd_trace
                    nlohmann_json::nlohmann_json)
@@ -100,27 +104,35 @@ if(nlohmann_json_clone)
   include_directories(${PROJECT_BINARY_DIR}/include)
 endif()
 
-add_subdirectory(example)
+if(MAIN_PROJECT)
+  option(WITH_EXAMPLES "Build examples" ON)
+endif()
 
-install(
-  TARGETS opentelemetry_exporter_fluentd_trace
-  EXPORT "${PROJECT_NAME}-target"
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+if (WITH_EXAMPLES)
+  add_subdirectory(example)
+endif()
 
-install(
-  TARGETS opentelemetry_exporter_fluentd_logs
-  EXPORT "${PROJECT_NAME}-target"
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+if(OPENTELEMETRY_INSTALL)
+  install(
+    TARGETS opentelemetry_exporter_fluentd_trace
+    EXPORT "${PROJECT_NAME}-target"
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-install(
-  DIRECTORY include/opentelemetry/exporters/fluentd/
-  DESTINATION include/opentelemetry/exporters/fluentd/
-  FILES_MATCHING
-  PATTERN "*.h")
+  install(
+    TARGETS opentelemetry_exporter_fluentd_logs
+    EXPORT "${PROJECT_NAME}-target"
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+  install(
+    DIRECTORY include/opentelemetry/exporters/
+    DESTINATION include/opentelemetry/exporters/
+    FILES_MATCHING
+    PATTERN "*.h")
+endif()
 
 if(BUILD_TESTING)
   include(GoogleTest)
