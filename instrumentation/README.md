@@ -8,4 +8,5 @@ In this directory you will find instrumentation libraries and modules.
 | [glog](./glog) | OpenTelemetry (Google) glog sink |
 | [httpd](./httpd)  |  httpd (Apache) OpenTelemetry module |  
 | [nginx](./nginx) | OpenTelemetry nginx module |
+| [spdlog](./spdlog) | OpenTelemetry spdlog sink |
 | [otel-webserver-module](./otel-webserver-module) | The OTEL webserver module comprises of both Apache and Nginx instrumentation. |
