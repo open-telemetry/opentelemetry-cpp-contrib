@@ -12,9 +12,15 @@ if(MAIN_PROJECT)
   option(WITH_EXAMPLES "Build examples" ON)
 endif()
 
-add_library(opentelemetry-cpp-geneva-trace-log-exporter INTERFACE)
+add_library(opentelemetry_exporter_geneva_trace INTERFACE)
 target_include_directories(
-  opentelemetry-cpp-geneva-trace-log-exporter INTERFACE
+  opentelemetry_exporter_geneva_trace INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+
+add_library(opentelemetry_exporter_geneva_logs INTERFACE)
+target_include_directories(
+  opentelemetry_exporter_geneva_logs INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 
@@ -27,7 +33,7 @@ if(OPENTELEMETRY_INSTALL)
   install(DIRECTORY include/ DESTINATION include)
 
   install(
-    TARGETS opentelemetry-cpp-geneva-trace-log-exporter
+    TARGETS opentelemetry_exporter_geneva_trace opentelemetry_exporter_geneva_logs
     EXPORT "${PROJECT_NAME}-target")
 
   if(NOT MAIN_PROJECT)
