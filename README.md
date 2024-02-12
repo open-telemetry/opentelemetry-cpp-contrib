@@ -24,6 +24,7 @@ For edit access, get in touch on
 
 * [Lalit Kumar Bhasin](https://github.com/lalitb), Microsoft
 * [Marc Alff](https://github.com/marcalff), Oracle
+* [Tom Tan](https://github.com/ThomsonTan), Microsoft
 
 [Approvers](https://github.com/open-telemetry/community/blob/main/community-membership.md#approver)
 ([@open-telemetry/cpp-contrib-approvers](https://github.com/orgs/open-telemetry/teams/cpp-contrib-approvers)):
@@ -37,7 +38,6 @@ For edit access, get in touch on
 * [Siim Kallas](https://github.com/seemk), Splunk
 * [Tobias Stadler](https://github.com/tobiasstadler)
 * [Tomasz Rojek](https://github.com/TomRoSystems)
-* [Tom Tan](https://github.com/ThomsonTan), Microsoft
 
 [Emeritus
 Maintainer/Approver/Triager](https://github.com/open-telemetry/community/blob/main/community-membership.md#emeritus-maintainerapprovertriager):
