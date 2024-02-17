@@ -71,6 +71,8 @@ public:
       const opentelemetry::sdk::instrumentationscope::InstrumentationScope
           &instrumentation_scope) noexcept override;
 
+  void SetTraceFlags(opentelemetry::trace::TraceFlags flags) noexcept override;
+
 private:
   std::string tag_;
   nlohmann::json events_;

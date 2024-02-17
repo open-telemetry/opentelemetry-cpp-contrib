@@ -148,6 +148,10 @@ void Recordable::SetInstrumentationScope(
       instrumentation_scope.GetVersion();
 }
 
+void Recordable::SetTraceFlags(opentelemetry::trace::TraceFlags flags) noexcept {
+    // TODO: process trace flags
+}
+
 } // namespace trace
 } // namespace fluentd
 } // namespace exporter
