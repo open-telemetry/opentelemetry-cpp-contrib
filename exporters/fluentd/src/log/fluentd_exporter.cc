@@ -1,8 +1,5 @@
 // Copyright The OpenTelemetry Authors
 // SPDX-License-Identifier: Apache-2.0
-#ifndef HAVE_CONSOLE_LOG
-#define HAVE_CONSOLE_LOG
-#endif
 
 #include "opentelemetry/exporters/fluentd/log/fluentd_exporter.h"
 #include "opentelemetry/exporters/fluentd/log/recordable.h"
