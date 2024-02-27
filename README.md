@@ -31,7 +31,6 @@ For edit access, get in touch on
 ([@open-telemetry/cpp-contrib-approvers](https://github.com/orgs/open-telemetry/teams/cpp-contrib-approvers)):
 
 * [DEBAJIT DAS](https://github.com/DebajitDas), Cisco
-* [Ehsan Saei](https://github.com/esigo)
 * [Johannes Tax](https://github.com/pyohannes), Grafana Labs
 * [Josh Suereth](https://github.com/jsuereth), Google
 * [Kumar Pratyush](https://github.com/kpratyus), Cisco
