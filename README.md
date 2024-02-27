@@ -22,6 +22,7 @@ For edit access, get in touch on
 [Maintainers](https://github.com/open-telemetry/community/blob/main/community-membership.md#maintainer)
 ([@open-telemetry/cpp-contrib-maintainers](https://github.com/orgs/open-telemetry/teams/cpp-contrib-maintainers)):
 
+* [Ehsan Saei](https://github.com/esigo)
 * [Lalit Kumar Bhasin](https://github.com/lalitb), Microsoft
 * [Marc Alff](https://github.com/marcalff), Oracle
 * [Tom Tan](https://github.com/ThomsonTan), Microsoft
@@ -30,7 +31,6 @@ For edit access, get in touch on
 ([@open-telemetry/cpp-contrib-approvers](https://github.com/orgs/open-telemetry/teams/cpp-contrib-approvers)):
 
 * [DEBAJIT DAS](https://github.com/DebajitDas), Cisco
-* [Ehsan Saei](https://github.com/esigo)
 * [Johannes Tax](https://github.com/pyohannes), Grafana Labs
 * [Josh Suereth](https://github.com/jsuereth), Google
 * [Kumar Pratyush](https://github.com/kpratyus), Cisco
