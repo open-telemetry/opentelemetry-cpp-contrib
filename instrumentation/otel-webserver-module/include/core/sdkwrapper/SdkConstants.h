@@ -39,6 +39,7 @@ const std::string kAttrNETHostPort            = "net.host.port";
 const std::string kAttrRequestProtocol        = "request_protocol";
 const std::string kHTTPFlavor1_0                 = "1.0";
 const std::string kHTTPFlavor1_1                = "1.1";
+const std::string kOtelAttributes             = "otel.attribute.";
 
 
 constexpr int HTTP_ERROR_1XX = 100;

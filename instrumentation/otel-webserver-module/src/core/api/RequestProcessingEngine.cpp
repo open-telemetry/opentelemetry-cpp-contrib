@@ -82,6 +82,7 @@ OTEL_SDK_STATUS_CODE RequestProcessingEngine::startRequest(
                 std::string(itr->first);
         keyValueMap[key] = itr->second;
     }
+
     auto span = m_sdkWrapper->CreateSpan(spanName, sdkwrapper::SpanKind::SERVER, keyValueMap, payload->get_http_headers());
 
     LOG4CXX_TRACE(mLogger, "Span started for context: [" << wscontext
@@ -154,6 +155,11 @@ OTEL_SDK_STATUS_CODE RequestProcessingEngine::endRequest(
             itr != payload->response_headers.end(); itr++) {
             std::string key = std::string(http_response_header) +
                 std::string(itr->first);
+            rootSpan->AddAttribute(key, itr->second);
+        }
+
+        for (auto itr = payload->otel_attributes.begin(); itr != payload->otel_attributes.end(); itr++) {
+            std::string key = std::string(kOtelAttributes) + std::string(itr->first);
             rootSpan->AddAttribute(key, itr->second);
         }
 
