@@ -87,11 +87,13 @@ public:
     std::unordered_map<std::string, std::string>& get_request_headers() {
     	return request_headers;
     }
+
 };
 
 struct ResponsePayload
 {
 	std::unordered_map<std::string, std::string> response_headers;
+	std::unordered_map<std::string, std::string> otel_attributes;
 	unsigned int status_code{sdkwrapper::kStatusCodeInit};
 };
 
