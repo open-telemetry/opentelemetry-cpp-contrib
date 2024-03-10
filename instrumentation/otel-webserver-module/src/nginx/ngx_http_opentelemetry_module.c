@@ -1780,26 +1780,31 @@ static void fillResponsePayload(response_payload* res_payload, ngx_http_request_
 
      ngx_http_opentelemetry_loc_conf_t *conf = ngx_http_get_module_loc_conf(r, ngx_http_opentelemetry_module);
     
-    res_payload->otel_attributes = ngx_pcalloc(r->pool, ((nelts+1)/3) * sizeof(http_headers));
-    int otel_attributes_idx=0;
+    if (conf->nginxAttributes && (conf->nginxAttributes->nelts) > 0) {
 
-    resolve_attributes_variables(r);
-    for (ngx_uint_t j = 0, isKey = 1, isValue = 0; j < conf->nginxAttributes->nelts; j++) {
-        const char* data = (const char*)(((ngx_str_t *)(conf->nginxAttributes->elts))[j]).data;
-        if(strcmp(data, ",") == 0){
-            otel_attributes_idx++;
-            continue;
+        res_payload->otel_attributes = ngx_pcalloc(r->pool, ((nelts+1)/3) * sizeof(http_headers));
+        int otel_attributes_idx=0;
+
+        resolve_attributes_variables(r);
+        for (ngx_uint_t j = 0, isKey = 1, isValue = 0; j < conf->nginxAttributes->nelts; j++) {
+            const char* data = (const char*)(((ngx_str_t *)(conf->nginxAttributes->elts))[j]).data;
+            if(strcmp(data, ",") == 0){
+                otel_attributes_idx++;
+                continue;
+            }
+            else if(isKey){
+                res_payload->otel_attributes[otel_attributes_idx].name = data; 
+            }
+            else{
+                res_payload->otel_attributes[otel_attributes_idx].value = data;
+            } 
+            isKey=!isKey;
+            isValue=!isValue;
         }
-        else if(isKey){
-            res_payload->otel_attributes[otel_attributes_idx].name = data; 
-        }
-        else{
-            res_payload->otel_attributes[otel_attributes_idx].value = data;
-        } 
-        isKey=!isKey;
-        isValue=!isValue;
+        res_payload->otel_attributes_count = otel_attributes_idx+1;
+    }else {
+        res_payload->otel_attributes_count = 0;
     }
-    res_payload->otel_attributes_count = otel_attributes_idx+1;
 
 
 
