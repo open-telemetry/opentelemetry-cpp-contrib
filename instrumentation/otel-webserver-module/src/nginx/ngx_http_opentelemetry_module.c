@@ -978,6 +978,14 @@ static void resolve_attributes_variables(ngx_http_request_t* r)
     }
 }
 
+static ngx_flag_t check_ignore_paths(ngx_http_request_t *r)
+{
+    ngx_http_opentelemetry_loc_conf_t  conf = ngx_http_get_module_loc_conf(r, ngx_http_opentelemetry_module);
+    if(conf->NginixIgnorePaths){
+        
+    }
+}
+
 static ngx_flag_t ngx_initialize_opentelemetry(ngx_http_request_t *r)
 {
     // check to see if we have already been initialized
@@ -1251,7 +1259,12 @@ static void startMonitoringRequest(ngx_http_request_t* r){
     {
         ngx_writeError(r->connection->log, __func__, "Opentelemetry Agent Core did not get initialized");
         return;
+    }else if(check_ignore_paths){
+        ngx_writeTrace(r->connection->log, __func__, "This path is not allowed to be monitored");
+        return;
     }
+
+
 
     ngx_http_otel_handles_t* ctx;
     ctx = ngx_http_get_module_ctx(r, ngx_http_opentelemetry_module);
