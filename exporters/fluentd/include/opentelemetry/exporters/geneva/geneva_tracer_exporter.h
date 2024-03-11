@@ -7,8 +7,9 @@
 #include "geneva_exporter_options.h"
 #include <opentelemetry/exporters/fluentd/common/socket_tools.h>
 #include <opentelemetry/exporters/fluentd/trace/fluentd_exporter.h>
-#include <opentelemetry/sdk/trace/tracer_provider.h>
 #include <opentelemetry/sdk/trace/batch_span_processor.h>
+#include <opentelemetry/sdk/trace/batch_span_processor_options.h>
+#include <opentelemetry/sdk/trace/tracer_provider.h>
 #include <opentelemetry/trace/provider.h>
 
 OPENTELEMETRY_BEGIN_NAMESPACE
