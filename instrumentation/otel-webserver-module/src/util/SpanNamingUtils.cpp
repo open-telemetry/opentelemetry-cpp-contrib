@@ -46,7 +46,7 @@ static const char URI_PARAMETER_DELIMITER = '.';
 Parse a comma separated list of integers greater than 0 from the specified string into
 the specified boost::dynamic_bitset.
 
-This function is used to parse the the url components list from the UI.
+This function is used to parse the url components list from the UI.
 
 @param s The string to parse.  Segment numbers in this string should be separated by
 URI_SUFFIX_KEY_SEPARATOR_STR.  Any segment number that contains a character other than

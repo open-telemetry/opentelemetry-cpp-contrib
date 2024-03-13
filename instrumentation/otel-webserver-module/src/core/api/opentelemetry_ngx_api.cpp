@@ -119,13 +119,17 @@ OTEL_SDK_STATUS_CODE endRequest(OTEL_SDK_HANDLE_REQ req_handle_key, const char* 
     if (payload != NULL) {
         for (int i = 0; i < payload->response_headers_count; i++) {
             std::string key(payload->response_headers[i].name);
-            if (responseHeadersToCapture.find(key)
-            != responseHeadersToCapture.end()) {
+            if (responseHeadersToCapture.find(key) != responseHeadersToCapture.end()) {
                 responsePayload->response_headers[key]
                     = payload->response_headers[i].value;
             }
         }
         responsePayload->status_code = payload->status_code;
+
+        for(int i=0; i < payload->otel_attributes_count; i++){
+            std::string key(payload->otel_attributes[i].name);
+            responsePayload->otel_attributes[key] = payload->otel_attributes[i].value;
+        }
     }
 
     res = wsAgent.endRequest(req_handle_key, errMsg, responsePayload.get());

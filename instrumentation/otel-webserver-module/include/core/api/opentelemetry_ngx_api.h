@@ -45,6 +45,7 @@ typedef struct {
     const char* http_post_param;
     const char* request_method;
     const char* client_ip;
+
     http_headers* propagation_headers;
     http_headers* request_headers;
 
@@ -55,6 +56,8 @@ typedef struct {
 typedef struct {
     http_headers* response_headers;
     int response_headers_count;
+    http_headers* otel_attributes;
+    int otel_attributes_count;
 
     unsigned int status_code;
 }response_payload;
