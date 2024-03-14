@@ -726,7 +726,6 @@ static char* ngx_conf_ignore_path_set(ngx_conf_t* cf, ngx_command_t* cmd, void* 
     ngx_http_opentelemetry_loc_conf_t * my_conf=(ngx_http_opentelemetry_loc_conf_t *)conf;
 
     ngx_str_t *value = cf->args->elts;
-
     ngx_array_t *arr;
     ngx_str_t   *elt;
     ngx_int_t arg_count = cf->args->nelts; 
@@ -1039,10 +1038,8 @@ static ngx_flag_t check_ignore_paths(ngx_http_request_t *r)
     pathToCheck[uriLen] = '\0';
 
     if (conf->nginxIgnorePaths && (conf->nginxIgnorePaths->nelts) > 0) {
-
         for (ngx_uint_t j = 0; j < conf->nginxIgnorePaths->nelts; j++) {
             const char* data = (const char*)(((ngx_str_t *)(conf->nginxIgnorePaths->elts))[j]).data;
-
             bool ans = matchIgnorePathRegex(pathToCheck , data);
             if(ans){
                 return true;
@@ -1327,10 +1324,10 @@ static void startMonitoringRequest(ngx_http_request_t* r){
         ngx_writeError(r->connection->log, __func__, "Opentelemetry Agent Core did not get initialized");
         return;
     }
-    // else if(check_ignore_paths(r)){
-    //     ngx_writeTrace(r->connection->log, __func__, "This path is not allowed to be monitored");
-    //     return;
-    // }
+    else if(check_ignore_paths(r)){
+        ngx_writeTrace(r->connection->log, __func__, "This path is not allowed to be monitored");
+        return;
+    }
 
 
 
