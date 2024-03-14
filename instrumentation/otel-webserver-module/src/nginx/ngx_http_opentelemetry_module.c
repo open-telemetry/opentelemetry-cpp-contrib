@@ -16,6 +16,7 @@
 
 #include "ngx_http_opentelemetry_module.h"
 #include "ngx_http_opentelemetry_log.h"
+#include "../../include/util/RegexResolver.h"
 #include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
@@ -390,6 +391,13 @@ static ngx_command_t ngx_http_opentelemetry_commands[] = {
       NGX_HTTP_LOC_CONF_OFFSET,
       0,
       NULL},
+
+    { ngx_string("NginxIgnorePaths"),
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_1MORE,
+      ngx_conf_ignore_path_set,
+      NGX_HTTP_LOC_CONF_OFFSET,
+      0,
+      NULL},
     
     /* command termination */
     ngx_null_command
@@ -464,6 +472,7 @@ static char* ngx_http_opentelemetry_merge_loc_conf(ngx_conf_t *cf, void *parent,
     ngx_http_opentelemetry_loc_conf_t *conf = child;
     ngx_otel_set_global_context(prev);
     ngx_otel_set_attributes(prev, conf);
+    ngx_conf_merge_ignore_paths(prev, conf);
 
     ngx_conf_merge_value(conf->nginxModuleEnabled, prev->nginxModuleEnabled, 1);
     ngx_conf_merge_value(conf->nginxModuleReportAllInstrumentedModules, prev->nginxModuleReportAllInstrumentedModules, 0);
@@ -683,6 +692,7 @@ static void ngx_http_opentelemetry_exit_worker(ngx_cycle_t *cycle)
         ngx_log_error(NGX_LOG_ERR, cycle->log, 0, "mod_opentelemetry: ngx_http_opentelemetry_exit_worker: Exiting Nginx Worker for process with PID: %s**********", worker_conf->pid);
     }
 }
+
 static char* ngx_otel_attributes_set(ngx_conf_t* cf, ngx_command_t* cmd, void* conf) {
     ngx_http_opentelemetry_loc_conf_t * my_conf=(ngx_http_opentelemetry_loc_conf_t *)conf;
 
@@ -708,6 +718,33 @@ static char* ngx_otel_attributes_set(ngx_conf_t* cf, ngx_command_t* cmd, void* c
         elt->len = ngx_strlen(value[i].data);
     }
     my_conf->nginxAttributes = arr;
+    return NGX_CONF_OK;
+
+}
+
+static char* ngx_conf_ignore_path_set(ngx_conf_t* cf, ngx_command_t* cmd, void* conf) {
+    ngx_http_opentelemetry_loc_conf_t * my_conf=(ngx_http_opentelemetry_loc_conf_t *)conf;
+
+    ngx_str_t *value = cf->args->elts;
+
+    ngx_array_t *arr;
+    ngx_str_t   *elt;
+    ngx_int_t arg_count = cf->args->nelts; 
+
+    arr = ngx_array_create(cf->pool, arg_count, sizeof(ngx_str_t));
+    if (arr == NULL) {
+        return NGX_CONF_ERROR;
+    }
+
+    for (ngx_int_t i = 1; i < arg_count; i++) {
+        elt = ngx_array_push(arr);
+        if (elt == NULL) {
+            return NGX_CONF_ERROR;
+        }
+        ngx_str_set(elt, value[i].data);
+        elt->len = ngx_strlen(value[i].data);
+    }
+    my_conf->nginxIgnorePaths = arr;
     return NGX_CONF_OK;
 
 }
@@ -751,6 +788,20 @@ static void ngx_otel_set_attributes(ngx_http_opentelemetry_loc_conf_t * prev, ng
         if((conf->nginxAttributes) == NULL)
         {
             conf->nginxAttributes = prev->nginxAttributes;
+        }
+    }
+    return;
+}
+
+static void ngx_conf_merge_ignore_paths(ngx_http_opentelemetry_loc_conf_t * prev, ngx_http_opentelemetry_loc_conf_t * conf)
+{
+    if (conf->nginxIgnorePaths && (conf->nginxIgnorePaths->nelts) > 0) {
+        return;
+    }
+    if (prev->nginxIgnorePaths && (prev->nginxIgnorePaths->nelts) > 0) {
+        if((conf->nginxIgnorePaths) == NULL)
+        {
+            conf->nginxIgnorePaths = prev->nginxIgnorePaths;
         }
     }
     return;
@@ -980,10 +1031,25 @@ static void resolve_attributes_variables(ngx_http_request_t* r)
 
 static ngx_flag_t check_ignore_paths(ngx_http_request_t *r)
 {
-    ngx_http_opentelemetry_loc_conf_t  conf = ngx_http_get_module_loc_conf(r, ngx_http_opentelemetry_module);
-    if(conf->NginixIgnorePaths){
-        
+    ngx_http_opentelemetry_loc_conf_t * conf = ngx_http_get_module_loc_conf(r, ngx_http_opentelemetry_module);
+    
+    ngx_uint_t uriLen =  r->uri.len;
+    char *pathToCheck = ngx_pnalloc(r->pool, uriLen + 1);
+    ngx_memcpy(pathToCheck, r->uri.data, uriLen);
+    pathToCheck[uriLen] = '\0';
+
+    if (conf->nginxIgnorePaths && (conf->nginxIgnorePaths->nelts) > 0) {
+
+        for (ngx_uint_t j = 0; j < conf->nginxIgnorePaths->nelts; j++) {
+            const char* data = (const char*)(((ngx_str_t *)(conf->nginxIgnorePaths->elts))[j]).data;
+
+            bool ans = matchIgnorePathRegex(pathToCheck , data);
+            if(ans){
+                return true;
+            }
+        }
     }
+    return false;
 }
 
 static ngx_flag_t ngx_initialize_opentelemetry(ngx_http_request_t *r)
@@ -1259,10 +1325,11 @@ static void startMonitoringRequest(ngx_http_request_t* r){
     {
         ngx_writeError(r->connection->log, __func__, "Opentelemetry Agent Core did not get initialized");
         return;
-    }else if(check_ignore_paths){
-        ngx_writeTrace(r->connection->log, __func__, "This path is not allowed to be monitored");
-        return;
     }
+    // else if(check_ignore_paths(r)){
+    //     ngx_writeTrace(r->connection->log, __func__, "This path is not allowed to be monitored");
+    //     return;
+    // }
 
 
 

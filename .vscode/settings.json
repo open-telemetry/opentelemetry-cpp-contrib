@@ -56,6 +56,7 @@
         "streambuf": "cpp",
         "thread": "cpp",
         "typeinfo": "cpp",
-        "opentelemetry_ngx_api.h": "c"
+        "opentelemetry_ngx_api.h": "c",
+        "opentelemetrysdk.h": "c"
     }
 }
