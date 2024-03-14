@@ -1280,6 +1280,7 @@ static void stopMonitoringRequest(ngx_http_request_t* r,
     if (r->pool) {
         res_payload = ngx_pcalloc(r->pool, sizeof(response_payload));
         res_payload->response_headers_count = 0;
+        res_payload->otel_attributes_count = 0;
         fillResponsePayload(res_payload, r);
     }
 
@@ -1858,12 +1859,12 @@ static void fillResponsePayload(response_payload* res_payload, ngx_http_request_
     res_payload->response_headers = ngx_pcalloc(r->pool, nelts * sizeof(http_headers));
     ngx_uint_t headers_count = 0;
 
-     ngx_http_opentelemetry_loc_conf_t *conf = ngx_http_get_module_loc_conf(r, ngx_http_opentelemetry_module);
+    ngx_http_opentelemetry_loc_conf_t *conf = ngx_http_get_module_loc_conf(r, ngx_http_opentelemetry_module);
     
     if (conf->nginxAttributes && (conf->nginxAttributes->nelts) > 0) {
 
-        res_payload->otel_attributes = ngx_pcalloc(r->pool, ((nelts+1)/3) * sizeof(http_headers));
-        int otel_attributes_idx=0;
+        res_payload->otel_attributes = ngx_pcalloc(r->pool, ((conf->nginxAttributes->nelts + 1)/3) * sizeof(http_headers));
+        ngx_uint_t otel_attributes_idx=0;
 
         resolve_attributes_variables(r);
         for (ngx_uint_t j = 0, isKey = 1, isValue = 0; j < conf->nginxAttributes->nelts; j++) {
@@ -1882,11 +1883,7 @@ static void fillResponsePayload(response_payload* res_payload, ngx_http_request_
             isValue=!isValue;
         }
         res_payload->otel_attributes_count = otel_attributes_idx+1;
-    }else {
-        res_payload->otel_attributes_count = 0;
     }
-
-
 
     for (ngx_uint_t j = 0; j < nelts; j++) {
         h = &header[j];
