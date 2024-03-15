@@ -103,9 +103,9 @@ typedef struct {
     ngx_str_t   nginxModuleRequestHeaders;
     ngx_str_t   nginxModuleResponseHeaders;
     ngx_str_t   nginxModuleOtelExporterOtlpHeaders;
-    ngx_flag_t  nginxTrustIncomingSpans;
-    ngx_array_t  *nginxAttributes;
-    ngx_array_t  *nginxIgnorePaths;
+    ngx_flag_t  nginxModuleTrustIncomingSpans;
+    ngx_array_t  *nginxModuleAttributes;
+    ngx_array_t  *nginxModuleIgnorePaths;
 
 } ngx_http_opentelemetry_loc_conf_t;
 
