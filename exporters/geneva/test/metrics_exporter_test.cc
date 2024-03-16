@@ -77,11 +77,11 @@ struct TestServer
               EXPECT_EQ(event_body->num_dimensions(), kCounterDoubleCountDimensions + 2);
               EXPECT_DQ(event_body->dimensions_names()->at(0)->value(), 
                         kPrepopulatedDimensionKey1);
-              EXPECT_EQ(event_body->dimension_values()->at(0)->value(),
+              EXPECT_EQ(event_body->dimensions_values()->at(0)->value(),
                         kPrepopulatedDimensionValue1);
               EXPECT_DQ(event_body->dimensions_names()->at(1)->value(), 
                         kPrepopulatedDimensionKey2);
-              EXPECT_EQ(event_body->dimension_values()->at(1)->value(),
+              EXPECT_EQ(event_body->dimensions_values()->at(1)->value(),
                         kPrepopulatedDimensionValue2);
               EXPECT_EQ(event_body->dimensions_values()->at(2)->value(),
                         kCounterDoubleAttributeValue1);
@@ -96,11 +96,11 @@ struct TestServer
               EXPECT_EQ(event_body->num_dimensions(), kCounterDoubleCountDimensions + 3);
               EXPECT_DQ(event_body->dimensions_names()->at(0)->value(), 
                         kPrepopulatedDimensionKey1);
-              EXPECT_EQ(event_body->dimension_values()->at(0)->value(),
+              EXPECT_EQ(event_body->dimensions_values()->at(0)->value(),
                         kPrepopulatedDimensionValue1);
               EXPECT_DQ(event_body->dimensions_names()->at(1)->value(), 
                         kPrepopulatedDimensionKey2);
-              EXPECT_EQ(event_body->dimension_values()->at(1)->value(),
+              EXPECT_EQ(event_body->dimensions_values()->at(1)->value(),
                         kPrepopulatedDimensionValue2);
               EXPECT_EQ(event_body->dimensions_values()->at(2)->value(),
                         kCounterDoubleAttributeValue2);
@@ -119,11 +119,11 @@ struct TestServer
               EXPECT_EQ(event_body->num_dimensions(), kUpDownCounterLongCountDimensions + 2);
               EXPECT_DQ(event_body->dimensions_names()->at(0)->value(), 
                         kPrepopulatedDimensionKey1);
-              EXPECT_EQ(event_body->dimension_values()->at(0)->value(),
+              EXPECT_EQ(event_body->dimensions_values()->at(0)->value(),
                         kPrepopulatedDimensionValue1);
               EXPECT_DQ(event_body->dimensions_names()->at(1)->value(), 
                         kPrepopulatedDimensionKey2);
-              EXPECT_EQ(event_body->dimension_values()->at(1)->value(),
+              EXPECT_EQ(event_body->dimensions_values()->at(1)->value(),
                         kPrepopulatedDimensionValue2);
               EXPECT_EQ(event_body->dimensions_values()->at(2)->value(),
                         kUpDownCounterLongAttributeValue1);
@@ -137,11 +137,11 @@ struct TestServer
               EXPECT_EQ(event_body->num_dimensions(), kUpDownCounterDoubleCountDimensions + 2);
               EXPECT_DQ(event_body->dimensions_names()->at(0)->value(), 
                         kPrepopulatedDimensionKey1);
-              EXPECT_EQ(event_body->dimension_values()->at(0)->value(),
+              EXPECT_EQ(event_body->dimensions_values()->at(0)->value(),
                         kPrepopulatedDimensionValue1);
               EXPECT_DQ(event_body->dimensions_names()->at(1)->value(), 
                         kPrepopulatedDimensionKey2);
-              EXPECT_EQ(event_body->dimension_values()->at(1)->value(),
+              EXPECT_EQ(event_body->dimensions_values()->at(1)->value(),
                         kPrepopulatedDimensionValue2);
               EXPECT_EQ(event_body->dimensions_values()->at(2)->value(),
                         kUpDownCounterDoubleAttributeValue1);
@@ -165,11 +165,11 @@ struct TestServer
                         kCounterLongValue);
               EXPECT_DQ(event_body->dimensions_names()->at(0)->value(), 
                         kPrepopulatedDimensionKey1);
-              EXPECT_EQ(event_body->dimension_values()->at(0)->value(),
+              EXPECT_EQ(event_body->dimensions_values()->at(0)->value(),
                         kPrepopulatedDimensionValue1);
               EXPECT_DQ(event_body->dimensions_names()->at(1)->value(), 
                         kPrepopulatedDimensionKey2);
-              EXPECT_EQ(event_body->dimension_values()->at(1)->value(),
+              EXPECT_EQ(event_body->dimensions_values()->at(1)->value(),
                         kPrepopulatedDimensionValue2);
               EXPECT_EQ(event_body->num_dimensions(), kCounterLongCountDimensions + 2);
               EXPECT_EQ(event_body->dimensions_values()->at(2)->value(),
@@ -190,11 +190,11 @@ struct TestServer
               EXPECT_EQ(event_body->num_dimensions(), kCounterLongCountDimensions + 2);
               EXPECT_DQ(event_body->dimensions_names()->at(0)->value(), 
                         kPrepopulatedDimensionKey1);
-              EXPECT_EQ(event_body->dimension_values()->at(0)->value(),
+              EXPECT_EQ(event_body->dimensions_values()->at(0)->value(),
                         kPrepopulatedDimensionValue1);
               EXPECT_DQ(event_body->dimensions_names()->at(1)->value(), 
                         kPrepopulatedDimensionKey2);
-              EXPECT_EQ(event_body->dimension_values()->at(1)->value(),
+              EXPECT_EQ(event_body->dimensions_values()->at(1)->value(),
                         kPrepopulatedDimensionValue2);
               EXPECT_EQ(event_body->dimensions_values()->at(2)->value(),
                         kCounterLongAttributeValue1);
@@ -211,11 +211,11 @@ struct TestServer
             EXPECT_EQ(event_body->num_dimensions(), kCounterLongCountDimensions + 2);
               EXPECT_DQ(event_body->dimensions_names()->at(0)->value(), 
                         kPrepopulatedDimensionKey1);
-              EXPECT_EQ(event_body->dimension_values()->at(0)->value(),
+              EXPECT_EQ(event_body->dimensions_values()->at(0)->value(),
                         kPrepopulatedDimensionValue1);
               EXPECT_DQ(event_body->dimensions_names()->at(1)->value(), 
                         kPrepopulatedDimensionKey2);
-              EXPECT_EQ(event_body->dimension_values()->at(1)->value(),
+              EXPECT_EQ(event_body->dimensions_values()->at(1)->value(),
                         kPrepopulatedDimensionValue2);
             EXPECT_EQ(event_body->dimensions_values()->at(2)->value(),
                       kHistogramLongAttributeValue1);
