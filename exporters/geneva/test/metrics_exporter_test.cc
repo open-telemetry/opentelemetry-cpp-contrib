@@ -264,7 +264,7 @@ TEST_P(GenericMetricsExporterTextFixture, BasicTests) {
   std::string conn_string = "Endpoint=unix://" + kUnixDomainPath +
                             ";Account=" + kAccountName +
                             ";Namespace=" + kNamespaceName;
-  ExporterOptions options{conn_string};
+  ExporterOptions options{conn_string, {"prepopulated_key1", "prepopulated_value1", "prepopulated_key2", "prepopulated_value2"}};
   opentelemetry::exporter::geneva::metrics::Exporter exporter(options);
 
 
