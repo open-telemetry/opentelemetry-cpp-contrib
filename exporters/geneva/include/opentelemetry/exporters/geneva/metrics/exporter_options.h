@@ -23,7 +23,7 @@ struct ExporterOptions {
   */
 // clang-format off
   std::string connection_string;
-  std::map<std::string, std::string> prepopulated_dimensions;
+  const std::map<std::string, std::string> prepopulated_dimensions;
 };
 } // namespace metrics
 } // namespace geneva
