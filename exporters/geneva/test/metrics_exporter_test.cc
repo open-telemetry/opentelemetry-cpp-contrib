@@ -74,10 +74,10 @@ struct TestServer
             if (static_cast<ifx_metrics_bin_t::single_double_value_t *>(event_body->value_section())
                     ->value() == kCounterDoubleValue1)
             {
-              EXPECT_EQ(event_body->num_dimensions(), kCounterDoubleCountDimensions);
-              EXPECT_EQ(event_body->dimensions_values()->at(0)->value(),
+              EXPECT_EQ(event_body->num_dimensions(), kCounterDoubleCountDimensions + 2);
+              EXPECT_EQ(event_body->dimensions_values()->at(2)->value(),
                         kCounterDoubleAttributeValue1);
-              EXPECT_EQ(event_body->dimensions_names()->at(0)->value(),
+              EXPECT_EQ(event_body->dimensions_names()->at(2)->value(),
                         kCounterDoubleAttributeKey1);
               EXPECT_EQ(event_body->metric_name()->value(), kCounterDoubleInstrumentName);
               count_counter_double++;
@@ -85,14 +85,14 @@ struct TestServer
             if (static_cast<ifx_metrics_bin_t::single_double_value_t *>(event_body->value_section())
                     ->value() == kCounterDoubleValue2)
             {
-              EXPECT_EQ(event_body->num_dimensions(), kCounterDoubleCountDimensions + 1);
-              EXPECT_EQ(event_body->dimensions_values()->at(0)->value(),
+              EXPECT_EQ(event_body->num_dimensions(), kCounterDoubleCountDimensions + 3);
+              EXPECT_EQ(event_body->dimensions_values()->at(2)->value(),
                         kCounterDoubleAttributeValue2);
-              EXPECT_EQ(event_body->dimensions_names()->at(0)->value(),
+              EXPECT_EQ(event_body->dimensions_names()->at(2)->value(),
                         kCounterDoubleAttributeKey2);
-              EXPECT_EQ(event_body->dimensions_values()->at(1)->value(),
+              EXPECT_EQ(event_body->dimensions_values()->at(3)->value(),
                         kCounterDoubleAttributeValue3);
-              EXPECT_EQ(event_body->dimensions_names()->at(1)->value(),
+              EXPECT_EQ(event_body->dimensions_names()->at(3)->value(),
                         kCounterDoubleAttributeKey3);
               EXPECT_EQ(event_body->metric_name()->value(), kCounterDoubleInstrumentName);
               count_counter_double++;
@@ -100,20 +100,20 @@ struct TestServer
             if (static_cast<ifx_metrics_bin_t::single_double_value_t *>(event_body->value_section())
                     ->value() == kUpDownCounterLongValue)
             {
-              EXPECT_EQ(event_body->num_dimensions(), kUpDownCounterLongCountDimensions);
-              EXPECT_EQ(event_body->dimensions_values()->at(0)->value(),
+              EXPECT_EQ(event_body->num_dimensions(), kUpDownCounterLongCountDimensions + 2);
+              EXPECT_EQ(event_body->dimensions_values()->at(2)->value(),
                         kUpDownCounterLongAttributeValue1);
-              EXPECT_EQ(event_body->dimensions_names()->at(0)->value(),
+              EXPECT_EQ(event_body->dimensions_names()->at(2)->value(),
                         kUpDownCounterLongAttributeKey1);
               count_up_down_counter_long++;
             }
             if (static_cast<ifx_metrics_bin_t::single_double_value_t *>(event_body->value_section())
                     ->value() == kUpDownCounterDoubleValue)
             {
-              EXPECT_EQ(event_body->num_dimensions(), kUpDownCounterDoubleCountDimensions);
-              EXPECT_EQ(event_body->dimensions_values()->at(0)->value(),
+              EXPECT_EQ(event_body->num_dimensions(), kUpDownCounterDoubleCountDimensions + 2);
+              EXPECT_EQ(event_body->dimensions_values()->at(2)->value(),
                         kUpDownCounterDoubleAttributeValue1);
-              EXPECT_EQ(event_body->dimensions_names()->at(0)->value(),
+              EXPECT_EQ(event_body->dimensions_names()->at(2)->value(),
                         kUpDownCounterDoubleAttributeKey1);
               count_up_down_counter_double++;
             }
@@ -131,10 +131,10 @@ struct TestServer
                             event_body->value_section())
                             ->value(),
                         kCounterLongValue);
-              EXPECT_EQ(event_body->num_dimensions(), kCounterLongCountDimensions);
-              EXPECT_EQ(event_body->dimensions_values()->at(0)->value(),
+              EXPECT_EQ(event_body->num_dimensions(), kCounterLongCountDimensions + 2);
+              EXPECT_EQ(event_body->dimensions_values()->at(2)->value(),
                         kCounterLongAttributeValue1);
-              EXPECT_EQ(event_body->dimensions_names()->at(0)->value(), kCounterLongAttributeKey1);
+              EXPECT_EQ(event_body->dimensions_names()->at(2)->value(), kCounterLongAttributeKey1);
               count_counter_long++;
               EXPECT_EQ(event_body->metric_account()->value(), kAccountName);
               EXPECT_EQ(event_body->metric_namespace()->value(), kNamespaceName);
@@ -147,10 +147,10 @@ struct TestServer
                             event_body->value_section())
                             ->value(),
                         kCounterCustomLongValue);
-              EXPECT_EQ(event_body->num_dimensions(), kCounterLongCountDimensions);
-              EXPECT_EQ(event_body->dimensions_values()->at(0)->value(),
+              EXPECT_EQ(event_body->num_dimensions(), kCounterLongCountDimensions + 2);
+              EXPECT_EQ(event_body->dimensions_values()->at(2)->value(),
                         kCounterLongAttributeValue1);
-              EXPECT_EQ(event_body->dimensions_names()->at(0)->value(), kCounterLongAttributeKey1);
+              EXPECT_EQ(event_body->dimensions_names()->at(2)->value(), kCounterLongAttributeKey1);
               count_counter_long++;
               EXPECT_EQ(event_body->metric_account()->value(), kCustomAccountName);
               EXPECT_EQ(event_body->metric_namespace()->value(), kCustomNamespaceName);
@@ -160,10 +160,10 @@ struct TestServer
           {
             EXPECT_EQ(event_bin.event_id(), kHistogramLongEventId);
             auto event_body = event_bin.body();
-            EXPECT_EQ(event_body->num_dimensions(), kCounterLongCountDimensions);
-            EXPECT_EQ(event_body->dimensions_values()->at(0)->value(),
+            EXPECT_EQ(event_body->num_dimensions(), kCounterLongCountDimensions + 2);
+            EXPECT_EQ(event_body->dimensions_values()->at(2)->value(),
                       kHistogramLongAttributeValue1);
-            EXPECT_EQ(event_body->dimensions_names()->at(0)->value(), kHistogramLongAttributeKey1);
+            EXPECT_EQ(event_body->dimensions_names()->at(2)->value(), kHistogramLongAttributeKey1);
             if (static_cast<ifx_metrics_bin_t::ext_aggregated_uint64_value_t *>(
                     event_body->value_section())
                     ->sum() == kHistogramLongSum)
