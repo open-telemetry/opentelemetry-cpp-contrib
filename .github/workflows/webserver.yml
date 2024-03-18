@@ -103,10 +103,10 @@ jobs:
         run: |
           docker exec apache_centos7_container bash -c \
             'cd /otel-webserver-module; ./gradlew runUnitTest'
-      - name: update cache
-        run: |
-          rm -rf /tmp/buildx-cache/apache_centos7
-          mv /tmp/buildx-cache/apache_centos7-new /tmp/buildx-cache/apache_centos7
+      # - name: update cache
+      #   run: |
+      #     rm -rf /tmp/buildx-cache/apache_centos7
+      #     mv /tmp/buildx-cache/apache_centos7-new /tmp/buildx-cache/apache_centos7
       - name: copy artifacts
         id: artifacts
         run: |
