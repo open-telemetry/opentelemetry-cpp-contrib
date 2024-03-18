@@ -65,7 +65,7 @@ jobs:
         run: |
           df -h
           df -i
-          docker system prune -y
+          docker system prune -f
           df -h
       - name: checkout otel webserver
         uses: actions/checkout@v3
