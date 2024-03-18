@@ -7,6 +7,9 @@ services:
         build:
             context: .
             dockerfile: Dockerfile
+            platforms:
+                - "linux/amd64"
+                - "linux/arm64"
         image: apache_centos
         profiles:
             - default
@@ -19,6 +22,9 @@ services:
         build:
             context: .
             dockerfile: docker/centos7/Dockerfile
+            platforms:
+                - "linux/amd64"
+                - "linux/arm64"
         image: apache_centos7
         hostname: webserver
         container_name: webserver_centos7
@@ -33,6 +39,9 @@ services:
         build:
             context: .
             dockerfile: docker/ubuntu20.04/Dockerfile
+            platforms:
+                - "linux/amd64"
+                - "linux/arm64"
         image: apache_ubuntu
         hostname: webserver
         container_name: webserver_ubuntu
@@ -47,6 +56,9 @@ services:
         build:
             context: .
             dockerfile: Dockerfile
+            platforms:
+                - "linux/amd64"
+                - "linux/arm64"
         image: nginx_centos
         hostname: webserver
         container_name: nginx_centos
@@ -61,6 +73,9 @@ services:
         build:
             context: .
             dockerfile: docker/centos7/Dockerfile
+            platforms:
+                - "linux/amd64"
+                - "linux/arm64"
         image: nginx_centos7
         hostname: webserver
         container_name: nginx_centos7
@@ -75,6 +90,9 @@ services:
         build:
             context: .
             dockerfile: docker/ubuntu20.04/Dockerfile
+            platforms:
+                - "linux/amd64"
+                - "linux/arm64"
         image: nginx_ubuntu
         hostname: webserver
         container_name: nginx_ubuntu
