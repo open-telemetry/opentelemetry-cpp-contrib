@@ -61,6 +61,10 @@ jobs:
     name: webserver-centos7-build
     runs-on: ubuntu-20.04
     steps:
+      - name: Check disk space
+        run: |
+          df -h
+          df -i
       - name: checkout otel webserver
         uses: actions/checkout@v3
       - name: setup buildx
