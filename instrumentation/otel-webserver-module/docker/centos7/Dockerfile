@@ -1,13 +1,17 @@
 FROM centos:7
 
 ARG BUILD_NUMBER
+ARG BUILD_ARCH='x64'
 
-LABEL NAME=apm/build-image-webserver-agent-centos6-x64 VERSION=$BUILD_NUMBER
+LABEL NAME=apm/build-image-webserver-agent-centos6-${BUILD_ARCH} VERSION=$BUILD_NUMBER
 
-ENV GOSU_ARCH amd64
-ENV JDK_ARCH x64
+ARG GOSU_ARCH='amd64'
+ENV GOSU_ARCH=${GOSU_ARCH}
+ARG JDK_ARCH='x64'
+ENV JDK_ARCH=${JDK_ARCH}
 
-ARG PYTHON_VERSION="2.7.8"
+ARG PYTHON_VERSION="2.7.18"
+ARG CMAKE_ARCH='x86_64'
 ARG CMAKE_VERSION="3.20"
 ARG CMAKE_0VERSION="3.20.0"
 ARG GRPC_VERSION="1.36.4"
@@ -18,6 +22,7 @@ ARG APR_VERSION="1.7.0"
 ARG EXPAT_VERSION="2.3.0"
 ARG EXPAT_RVERSION="R_2_3_0"
 ARG APRUTIL_VERSION="1.6.1"
+ARG AUTOCONF_BUILD_TYPE='x86_64-unknown-linux-gnu'
 ARG AUTOCONF_VERSION="2.68"
 ARG LIBTOOL_VERSION="2.4.6"
 ARG LOG4CXX_VERSION="0.11.0"
@@ -26,6 +31,7 @@ ARG AUTOMAKE_VERSION="1.16.3"
 ARG PERL_VERSION="5.20.2"
 ARG PERL_CPANVERSION="5.0"
 ARG PCRE_VERSION="8.44"
+ARG NGINX_ARCH='x86_64'
 ARG NGINX_VERSION="1.26.0"
 
 # create default non-root user
@@ -65,7 +71,7 @@ RUN wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm 
   && yum clean all
 ENV PATH="/opt/rh/devtoolset-7/root/usr/bin:${PATH}"
 
-# install python 2.7.8
+# install python
 RUN wget http://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tar.xz \
     && unxz Python-${PYTHON_VERSION}.tar.xz \
     && tar -xf Python-${PYTHON_VERSION}.tar \
@@ -74,14 +80,14 @@ RUN wget http://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERS
     && rm -rf Python-${PYTHON_VERSION}.tar.xz && rm -rf Python-${PYTHON_VERSION}.tar
 
 # install gosu for easy step-down from root (from https://github.com/tianon/gosu/blob/master/INSTALL.md#from-centos)
-ENV GOSU_VERSION=1.10
+ENV GOSU_VERSION=1.11
 #RUN gpg --keyserver pgp.mit.edu --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 \
-#    && curl -o /usr/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64" \
-#    && curl -o /usr/bin/gosu.asc -SL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64.asc" \
+#    && curl -o /usr/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-${GOSU_ARCH}" \
+#    && curl -o /usr/bin/gosu.asc -SL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-${GOSU_ARCH}.asc" \
 #    && gpg --verify /usr/bin/gosu.asc \
 #    && rm /usr/bin/gosu.asc \
 #    && rm -r /root/.gnupg/ \
-RUN curl -o /usr/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64" \
+RUN curl -o /usr/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-${GOSU_ARCH}" \
     && chmod +x /usr/bin/gosu \
     # Verify that the binary works
     && gosu nobody true
@@ -91,11 +97,11 @@ RUN yum install git -y \
   && yum clean all
 
 # install cmake 3.20
-RUN wget https://cmake.org/files/v${CMAKE_VERSION}/cmake-${CMAKE_0VERSION}-linux-x86_64.tar.gz \
-  && tar -xvf cmake-${CMAKE_0VERSION}-linux-x86_64.tar.gz \
-  && cd cmake-${CMAKE_0VERSION}-linux-x86_64 \
+RUN wget https://cmake.org/files/v${CMAKE_VERSION}/cmake-${CMAKE_0VERSION}-linux-${CMAKE_ARCH}.tar.gz \
+  && tar -xvf cmake-${CMAKE_0VERSION}-linux-${CMAKE_ARCH}.tar.gz \
+  && cd cmake-${CMAKE_0VERSION}-linux-${CMAKE_ARCH} \
   && cp -rf * /usr/local/ \
-  && cd .. && rm -rf cmake-${CMAKE_0VERSION}-linux-x86_64.tar.gz
+  && cd .. && rm -rf cmake-${CMAKE_0VERSION}-linux-${CMAKE_ARCH}.tar.gz
 
 # install grpc. If planning to upgrade, make sure sed command works
 RUN git clone https://github.com/grpc/grpc \
@@ -170,7 +176,7 @@ ENV PATH=$HOME/localperl/bin:$PATH
 RUN wget --no-check-certificate https://ftp.gnu.org/gnu/autoconf/autoconf-${AUTOCONF_VERSION}.tar.gz \
     && tar xzf autoconf-${AUTOCONF_VERSION}.tar.gz  \
     && cd autoconf-${AUTOCONF_VERSION} \
-    && ./configure --prefix=/usr/ && make -j && make install && autoconf -V \
+    && ./configure --prefix=/usr/ --build=${AUTOCONF_BUILD_TYPE} && make -j && make install && autoconf -V \
     && cd .. && rm -rf autoconf-${AUTOCONF_VERSION}.tar.gz
 
 # install automake
@@ -273,13 +279,13 @@ RUN cp -r /dependencies /otel-webserver-module/ \
 
 RUN echo '[nginx]' >> /etc/yum.repos.d/nginx.repo \
     && echo 'name=nginx repo' >> /etc/yum.repos.d/nginx.repo \
-    && echo 'baseurl=https://nginx.org/packages/centos/7/x86_64' >> /etc/yum.repos.d/nginx.repo \
+    && echo "baseurl=https://nginx.org/packages/centos/7/${NGINX_ARCH}" >> /etc/yum.repos.d/nginx.repo \
     && echo 'gpgcheck=0' >> /etc/yum.repos.d/nginx.repo \ 
     && echo 'enabled=1' >> /etc/yum.repos.d/nginx.repo \
     && yum install nginx-${NGINX_VERSION} -y
 
 RUN cd /otel-webserver-module/build \
-    && tar -xf opentelemetry-webserver-sdk-x64-linux.tgz \
+    && tar -xf opentelemetry-webserver-sdk-${BUILD_ARCH}-linux.tgz \
     && mv -f opentelemetry-webserver-sdk /opt/ \
     && cd ../ \
     && cp opentelemetry_module.conf /etc/httpd/conf/ \
@@ -295,7 +301,7 @@ RUN cp /otel-webserver-module/conf/nginx/opentelemetry_module.conf /opt/ \
     && cd /
 
 # Remove unwanted files
-RUN rm -rf grpc && rm -rf autoconf-${AUTOCONF_VERSION} && rm -rf automake-${AUTOMAKE_VERSION} && rm -rf cmake-${CMAKE_VERSION}-linux-x86_64 \
+RUN rm -rf grpc && rm -rf autoconf-${AUTOCONF_VERSION} && rm -rf automake-${AUTOMAKE_VERSION} && rm -rf cmake-${CMAKE_VERSION}-linux-${CMAKE_ARCH} \
     && rm -rf libtool-${LIBTOOL_VERSION} && rm -rf Python-${PYTHON_VERSION} \
     && rm -f apr-${APR_VERSION}.tar.gz && rm -f apr-util-${APRUTIL_VERSION}.tar.gz \
     && rm -f httpd-2.2.31.tar.gz && rm -f httpd-2.4.23.tar.gz
