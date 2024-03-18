@@ -65,6 +65,9 @@ jobs:
         run: |
           df -h
           df -i
+          ls /dev/root
+          docker system prune
+          ls /dev/root
       - name: checkout otel webserver
         uses: actions/checkout@v3
       - name: setup buildx
