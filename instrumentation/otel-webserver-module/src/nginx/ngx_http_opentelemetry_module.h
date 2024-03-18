@@ -103,6 +103,7 @@ typedef struct {
     ngx_str_t   nginxModuleRequestHeaders;
     ngx_str_t   nginxModuleResponseHeaders;
     ngx_str_t   nginxModuleOtelExporterOtlpHeaders;
+    ngx_str_t   nginxModuleOtelResourceAttributes;
     ngx_flag_t  nginxTrustIncomingSpans;
     ngx_array_t  *nginxAttributes;
 
