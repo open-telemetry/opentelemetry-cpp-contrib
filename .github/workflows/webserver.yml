@@ -61,6 +61,11 @@ jobs:
     name: webserver-centos7-build
     runs-on: ubuntu-20.04
     steps:
+      - name: Check disk space
+        run: |
+          df -h
+          echo "Disk space usage for /github/workspace:"
+          du -sh /github/workspace
       - name: checkout otel webserver
         uses: actions/checkout@v3
       - name: setup buildx
