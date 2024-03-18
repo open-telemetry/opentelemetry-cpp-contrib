@@ -67,6 +67,7 @@ jobs:
           df -i
           docker system prune -f
           df -h
+          rm -rf /tmp/buildx-cache/apache_centos7
       - name: checkout otel webserver
         uses: actions/checkout@v3
       - name: setup buildx
@@ -74,19 +75,17 @@ jobs:
         uses: docker/setup-buildx-action@master
         with:
           install: true
-      - name: cache docker layers
-        uses: actions/cache@v3
-        with:
-          path: /tmp/buildx-cache/
-          key: apache-centos7-${{ github.sha }}
-          restore-keys: |
-            apache-centos7
+      # - name: cache docker layers
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: /tmp/buildx-cache/
+      #     key: apache-centos7-${{ github.sha }}
+      #     restore-keys: |
+      #       apache-centos7
       - name: setup docker image
         run: |
           cd instrumentation/otel-webserver-module
           docker buildx build -t apache_centos7 -f docker/centos7/Dockerfile \
-            --cache-from type=local,src=/tmp/buildx-cache/apache_centos7 \
-            --cache-to type=local,dest=/tmp/buildx-cache/apache_centos7-new \
             --load .
       - name: build
         run: |
