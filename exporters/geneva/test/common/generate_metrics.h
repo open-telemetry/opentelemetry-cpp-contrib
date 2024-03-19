@@ -27,6 +27,10 @@ const std::string kCounterDoubleAttributeKey2 = "counter_double_key2";
 const std::string kCounterDoubleAttributeValue2 = "counter_double_value2";
 const std::string kCounterDoubleAttributeKey3 = "counter_double_key3";
 const std::string kCounterDoubleAttributeValue3 = "counter_double_value3";
+const std::string kPrepopulatedDimensionKey1 = "prepopulated_key1";
+const std::string kPrepopulatedDimensionValue1 = "prepopulated_value1";
+const std::string kPrepopulatedDimensionKey2 = "prepopulated_key2";
+const std::string kPrepopulatedDimensionValue2 = "prepopulated_value2";
 const uint16_t kCounterDoubleCountDimensions = 1;
 const uint16_t kCounterDoubleEventId = 55;
 

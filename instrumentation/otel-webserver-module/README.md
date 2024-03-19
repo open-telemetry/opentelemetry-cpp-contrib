@@ -177,7 +177,12 @@ Currently, Nginx Webserver module monitores some fixed set of modules, which get
 |*NginxModuleRequestHeaders*                    |                 | OPTIONAL: Specify the request headers to be captured in the span attributes. The headers are Case-Sensitive and should be comma-separated. e.g.```NginxModuleRequestHeaders               Accept-Charset,Accept-Encoding,User-Agent;```|
 |*NginxModuleResponseHeaders*                   |                  | OPTIONAL: Specify the response headers to be captured in the span attributes. The headers are Case-Sensitive and should be comma-separated. e.g.```NginxModuleResponseHeaders                  Content-Length,Content-Type;```|
 |*NginxModuleOtelExporterOtlpHeaders*           |                  | OPTIONAL: OTEL exporter headers like Meta data related exposrted end point. a list of key value pairs, and these are expected to be represented in a format matching to the W3C Correlation-Context, except that additional semi-colon delimited metadata is not supported, i.e.: key1=value1,key2=value2.|
-|*NginxTrustIncomingSpans*           | ON               | OPTIONAL: Specify if you want to correlate Nginx instrumented traces and spans with incoming requests.|
+|*NginxModuleTrustIncomingSpans*           | ON               | OPTIONAL: Specify if you want to correlate Nginx instrumented traces and spans with incoming requests.|
+|*NginxModuleAttributes*           |                | OPTIONAL: Can be used to pass additionalccustom attributes to the span, nginx variables are also supported. All elements must be separated by a space, and different attribute key value pairs must be separated by a comma( even the comma needs to be separated by space). e.g. ```NginxModuleAttributes     Key1 Value1 , Key2 $request_uri;``` |
+|*NginxModuleIgnorePaths*           |               | OPTIONAL: Request URIs matching the Regex will not be monitored. Multiple space separated Regex can be provided( `'\'` symbol needs to be used carefully, Nginx treats `'\'` as a escape sequence, thus if the Regex sequence contains a `'\'`, it need to be replaced by `'\\'`, likewise if sequence contains `'\\'`, it need to be written as `'\\\\'` e.g. `.*\.html` -> `.*\\.html` ) e.g. ```NginxModuleIgnorePaths               .*\\.html /test_.*;```|
+
+
+
 
 ### Build and Installation
 #### Prerequisites

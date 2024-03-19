@@ -28,7 +28,8 @@
       'core/sdkwrapper/ScopedSpan.cpp',
       'core/sdkwrapper/ServerSpan.cpp',
       'core/sdkwrapper/SdkWrapper.cpp',
-      'util/SpanNamingUtils.cpp'
+      'util/SpanNamingUtils.cpp',
+      'util/RegexResolver.cpp'
     ],
 
     'conditions': [
@@ -184,3 +185,4 @@
     ]
   }]
 }
+

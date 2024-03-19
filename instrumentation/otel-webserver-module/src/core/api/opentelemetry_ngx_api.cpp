@@ -21,6 +21,7 @@
 #include <sstream>
 #include <unordered_set>
 #include <algorithm>
+#include <regex>
 
 otel::core::WSAgent wsAgent; // global variable for interface between Hooks and Core Logic
 std::unordered_set<std::string> requestHeadersToCapture;
