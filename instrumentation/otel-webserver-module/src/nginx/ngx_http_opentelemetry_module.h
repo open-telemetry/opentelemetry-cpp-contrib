@@ -103,8 +103,9 @@ typedef struct {
     ngx_str_t   nginxModuleRequestHeaders;
     ngx_str_t   nginxModuleResponseHeaders;
     ngx_str_t   nginxModuleOtelExporterOtlpHeaders;
-    ngx_flag_t  nginxTrustIncomingSpans;
-    ngx_array_t  *nginxAttributes;
+    ngx_flag_t  nginxModuleTrustIncomingSpans;
+    ngx_array_t  *nginxModuleAttributes;
+    ngx_array_t  *nginxModuleIgnorePaths;
 
 } ngx_http_opentelemetry_loc_conf_t;
 
@@ -156,8 +157,10 @@ static ngx_flag_t otel_requestHasErrors(ngx_http_request_t* r);
 static ngx_uint_t otel_getErrorCode(ngx_http_request_t* r);
 static char* ngx_otel_context_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static char* ngx_otel_attributes_set(ngx_conf_t* cf, ngx_command_t*, void* conf);
+static char* ngx_conf_ignore_path_set(ngx_conf_t* cf, ngx_command_t* cmd, void* conf);
 static void ngx_otel_set_global_context(ngx_http_opentelemetry_loc_conf_t * prev);
 static void ngx_otel_set_attributes(ngx_http_opentelemetry_loc_conf_t * prev, ngx_http_opentelemetry_loc_conf_t * conf);
+static void ngx_conf_merge_ignore_paths(ngx_http_opentelemetry_loc_conf_t * prev, ngx_http_opentelemetry_loc_conf_t * conf);
 static void removeUnwantedHeader(ngx_http_request_t* r);
 /*
     Module specific handler
