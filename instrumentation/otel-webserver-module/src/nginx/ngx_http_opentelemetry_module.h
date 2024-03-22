@@ -23,7 +23,7 @@
 
 #define LOWEST_HTTP_ERROR_CODE 400
 #define STATUS_CODE_BYTE_COUNT 6
-static const int CONFIG_COUNT = 17; // Number of key value pairs in config
+static const int CONFIG_COUNT = 18; // Number of key value pairs in config
 
 /*  The following enum has one-to-one mapping with
     otel_monitored_modules[] defined in .c file.
@@ -106,6 +106,7 @@ typedef struct {
     ngx_flag_t  nginxModuleTrustIncomingSpans;
     ngx_array_t  *nginxModuleAttributes;
     ngx_array_t  *nginxModuleIgnorePaths;
+    ngx_str_t nginxModulePropagatorType;
 
 } ngx_http_opentelemetry_loc_conf_t;
 

@@ -96,9 +96,17 @@ SdkHelperFactory::SdkHelperFactory(
         " and LibraryVersion " << libraryVersion);
 
     // Adding trace propagator
-    using MapHttpTraceCtx = opentelemetry::trace::propagation::HttpTraceContext;
-    mPropagators.push_back(
-        std::unique_ptr<MapHttpTraceCtx>(new MapHttpTraceCtx()));
+    if(config->getOtelPropagatorType() == "b3"){
+        mPropagators.push_back(
+            std::unique_ptr<opentelemetry::trace::propagation::B3PropagatorMultiHeader>(
+                new opentelemetry::trace::propagation::B3PropagatorMultiHeader()));
+    }
+    else{
+        mPropagators.push_back(
+            std::unique_ptr<opentelemetry::trace::propagation::HttpTraceContext>(
+                new opentelemetry::trace::propagation::HttpTraceContext()));
+    }
+    
 }
 
 OtelTracer SdkHelperFactory::GetTracer()

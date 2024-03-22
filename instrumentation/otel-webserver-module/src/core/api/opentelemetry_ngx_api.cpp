@@ -44,7 +44,18 @@ void populatePayload(request_payload* req_payload, void* load)
     payload->set_client_ip(req_payload->client_ip);
 
     for(int i=0; i<req_payload->propagation_count; i++){
-        payload->set_http_headers(req_payload->propagation_headers[i].name, req_payload->propagation_headers[i].value);
+        if(strcmp(req_payload->propagation_headers[i].name , "x-b3-traceid") == 0){
+            payload->set_http_headers("X-B3-TraceId", req_payload->propagation_headers[i].value);
+        }
+        else if(strcmp(req_payload->propagation_headers[i].name , "x-b3-spanid") == 0){
+            payload->set_http_headers("X-B3-SpanId", req_payload->propagation_headers[i].value);
+        }
+        else if(strcmp(req_payload->propagation_headers[i].name , "x-b3-sampled") == 0){
+            payload->set_http_headers("X-B3-Sampled", req_payload->propagation_headers[i].value);
+        }
+        else{
+            payload->set_http_headers(req_payload->propagation_headers[i].name, req_payload->propagation_headers[i].value);
+        }
     }
 
     for (int i = 0; i < req_payload->request_headers_count; i++) {

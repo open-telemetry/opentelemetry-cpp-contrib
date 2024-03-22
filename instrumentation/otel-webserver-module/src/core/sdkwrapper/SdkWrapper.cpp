@@ -26,8 +26,8 @@ namespace sdkwrapper {
 
 namespace {
 
-constexpr const char* TRACEPARENT_HEADER_NAME = "traceparent";
-constexpr const char* TRACESTATE_HEADER_NAME = "tracestate";
+constexpr const char* CARRIER_HEADER_NAME[] = {"X-B3-TraceId", "X-B3-SpanId", "X-B3-Sampled", "traceparent", "tracestate"};
+const size_t CARRIER_HEADER_LEN = sizeof(CARRIER_HEADER_NAME)/sizeof(CARRIER_HEADER_NAME[0]);
 
 } // anyonymous
 
@@ -80,8 +80,12 @@ void SdkWrapper::PopulatePropagationHeaders(
 	}
 
   // copy all relevant kv pairs into carrier
-  carrier[TRACEPARENT_HEADER_NAME] = otelCarrier.Get(TRACEPARENT_HEADER_NAME).data();
-  carrier[TRACESTATE_HEADER_NAME] = otelCarrier.Get(TRACESTATE_HEADER_NAME).data();
+  for (int i = 0; i < CARRIER_HEADER_LEN; i++) {
+	auto carrier_header = otelCarrier.Get(CARRIER_HEADER_NAME[i]).data();
+	if(carrier_header != ""){
+	  	carrier[CARRIER_HEADER_NAME[i]] = otelCarrier.Get(CARRIER_HEADER_NAME[i]).data();
+	}
+  }
 }
 
 trace::SpanKind SdkWrapper::GetTraceSpanKind(const SpanKind& kind)
