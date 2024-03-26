@@ -83,8 +83,6 @@ services:
             - ubuntu20.04_nginx
         ports:
             - "8016:80"
-        volumes:
-            - /home/ubuntu/code/aryanOTEL/:/code
         depends_on:
             - otel-collector
 
