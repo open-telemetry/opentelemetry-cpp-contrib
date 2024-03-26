@@ -29,7 +29,6 @@ ServerSpan::ServerSpan(const std::string& name,
 	mLogger(logger)
 {
 	// Extract W3C Trace Context. And store the token in local variable.
-
 	context::Context ctx = context::RuntimeContext::GetCurrent();
 	OtelCarrier otelCarrier(carrier);
 	for (auto &propagator : sdkHelperFactory->GetPropagators()) {

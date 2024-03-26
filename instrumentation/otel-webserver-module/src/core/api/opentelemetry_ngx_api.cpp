@@ -26,6 +26,22 @@
 otel::core::WSAgent wsAgent; // global variable for interface between Hooks and Core Logic
 std::unordered_set<std::string> requestHeadersToCapture;
 std::unordered_set<std::string> responseHeadersToCapture;
+std::unordered_map<std::string, std::string> propagationsHeaderParse = {
+    {"x-b3-traceid", "X-B3-TraceId"},
+    {"x-b3-spanid", "X-B3-SpanId"},
+    {"x-b3-sampled", "X-B3-Sampled"}
+};
+
+char* toLowercase(char* str) {
+    char* temp = str;
+    if (str) {
+        while (*str) {
+            *str = std::tolower(static_cast<unsigned char>(*str)); // Use static_cast to avoid negative char values
+            ++str;
+        }
+    }
+}
+
 constexpr char delimiter = ',';
 
 void populatePayload(request_payload* req_payload, void* load)
@@ -44,14 +60,13 @@ void populatePayload(request_payload* req_payload, void* load)
     payload->set_client_ip(req_payload->client_ip);
 
     for(int i=0; i<req_payload->propagation_count; i++){
-        if(strcmp(req_payload->propagation_headers[i].name , "x-b3-traceid") == 0){
-            payload->set_http_headers("X-B3-TraceId", req_payload->propagation_headers[i].value);
+        
+        std::string prop_header_lowercase(req_payload->propagation_headers[i].name);
+        for(auto &s : prop_header_lowercase ){
+            s = tolower(s);
         }
-        else if(strcmp(req_payload->propagation_headers[i].name , "x-b3-spanid") == 0){
-            payload->set_http_headers("X-B3-SpanId", req_payload->propagation_headers[i].value);
-        }
-        else if(strcmp(req_payload->propagation_headers[i].name , "x-b3-sampled") == 0){
-            payload->set_http_headers("X-B3-Sampled", req_payload->propagation_headers[i].value);
+        if( propagationsHeaderParse.find(prop_header_lowercase) != propagationsHeaderParse.end() ){
+            payload->set_http_headers( propagationsHeaderParse[prop_header_lowercase] , req_payload->propagation_headers[i].value);
         }
         else{
             payload->set_http_headers(req_payload->propagation_headers[i].name, req_payload->propagation_headers[i].value);

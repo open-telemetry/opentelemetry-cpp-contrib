@@ -111,7 +111,7 @@ inline std::ostream& operator<< (std::ostream &os, const otel::core::TenantConfi
         << "\n OtelExporterType                 " << config.getOtelExporterType()
         << "\n OtelExporterEndpoint             " << config.getOtelExporterEndpoint()
         << "\n OtelProcessorType                " << config.getOtelProcessorType()
-        << "\n OtelPropagatorType                " << config.getOtelPropagatorType()
+        << "\n OtelPropagatorType               " << config.getOtelPropagatorType()
         << "\n OtelSamplerType                  " << config.getOtelSamplerType()
         << "\n OtelSslEnabled                   " << config.getOtelSslEnabled()
         << "\n OtelSslCertPath                  " << config.getOtelSslCertPath()
