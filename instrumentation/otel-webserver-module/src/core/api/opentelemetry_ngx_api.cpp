@@ -32,16 +32,6 @@ std::unordered_map<std::string, std::string> propagationsHeaderParse = {
     {"x-b3-sampled", "X-B3-Sampled"}
 };
 
-char* toLowercase(char* str) {
-    char* temp = str;
-    if (str) {
-        while (*str) {
-            *str = std::tolower(static_cast<unsigned char>(*str)); // Use static_cast to avoid negative char values
-            ++str;
-        }
-    }
-}
-
 constexpr char delimiter = ',';
 
 void populatePayload(request_payload* req_payload, void* load)
