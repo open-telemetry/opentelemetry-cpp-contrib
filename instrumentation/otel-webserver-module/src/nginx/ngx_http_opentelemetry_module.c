@@ -553,8 +553,7 @@ static ngx_int_t ngx_http_opentelemetry_create_variables(ngx_conf_t *cf){
     }
 
     var->get_handler = ngx_http_my_variable_handler;
-    // Optionally, if the variable is settable:
-    // var->set_handler = ngx_http_my_variable_set_handler;
+    var->set_handler = ngx_http_my_variable_set_handler;
     var->data = 0;
 
     return NGX_OK;
