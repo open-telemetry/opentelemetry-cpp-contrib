@@ -406,7 +406,7 @@ static ngx_command_t ngx_http_opentelemetry_commands[] = {
 
 /* The module context. */
 static ngx_http_module_t ngx_http_opentelemetry_module_ctx = {
-    NULL,						/* preconfiguration */
+    ngx_http_opentelemetry_create_variables,						/* preconfiguration */
     ngx_http_opentelemetry_init,	                        /* postconfiguration */
 
     NULL,	                                        /* create main configuration */
@@ -543,6 +543,10 @@ static char* ngx_http_opentelemetry_merge_loc_conf(ngx_conf_t *cf, void *parent,
 	NGX_HTTP_TRY_FILES_PHASE
 	-------------------------------------------------------------------------------------------------
  */
+static ngx_int_t ngx_http_opentelemetry_create_variables(ngx_conf_t *cf){
+
+}
+
 static ngx_int_t ngx_http_opentelemetry_init(ngx_conf_t *cf)
 {
     ngx_http_core_main_conf_t    *cmcf;
