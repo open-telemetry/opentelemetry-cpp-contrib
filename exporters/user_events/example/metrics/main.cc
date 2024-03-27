@@ -44,9 +44,10 @@ void initMetrics(const std::string &name, const std::string &account_name) {
 
   // counter view
   std::string counter_name = name + "_counter";
+  std::string instrument_unit = "ms";
   std::unique_ptr<metric_sdk::InstrumentSelector> instrument_selector{
       new metric_sdk::InstrumentSelector(metric_sdk::InstrumentType::kCounter,
-                                         counter_name)};
+                                         counter_name, instrument_unit)};
   std::unique_ptr<metric_sdk::MeterSelector> meter_selector{
       new metric_sdk::MeterSelector(name, version, schema)};
   std::unique_ptr<metric_sdk::View> sum_view{new metric_sdk::View{
@@ -59,7 +60,7 @@ void initMetrics(const std::string &name, const std::string &account_name) {
   std::unique_ptr<metric_sdk::InstrumentSelector>
       observable_instrument_selector{new metric_sdk::InstrumentSelector(
           metric_sdk::InstrumentType::kObservableCounter,
-          observable_counter_name)};
+          observable_counter_name, instrument_unit)};
   std::unique_ptr<metric_sdk::MeterSelector> observable_meter_selector{
       new metric_sdk::MeterSelector(name, version, schema)};
   std::unique_ptr<metric_sdk::View> observable_sum_view{new metric_sdk::View{
@@ -72,7 +73,7 @@ void initMetrics(const std::string &name, const std::string &account_name) {
   std::string histogram_name = name + "_histogram";
   std::unique_ptr<metric_sdk::InstrumentSelector> histogram_instrument_selector{
       new metric_sdk::InstrumentSelector(metric_sdk::InstrumentType::kHistogram,
-                                         histogram_name)};
+                                         histogram_name, instrument_unit)};
   std::unique_ptr<metric_sdk::MeterSelector> histogram_meter_selector{
       new metric_sdk::MeterSelector(name, version, schema)};
   std::shared_ptr<opentelemetry::sdk::metrics::AggregationConfig>
