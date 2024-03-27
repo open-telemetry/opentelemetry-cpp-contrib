@@ -544,7 +544,20 @@ static char* ngx_http_opentelemetry_merge_loc_conf(ngx_conf_t *cf, void *parent,
 	-------------------------------------------------------------------------------------------------
  */
 static ngx_int_t ngx_http_opentelemetry_create_variables(ngx_conf_t *cf){
+    ngx_http_variable_t *var;
+    ngx_str_t name = ngx_string("ngx_trace_id");
 
+    var = ngx_http_add_variable(cf, &name, NGX_HTTP_VAR_CHANGEABLE | NGX_HTTP_VAR_NOCACHEABLE);
+    if (var == NULL) {
+        return NGX_ERROR;
+    }
+
+    var->get_handler = ngx_http_my_variable_handler;
+    // Optionally, if the variable is settable:
+    // var->set_handler = ngx_http_my_variable_set_handler;
+    var->data = 0;
+
+    return NGX_OK;
 }
 
 static ngx_int_t ngx_http_opentelemetry_init(ngx_conf_t *cf)
