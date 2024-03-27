@@ -47,6 +47,7 @@ namespace {
   constexpr const char* ALWAYS_OFF_SAMPLER = "always_off";
   constexpr const char* PARENT_BASED_SAMPLER = "parent";
   constexpr const char* TRACE_ID_RATIO_BASED_SAMPLER = "trace_id_ratio";
+  constexpr const char* PROPAGATOR_TYPE_B3 = "b3";
 }
 
 SdkHelperFactory::SdkHelperFactory(
@@ -96,7 +97,7 @@ SdkHelperFactory::SdkHelperFactory(
         " and LibraryVersion " << libraryVersion);
 
     // Adding trace propagator
-    if(config->getOtelPropagatorType() == "b3"){
+    if(config->getOtelPropagatorType() == PROPAGATOR_TYPE_B3){
         mPropagators.push_back(
             std::unique_ptr<opentelemetry::trace::propagation::B3PropagatorMultiHeader>(
                 new opentelemetry::trace::propagation::B3PropagatorMultiHeader()));
