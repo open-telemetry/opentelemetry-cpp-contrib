@@ -173,6 +173,8 @@ OTEL_SDK_STATUS_CODE ApiUtils::ReadSettingsFromReader(
     std::string otelLibraryName;
     std::string otelProcessorType;
     std::string otelSamplerType;
+    std::string otelSamplerRatio;
+
 
     unsigned otelMaxQueueSize;
     unsigned otelScheduledDelayMillis;
@@ -230,6 +232,9 @@ OTEL_SDK_STATUS_CODE ApiUtils::ReadSettingsFromReader(
     reader.ReadOptional(
         std::string(OTEL_SDK_ENV_OTEL_SAMPLER_TYPE), otelSamplerType);
 
+    reader.ReadOptional(
+        std::string(OTEL_SDK_ENV_OTEL_SAMPLER_RATIO), otelSamplerRatio);
+
     status = ReadOptionalFromReader(
         reader, std::string(OTEL_SDK_ENV_MAX_QUEUE_SIZE), otelMaxQueueSize);
     if(OTEL_ISFAIL(status))
@@ -269,6 +274,7 @@ OTEL_SDK_STATUS_CODE ApiUtils::ReadSettingsFromReader(
     tenantConfig.setOtelLibraryName(otelLibraryName);
     tenantConfig.setOtelProcessorType(otelProcessorType);
     tenantConfig.setOtelSamplerType(otelSamplerType);
+    tenantConfig.setOtelSamplerRatio(otelSamplerRatio);
     tenantConfig.setOtelMaxQueueSize(otelMaxQueueSize);
     tenantConfig.setOtelScheduledDelayMillis(otelScheduledDelayMillis);
     tenantConfig.setOtelMaxExportBatchSize(otelMaxExportBatchSize);

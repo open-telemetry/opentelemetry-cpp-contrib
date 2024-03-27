@@ -95,6 +95,12 @@ static const command_rec otel_cmds[] =
             OR_ALL,
             "Type of Otel Sampler"),
     AP_INIT_TAKE1(
+            "apacheModuleOtelSamplerRatio",
+            (CMD_HAND_TYPE)ApacheConfigHandlers::otel_set_otelSamplerRatio,
+            NULL,
+            OR_ALL,
+            "Otel Sampler Ratio for Ratio Base Sampler"),
+    AP_INIT_TAKE1(
             "apacheModuleServiceName",
             (CMD_HAND_TYPE)ApacheConfigHandlers::otel_set_serviceName,
             NULL,
