@@ -7,8 +7,9 @@ if(WIN32)
   message(FATAL_ERROR "user_events exporter is Linux only for now")
 endif()
 
-option(BUILD_EXAMPLE "Build example" ON)
+option(WITH_EXAMPLES "Build example" ON)
 option(BUILD_TESTING "Build tests" ON)
+option(BUILD_TRACEPOINTS "Build tracepoints library" ON)
 
 project(opentelemetry-user_events-exporter)
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
@@ -26,10 +27,12 @@ if(MAIN_PROJECT)
   find_package(opentelemetry-cpp REQUIRED)
 endif()
 
-# don't build samples and tools from LinuxTracepoints.
-set(BUILD_SAMPLES OFF)
-set(BUILD_TOOLS OFF)
-add_subdirectory(third_party/LinuxTracepoints)
+if(BUILD_TRACEPOINTS)
+  # don't build samples and tools from LinuxTracepoints.
+  set(BUILD_SAMPLES OFF)
+  set(BUILD_TOOLS OFF)
+  add_subdirectory(third_party/LinuxTracepoints)
+endif()
 
 include_directories(include)
 
@@ -72,7 +75,7 @@ else()
            opentelemetry_otlp_recordable tracepoint)
 endif()
 
-if(BUILD_EXAMPLE)
+if(WITH_EXAMPLES)
   add_executable(user_events_logs example/logs/main.cc
                                   example/logs/foo_library.cc)
   target_link_libraries(user_events_logs ${CMAKE_THREAD_LIBS_INIT}
