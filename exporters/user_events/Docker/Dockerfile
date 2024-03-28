@@ -38,12 +38,12 @@ RUN cd /work && \
     git clone --recursive --depth=1 https://github.com/open-telemetry/opentelemetry-cpp.git && \
     cd opentelemetry-cpp && \
     mkdir build && cd build && \
-    cmake -G Ninja -D CMAKE_BUILD_TYPE=Debug -D BUILD_TESTING=0 -D WITH_OTLP_HTTP=1 -D WITH_OTLP_GRPC=0 -D WITH_STL=CXX17.. && \
+    cmake -G Ninja -D CMAKE_BUILD_TYPE=Debug -D BUILD_TESTING=0 -D WITH_OTLP_HTTP=1 -D WITH_OTLP_GRPC=0 -D WITH_STL=CXX17 .. && \
     ninja && \
     ninja install
 
 RUN cd /work && \
-    git clone --recursive --depth=1 https://github.com/open-telemetry/opentelemetry-cpp-contrib
+    git clone --recursive --depth=1 -b fix_cpp_std https://github.com/open-telemetry/opentelemetry-cpp-contrib
 
 RUN cd /work && \
     cd opentelemetry-cpp-contrib/exporters/user_events && \
