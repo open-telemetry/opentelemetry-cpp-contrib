@@ -65,7 +65,7 @@ sdk_common::ExportResult Exporter::Export(
     return sdk_common::ExportResult::kSuccess;
   }
 
-  proto::collector::metrics::ExportMetricsServiceRequest request;
+  proto::collector::metrics::v1::ExportMetricsServiceRequest request;
   otlp_exporter::OtlpMetricUtils::PopulateRequest(data, &request);
 
   int size = (int)request.ByteSizeLong();

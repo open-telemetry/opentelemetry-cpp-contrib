@@ -172,6 +172,7 @@ OTEL_SDK_STATUS_CODE ApiUtils::ReadSettingsFromReader(
     std::string otelSslCertPath;
     std::string otelLibraryName;
     std::string otelProcessorType;
+    std::string otelPropagatorType;
     std::string otelSamplerType;
 
     unsigned otelMaxQueueSize;
@@ -228,6 +229,9 @@ OTEL_SDK_STATUS_CODE ApiUtils::ReadSettingsFromReader(
         std::string(OTEL_SDK_ENV_OTEL_PROCESSOR_TYPE), otelProcessorType);
 
     reader.ReadOptional(
+        std::string(OTEL_SDK_ENV_OTEL_PROPAGATOR_TYPE), otelPropagatorType);
+
+    reader.ReadOptional(
         std::string(OTEL_SDK_ENV_OTEL_SAMPLER_TYPE), otelSamplerType);
 
     status = ReadOptionalFromReader(
@@ -268,6 +272,7 @@ OTEL_SDK_STATUS_CODE ApiUtils::ReadSettingsFromReader(
     tenantConfig.setOtelExporterOtlpHeaders(otelExporterOtlpHeaders);
     tenantConfig.setOtelLibraryName(otelLibraryName);
     tenantConfig.setOtelProcessorType(otelProcessorType);
+    tenantConfig.setOtelPropagatorType(otelPropagatorType);
     tenantConfig.setOtelSamplerType(otelSamplerType);
     tenantConfig.setOtelMaxQueueSize(otelMaxQueueSize);
     tenantConfig.setOtelScheduledDelayMillis(otelScheduledDelayMillis);

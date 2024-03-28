@@ -420,6 +420,13 @@ static ngx_command_t ngx_http_opentelemetry_commands[] = {
       0,
       NULL},
     
+    { ngx_string("NginxModulePropagatorType"),
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
+      ngx_conf_set_propagator,
+      NGX_HTTP_LOC_CONF_OFFSET,
+      offsetof(ngx_http_opentelemetry_loc_conf_t, nginxModulePropagatorType),
+      NULL},
+    
     /* command termination */
     ngx_null_command
 };
@@ -529,6 +536,8 @@ static char* ngx_http_opentelemetry_merge_loc_conf(ngx_conf_t *cf, void *parent,
     ngx_conf_merge_str_value(conf->nginxModuleSegmentParameter, prev->nginxModuleSegmentParameter, "2");
     ngx_conf_merge_str_value(conf->nginxModuleRequestHeaders, prev->nginxModuleRequestHeaders, "");
     ngx_conf_merge_str_value(conf->nginxModuleResponseHeaders, prev->nginxModuleResponseHeaders, "");
+    ngx_conf_merge_str_value(conf->nginxModulePropagatorType, prev->nginxModulePropagatorType, "w3c");
+
 
     return NGX_CONF_OK;
 }
@@ -799,6 +808,24 @@ static char* ngx_otel_attributes_set(ngx_conf_t* cf, ngx_command_t* cmd, void* c
 
 }
 
+static char* ngx_conf_set_propagator(ngx_conf_t* cf, ngx_command_t* cmd, void* conf) {
+    ngx_http_opentelemetry_loc_conf_t * my_conf=(ngx_http_opentelemetry_loc_conf_t *)conf;
+
+    ngx_str_t *value = cf->args->elts;
+    ngx_str_t elt;
+    if( !strcmp(value[1].data, "b3") || !strcmp(value[1].data, "B3") ){
+        elt.data = (u_char *)"b3";
+        elt.len = sizeof("b3") - 1;
+        my_conf->nginxModulePropagatorType = elt;
+    }
+    else{
+        elt.data = (u_char *)"w3c";
+        elt.len = sizeof("w3c") - 1;
+        my_conf->nginxModulePropagatorType = elt;
+    }
+    return NGX_CONF_OK;
+
+}
 static char* ngx_conf_ignore_path_set(ngx_conf_t* cf, ngx_command_t* cmd, void* conf) {
     ngx_http_opentelemetry_loc_conf_t * my_conf=(ngx_http_opentelemetry_loc_conf_t *)conf;
 
@@ -947,68 +974,69 @@ static void otel_variables_decorator(ngx_http_request_t* r){
 }
 static void otel_payload_decorator(ngx_http_request_t* r, OTEL_SDK_ENV_RECORD* propagationHeaders, int count)
 {
-   ngx_list_part_t  *part;
-   ngx_table_elt_t  *header;
-   ngx_table_elt_t            *h;
-   ngx_http_header_t          *hh;
-   ngx_http_core_main_conf_t  *cmcf;
-   ngx_uint_t       nelts;
+    ngx_list_part_t  *part;
+    ngx_table_elt_t  *header;
+    ngx_table_elt_t            *h;
+    ngx_http_header_t          *hh;
+    ngx_http_core_main_conf_t  *cmcf;
+    ngx_uint_t       nelts;
 
-   part = &r->headers_in.headers.part;
-   header = (ngx_table_elt_t*)part->elts;
-   nelts = part->nelts;
+    part = &r->headers_in.headers.part;
+    header = (ngx_table_elt_t*)part->elts;
+    nelts = part->nelts;
 
-   for(int i=0; i<count; i++){
+    for(int i=0; i<count; i++){
 
-       int header_found=0;
-       for(ngx_uint_t j = 0; j<nelts; j++){
-           h = &header[j];
-           if(strcmp(httpHeaders[i], h->key.data)==0){
-               
-               header_found=1;
+        int header_found=0;
+        int prop_index = -1;
+        for(ngx_uint_t j = 0; j<nelts; j++){
+            h = &header[j];
+            if(strcasecmp(propagationHeaders[i].name, h->key.data)==0){
+                
+                header_found=1;
 
-               if(h->key.data)
-                    ngx_pfree(r->pool, h->key.data);
-               if(h->value.data)
-                    ngx_pfree(r->pool, h->value.data);
-               
-               break;
-           }
-       }
-       if(header_found==0)
-       {
-           h = ngx_list_push(&r->headers_in.headers);
-       }
+                if(h->key.data)
+                        ngx_pfree(r->pool, h->key.data);
+                if(h->value.data)
+                        ngx_pfree(r->pool, h->value.data);
+                
+                break;
+            }
+        }
+        if(header_found==0)
+        {
+            h = ngx_list_push(&r->headers_in.headers);
+        }
 
-       if(h == NULL )
+        if(h == NULL )
+                return;
+
+        h->key.len = strlen(propagationHeaders[i].name);
+        h->key.data = ngx_pcalloc(r->pool, sizeof(char)*((h->key.len)+1));
+        strcpy(h->key.data, propagationHeaders[i].name);
+
+        ngx_writeTrace(r->connection->log, __func__, "Key : %s", propagationHeaders[i].name);
+
+        h->hash = ngx_hash_key(h->key.data, h->key.len);
+
+        h->value.len = strlen(propagationHeaders[i].value);
+        h->value.data = ngx_pcalloc(r->pool, sizeof(char)*((h->value.len)+1));
+        strcpy(h->value.data, propagationHeaders[i].value);
+        h->lowcase_key = h->key.data;
+
+        cmcf = ngx_http_get_module_main_conf(r, ngx_http_core_module);
+        hh = ngx_hash_find(&cmcf->headers_in_hash, h->hash,h->lowcase_key, h->key.len);
+        if (hh && hh->handler(r, h, hh->offset) != NGX_OK) {
             return;
+        }
 
-       h->key.len = strlen(propagationHeaders[i].name);
-       h->key.data = ngx_pcalloc(r->pool, sizeof(char)*((h->key.len)+1));
-       strcpy(h->key.data, propagationHeaders[i].name);
+        ngx_writeTrace(r->connection->log, __func__, "Value : %s", propagationHeaders[i].value);
 
-       ngx_writeTrace(r->connection->log, __func__, "Key : %s", propagationHeaders[i].name);
-
-       h->hash = ngx_hash_key(h->key.data, h->key.len);
-
-       h->value.len = strlen(propagationHeaders[i].value);
-       h->value.data = ngx_pcalloc(r->pool, sizeof(char)*((h->value.len)+1));
-       strcpy(h->value.data, propagationHeaders[i].value);
-       h->lowcase_key = h->key.data;
-
-       cmcf = ngx_http_get_module_main_conf(r, ngx_http_core_module);
-       hh = ngx_hash_find(&cmcf->headers_in_hash, h->hash,h->lowcase_key, h->key.len);
-       if (hh && hh->handler(r, h, hh->offset) != NGX_OK) {
-           return;
-       }
-
-       ngx_writeTrace(r->connection->log, __func__, "Value : %s", propagationHeaders[i].value);
-
-   }
-   
-   ngx_http_otel_handles_t* ctx = ngx_http_get_module_ctx(r, ngx_http_opentelemetry_module);
-   ctx->propagationHeaders = propagationHeaders;
-   ctx->pheaderCount = count;
+    }
+    
+    ngx_http_otel_handles_t* ctx = ngx_http_get_module_ctx(r, ngx_http_opentelemetry_module);
+    ctx->propagationHeaders = propagationHeaders;
+    ctx->pheaderCount = count;
 }
 
 /*
@@ -1269,6 +1297,9 @@ static ngx_flag_t ngx_initialize_opentelemetry(ngx_http_request_t *r)
         env_config[ix].value = (const char*)(conf->nginxModuleSegmentParameter).data;
         ++ix;
 
+        env_config[ix].name = OTEL_SDK_ENV_OTEL_PROPAGATOR_TYPE;
+        env_config[ix].value = (const char*)(conf->nginxModulePropagatorType).data;
+        ++ix;
 
         // !!!
         // Remember to update the ngx_pcalloc call size if we add another parameter to the input array!
@@ -1898,7 +1929,7 @@ static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t*
 
         h = &header[j];
         for (int i = 0; i < headers_len && conf->nginxModuleTrustIncomingSpans ; i++) {
-
+            
             if (strcmp(h->key.data, httpHeaders[i]) == 0) {
                 req_payload->propagation_headers[propagation_headers_idx].name = httpHeaders[i];
                 req_payload->propagation_headers[propagation_headers_idx].value = (const char*)(h->value).data;
