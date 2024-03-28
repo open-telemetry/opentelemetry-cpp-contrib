@@ -23,7 +23,7 @@ project.ext {
 
     ansdkOsName = osName
     ansdkArch = (osArch == 'x86' ? 'i686' : osArch)
-    gccArchFlag = (osArch == 'x86' ? '-m32' : '-m64')
+    gccArchFlag = (osArch == 'x86' ? '-m32' : (osArch == 'aarch64' ? '-march=armv8-a' : '-m64'))
     headSHA1 = "<dev>"
 
     try {
