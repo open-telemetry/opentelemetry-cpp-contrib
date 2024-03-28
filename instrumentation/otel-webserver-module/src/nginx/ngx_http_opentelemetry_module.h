@@ -23,7 +23,7 @@
 
 #define LOWEST_HTTP_ERROR_CODE 400
 #define STATUS_CODE_BYTE_COUNT 6
-static const int CONFIG_COUNT = 17; // Number of key value pairs in config
+static const int CONFIG_COUNT = 18; // Number of key value pairs in config
 
 /*  The following enum has one-to-one mapping with
     otel_monitored_modules[] defined in .c file.
@@ -106,6 +106,7 @@ typedef struct {
     ngx_flag_t  nginxModuleTrustIncomingSpans;
     ngx_array_t  *nginxModuleAttributes;
     ngx_array_t  *nginxModuleIgnorePaths;
+    ngx_str_t nginxModulePropagatorType;
 
 } ngx_http_opentelemetry_loc_conf_t;
 
@@ -158,6 +159,7 @@ static ngx_uint_t otel_getErrorCode(ngx_http_request_t* r);
 static char* ngx_otel_context_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static char* ngx_otel_attributes_set(ngx_conf_t* cf, ngx_command_t*, void* conf);
 static char* ngx_conf_ignore_path_set(ngx_conf_t* cf, ngx_command_t* cmd, void* conf);
+static char* ngx_conf_set_propagator(ngx_conf_t* cf, ngx_command_t* cmd, void* conf) ;
 static void ngx_otel_set_global_context(ngx_http_opentelemetry_loc_conf_t * prev);
 static void ngx_otel_set_attributes(ngx_http_opentelemetry_loc_conf_t * prev, ngx_http_opentelemetry_loc_conf_t * conf);
 static void ngx_conf_merge_ignore_paths(ngx_http_opentelemetry_loc_conf_t * prev, ngx_http_opentelemetry_loc_conf_t * conf);

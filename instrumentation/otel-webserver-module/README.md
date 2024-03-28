@@ -179,6 +179,7 @@ Currently, Nginx Webserver module monitores some fixed set of modules, which get
 |*NginxModuleTrustIncomingSpans*           | ON               | OPTIONAL: Specify if you want to correlate Nginx instrumented traces and spans with incoming requests.|
 |*NginxModuleAttributes*           |                | OPTIONAL: Can be used to pass additionalccustom attributes to the span, nginx variables are also supported. All elements must be separated by a space, and different attribute key value pairs must be separated by a comma( even the comma needs to be separated by space). e.g. ```NginxModuleAttributes     Key1 Value1 , Key2 $request_uri;``` |
 |*NginxModuleIgnorePaths*           |               | OPTIONAL: Request URIs matching the Regex will not be monitored. Multiple space separated Regex can be provided( `'\'` symbol needs to be used carefully, Nginx treats `'\'` as a escape sequence, thus if the Regex sequence contains a `'\'`, it need to be replaced by `'\\'`, likewise if sequence contains `'\\'`, it need to be written as `'\\\\'` e.g. `.*\.html` -> `.*\\.html` ) e.g. ```NginxModuleIgnorePaths               .*\\.html /test_.*;```|
+|*NginxModulePropagatorType*                   | w3c                 | OPTIONAL: Specify the Propagator used by the instrumentation (W3C and B3 propagators available). e.g.```NginxModulePropagatorType                  b3;```|
 
 
 

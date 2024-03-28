@@ -23,6 +23,7 @@
 #include <opentelemetry/nostd/shared_ptr.h>
 #include <opentelemetry/trace/tracer.h>
 #include <opentelemetry/trace/propagation/http_trace_context.h>
+#include <opentelemetry/trace/propagation/b3_propagator.h>
 #include <opentelemetry/context/propagation/text_map_propagator.h>
 #include <opentelemetry/exporters/ostream/span_exporter.h>
 #include <opentelemetry/sdk/trace/processor.h>

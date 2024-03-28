@@ -47,6 +47,7 @@ namespace {
   constexpr const char* ALWAYS_OFF_SAMPLER = "always_off";
   constexpr const char* PARENT_BASED_SAMPLER = "parent";
   constexpr const char* TRACE_ID_RATIO_BASED_SAMPLER = "trace_id_ratio";
+  constexpr const char* PROPAGATOR_TYPE_B3 = "b3";
 }
 
 SdkHelperFactory::SdkHelperFactory(
@@ -96,9 +97,19 @@ SdkHelperFactory::SdkHelperFactory(
         " and LibraryVersion " << libraryVersion);
 
     // Adding trace propagator
-    using MapHttpTraceCtx = opentelemetry::trace::propagation::HttpTraceContext;
-    mPropagators.push_back(
-        std::unique_ptr<MapHttpTraceCtx>(new MapHttpTraceCtx()));
+    auto propagatorType = config->getOtelPropagatorType();
+    LOG4CXX_INFO(mLogger, "Propagator type used to read and export Trace and Span info : " << propagatorType);
+    if(propagatorType == PROPAGATOR_TYPE_B3){
+        mPropagators.push_back(
+            std::unique_ptr<opentelemetry::trace::propagation::B3PropagatorMultiHeader>(
+                new opentelemetry::trace::propagation::B3PropagatorMultiHeader()));
+    }
+    else{
+        mPropagators.push_back(
+            std::unique_ptr<opentelemetry::trace::propagation::HttpTraceContext>(
+                new opentelemetry::trace::propagation::HttpTraceContext()));
+    }
+    
 }
 
 OtelTracer SdkHelperFactory::GetTracer()
