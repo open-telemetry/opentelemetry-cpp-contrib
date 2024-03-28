@@ -162,6 +162,27 @@ otel_ngx_module otel_monitored_modules[] = {
 };
 
 
+static ngx_http_variable_t otel_ngx_variables[] = {
+  {
+    ngx_string("opentelemetry_trace_id"),
+    NULL,
+    ngx_opentelemetry_initialise_nginx_variables,
+    0,
+    NGX_HTTP_VAR_NOCACHEABLE | NGX_HTTP_VAR_CHANGEABLE,
+    0,
+  },
+  {
+    ngx_string("opentelemetry_span_id"),
+    NULL,
+    ngx_opentelemetry_initialise_nginx_variables,
+    0,
+    NGX_HTTP_VAR_NOCACHEABLE | NGX_HTTP_VAR_CHANGEABLE,
+    0,
+  },
+  ngx_null_command
+};
+
+
 /*
 	Here's the list of directives specific to our module, and information about where they
 	may appear and how the command parser should process them.
@@ -544,18 +565,47 @@ static char* ngx_http_opentelemetry_merge_loc_conf(ngx_conf_t *cf, void *parent,
 	-------------------------------------------------------------------------------------------------
  */
 static ngx_int_t ngx_http_opentelemetry_create_variables(ngx_conf_t *cf){
-    ngx_http_variable_t *var;
-    ngx_str_t name = ngx_string("ngx_trace_id");
+    for (ngx_http_variable_t* v = otel_ngx_variables; v->name.len; v++) {
+        ngx_http_variable_t* var = ngx_http_add_variable(cf, &v->name, v->flags);
 
-    var = ngx_http_add_variable(cf, &name, NGX_HTTP_VAR_CHANGEABLE | NGX_HTTP_VAR_NOCACHEABLE);
-    if (var == NULL) {
-        return NGX_ERROR;
+        if (var == NULL) {
+            return NGX_ERROR;
+        }
+
+        var->get_handler = v->get_handler;
+        var->set_handler = v->set_handler;
+        var->data = v->data;
+        v->index = var->index = ngx_http_get_variable_index(cf, &v->name);
     }
 
-    var->get_handler = ngx_http_my_variable_handler;
-    var->set_handler = ngx_http_my_variable_set_handler;
-    var->data = 0;
+    return NGX_OK;
+}
+//     ngx_http_variable_t *var;
+//     ngx_str_t name = ngx_string("ngx_trace_id");
 
+//     var = ngx_http_add_variable(cf, &name, NGX_HTTP_VAR_CHANGEABLE | NGX_HTTP_VAR_NOCACHEABLE);
+//     if (var == NULL) {
+//         return NGX_ERROR;
+//     }
+
+//     var->get_handler = ngx_http_my_variable_get_handler;
+//     // var->set_handler = ngx_http_my_variable_set_handler;
+//     var->data = 0;
+
+//     ngx_int_t ngx_http_my_variable_index = ngx_http_get_variable_index(cf, &name);
+//     if (ngx_http_my_variable_index == NGX_ERROR) {
+//         return NGX_ERROR;
+//     }
+
+//     return NGX_OK;
+// }
+
+ngx_int_t ngx_opentelemetry_initialise_nginx_variables(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data) {
+    v->data = (u_char *) "bulb";
+    v->len = sizeof("bulb") - 1;
+    v->valid = 1;
+    v->no_cacheable = 0;
+    v->not_found = 0;
     return NGX_OK;
 }
 
@@ -1437,6 +1487,18 @@ static ngx_int_t ngx_http_otel_limit_conn_handler(ngx_http_request_t *r){
 
 static ngx_int_t ngx_http_otel_limit_req_handler(ngx_http_request_t *r){
     otel_startInteraction(r, "ngx_http_limit_req_module");
+
+    // ngx_http_variable_value_t *v = ngx_http_get_indexed_variable(r, 1);
+    // if (v == NULL || v->not_found) {
+    //     // Handle the case where the variable is not found or not set
+    // } else {
+    //     v->len = 11;
+    //     v->valid = 1;
+    //     v->no_cacheable = 0;
+    //     v->not_found = 0;
+    //     v->data = "moshi moshi";
+    // }
+    
     ngx_int_t rvalue = h[NGX_HTTP_LIMIT_REQ_MODULE_INDEX](r);
     otel_stopInteraction(r, "ngx_http_limit_req_module", OTEL_SDK_NO_HANDLE);
 

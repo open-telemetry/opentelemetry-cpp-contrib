@@ -195,3 +195,5 @@ static char* computeContextName(ngx_http_request_t *r, ngx_http_opentelemetry_lo
 // static ngx_int_t ngx_http_opentelemetry_header_filter(ngx_http_request_t *r);
 // static ngx_int_t ngx_http_opentelemetry_body_filter(ngx_http_request_t *r, ngx_chain_t *in);
 
+static ngx_int_t ngx_http_opentelemetry_create_variables(ngx_conf_t *cf);
+ngx_int_t ngx_opentelemetry_initialise_nginx_variables(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data);
