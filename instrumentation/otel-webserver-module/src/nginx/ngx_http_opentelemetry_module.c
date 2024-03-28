@@ -401,7 +401,7 @@ static ngx_command_t ngx_http_opentelemetry_commands[] = {
     
     { ngx_string("NginxModulePropagatorType"),
       NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
-      ngx_conf_set_str_slot,
+      ngx_conf_set_propagator,
       NGX_HTTP_LOC_CONF_OFFSET,
       offsetof(ngx_http_opentelemetry_loc_conf_t, nginxModulePropagatorType),
       NULL},
@@ -731,6 +731,24 @@ static char* ngx_otel_attributes_set(ngx_conf_t* cf, ngx_command_t* cmd, void* c
 
 }
 
+static char* ngx_conf_set_propagator(ngx_conf_t* cf, ngx_command_t* cmd, void* conf) {
+    ngx_http_opentelemetry_loc_conf_t * my_conf=(ngx_http_opentelemetry_loc_conf_t *)conf;
+
+    ngx_str_t *value = cf->args->elts;
+    ngx_str_t elt;
+    if( !strcmp(value[1].data, "b3") || !strcmp(value[1].data, "B3") ){
+        elt.data = (u_char *)"b3";
+        elt.len = sizeof("b3") - 1;
+        my_conf->nginxModulePropagatorType = elt;
+    }
+    else{
+        elt.data = (u_char *)"w3c";
+        elt.len = sizeof("w3c") - 1;
+        my_conf->nginxModulePropagatorType = elt;
+    }
+    return NGX_CONF_OK;
+
+}
 static char* ngx_conf_ignore_path_set(ngx_conf_t* cf, ngx_command_t* cmd, void* conf) {
     ngx_http_opentelemetry_loc_conf_t * my_conf=(ngx_http_opentelemetry_loc_conf_t *)conf;
 

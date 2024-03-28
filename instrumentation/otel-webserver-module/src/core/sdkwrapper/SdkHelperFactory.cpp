@@ -97,7 +97,9 @@ SdkHelperFactory::SdkHelperFactory(
         " and LibraryVersion " << libraryVersion);
 
     // Adding trace propagator
-    if(config->getOtelPropagatorType() == PROPAGATOR_TYPE_B3){
+    auto propagatorType = config->getOtelPropagatorType();
+    LOG4CXX_INFO(mLogger, "Propagator type used to read and export Trace and Span info : " << propagatorType);
+    if(propagatorType == PROPAGATOR_TYPE_B3){
         mPropagators.push_back(
             std::unique_ptr<opentelemetry::trace::propagation::B3PropagatorMultiHeader>(
                 new opentelemetry::trace::propagation::B3PropagatorMultiHeader()));
