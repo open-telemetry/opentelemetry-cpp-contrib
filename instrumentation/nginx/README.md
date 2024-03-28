@@ -20,12 +20,12 @@ Additional platforms and/or versions coming soon.
 
 ## Dependencies (for building)
 
-1. [gRPC](https://github.com/grpc/grpc) - currently the only supported exporter is OTLP. This requirement will be lifted
+1. [gRPC](https://github.com/grpc/grpc) - currently the only supported exporter is OTLP_GRPC. This requirement will be lifted
    once more exporters become available.
 2. [opentelemetry-cpp](https://github.com/open-telemetry/opentelemetry-cpp) - opentelemetry-cpp needs to be built with
-   position independent code and OTLP support, e.g.:
+   position independent code and OTLP_GRPC support, e.g.:
 ```
-cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DWITH_OTLP=ON ..
+cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DWITH_OTLP_GRPC=ON ..
 ```
 
 ## Building
