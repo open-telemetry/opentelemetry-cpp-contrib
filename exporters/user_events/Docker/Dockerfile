@@ -43,7 +43,7 @@ RUN cd /work && \
     ninja install
 
 RUN cd /work && \
-    git clone --recursive --depth=1 -b fix_cpp_std https://github.com/open-telemetry/opentelemetry-cpp-contrib
+    git clone --recursive --depth=1 -b fix_cpp_std https://github.com/ThomsonTan/opentelemetry-cpp-contrib
 
 RUN cd /work && \
     cd opentelemetry-cpp-contrib/exporters/user_events && \
