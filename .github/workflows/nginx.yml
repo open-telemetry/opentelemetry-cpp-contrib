@@ -70,10 +70,22 @@ jobs:
           rm -rf /tmp/buildx-cache/nginx
           mv /tmp/buildx-cache/express-new /tmp/buildx-cache/express
           mv /tmp/buildx-cache/nginx-new /tmp/buildx-cache/nginx
-      - name: run tests
+      #- name: run tests
+      #  run: |
+      #    cd instrumentation/nginx/test/instrumentation
+      #    mix test
+      - name: Setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+      - name: Install dependencies
         run: |
           cd instrumentation/nginx/test/instrumentation
-          mix test
+          npm install
+      - name: Run tests
+        run: |
+          cd instrumentation/nginx/test/instrumentation
+          npm run test
       - name: copy artifacts
         id: artifacts
         run: |

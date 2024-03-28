@@ -23,7 +23,11 @@ struct TraceContext {
   TraceContext(ngx_http_request_t* req) : request(req), traceHeader{} {}
   /* The current request being handled by nginx. */
   ngx_http_request_t* request;
+  /* Span used to record incoming requests */
   opentelemetry::nostd::shared_ptr<opentelemetry::trace::Span> request_span;
+  /* Span used to record internal processing. This span could be internal or client
+   * depending if nginx handles request locally or calls upstream */
+  opentelemetry::nostd::shared_ptr<opentelemetry::trace::Span> inner_span;
   /* Headers to be injected for the upstream request. */
   TraceHeader traceHeader[2];
 };

@@ -193,7 +193,7 @@ defmodule Mix.Tasks.Dockerfiles do
         -DCMAKE_PREFIX_PATH=/install \\
         -DWITH_OTLP=ON \\
         -DWITH_OTLP_GRPC=ON \\
-        -DWITH_OTLP_HTTP=OFF \\
+        -DWITH_OTLP_HTTP=ON \\
         -DBUILD_TESTING=OFF \\
         -DWITH_EXAMPLES=OFF \\
         -DCMAKE_CXX_STANDARD=17 \\
