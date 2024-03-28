@@ -105,7 +105,7 @@ if(OPENTELEMETRY_INSTALL)
     PATTERN "*.h")
 endif()
 
-if(BUILD_EXAMPLES)
+if(WITH_EXAMPLES)
   add_executable(example_metrics example/example_metrics.cc
                                  example/foo_library.cc)
   target_link_libraries(example_metrics opentelemetry_exporter_geneva_metrics)

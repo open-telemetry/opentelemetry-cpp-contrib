@@ -7,7 +7,7 @@ if(WIN32)
   message(FATAL_ERROR "user_events exporter is Linux only for now")
 endif()
 
-option(BUILD_EXAMPLES "Build example" ON)
+option(WITH_EXAMPLES "Build example" ON)
 option(BUILD_TESTING "Build tests" ON)
 option(BUILD_TRACEPOINTS "Build tracepoints library" ON)
 
@@ -75,7 +75,7 @@ else()
            opentelemetry_otlp_recordable tracepoint)
 endif()
 
-if(BUILD_EXAMPLES)
+if(WITH_EXAMPLES)
   add_executable(user_events_logs example/logs/main.cc
                                   example/logs/foo_library.cc)
   target_link_libraries(user_events_logs ${CMAKE_THREAD_LIBS_INIT}
