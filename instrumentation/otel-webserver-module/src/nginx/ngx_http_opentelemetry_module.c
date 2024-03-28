@@ -600,6 +600,17 @@ static ngx_int_t ngx_http_opentelemetry_create_variables(ngx_conf_t *cf){
 //     return NGX_OK;
 // }
 
+// ngx_http_variable_value_t *v = ngx_http_get_indexed_variable(r, 1);
+    // if (v == NULL || v->not_found) {
+    //     // Handle the case where the variable is not found or not set
+    // } else {
+    //     v->len = 11;
+    //     v->valid = 1;
+    //     v->no_cacheable = 0;
+    //     v->not_found = 0;
+    //     v->data = "moshi moshi";
+    // }
+
 ngx_int_t ngx_opentelemetry_initialise_nginx_variables(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data) {
     v->data = (u_char *) "bulb";
     v->len = sizeof("bulb") - 1;
@@ -910,6 +921,7 @@ static OTEL_SDK_STATUS_CODE otel_startInteraction(ngx_http_request_t* r, const c
         {
             removeUnwantedHeader(r);
             otel_payload_decorator(r, propagationHeaders, ix);
+            otel_variables_decorator(r);
             ngx_writeTrace(r->connection->log, __func__, "Interaction begin successful");
         }
         else
@@ -927,6 +939,12 @@ static OTEL_SDK_STATUS_CODE otel_startInteraction(ngx_http_request_t* r, const c
     return res;
 }
 
+static void otel_variables_decorator(ngx_http_request_t* r){
+    ngx_str_t trace_id, span_id, tracing_context;
+    ngx_http_opentelemetry_loc_conf_t *conf = ngx_http_get_module_loc_conf(r, ngx_http_opentelemetry_module);
+    auto propagator_type = conf->nginxModulePropagatorType;
+
+}
 static void otel_payload_decorator(ngx_http_request_t* r, OTEL_SDK_ENV_RECORD* propagationHeaders, int count)
 {
    ngx_list_part_t  *part;
@@ -1487,18 +1505,6 @@ static ngx_int_t ngx_http_otel_limit_conn_handler(ngx_http_request_t *r){
 
 static ngx_int_t ngx_http_otel_limit_req_handler(ngx_http_request_t *r){
     otel_startInteraction(r, "ngx_http_limit_req_module");
-
-    // ngx_http_variable_value_t *v = ngx_http_get_indexed_variable(r, 1);
-    // if (v == NULL || v->not_found) {
-    //     // Handle the case where the variable is not found or not set
-    // } else {
-    //     v->len = 11;
-    //     v->valid = 1;
-    //     v->no_cacheable = 0;
-    //     v->not_found = 0;
-    //     v->data = "moshi moshi";
-    // }
-    
     ngx_int_t rvalue = h[NGX_HTTP_LIMIT_REQ_MODULE_INDEX](r);
     otel_stopInteraction(r, "ngx_http_limit_req_module", OTEL_SDK_NO_HANDLE);
 
