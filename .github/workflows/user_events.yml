@@ -1,0 +1,55 @@
+name: user_events 
+
+on:
+  push:
+    branches:
+      - '*'
+    path:
+      - 'exporters/user_events/**'
+      - '.github/workflows/user_events.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'exporters/user_events/**'
+      - '.github/workflows/user_events.yml'
+
+jobs:
+  cmake_linux:
+    name: CMake Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout opentelemetry-cpp-contrib
+        uses: actions/checkout@v3
+        with:
+          path: opentelemetry-cpp-contrib
+          submodules: "recursive"
+      - name: checkout opentelemetry-cpp
+        uses: actions/checkout@v3
+        with:
+          repository: "open-telemetry/opentelemetry-cpp"
+          ref: "v1.14.2"
+          path: "opentelemetry-cpp"
+          submodules: "recursive"
+      - name: setup dependencies
+        run: |
+          sudo apt update -y
+          sudo apt install -y --no-install-recommends --no-install-suggests \
+            build-essential \
+            cmake \
+            ninja-build \
+            libssl-dev \
+            libcurl4-openssl-dev \
+            libprotobuf-dev \
+            protobuf-compiler \
+            libgmock-dev \
+            libgtest-dev \
+            libbenchmark-dev
+
+      - name: run tests
+        run: |
+          sudo $GITHUB_WORKSPACE/opentelemetry-cpp/ci/setup_cmake.sh
+          mkdir -p "$GITHUB_WORKSPACE/opentelemetry-cpp/build"
+          cd "$GITHUB_WORKSPACE/opentelemetry-cpp/build"
+          cmake .. -G Ninja -D OPENTELEMETRY_EXTERNAL_COMPONENT_PATH=$GITHUB_WORKSPACE/opentelemetry-cpp-contrib/exporters/user_events -D WITH_OTLP_HTTP=ON
+          cmake --build . -j$(nproc)
+          ctest -j1 --output-on-failure
