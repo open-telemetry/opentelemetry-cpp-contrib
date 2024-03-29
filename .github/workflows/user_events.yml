@@ -52,4 +52,4 @@ jobs:
           cd "$GITHUB_WORKSPACE/opentelemetry-cpp/build"
           cmake .. -G Ninja -D OPENTELEMETRY_EXTERNAL_COMPONENT_PATH=$GITHUB_WORKSPACE/opentelemetry-cpp-contrib/exporters/user_events -D WITH_OTLP_HTTP=ON
           cmake --build . -j$(nproc)
-          ctest -j$(nproc) --output-on-failure
+          ctest -j1 --output-on-failure
