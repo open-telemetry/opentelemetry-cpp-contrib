@@ -28,4 +28,6 @@ TEST(UserEventsLogRecordExporter, Shutdown)
   std::cout.rdbuf(output.rdbuf());
 
   EXPECT_TRUE(exporter->Shutdown());
+
+  std::cout.rdbuf(original);
 }
