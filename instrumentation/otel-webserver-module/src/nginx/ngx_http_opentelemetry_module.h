@@ -164,6 +164,7 @@ static void ngx_otel_set_global_context(ngx_http_opentelemetry_loc_conf_t * prev
 static void ngx_otel_set_attributes(ngx_http_opentelemetry_loc_conf_t * prev, ngx_http_opentelemetry_loc_conf_t * conf);
 static void ngx_conf_merge_ignore_paths(ngx_http_opentelemetry_loc_conf_t * prev, ngx_http_opentelemetry_loc_conf_t * conf);
 static void removeUnwantedHeader(ngx_http_request_t* r);
+static void otel_variables_decorator(ngx_http_request_t* r);
 /*
     Module specific handler
 */
@@ -198,4 +199,7 @@ static char* computeContextName(ngx_http_request_t *r, ngx_http_opentelemetry_lo
 // static ngx_int_t ngx_http_opentelemetry_body_filter(ngx_http_request_t *r, ngx_chain_t *in);
 
 static ngx_int_t ngx_http_opentelemetry_create_variables(ngx_conf_t *cf);
-ngx_int_t ngx_opentelemetry_initialise_nginx_variables(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data);
+ngx_int_t ngx_opentelemetry_initialise_trace_id(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data);
+ngx_int_t ngx_opentelemetry_initialise_span_id(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data);
+ngx_int_t ngx_opentelemetry_initialise_context_traceparent(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data);
+ngx_int_t ngx_opentelemetry_initialise_context_b3(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data);

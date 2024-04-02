@@ -166,7 +166,7 @@ static ngx_http_variable_t otel_ngx_variables[] = {
   {
     ngx_string("opentelemetry_trace_id"),
     NULL,
-    ngx_opentelemetry_initialise_nginx_variables,
+    ngx_opentelemetry_initialise_trace_id,
     0,
     NGX_HTTP_VAR_NOCACHEABLE | NGX_HTTP_VAR_CHANGEABLE,
     0,
@@ -174,11 +174,28 @@ static ngx_http_variable_t otel_ngx_variables[] = {
   {
     ngx_string("opentelemetry_span_id"),
     NULL,
-    ngx_opentelemetry_initialise_nginx_variables,
+    ngx_opentelemetry_initialise_span_id,
     0,
     NGX_HTTP_VAR_NOCACHEABLE | NGX_HTTP_VAR_CHANGEABLE,
     0,
   },
+  {
+    ngx_string("opentelemetry_context_traceparent"),
+    NULL,
+    ngx_opentelemetry_initialise_context_traceparent,
+    0,
+    NGX_HTTP_VAR_NOCACHEABLE | NGX_HTTP_VAR_CHANGEABLE,
+    0,
+  },
+  {
+    ngx_string("opentelemetry_context_b3"),
+    NULL,
+    ngx_opentelemetry_initialise_context_b3,
+    0,
+    NGX_HTTP_VAR_NOCACHEABLE | NGX_HTTP_VAR_CHANGEABLE,
+    0,
+  },
+  
   ngx_null_command
 };
 
@@ -589,43 +606,221 @@ static ngx_int_t ngx_http_opentelemetry_create_variables(ngx_conf_t *cf){
 
     return NGX_OK;
 }
-//     ngx_http_variable_t *var;
-//     ngx_str_t name = ngx_string("ngx_trace_id");
 
-//     var = ngx_http_add_variable(cf, &name, NGX_HTTP_VAR_CHANGEABLE | NGX_HTTP_VAR_NOCACHEABLE);
-//     if (var == NULL) {
-//         return NGX_ERROR;
-//     }
+ngx_int_t ngx_opentelemetry_initialise_trace_id(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data) {
+    
+    ngx_str_t trace_id;
+    ngx_list_part_t  *part;
+    ngx_table_elt_t  *header;
+    ngx_table_elt_t  *h;
+    ngx_uint_t       nelts;
 
-//     var->get_handler = ngx_http_my_variable_get_handler;
-//     // var->set_handler = ngx_http_my_variable_set_handler;
-//     var->data = 0;
+    ngx_http_opentelemetry_loc_conf_t *conf = ngx_http_get_module_loc_conf(r, ngx_http_opentelemetry_module);
+    ngx_str_t propagator_type = conf->nginxModulePropagatorType;
+    part = &r->headers_in.headers.part;
+    header = (ngx_table_elt_t*)part->elts;
+    nelts = part->nelts;
+    
+    int is_found = 0;
+    if(!strcmp(propagator_type.data, "b3")){
+        for(ngx_uint_t j = 0; j<nelts; j++){
+            h = &header[j];
+            if(strcasecmp("x-b3-traceid", h->key.data)==0){
+                is_found = 1;
+                trace_id.data = h->value.data;
+                trace_id.len = h->value.len;
+            }
+        }
+    }
+    else{
+        for(ngx_uint_t j = 0; j<nelts; j++){
+            h = &header[j];
+            if(strcasecmp("traceparent", h->key.data)==0){
+                is_found = 1;
+                u_char *temp_trace_id = ngx_pnalloc(r->pool, 33);
+                ngx_memcpy(temp_trace_id, h->value.data + 3, 32);
+                temp_trace_id[32] = '\0';
+                trace_id.data = temp_trace_id;
+                trace_id.len = 32;
+            }
+        }
+    }
+    if(is_found){
+        v->len = trace_id.len;
+        v->data = trace_id.data;
+        v->valid = 1;
+        v->no_cacheable = 0;
+        v->not_found = 0;
+    }else{
+        v->len = 0;
+        v->data = "";
+        v->valid = 1;
+        v->no_cacheable = 0;
+        v->not_found = 0;
+     
+    }
+    return NGX_OK;
+}
 
-//     ngx_int_t ngx_http_my_variable_index = ngx_http_get_variable_index(cf, &name);
-//     if (ngx_http_my_variable_index == NGX_ERROR) {
-//         return NGX_ERROR;
-//     }
+ngx_int_t ngx_opentelemetry_initialise_span_id(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data) {
+    
+    ngx_str_t span_id;
+    ngx_list_part_t  *part;
+    ngx_table_elt_t  *header;
+    ngx_table_elt_t  *h;
+    ngx_uint_t       nelts;
 
-//     return NGX_OK;
-// }
+    ngx_http_opentelemetry_loc_conf_t *conf = ngx_http_get_module_loc_conf(r, ngx_http_opentelemetry_module);
+    ngx_str_t propagator_type = conf->nginxModulePropagatorType;
+    part = &r->headers_in.headers.part;
+    header = (ngx_table_elt_t*)part->elts;
+    nelts = part->nelts;
+    
+    int is_found = 0;
+    if(!strcmp(propagator_type.data, "b3")){
+        for(ngx_uint_t j = 0; j<nelts; j++){
+            h = &header[j];
+            if(strcasecmp("x-b3-spanid", h->key.data)==0){
+                is_found = 1;
+                span_id.data = h->value.data;
+                span_id.len = h->value.len;
+            }
+        }
+    }
+    else{
+        for(ngx_uint_t j = 0; j<nelts; j++){
+            h = &header[j];
+            if(strcasecmp("traceparent", h->key.data)==0){
+                is_found = 1;
+                u_char *temp_span_id = ngx_pnalloc(r->pool, 17);
+                ngx_memcpy(temp_span_id, h->value.data + 36, 16);
+                temp_span_id[16] = '\0';
+                span_id.data = temp_span_id;
+                span_id.len = 16;
+            }
+        }
+    }
+    if(is_found){
+        v->len = span_id.len;
+        v->data = span_id.data;
+        v->valid = 1;
+        v->no_cacheable = 0;
+        v->not_found = 0;
+    }else{
+        v->len = 0;
+        v->data = "";
+        v->valid = 1;
+        v->no_cacheable = 0;
+        v->not_found = 0;
+    }
+    return NGX_OK;
+    
+}
 
-// ngx_http_variable_value_t *v = ngx_http_get_indexed_variable(r, 1);
-    // if (v == NULL || v->not_found) {
-    //     // Handle the case where the variable is not found or not set
-    // } else {
-    //     v->len = 11;
-    //     v->valid = 1;
-    //     v->no_cacheable = 0;
-    //     v->not_found = 0;
-    //     v->data = "moshi moshi";
-    // }
+ngx_int_t ngx_opentelemetry_initialise_context_traceparent(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data) {
+    
+    ngx_str_t context_traceparent;
+    ngx_list_part_t  *part;
+    ngx_table_elt_t  *header;
+    ngx_table_elt_t  *h;
+    ngx_uint_t       nelts;
 
-ngx_int_t ngx_opentelemetry_initialise_nginx_variables(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data) {
-    v->data = (u_char *) "bulb";
-    v->len = sizeof("bulb") - 1;
-    v->valid = 1;
-    v->no_cacheable = 0;
-    v->not_found = 0;
+    ngx_http_opentelemetry_loc_conf_t *conf = ngx_http_get_module_loc_conf(r, ngx_http_opentelemetry_module);
+    ngx_str_t propagator_type = conf->nginxModulePropagatorType;
+    part = &r->headers_in.headers.part;
+    header = (ngx_table_elt_t*)part->elts;
+    nelts = part->nelts;
+    int is_found = 0;
+    if(strcmp(propagator_type.data, "b3")){
+        for(ngx_uint_t j = 0; j<nelts; j++){
+            h = &header[j];
+            if(strcasecmp("traceparent", h->key.data)==0){
+                is_found = 1;
+                context_traceparent.data = h->value.data;
+                context_traceparent.len = h->value.len;
+            }
+        }
+    }
+    if(is_found){
+        v->len = context_traceparent.len;
+        v->data = context_traceparent.data;
+        v->valid = 1;
+        v->no_cacheable = 0;
+        v->not_found = 0;
+    }
+    else{
+        v->len = 0;
+        v->data = "";
+        v->valid = 1;
+        v->no_cacheable = 0;
+        v->not_found = 0;
+    }
+    
+    return NGX_OK;
+}
+
+ngx_int_t ngx_opentelemetry_initialise_context_b3(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data) {
+    ngx_str_t trace_id, span_id, sampled;
+    ngx_list_part_t  *part;
+    ngx_table_elt_t  *header;
+    ngx_table_elt_t  *h;
+    ngx_uint_t       nelts;
+
+    ngx_http_opentelemetry_loc_conf_t *conf = ngx_http_get_module_loc_conf(r, ngx_http_opentelemetry_module);
+    ngx_str_t propagator_type = conf->nginxModulePropagatorType;
+    part = &r->headers_in.headers.part;
+    header = (ngx_table_elt_t*)part->elts;
+    nelts = part->nelts;
+    int is_found = 0;
+    if(!strcmp(propagator_type.data, "b3")){
+        for(ngx_uint_t j = 0; j<nelts; j++){
+            h = &header[j];
+            if(strcasecmp("x-b3-traceid", h->key.data)==0){
+                is_found += 4;
+                trace_id.data = h->value.data;
+                trace_id.len = h->value.len;
+            }else if(strcasecmp("x-b3-spanid", h->key.data)==0){
+                is_found += 2;
+                span_id.data = h->value.data;
+                span_id.len = h->value.len;
+            }else if(strcasecmp("x-b3-sampled", h->key.data)==0){
+                is_found += 1;
+                sampled.data = h->value.data;
+                sampled.len = h->value.len;
+            }
+        }
+    }
+    if(is_found >= 6){
+
+        size_t total_length = 50;
+        ngx_str_t result;
+        if(is_found & 1){
+            total_length+=2;
+        }
+        result.data = ngx_pcalloc(r->pool, total_length+1);
+        u_char *p = result.data;
+        p = ngx_copy(p, trace_id.data, trace_id.len);
+        p = ngx_copy(p, "-", 1);
+        p = ngx_copy(p, span_id.data, span_id.len);
+        if(is_found & 1){ 
+            p = ngx_copy(p, "-", 1);
+            p = ngx_copy(p, sampled.data, sampled.len); 
+        }
+        result.len = total_length;
+
+        v->len = result.len;
+        v->data = result.data;
+        v->valid = 1;
+        v->no_cacheable = 0;
+        v->not_found = 0;
+    }
+    else{
+        v->len = 0;
+        v->data = "";
+        v->valid = 1;
+        v->no_cacheable = 0;
+        v->not_found = 0;
+    }   
     return NGX_OK;
 }
 
@@ -948,7 +1143,7 @@ static OTEL_SDK_STATUS_CODE otel_startInteraction(ngx_http_request_t* r, const c
         {
             removeUnwantedHeader(r);
             otel_payload_decorator(r, propagationHeaders, ix);
-            otel_variables_decorator(r);
+            // otel_variables_decorator(r);
             ngx_writeTrace(r->connection->log, __func__, "Interaction begin successful");
         }
         else
@@ -968,8 +1163,59 @@ static OTEL_SDK_STATUS_CODE otel_startInteraction(ngx_http_request_t* r, const c
 
 static void otel_variables_decorator(ngx_http_request_t* r){
     ngx_str_t trace_id, span_id, tracing_context;
+    ngx_list_part_t  *part;
+    ngx_table_elt_t  *header;
+    ngx_table_elt_t  *h;
+    ngx_uint_t       nelts;
+
     ngx_http_opentelemetry_loc_conf_t *conf = ngx_http_get_module_loc_conf(r, ngx_http_opentelemetry_module);
-    auto propagator_type = conf->nginxModulePropagatorType;
+    ngx_str_t propagator_type = conf->nginxModulePropagatorType;
+
+    part = &r->headers_in.headers.part;
+    header = (ngx_table_elt_t*)part->elts;
+    nelts = part->nelts;
+    
+    if(!strcmp(propagator_type.data, "b3")){
+        for(ngx_uint_t j = 0; j<nelts; j++){
+            h = &header[j];
+            if(strcasecmp("x-b3-traceid", h->key.data)==0){
+                trace_id.data = h->value.data;
+                trace_id.len = h->value.len;
+            }else if(strcasecmp("x-b3-spanid", h->key.data)==0){
+                span_id.data = h->value.data;
+                span_id.len = h->value.len;
+            }
+        }
+    }
+    else{
+        for(ngx_uint_t j = 0; j<nelts; j++){
+            h = &header[j];
+            if(strcasecmp("traceparent", h->key.data)==0){
+                trace_id.data = h->value.data;
+                trace_id.len = h->value.len;
+                span_id.data = h->value.data;
+                span_id.len = h->value.len;
+            }
+        }
+    }
+    ngx_uint_t key = ngx_hash_key(otel_ngx_variables[0].name.data, otel_ngx_variables[0].name.len);
+    ngx_http_variable_value_t* val;
+    val = ngx_http_get_variable(r, &(otel_ngx_variables[0].name), key);
+    // ngx_http_variable_value_t* val = ngx_http_get_indexed_variable(r, otel_ngx_variables[0].index);
+    if (val == NULL || val->not_found) {
+    } else {
+        val->len = trace_id.len;
+        val->data = trace_id.data;
+    }
+
+    key = ngx_hash_key(otel_ngx_variables[0].name.data, otel_ngx_variables[0].name.len);
+    val = ngx_http_get_variable(r, &(otel_ngx_variables[0].name), key);
+    // val = ngx_http_get_indexed_variable(r, otel_ngx_variables[1].index);
+    if (val == NULL || val->not_found) {
+    } else {
+        val->len = span_id.len;
+        val->data = span_id.data;
+    }
 
 }
 static void otel_payload_decorator(ngx_http_request_t* r, OTEL_SDK_ENV_RECORD* propagationHeaders, int count)
