@@ -593,17 +593,14 @@ static char* ngx_http_opentelemetry_merge_loc_conf(ngx_conf_t *cf, void *parent,
 static ngx_int_t ngx_http_opentelemetry_create_variables(ngx_conf_t *cf){
     for (ngx_http_variable_t* v = otel_ngx_variables; v->name.len; v++) {
         ngx_http_variable_t* var = ngx_http_add_variable(cf, &v->name, v->flags);
-
         if (var == NULL) {
             return NGX_ERROR;
         }
-
         var->get_handler = v->get_handler;
         var->set_handler = v->set_handler;
         var->data = v->data;
         v->index = var->index = ngx_http_get_variable_index(cf, &v->name);
     }
-
     return NGX_OK;
 }
 
@@ -657,7 +654,6 @@ ngx_int_t ngx_opentelemetry_initialise_trace_id(ngx_http_request_t *r, ngx_http_
         v->valid = 1;
         v->no_cacheable = 0;
         v->not_found = 0;
-     
     }
     return NGX_OK;
 }
@@ -791,7 +787,6 @@ ngx_int_t ngx_opentelemetry_initialise_context_b3(ngx_http_request_t *r, ngx_htt
         }
     }
     if(is_found >= 6){
-
         size_t total_length = 50;
         ngx_str_t result;
         if(is_found & 1){
