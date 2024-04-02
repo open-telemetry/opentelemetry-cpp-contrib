@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.12)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+if (MAIN_PROJECT)
+  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+endif()
 
 if(WIN32)
   message(FATAL_ERROR "user_events exporter is Linux only for now")

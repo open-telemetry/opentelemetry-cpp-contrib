@@ -38,7 +38,7 @@ RUN cd /work && \
     git clone --recursive --depth=1 https://github.com/open-telemetry/opentelemetry-cpp.git && \
     cd opentelemetry-cpp && \
     mkdir build && cd build && \
-    cmake -G Ninja -D CMAKE_BUILD_TYPE=Debug -D BUILD_TESTING=0 -D WITH_OTLP_HTTP=1 -D WITH_OTLP_GRPC=0 -D WITH_LOGS_PREVIEW=1 .. && \
+    cmake -G Ninja -D CMAKE_BUILD_TYPE=Debug -D BUILD_TESTING=0 -D WITH_OTLP_HTTP=1 -D WITH_OTLP_GRPC=0 -D WITH_STL=CXX17 .. && \
     ninja && \
     ninja install
 
