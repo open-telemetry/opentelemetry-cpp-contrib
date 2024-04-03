@@ -43,6 +43,6 @@ jobs:
           mkdir -p "$GITHUB_WORKSPACE/otel_cpp_contrib/exporters/geneva/build"
           cd "$GITHUB_WORKSPACE/otel_cpp_contrib/exporters/geneva/build"
           cmake .. "-DCMAKE_PREFIX_PATH=$HOME/prebuilt-otel" \
-            -DBUILD_TESTING=ON -DBUILD_EXAMPLE=ON
+            -DBUILD_TESTING=ON -DWITH_EXAMPLES=ON
           cmake --build . -j$(nproc)
           ctest
