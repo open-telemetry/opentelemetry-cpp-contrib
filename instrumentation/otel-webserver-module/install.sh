@@ -1,3 +1,6 @@
+#!/bin/sh
+set -e
+
 cd /otel-webserver-module
 ./gradlew assembleApacheModule -PbuildType=debug
 

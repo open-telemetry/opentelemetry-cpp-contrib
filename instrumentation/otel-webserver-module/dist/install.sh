@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 # Install script for WebServer Instrumentation
 
 usage() {
@@ -57,8 +58,8 @@ log() {
 }
 
 log_error() {
-    echo "[Error] $@" >> ${install_log}
-    echo "[Error] $@" >&2
+    echo "[Error] $*" >> ${install_log}
+    echo "[Error] $*" >&2
 }
 
 fatal_error() {

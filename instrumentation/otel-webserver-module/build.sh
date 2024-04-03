@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -e
 
 git clone https://github.com/cisco-open/otel-webserver-module.git
 cp -r /dependencies /otel-webserver-module/ 

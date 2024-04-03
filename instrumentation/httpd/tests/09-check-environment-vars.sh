@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 TEST_NAME="Check that tracestate and traceparent are available as variables"
 
@@ -41,4 +42,4 @@ teardown_test() {
    rm -rf ${OUTPUT_SPANS} ${EXTRA_LOG_FILE}
 }
 
-run $@
+run "$@"

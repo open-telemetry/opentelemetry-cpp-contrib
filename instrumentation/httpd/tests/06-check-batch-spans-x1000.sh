@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 TEST_NAME="Check that 1000 requests creates 1000 spans with batch processing"
 
@@ -25,4 +26,4 @@ check_results() {
    count '{' ${TOTAL_SPANS} # span count is good
 }
 
-run $@
+run "$@"

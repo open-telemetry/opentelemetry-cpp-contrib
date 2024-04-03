@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 TEST_NAME="Check that outbound span is created when forwarding request with mod_proxy (b3 single line header)"
 
@@ -74,4 +75,4 @@ check_results() {
    grep "span_id       :${PROXY_SPAN_ID}" ${OUTPUT_SPANS} || fail "Outbound propagation failed - it has not set proper parent span"
 }
 
-run $@
+run "$@"

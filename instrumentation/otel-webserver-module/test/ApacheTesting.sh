@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Bash script for running Apache Server
 

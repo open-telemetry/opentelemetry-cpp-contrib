@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -10,8 +11,6 @@ ln -fs ${SCRIPT_DIR}/opentelemetry.load ${APACHE_ALL_MODULES_DIR}
 ln -fs ${SCRIPT_DIR}/opentelemetry.conf ${APACHE_ALL_MODULES_DIR}
 
 a2enmod opentelemetry
-
-exit $?
 
 # TODO: fixme when in docker image FROM httpd
 # HTTPD_DIR=/usr/local/apache2/modules/

@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 export PATH="/opt/rh/devtoolset-7/root/usr/bin:/usr/local/sbin:/usr/local/bin:$PATH"
 

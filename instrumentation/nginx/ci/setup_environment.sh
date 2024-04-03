@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 
 export DEBIAN_FRONTEND=noninteractive
 export TZ="Europe/London"

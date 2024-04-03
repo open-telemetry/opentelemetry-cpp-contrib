@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 TEST_NAME="Check that incoming span is accepted (same trace_id and parent_span_id are set)"
 
@@ -35,4 +36,4 @@ check_results() {
    check 'parent_span_id' ${TRACE_PARENT}
 }
 
-run $@
+run "$@"

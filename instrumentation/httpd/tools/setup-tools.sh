@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 BUILDIFIER_VERSION=3.5.0
 
@@ -23,7 +24,7 @@ setup_buildifier () {
 }
 
 setup_all () {
-  while [[ $# > 0 ]] ; do case "$1" in
+  while [[ $# -gt 0 ]] ; do case "$1" in
     code|clang)
       setup_clang
       shift

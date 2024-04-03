@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 TEST_NAME="Check that span is created"
 
@@ -36,4 +37,4 @@ check_results() {
    [[ "`getSpanAttr 'http.scheme'`" == "http" ]] || fail "Bad span attribiute http.scheme ${SPAN_ATTRS[http.scheme]}"
 }
 
-run $@
+run "$@"

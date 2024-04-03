@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 TEST_NAME="Check that OpenTelemetry module can be loaded by httpd (Apache)"
 
@@ -14,4 +15,4 @@ EOF
 
 }
 
-run $@
+run "$@"

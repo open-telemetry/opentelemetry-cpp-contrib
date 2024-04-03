@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 
 #source vars if file exists
 DEFAULT=/etc/default/fluentd
@@ -16,11 +17,11 @@ fi
 
 # If user does not supply config file or plugins, use the default
 if [ "$1" = "fluentd" ]; then
-    if ! echo $@ | grep ' \-c' ; then
+    if ! echo "$@" | grep ' \-c' ; then
        set -- "$@" -c /fluentd/etc/${FLUENTD_CONF}
     fi
 
-    if ! echo $@ | grep ' \-p' ; then
+    if ! echo "$@" | grep ' \-p' ; then
        set -- "$@" -p /fluentd/plugins
     fi
 fi

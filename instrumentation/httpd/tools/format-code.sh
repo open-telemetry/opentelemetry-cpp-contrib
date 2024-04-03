@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # directory one level up from this script directory
 PROJECT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )"/.. && pwd )

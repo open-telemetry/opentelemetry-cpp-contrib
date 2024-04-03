@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e
+
 echo Building OpenTelemetry SDK...
 pushd "$(dirname "$0")"
 

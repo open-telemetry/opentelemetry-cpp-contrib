@@ -1,4 +1,5 @@
 #!/bin/bash
+# specifically don't use set -e to run all tests
 
 ERR=0
 

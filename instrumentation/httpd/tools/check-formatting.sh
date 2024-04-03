@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 ARGS="${1:-code build}"
 
@@ -18,7 +19,7 @@ check_buildifier () {
 }
 
 check_all () {
-  while [[ $# > 0 ]] ; do case "$1" in
+  while [[ $# -gt 0 ]] ; do case "$1" in
     code|clang)
       check_clang
       shift

@@ -1,4 +1,6 @@
 #!/usr/bin/bash
+set -e
+
 pushd `pwd`
 echo Building docker image in current directory
 docker build --rm -t opentelemetry-fluentd ./

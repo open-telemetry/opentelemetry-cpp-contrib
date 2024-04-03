@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 TEST_NAME="Check that 5 requests creates 5 spans (with batch)"
 
@@ -31,4 +32,4 @@ teardown_test() {
    rm -rf ${OUTPUT_SPANS}
 }
 
-run $@
+run "$@"
