@@ -55,7 +55,7 @@ for instructions.
      inclusion in shared libraries, this variable is used.
    - `-DBUILD_SHARED_LIBS=ON` : To build shared libraries for the targets.
    - `-DBUILD_TESTING=ON` : Build the unit-tests
-   - `-DBUILD_EXAMPLE=ON`: Build the example code which generates measurements and collects/exports metrics periodically
+   - `-DWITH_EXAMPLES=ON`: Build the example code which generates measurements and collects/exports metrics periodically
 
 4. Once build configuration is created, build the exporter:
 
