@@ -44,13 +44,13 @@ jobs:
             libgmock-dev \
             libgtest-dev \
             libbenchmark-dev \
-            libboost-all-dev
+            libboost-log-dev
 
       - name: build opentelemetry-cpp
         run: |
           mkdir -p "${GITHUB_WORKSPACE}/opentelemetry-cpp/build"
           cd "${GITHUB_WORKSPACE}/opentelemetry-cpp/build"
-          cmake .. -G Ninja -DBUILD_TESTING=OFF -DWITH_BENCHMARK=OFF
+          cmake .. -G Ninja -DBUILD_TESTING=OFF -DWITH_BENCHMARK=OFF -DOPENTELEMETRY_INSTALL=ON
           cmake --build . -j$(nproc)
           cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
 
@@ -58,7 +58,8 @@ jobs:
         run: |
           mkdir -p "${GITHUB_WORKSPACE}/boost_log/build"
           cd "${GITHUB_WORKSPACE}/boost_log/build"
-          cmake ../../opentelemetry-cpp-contrib/instrumentation/boost_log -G Ninja -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/sandbox"
+          cmake ../../opentelemetry-cpp-contrib/instrumentation/boost_log -G Ninja -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/sandbox" -DBUILD_TESTING=ON -DOPENTELEMETRY_INSTALL=ON
           cmake --build . -j$(nproc)
           ctest -j1 --output-on-failure
+          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
 
