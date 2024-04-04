@@ -31,7 +31,7 @@ describe the settings changed.
 
 Created log file `.github/repository-settings.md`, since admin permissions are now granted to maintainers.
 
-See https://github.com/open-telemetry/community/issues/1727
+See https://github.com/open-telemetry/community/issues/1951
 
 No setting changed.
 
