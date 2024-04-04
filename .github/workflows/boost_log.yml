@@ -51,7 +51,7 @@ jobs:
           cd "${GITHUB_WORKSPACE}/opentelemetry-cpp/build"
           cmake .. -G Ninja
           cmake --build . -j$(nproc)
-          cmake install
+          make install
 
       - name: build boost_log contrib
         run: |
