@@ -43,13 +43,14 @@ jobs:
             protobuf-compiler \
             libgmock-dev \
             libgtest-dev \
-            libbenchmark-dev
+            libbenchmark-dev \
+            libboost-all-dev
 
       - name: build opentelemetry-cpp
         run: |
           mkdir -p "${GITHUB_WORKSPACE}/opentelemetry-cpp/build"
           cd "${GITHUB_WORKSPACE}/opentelemetry-cpp/build"
-          cmake .. -G Ninja
+          cmake .. -G Ninja -DBUILD_TESTING=OFF -DWITH_BENCHMARK=OFF
           cmake --build . -j$(nproc)
           cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
 
