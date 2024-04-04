@@ -45,10 +45,19 @@ jobs:
             libgtest-dev \
             libbenchmark-dev
 
-      - name: run tests
+      - name: build opentelemetry-cpp
         run: |
           mkdir -p "${GITHUB_WORKSPACE}/opentelemetry-cpp/build"
           cd "${GITHUB_WORKSPACE}/opentelemetry-cpp/build"
-          cmake .. -G Ninja -D OPENTELEMETRY_EXTERNAL_COMPONENT_PATH=${GITHUB_WORKSPACE}/opentelemetry-cpp-contrib/instrumentation/boost_log
+          cmake .. -G Ninja
+          cmake --build . -j$(nproc)
+          cmake install
+
+      - name: build boost_log contrib
+        run: |
+          mkdir -p "${GITHUB_WORKSPACE}/boost_log/build"
+          cd "${GITHUB_WORKSPACE}/boost_log/build"
+          cmake ../../opentelemetry-cpp-contrib/instrumentation/boost_log -G Ninja
           cmake --build . -j$(nproc)
           ctest -j1 --output-on-failure
+
