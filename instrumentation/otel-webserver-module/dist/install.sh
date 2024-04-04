@@ -124,8 +124,10 @@ EOF
 
 echo "Install script for WebServer Instrumentation ${agentVersionId}"
 
-# Check for SELinux
+# Check for SELinux ("which" exits with 1 if the command is not found)
+set +e
 getenforce=`which getenforce 2>/dev/null`
+set -e
 if [ -f "${getenforce}" ]; then
     selStatus=`$getenforce`
     if [ "$selStatus" = "Enforcing" ] ; then
@@ -161,9 +163,6 @@ log "Writing '${log4cxxFile}'"
 cat "${log4cxxTemplate}" | \
     sed -e "s/__agent_log_dir__/${agentLogDir}/g"    \
          > "${log4cxxFile}"
-if [ $? -ne 0 ] ; then
-    fatal_error "Unable to write '${log4cxxFile}'"
-fi
 
 chown "${log4cxxTemplateOwner}" "${log4cxxFile}"
 chgrp "${log4cxxTemplateGroup}" "${log4cxxFile}"
