@@ -10,4 +10,3 @@
 instrumentation/httpd/ @TomRoSystems @open-telemetry/cpp-contrib-approvers
 instrumentation/nginx/ @seemk @tobiasstadler @open-telemetry/cpp-contrib-approvers
 instrumentation/otel-webserver-module/ @kpratyus @ajaynagariya @debajitdas @open-telemetry/cpp-contrib-approvers
-instrumentation/instrumentation/boost_log/ @chusitoo @open-telemetry/cpp-contrib-approvers
