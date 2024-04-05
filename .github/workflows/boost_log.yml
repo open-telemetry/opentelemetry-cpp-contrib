@@ -53,6 +53,8 @@ jobs:
             libbenchmark-dev \
             libboost-log-dev
 
+      # This is needed because libgmock-dev libgtest-dev installs 1.11,
+      # and 1.11 breaks the build.
       - name: build googletest 1.12
         run: |
           mkdir -p "${GITHUB_WORKSPACE}/googletest/build"
@@ -73,7 +75,12 @@ jobs:
         run: |
           mkdir -p "${GITHUB_WORKSPACE}/boost_log/build"
           cd "${GITHUB_WORKSPACE}/boost_log/build"
-          cmake ../../opentelemetry-cpp-contrib/instrumentation/boost_log -G Ninja -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/sandbox" -DBUILD_TESTING=ON -DWITH_EXAMPLES=ON -DOPENTELEMETRY_INSTALL=ON
+          cmake ../../opentelemetry-cpp-contrib/instrumentation/boost_log \
+            -G Ninja \
+            -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/sandbox" \
+            -DBUILD_TESTING=ON \
+            -DWITH_EXAMPLES=ON \
+            -DOPENTELEMETRY_INSTALL=ON
           cmake --build . -j$(nproc)
           ctest -j1 --output-on-failure
           cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
