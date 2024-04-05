@@ -29,7 +29,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           path: opentelemetry-cpp-contrib
-          submodules: "recursive"
+          # submodules: "recursive"
       - name: checkout opentelemetry-cpp
         uses: actions/checkout@v3
         with:
@@ -65,7 +65,7 @@ jobs:
         run: |
           mkdir -p "${GITHUB_WORKSPACE}/opentelemetry-cpp/build"
           cd "${GITHUB_WORKSPACE}/opentelemetry-cpp/build"
-          cmake .. -G Ninja -DBUILD_TESTING=OFF -DWITH_BENCHMARK=OFF -DOPENTELEMETRY_INSTALL=ON -DWITH_STL=CXX14
+          cmake .. -G Ninja -DBUILD_TESTING=OFF -DWITH_BENCHMARK=OFF -DOPENTELEMETRY_INSTALL=ON
           cmake --build . -j$(nproc)
           cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
 
@@ -73,7 +73,7 @@ jobs:
         run: |
           mkdir -p "${GITHUB_WORKSPACE}/boost_log/build"
           cd "${GITHUB_WORKSPACE}/boost_log/build"
-          cmake ../../opentelemetry-cpp-contrib/instrumentation/boost_log -G Ninja -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/sandbox" -DBUILD_TESTING=ON -DOPENTELEMETRY_INSTALL=ON
+          cmake ../../opentelemetry-cpp-contrib/instrumentation/boost_log -G Ninja -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/sandbox" -DBUILD_TESTING=ON -DWITH_EXAMPLES=ON -DOPENTELEMETRY_INSTALL=ON
           cmake --build . -j$(nproc)
           ctest -j1 --output-on-failure
           cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
