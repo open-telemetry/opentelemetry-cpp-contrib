@@ -1,0 +1,87 @@
+name: boost_log
+
+on:
+  push:
+    branches:
+      - '*'
+    path:
+      - 'instrumentation/boost_log/**'
+      - '.github/workflows/boost_log.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'instrumentation/boost_log/**'
+      - '.github/workflows/boost_log.yml'
+
+jobs:
+  cmake_linux:
+    name: CMake Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout googletest
+        uses: actions/checkout@v3
+        with:
+          repository: "google/googletest"
+          ref: "release-1.12.1"
+          path: "googletest"
+          submodules: "recursive"
+      - name: checkout opentelemetry-cpp-contrib
+        uses: actions/checkout@v3
+        with:
+          path: opentelemetry-cpp-contrib
+          # submodules: "recursive"
+      - name: checkout opentelemetry-cpp
+        uses: actions/checkout@v3
+        with:
+          repository: "open-telemetry/opentelemetry-cpp"
+          ref: "v1.14.2"
+          path: "opentelemetry-cpp"
+          submodules: "recursive"
+      - name: setup dependencies
+        run: |
+          sudo apt update -y
+          sudo apt install -y --no-install-recommends --no-install-suggests \
+            build-essential \
+            cmake \
+            ninja-build \
+            libssl-dev \
+            libcurl4-openssl-dev \
+            libprotobuf-dev \
+            protobuf-compiler \
+            libgmock-dev \
+            libgtest-dev \
+            libbenchmark-dev \
+            libboost-log-dev
+
+      # This is needed because libgmock-dev libgtest-dev installs 1.11,
+      # and 1.11 breaks the build.
+      - name: build googletest 1.12
+        run: |
+          mkdir -p "${GITHUB_WORKSPACE}/googletest/build"
+          cd "${GITHUB_WORKSPACE}/googletest/build"
+          cmake .. -G Ninja
+          cmake --build . -j$(nproc)
+          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
+
+      - name: build opentelemetry-cpp
+        run: |
+          mkdir -p "${GITHUB_WORKSPACE}/opentelemetry-cpp/build"
+          cd "${GITHUB_WORKSPACE}/opentelemetry-cpp/build"
+          cmake .. -G Ninja -DBUILD_TESTING=OFF -DWITH_BENCHMARK=OFF -DOPENTELEMETRY_INSTALL=ON
+          cmake --build . -j$(nproc)
+          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
+
+      - name: build boost_log contrib
+        run: |
+          mkdir -p "${GITHUB_WORKSPACE}/boost_log/build"
+          cd "${GITHUB_WORKSPACE}/boost_log/build"
+          cmake ../../opentelemetry-cpp-contrib/instrumentation/boost_log \
+            -G Ninja \
+            -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/sandbox" \
+            -DBUILD_TESTING=ON \
+            -DWITH_EXAMPLES=ON \
+            -DOPENTELEMETRY_INSTALL=ON
+          cmake --build . -j$(nproc)
+          ctest -j1 --output-on-failure
+          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
+

@@ -8,7 +8,7 @@ set(this_target opentelemetry_boost_log_sink)
 project(${this_target})
 
 find_package(opentelemetry-cpp REQUIRED)
-find_package(Boost COMPONENTS log REQUIRED)
+find_package(Boost 1.73 COMPONENTS log REQUIRED)
 
 add_library(${this_target} src/sink.cc)
 
@@ -69,6 +69,8 @@ if(OPENTELEMETRY_INSTALL)
 endif() # OPENTELEMETRY_INSTALL
 
 if(BUILD_TESTING)
+  find_package(GTest 1.12 REQUIRED)
+
   set(testname sink_test)
 
   include(GoogleTest)
@@ -81,9 +83,9 @@ if(BUILD_TESTING)
   )
 
   target_link_libraries(${testname} PRIVATE
-    gmock
-    gtest
-    gtest_main
+    GTest::gmock
+    GTest::gtest
+    GTest::gtest_main
     Boost::log
     opentelemetry-cpp::ostream_log_record_exporter
     ${this_target}
