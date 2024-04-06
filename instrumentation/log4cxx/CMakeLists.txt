@@ -84,6 +84,8 @@ if(OPENTELEMETRY_INSTALL)
 endif() # OPENTELEMETRY_INSTALL
 
 if(BUILD_TESTING)
+  find_package(GTest REQUIRED)
+
   set(testname appender_test)
 
   include(GoogleTest)
@@ -97,9 +99,9 @@ if(BUILD_TESTING)
   )
 
   target_link_libraries(${testname} PRIVATE
-    gmock
-    gtest
-    gtest_main
+    GTest::gmock
+    GTest::gtest
+    GTest::gtest_main
     log4cxx
     opentelemetry-cpp::ostream_log_record_exporter
     ${this_target}
