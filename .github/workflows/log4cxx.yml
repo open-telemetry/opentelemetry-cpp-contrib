@@ -23,10 +23,10 @@ jobs:
         with:
           repository: "google/googletest"
           ref: "release-1.12.1"
-      - name: checkout log4cxx
+      - name: checkout logging-log4cxx
         uses: actions/checkout@v3
         with:
-          repository: "apache/log4cxx"
+          repository: "apache/logging-log4cxx"
           ref: "rel/v1.2.0"
       - name: checkout opentelemetry-cpp-contrib
         uses: actions/checkout@v3
@@ -68,10 +68,10 @@ jobs:
 
       # This is needed because liblog4cxx-dev installs 0.12.1-4,
       # and v1.0.0 is required
-      - name: build log4cxx
+      - name: build logging-log4cxx
         run: |
-          mkdir -p "${GITHUB_WORKSPACE}/log4cxx/build"
-          cd "${GITHUB_WORKSPACE}/log4cxx/build"
+          mkdir -p "${GITHUB_WORKSPACE}/logging-log4cxx/build"
+          cd "${GITHUB_WORKSPACE}/logging-log4cxx/build"
           cmake .. -G Ninja
           cmake --build . -j$(nproc)
           cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
