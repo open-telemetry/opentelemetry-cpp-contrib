@@ -30,6 +30,7 @@ jobs:
         with:
           repository: "apache/logging-log4cxx"
           ref: "rel/v1.2.0"
+          path: "logging-log4cxx"
       - name: checkout opentelemetry-cpp-contrib
         uses: actions/checkout@v3
         with:
