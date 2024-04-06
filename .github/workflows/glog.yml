@@ -29,7 +29,8 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: "google/glog"
-          ref: "v0.7.0"
+          # TODO: upgrade to v0.7.0 and fix deprecation warnings
+          ref: "v0.6.0"
           path: "glog"
           submodules: "recursive"
       - name: checkout opentelemetry-cpp-contrib
