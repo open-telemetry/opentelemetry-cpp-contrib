@@ -23,6 +23,7 @@ jobs:
         with:
           repository: "google/googletest"
           ref: "release-1.12.1"
+          path: "googletest"
       - name: checkout logging-log4cxx
         uses: actions/checkout@v3
         with:
