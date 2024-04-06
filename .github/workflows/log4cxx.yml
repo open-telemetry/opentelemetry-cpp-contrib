@@ -18,13 +18,16 @@ jobs:
     name: CMake Linux
     runs-on: ubuntu-latest
     steps:
-#      - name: checkout googletest
-#        uses: actions/checkout@v3
-#        with:
-#          repository: "google/googletest"
-#          ref: "release-1.12.1"
-#          path: "googletest"
-#          submodules: "recursive"
+      - name: checkout googletest
+        uses: actions/checkout@v3
+        with:
+          repository: "google/googletest"
+          ref: "release-1.12.1"
+      - name: checkout log4cxx
+        uses: actions/checkout@v3
+        with:
+          repository: "apache/log4cxx"
+          ref: "rel/v1.2.0"
       - name: checkout opentelemetry-cpp-contrib
         uses: actions/checkout@v3
         with:
@@ -53,15 +56,25 @@ jobs:
             libbenchmark-dev \
             liblog4cxx-dev
 
-#      # This is needed because libgmock-dev libgtest-dev installs 1.11,
-#      # and 1.11 breaks the build.
-#      - name: build googletest 1.12
-#        run: |
-#          mkdir -p "${GITHUB_WORKSPACE}/googletest/build"
-#          cd "${GITHUB_WORKSPACE}/googletest/build"
-#          cmake .. -G Ninja
-#          cmake --build . -j$(nproc)
-#          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
+      # This is needed because libgmock-dev libgtest-dev installs 1.11,
+      # and 1.11 breaks the build.
+      - name: build googletest 1.12
+        run: |
+          mkdir -p "${GITHUB_WORKSPACE}/googletest/build"
+          cd "${GITHUB_WORKSPACE}/googletest/build"
+          cmake .. -G Ninja
+          cmake --build . -j$(nproc)
+          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
+
+      # This is needed because liblog4cxx-dev installs 0.12.1-4,
+      # and v1.0.0 is required
+      - name: build log4cxx
+        run: |
+          mkdir -p "${GITHUB_WORKSPACE}/log4cxx/build"
+          cd "${GITHUB_WORKSPACE}/log4cxx/build"
+          cmake .. -G Ninja
+          cmake --build . -j$(nproc)
+          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
 
       - name: build opentelemetry-cpp
         run: |
