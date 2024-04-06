@@ -18,6 +18,13 @@ jobs:
     name: CMake Linux
     runs-on: ubuntu-latest
     steps:
+      - name: checkout googletest
+        uses: actions/checkout@v3
+        with:
+          repository: "google/googletest"
+          ref: "release-1.12.1"
+          path: "googletest"
+          submodules: "recursive"
       - name: checkout glog
         uses: actions/checkout@v3
         with:
@@ -51,6 +58,16 @@ jobs:
             libgmock-dev \
             libgtest-dev \
             libbenchmark-dev
+
+      # This is needed because libgmock-dev libgtest-dev installs 1.11,
+      # and 1.11 breaks the build.
+      - name: build googletest 1.12
+        run: |
+          mkdir -p "${GITHUB_WORKSPACE}/googletest/build"
+          cd "${GITHUB_WORKSPACE}/googletest/build"
+          cmake .. -G Ninja
+          cmake --build . -j$(nproc)
+          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
 
       - name: build glog
         run: |
