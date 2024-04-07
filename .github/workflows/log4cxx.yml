@@ -60,12 +60,9 @@ jobs:
             liblog4cxx-dev
 
       # This is needed because libgmock-dev libgtest-dev installs 1.11,
-      # and 1.11 breaks the build.
+      # and v1.12 is required
       - name: build googletest 1.12
         run: |
-          # Debug CI break
-          ls -l "${GITHUB_WORKSPACE}/"
-          ls -l "${GITHUB_WORKSPACE}/googletest/"
           mkdir -p "${GITHUB_WORKSPACE}/googletest/build"
           cd "${GITHUB_WORKSPACE}/googletest/build"
           cmake .. -G Ninja

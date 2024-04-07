@@ -84,7 +84,7 @@ if(OPENTELEMETRY_INSTALL)
 endif() # OPENTELEMETRY_INSTALL
 
 if(BUILD_TESTING)
-  find_package(GTest REQUIRED)
+  find_package(GTest 1.12 REQUIRED)
 
   set(testname appender_test)
 
