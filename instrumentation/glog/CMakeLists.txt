@@ -71,6 +71,8 @@ endif() # OPENTELEMETRY_INSTALL
 if(BUILD_TESTING)
   find_package(GTest 1.12 REQUIRED)
 
+  enable_testing()
+
   set(testname sink_test)
 
   include(GoogleTest)
