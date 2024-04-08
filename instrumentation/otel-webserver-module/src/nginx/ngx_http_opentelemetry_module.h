@@ -70,6 +70,10 @@ typedef struct {
         ngx_uint_t phase_count;
 }otel_ngx_module;
 
+typedef struct {
+    ngx_str_t trace_id;
+    ngx_str_t span_id;    
+}otel_tracing_context;
 /*
 	Configuration struct for module
 */
@@ -109,6 +113,7 @@ typedef struct {
     ngx_str_t nginxModulePropagatorType;
 
 } ngx_http_opentelemetry_loc_conf_t;
+
 
 /*
     Configuration structure for storing information throughout the worker process life-time

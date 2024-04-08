@@ -1123,7 +1123,7 @@ static OTEL_SDK_STATUS_CODE otel_startInteraction(ngx_http_request_t* r, const c
         {
             resolveBackends = conf->nginxModuleResolveBackends;
         }
-        OTEL_SDK_ENV_RECORD* propagationHeaders = ngx_pcalloc(r->pool, 5 * sizeof(OTEL_SDK_ENV_RECORD));
+        OTEL_SDK_ENV_RECORD* propagationHeaders = ngx_pcalloc(r->pool, 6 * sizeof(OTEL_SDK_ENV_RECORD));
         if (propagationHeaders == NULL)
         {
             ngx_writeError(r->connection->log, __func__, "Failed to allocate memory for propagation headers");
@@ -1374,7 +1374,7 @@ static void resolve_attributes_variables(ngx_http_request_t* r)
             } else {
                 ngx_str_t * ngx_str = (ngx_str_t *)(element);
                 ngx_str->data = value->data;
-                ngx_str->len = ngx_strlen(value);
+                ngx_str->len = ngx_strlen(value->data);
                 // Variable was found, `value` now contains the value.
             }
         }
@@ -2221,7 +2221,10 @@ static void fillResponsePayload(response_payload* res_payload, ngx_http_request_
 
         resolve_attributes_variables(r);
         for (ngx_uint_t j = 0, isKey = 1, isValue = 0; j < conf->nginxModuleAttributes->nelts; j++) {
-            const char* data = (const char*)(((ngx_str_t *)(conf->nginxModuleAttributes->elts))[j]).data;
+            ngx_str_t data_obj = (((ngx_str_t *)(conf->nginxModuleAttributes->elts))[j]).data
+            char* data = ngx_pcalloc(r->pool, data_obj.len +1);
+            ngx_memcpy(data, (const char*)(data_obj.data) , data_obj.len)
+            data = (const char*)(((ngx_str_t *)(conf->nginxModuleAttributes->elts))[j]).data;
             if(strcmp(data, ",") == 0){
                 otel_attributes_idx++;
                 continue;

@@ -84,7 +84,7 @@ OTEL_SDK_STATUS_CODE RequestProcessingEngine::startRequest(
     }
 
     auto span = m_sdkWrapper->CreateSpan(spanName, sdkwrapper::SpanKind::SERVER, keyValueMap, payload->get_http_headers());
-
+    
     LOG4CXX_TRACE(mLogger, "Span started for context: [" << wscontext
         <<"] SpanName: " << spanName << ", RequestProtocol: " << payload->get_request_protocol()
         <<" SpanId: " << span.get());
@@ -198,10 +198,12 @@ OTEL_SDK_STATUS_CODE RequestProcessingEngine::startInteraction(
     // TODO : confirm and update name later
     std::string spanName = payload->moduleName + "_" + payload->phaseName;
     keyValueMap["interactionType"] = "EXIT_CALL";
+    std::string parentSpanId = m_sdkWrapper->ReturnCurrentSpanId();
     auto interactionSpan = m_sdkWrapper->CreateSpan(spanName, SpanKind::CLIENT, keyValueMap);
     LOG4CXX_TRACE(mLogger, "Client Span started with SpanName: " << spanName
         << " Span Id: " << interactionSpan.get());
     m_sdkWrapper->PopulatePropagationHeaders(propagationHeaders);
+    propagationHeaders["Parent_Span_Id"] = parentSpanId;
 
     // Add the interaction to the request context.
     requestContext->addInteraction(interactionSpan);
@@ -267,6 +269,8 @@ OTEL_SDK_API OTEL_SDK_STATUS_CODE RequestProcessingEngine::endInteraction(
     LOG4CXX_TRACE(mLogger, "Ending Span with id: " << interactionSpan.get());
     interactionSpan->End();
     rContext->removeInteraction();
+    std::string parentSpanId = m_sdkWrapper->ReturnCurrentSpanId();
+    LOG4CXX_TRACE(mLogger, "Ending Span with id: " << parentSpanId );
     return OTEL_SUCCESS;
 }
 

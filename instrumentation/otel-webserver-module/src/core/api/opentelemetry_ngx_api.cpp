@@ -175,7 +175,7 @@ OTEL_SDK_STATUS_CODE startModuleInteraction(OTEL_SDK_HANDLE_REQ req_handle_key, 
                 propagationHeaders[*ix].name = temp_key;
                 char *temp_value= (char*)malloc(itr->second.size() + 1); 
                 std::strcpy(temp_value, itr->second.c_str());
-                 propagationHeaders[*ix].value = temp_value;
+                propagationHeaders[*ix].value = temp_value;
                 ++(*ix);
             }
         }

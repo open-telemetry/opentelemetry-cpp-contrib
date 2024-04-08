@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "array": "cpp",
+        "string": "cpp",
+        "string_view": "cpp",
+        "ngx_http_opentelemetry_module.h": "c"
+    }
+}
