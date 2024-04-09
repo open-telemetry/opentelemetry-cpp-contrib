@@ -458,6 +458,7 @@ protected:
     auto backend = boost::make_shared<OpenTelemetrySinkBackend>(mappers);
     auto sink    = boost::make_shared<synchronous_sink<OpenTelemetrySinkBackend>>(backend);
     boost::log::core::get()->add_sink(sink);
+    boost::log::add_common_attributes();
   }
 
   void TearDown() override { boost::log::core::get()->remove_all_sinks(); }
