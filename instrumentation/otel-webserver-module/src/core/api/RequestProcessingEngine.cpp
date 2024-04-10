@@ -76,8 +76,8 @@ OTEL_SDK_STATUS_CODE RequestProcessingEngine::startRequest(
     keyValueMap[kAttrHTTPTarget] =payload->get_target();
     keyValueMap[kAttrHTTPFlavor] = payload->get_flavor();
     keyValueMap[kAttrHTTPClientIP] = payload->get_client_ip();
-    keyValueMap[kAttrHTTPUserAgent] = payload->get_user_agent();
-    keyValueMap[kAttrNETPeerPort] = payload->get_peer_port();
+    // keyValueMap[kAttrHTTPUserAgent] = payload->get_user_agent();
+    // keyValueMap[kAttrNETPeerPort] = payload->get_peer_port();
 
     auto& request_headers = payload->get_request_headers();
     for (auto itr = request_headers.begin(); itr != request_headers.end(); itr++) {
