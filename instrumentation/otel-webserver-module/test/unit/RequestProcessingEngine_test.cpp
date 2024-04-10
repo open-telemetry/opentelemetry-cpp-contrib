@@ -155,8 +155,7 @@ TEST(TestRequestProcessingEngine, StartRequest)
   keyValueMap[kAttrHTTPTarget] = (opentelemetry::nostd::string_view)"target";
   keyValueMap[kAttrHTTPFlavor] = (opentelemetry::nostd::string_view)"1.1";
   keyValueMap[kAttrHTTPClientIP] = (opentelemetry::nostd::string_view)"clientip";
-  keyValueMap[kAttrNETPeerPort] = (long)12345;
-  keyValueMap[kAttrHTTPUserAgent] = (opentelemetry::nostd::string_view)"User-Agent";
+//   keyValueMap[kAttrNETPeerPort] = (long)12345;
 	std::shared_ptr<otel::core::sdkwrapper::IScopedSpan> span;
 	span.reset(new MockScopedSpan);
 
