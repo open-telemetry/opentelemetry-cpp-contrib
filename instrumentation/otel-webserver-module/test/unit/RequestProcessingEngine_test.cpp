@@ -82,22 +82,22 @@ MATCHER_P(HasMapVal, value, "") {
     		if(nostd::get<int64_t>(argkeyValue) != nostd::get<int64_t>(keyValue)){
     			valueMatches = false;
     		}
-    }
-    else if (nostd::holds_alternative<nostd::string_view>(keyValue)){
-    		
-    		if(nostd::get<nostd::string_view>(argkeyValue) != nostd::get<nostd::string_view>(keyValue)){
-    			  valueMatches = false;	
-    		}	
-    }
-    else if (nostd::holds_alternative<int32_t>(keyValue)){
-    		if(nostd::get<int32_t>(argkeyValue) != nostd::get<int32_t>(keyValue))
-    			valueMatches = false;
-    }
-    else if (nostd::holds_alternative<bool>(keyValue))
-    {
-    		if(nostd::get<bool>(argkeyValue) != nostd::get<bool>(keyValue))
-    			valueMatches = false;
-    }
+		}
+		else if (nostd::holds_alternative<nostd::string_view>(keyValue)){
+				
+				if(nostd::get<nostd::string_view>(argkeyValue) != nostd::get<nostd::string_view>(keyValue)){
+					valueMatches = false;	
+				}	
+		}
+		else if (nostd::holds_alternative<int32_t>(keyValue)){
+				if(nostd::get<int32_t>(argkeyValue) != nostd::get<int32_t>(keyValue))
+					valueMatches = false;
+		}
+		else if (nostd::holds_alternative<bool>(keyValue))
+		{
+				if(nostd::get<bool>(argkeyValue) != nostd::get<bool>(keyValue))
+					valueMatches = false;
+		}
 	}
 
 	return valueMatches;
@@ -137,28 +137,28 @@ TEST(TestRequestProcessingEngine, StartRequest)
 	payload.set_uri("dummy_span");
 	payload.set_server_name("localhost");
 	payload.set_host("host");
-  payload.set_http_request_method("GET");
-  payload.set_scheme("http");
-  payload.set_target("target");
-  payload.set_flavor("1.1");
-  payload.set_client_ip("clientip");
-  payload.set_port(80);
-  payload.set_user_agent("useragent");
-  payload.set_peer_port(12345);
+	payload.set_http_request_method("GET");
+	payload.set_scheme("http");
+	payload.set_target("target");
+	payload.set_flavor("1.1");
+	payload.set_client_ip("clientip");
+	payload.set_port(80);
+	payload.set_user_agent("useragent");
+	payload.set_peer_port(12345);
 
 
 	otel::core::sdkwrapper::OtelKeyValueMap keyValueMap;
-  keyValueMap[kAttrRequestProtocol] = (opentelemetry::nostd::string_view)"GET";
-  keyValueMap[kAttrHTTPServerName] = (opentelemetry::nostd::string_view)"localhost";
-  keyValueMap[kAttrHTTPMethod] = (opentelemetry::nostd::string_view)"GET";
-  keyValueMap[kAttrNetHostName] =(opentelemetry::nostd::string_view)"host";
-  keyValueMap[kAttrNETHostPort] = (long)80;
-  keyValueMap[kAttrHTTPScheme] = (opentelemetry::nostd::string_view)"http";
-  keyValueMap[kAttrHTTPTarget] = (opentelemetry::nostd::string_view)"target";
-  keyValueMap[kAttrHTTPFlavor] = (opentelemetry::nostd::string_view)"1.1";
-  keyValueMap[kAttrHTTPClientIP] = (opentelemetry::nostd::string_view)"clientip";
-  keyValueMap[kAttrNETPeerPort] = (long)12345;
-  keyValueMap[kAttrHTTPUserAgent] = (opentelemetry::nostd::string_view)"useragent";
+	keyValueMap[kAttrRequestProtocol] = (opentelemetry::nostd::string_view)"GET";
+	keyValueMap[kAttrHTTPServerName] = (opentelemetry::nostd::string_view)"localhost";
+	keyValueMap[kAttrHTTPMethod] = (opentelemetry::nostd::string_view)"GET";
+	keyValueMap[kAttrNetHostName] =(opentelemetry::nostd::string_view)"host";
+	keyValueMap[kAttrNETHostPort] = (long)80;
+	keyValueMap[kAttrHTTPScheme] = (opentelemetry::nostd::string_view)"http";
+	keyValueMap[kAttrHTTPTarget] = (opentelemetry::nostd::string_view)"target";
+	keyValueMap[kAttrHTTPFlavor] = (opentelemetry::nostd::string_view)"1.1";
+	keyValueMap[kAttrHTTPClientIP] = (opentelemetry::nostd::string_view)"clientip";
+	keyValueMap[kAttrNETPeerPort] = (long)12345;
+	keyValueMap[kAttrHTTPUserAgent] = (opentelemetry::nostd::string_view)"useragent";
 	std::shared_ptr<otel::core::sdkwrapper::IScopedSpan> span;
 	span.reset(new MockScopedSpan);
 
@@ -167,7 +167,7 @@ TEST(TestRequestProcessingEngine, StartRequest)
 		otel::core::sdkwrapper::SpanKind::SERVER,
 		HasMapVal(keyValueMap),
 		payload.get_http_headers())).
-	WillOnce(Return(span));
+		WillOnce(Return(span));
 
 	int* dummy = new int(2);
 	void* reqHandle = dummy;
@@ -180,7 +180,7 @@ TEST(TestRequestProcessingEngine, StartRequest)
 	EXPECT_EQ(reqContext->getContextName(), "ws_context");
 	EXPECT_FALSE(reqContext->hasActiveInteraction());
 
-  delete(dummy);
+  	delete(dummy);
 }
 
 
