@@ -34,7 +34,7 @@ otel_ngx_module otel_monitored_modules[] = {
     {
         "ngx_http_realip_module",
         0,
-        {NGX_HTTP_POST_READ_PHASE, NGX_HTTP_PREACCESS_PHASE},
+        {NGX_HTTP_PREACCESS_PHASE},
         ngx_http_otel_realip_handler,
         0,
         2
@@ -42,7 +42,7 @@ otel_ngx_module otel_monitored_modules[] = {
     {
         "ngx_http_rewrite_module",
         0,
-        {NGX_HTTP_SERVER_REWRITE_PHASE, NGX_HTTP_REWRITE_PHASE},
+        {NGX_HTTP_REWRITE_PHASE},
         ngx_http_otel_rewrite_handler,
         0,
         2
@@ -406,6 +406,13 @@ static ngx_command_t ngx_http_opentelemetry_commands[] = {
       offsetof(ngx_http_opentelemetry_loc_conf_t, nginxModulePropagatorType),
       NULL},
     
+    { ngx_string("NginxModuleOperationName"),
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
+      ngx_conf_set_str_slot,
+      NGX_HTTP_LOC_CONF_OFFSET,
+      offsetof(ngx_http_opentelemetry_loc_conf_t, nginxModuleOperationName),
+      NULL},
+    
     /* command termination */
     ngx_null_command
 };
@@ -516,7 +523,7 @@ static char* ngx_http_opentelemetry_merge_loc_conf(ngx_conf_t *cf, void *parent,
     ngx_conf_merge_str_value(conf->nginxModuleRequestHeaders, prev->nginxModuleRequestHeaders, "");
     ngx_conf_merge_str_value(conf->nginxModuleResponseHeaders, prev->nginxModuleResponseHeaders, "");
     ngx_conf_merge_str_value(conf->nginxModulePropagatorType, prev->nginxModulePropagatorType, "w3c");
-
+    ngx_conf_merge_str_value(conf->nginxModuleOperationName, prev->nginxModuleOperationName, "");
 
     return NGX_CONF_OK;
 }
@@ -1049,7 +1056,7 @@ static void resolve_attributes_variables(ngx_http_request_t* r)
             } else {
                 ngx_str_t * ngx_str = (ngx_str_t *)(element);
                 ngx_str->data = value->data;
-                ngx_str->len = ngx_strlen(value);
+                ngx_str->len = value->len;
                 // Variable was found, `value` now contains the value.
             }
         }
@@ -1435,6 +1442,14 @@ static void startMonitoringRequest(ngx_http_request_t* r){
 }
 
 static ngx_int_t ngx_http_otel_rewrite_handler(ngx_http_request_t *r){
+    
+    // This will be the first hanndler to be encountered,
+    // Here, Init and start the Request Processing by creating Trace, spans etc
+    if(!r->internal)
+    {
+        startMonitoringRequest(r);
+    }
+    
     otel_startInteraction(r, "ngx_http_rewrite_module");
     ngx_int_t rvalue = h[NGX_HTTP_REWRITE_MODULE_INDEX](r);
     otel_stopInteraction(r, "ngx_http_rewrite_module", OTEL_SDK_NO_HANDLE);
@@ -1459,14 +1474,6 @@ static ngx_int_t ngx_http_otel_limit_req_handler(ngx_http_request_t *r){
 }
 
 static ngx_int_t ngx_http_otel_realip_handler(ngx_http_request_t *r){
-
-    // This will be the first hanndler to be encountered,
-    // Here, Init and start the Request Processing by creating Trace, spans etc
-    if(!r->internal)
-    {
-        startMonitoringRequest(r);
-    }
-
     otel_startInteraction(r, "ngx_http_realip_module");
     ngx_int_t rvalue = h[NGX_HTTP_REALIP_MODULE_INDEX](r);
     otel_stopInteraction(r, "ngx_http_realip_module", OTEL_SDK_NO_HANDLE);    
@@ -1797,6 +1804,24 @@ static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t*
     temp_request_method[(r->method_name).len]='\0';
     req_payload->request_method = temp_request_method;
 
+    char *temp_user_agent = ngx_pcalloc(r->pool, r->headers_in.user_agent->value.len +1);
+    strcpy(temp_user_agent,(const char*)(r->headers_in.user_agent->value.data));
+    temp_user_agent[r->headers_in.user_agent->value.len]='\0';
+    req_payload->user_agent = temp_user_agent;
+
+    ngx_uint_t remote_port = 0;
+    if (r->connection != NULL) {
+        struct sockaddr *temp_sockaddress = r->connection->sockaddr;
+        if(temp_sockaddress->sa_family == 2) {
+                struct sockaddr_in *temp_soc = (struct sockaddr_in *) temp_sockaddress;
+                remote_port = ntohs(temp_soc->sin_port);
+        }
+        else if(temp_sockaddress->sa_family == 10 || temp_sockaddress->sa_family == 23){
+                struct sockaddr_in6 *temp_soc6 = (struct sockaddr_in6 *) temp_sockaddress;
+                remote_port = ntohs(temp_soc6->sin6_port);
+        }
+    }
+    req_payload->peer_port = remote_port;
     // flavor has to be scraped from protocol in future
     req_payload->flavor = temp_http_protocol;
 
@@ -1832,6 +1857,8 @@ static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t*
 
     ngx_http_opentelemetry_loc_conf_t *conf =
       ngx_http_get_module_loc_conf(r, ngx_http_opentelemetry_module);
+
+    req_payload->operation_name = (const char*)conf->nginxModuleOperationName.data;
 
     part = &r->headers_in.headers.part;
     header = (ngx_table_elt_t*)part->elts;
@@ -1896,7 +1923,12 @@ static void fillResponsePayload(response_payload* res_payload, ngx_http_request_
 
         resolve_attributes_variables(r);
         for (ngx_uint_t j = 0, isKey = 1, isValue = 0; j < conf->nginxModuleAttributes->nelts; j++) {
-            const char* data = (const char*)(((ngx_str_t *)(conf->nginxModuleAttributes->elts))[j]).data;
+            
+            ngx_str_t data_obj = ((ngx_str_t *)(conf->nginxModuleAttributes->elts))[j];
+            char* data = ngx_pcalloc(r->pool, data_obj.len +1);
+            ngx_memcpy(data, (const char*)(data_obj.data) , data_obj.len);
+            data[data_obj.len] = '\0';
+
             if(strcmp(data, ",") == 0){
                 otel_attributes_idx++;
                 continue;
