@@ -48,6 +48,10 @@ void populatePayload(request_payload* req_payload, void* load)
     payload->set_http_get_parameter(req_payload->http_get_param);
     payload->set_http_request_method(req_payload->request_method);
     payload->set_client_ip(req_payload->client_ip);
+    payload->set_user_agent(req_payload->user_agent);
+    payload->set_peer_port(req_payload->peer_port);
+    payload->set_operation_name(req_payload->operation_name);
+    
 
     for(int i=0; i<req_payload->propagation_count; i++){
         

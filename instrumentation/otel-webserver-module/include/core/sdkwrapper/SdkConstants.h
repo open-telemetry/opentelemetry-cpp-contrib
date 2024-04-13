@@ -35,12 +35,13 @@ const std::string kAttrHTTPUrl                = "http.url";
 const std::string kAttrHTTPFlavor             = "http.flavor";
 const std::string kAttrHTTPClientIP           = "http.client_ip";
 const std::string kAttrHTTPStatusCode         = "http.status_code";
-const std::string kAttrNETHostPort            = "net.host.port";
+const std::string kAttrNETHostPort            = "net.server.port";
 const std::string kAttrRequestProtocol        = "request_protocol";
-const std::string kHTTPFlavor1_0                 = "1.0";
-const std::string kHTTPFlavor1_1                = "1.1";
+const std::string kHTTPFlavor1_0              = "1.0";
+const std::string kHTTPFlavor1_1              = "1.1";
 const std::string kOtelAttributes             = "otel.attribute.";
-
+const std::string kAttrHTTPUserAgent          = "http.user_agent";
+const std::string kAttrNETPeerPort            = "net.remote.port";
 
 constexpr int HTTP_ERROR_1XX = 100;
 constexpr int HTTP_ERROR_4XX = 400;
