@@ -24,13 +24,6 @@ jobs:
           repository: "google/googletest"
           ref: "release-1.12.1"
           path: "googletest"
-#      - name: checkout spdlog
-#        uses: actions/checkout@v3
-#        with:
-#          repository: "gabime/spdlog"
-#          ref: "v0.6.0"
-#          path: "spdlog"
-#          submodules: "recursive"
       - name: checkout opentelemetry-cpp-contrib
         uses: actions/checkout@v3
         with:
@@ -67,14 +60,6 @@ jobs:
           cmake .. -G Ninja
           cmake --build . -j$(nproc)
           cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
-
-#      - name: build spdlog
-#        run: |
-#          mkdir -p "${GITHUB_WORKSPACE}/spdlog/build"
-#          cd "${GITHUB_WORKSPACE}/spdlog/build"
-#          cmake .. -G Ninja
-#          cmake --build . -j$(nproc)
-#          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
 
       - name: build opentelemetry-cpp
         run: |
