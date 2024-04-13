@@ -1,12 +1,15 @@
-# Process
+# Repository settings (opentelemetry-cpp-contrib)
+
+## Process
 
 This file documents local admin changes for opentelemetry-cpp-contrib,
 per the community process: https://github.com/open-telemetry/community/blob/main/docs/how-to-configure-new-repository.md
 
 Please note that the EasyCLA check **MUST** stay **REQUIRED**,
-it should never be disabled or bypassed, at the risk of tainting the repository.
+it should never be disabled or bypassed,
+at the risk of tainting the repository.
 
-# Guidelines
+## Guidelines
 
 The best is to open a PR first that describes the change,
 so it can be discussed during review (maybe it is not needed,
@@ -25,11 +28,12 @@ before a PR can be discussed and merged,
 a PR should still be prepared and pushed after the fact to
 describe the settings changed.
 
-# Log of local changes
+## Log of local changes
 
-## 2024-04-04
+### 2024-04-04
 
-Created log file `.github/repository-settings.md`, since admin permissions are now granted to maintainers.
+Created log file `.github/repository-settings.md`,
+since admin permissions are now granted to maintainers.
 
 See https://github.com/open-telemetry/community/issues/1951
 
