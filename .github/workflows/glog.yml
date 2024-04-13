@@ -24,7 +24,6 @@ jobs:
           repository: "google/googletest"
           ref: "release-1.12.1"
           path: "googletest"
-          submodules: "recursive"
       - name: checkout glog
         uses: actions/checkout@v3
         with:
@@ -32,12 +31,10 @@ jobs:
           # TODO: upgrade to v0.7.0 and fix deprecation warnings
           ref: "v0.6.0"
           path: "glog"
-          submodules: "recursive"
       - name: checkout opentelemetry-cpp-contrib
         uses: actions/checkout@v3
         with:
           path: opentelemetry-cpp-contrib
-          # submodules: "recursive"
       - name: checkout opentelemetry-cpp
         uses: actions/checkout@v3
         with:
