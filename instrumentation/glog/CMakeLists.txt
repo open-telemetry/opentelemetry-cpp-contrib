@@ -8,7 +8,7 @@ set(this_target opentelemetry_glog_sink)
 project(${this_target})
 
 find_package(opentelemetry-cpp REQUIRED)
-find_package(glog REQUIRED)
+find_package(glog 0.7.0 REQUIRED)
 
 add_library(${this_target} src/sink.cc)
 

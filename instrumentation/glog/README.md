@@ -9,7 +9,7 @@
 
 - Current release tested only with Ubuntu 20.04.6 LTS
 - OpenTelemetry >= v1.12.0 
-- glog >= v0.3.5
+- glog >= v0.7.0
 
 ### Usage
 
