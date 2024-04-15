@@ -72,7 +72,8 @@ typedef struct {
 
 typedef struct {
     ngx_str_t trace_id;
-    ngx_str_t span_id;    
+    ngx_str_t current_span_id;
+    ngx_str_t root_span_id;
 }otel_tracing_context;
 /*
 	Configuration struct for module

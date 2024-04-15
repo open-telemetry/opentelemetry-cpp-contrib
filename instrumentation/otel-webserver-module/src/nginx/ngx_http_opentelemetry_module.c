@@ -26,6 +26,7 @@ static contextNode contexts[5];
 static unsigned int c_count = 0;
 static unsigned int isGlobalContextSet = 0;
 static ngx_str_t hostname;
+otel_tracing_context *otel_tracing_data;
 
 /*
 List of modules being monitored
