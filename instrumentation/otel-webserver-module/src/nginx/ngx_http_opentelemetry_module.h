@@ -112,6 +112,7 @@ typedef struct {
     ngx_array_t  *nginxModuleAttributes;
     ngx_array_t  *nginxModuleIgnorePaths;
     ngx_str_t nginxModulePropagatorType;
+    ngx_str_t nginxModuleOperationName;
 
 } ngx_http_opentelemetry_loc_conf_t;
 

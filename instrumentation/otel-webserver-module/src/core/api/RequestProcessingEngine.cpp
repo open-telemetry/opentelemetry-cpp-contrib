@@ -64,7 +64,7 @@ OTEL_SDK_STATUS_CODE RequestProcessingEngine::startRequest(
         return OTEL_STATUS(payload_reflector_is_null);
     }
 
-    std::string spanName = m_spanNamer->getSpanName(payload->get_uri());
+    std::string spanName = (payload->get_operation_name().empty() ? m_spanNamer->getSpanName(payload->get_uri()) : payload->get_operation_name());
     otel::core::sdkwrapper::OtelKeyValueMap keyValueMap;
     keyValueMap[kAttrRequestProtocol] = payload->get_request_protocol();
     keyValueMap[kAttrHTTPServerName] = payload->get_server_name();
@@ -75,6 +75,8 @@ OTEL_SDK_STATUS_CODE RequestProcessingEngine::startRequest(
     keyValueMap[kAttrHTTPTarget] =payload->get_target();
     keyValueMap[kAttrHTTPFlavor] = payload->get_flavor();
     keyValueMap[kAttrHTTPClientIP] = payload->get_client_ip();
+    keyValueMap[kAttrHTTPUserAgent] = payload->get_user_agent();
+    keyValueMap[kAttrNETPeerPort] = payload->get_peer_port();
 
     auto& request_headers = payload->get_request_headers();
     for (auto itr = request_headers.begin(); itr != request_headers.end(); itr++) {
