@@ -12,13 +12,6 @@
 namespace google
 {
 
-// The LogMessageTime class was introduced sometime in v0.6.0
-// Since there is no versioning available in this lib, we identify it based on the presence of this
-// include guard that was added in the required version
-#if defined(GLOG_EXPORT_H)
-#  define GLOG_VERSION_HAS_LOGMESSAGETIME
-#endif
-
 class OpenTelemetrySink : public google::LogSink
 {
 public:
@@ -41,7 +34,6 @@ public:
     }
   }
 
-#if defined(GLOG_VERSION_HAS_LOGMESSAGETIME)
   void send(google::LogSeverity,
             const char *,
             const char *,
@@ -49,15 +41,6 @@ public:
             const google::LogMessageTime &,
             const char *,
             size_t) override;
-#else
-  void send(google::LogSeverity,
-            const char *,
-            const char *,
-            int,
-            const struct ::tm *,
-            const char *,
-            size_t) override;
-#endif
 };
 
 }  // namespace google
