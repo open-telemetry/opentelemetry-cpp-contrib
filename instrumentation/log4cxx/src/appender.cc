@@ -11,6 +11,8 @@
 namespace log4cxx
 {
 
+IMPLEMENT_LOG4CXX_OBJECT(OpenTelemetryAppender)
+
 void OpenTelemetryAppender::append(const spi::LoggingEventPtr &event, helpers::Pool &)
 {
   static constexpr auto kLibraryName = "log4cxx";
