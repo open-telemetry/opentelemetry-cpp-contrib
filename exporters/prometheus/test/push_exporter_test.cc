@@ -91,7 +91,13 @@ TEST(PrometheusPushExporter, ExportSuccessfully)
   PrometheusPushExporterTest p;
   PrometheusPushExporter exporter = p.GetExporter();
 
-  auto res = exporter.Export(CreateSumPointData());
+  auto instrumentation_scope =
+      opentelemetry::sdk::instrumentationscope::InstrumentationScope::Create("library_name",
+                                                                             "1.9.1");
+
+  auto data = CreateSumPointData(instrumentation_scope.get());
+
+  auto res = exporter.Export(data);
 
   // result should be kSuccess = 0
   ExportResult code = ExportResult::kSuccess;
@@ -109,8 +115,14 @@ TEST(PrometheusPushExporter, ExporterIsShutdown)
 
   exporter.Shutdown();
 
+  auto instrumentation_scope =
+      opentelemetry::sdk::instrumentationscope::InstrumentationScope::Create("library_name",
+                                                                             "1.9.1");
+
+  auto data = CreateSumPointData(instrumentation_scope.get());
+
   // send export request after shutdown
-  auto res = exporter.Export(CreateSumPointData());
+  auto res = exporter.Export(data);
 
   // result code should be kFailure = 1
   ExportResult code = ExportResult::kFailure;
@@ -134,18 +146,28 @@ TEST(PrometheusPushExporter, CollectionNotEnoughSpace)
 
   int max_collection_size = exporter.GetMaxCollectionSize();
 
+  auto instrumentation_scope =
+      opentelemetry::sdk::instrumentationscope::InstrumentationScope::Create("library_name",
+                                                                             "1.15.0");
+
   // send export request to fill the
   // collection in the collector
+  // In each loop, there are 2 collections:
+  // - the instrumentation_scope
+  // - the data
   ExportResult code = ExportResult::kSuccess;
-  for (int count = 1; count <= max_collection_size; ++count)
+  for (int count = 1; count <= max_collection_size; count += 2)
   {
-    auto res = exporter.Export(CreateSumPointData());
+    auto data = CreateSumPointData(instrumentation_scope.get());
+    auto res  = exporter.Export(data);
     ASSERT_EQ(res, code);
   }
 
+  auto data = CreateSumPointData(instrumentation_scope.get());
+
   // send export request that does not complete
   // due to not enough space in the collection
-  auto res = exporter.Export(CreateSumPointData());
+  auto res = exporter.Export(data);
 
   // the result code should be kFailureFull = 2
   code = ExportResult::kFailureFull;
@@ -178,7 +200,7 @@ TEST(PrometheusPushExporterFactory, Create)
 {
   PrometheusPushExporterOptions options;
   options.host                 = "localhost";
-  options.port                 = 4138;
+  options.port                 = "4138";
   options.jobname              = "jobname";
   options.labels["test_label"] = "test_value";
   options.username             = "user";
