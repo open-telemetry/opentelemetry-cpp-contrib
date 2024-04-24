@@ -30,13 +30,15 @@ def io_opentelemetry_cpp_contrib_deps():
     maybe(
         http_archive,
         name = "com_github_jupp0r_prometheus_cpp",
-        sha256 = "b4eff62bcdba10efd6210b9fa8a5b2505ad8ea6c211968be79aeb2c4c2f97338",
+        sha256 = "48dbad454d314b836cc667ec4def93ec4a6e4255fc8387c20cacb3b8b6faee30",
         # strip_prefix = "prometheus-cpp-1.1.0",
         # 1.1.0 with bazel 6 support
-        strip_prefix = "prometheus-cpp-81e208c250748657f1d5dab247e82c4429a931af",
+        # strip_prefix = "prometheus-cpp-81e208c250748657f1d5dab247e82c4429a931af",
+        strip_prefix = "prometheus-cpp-1.2.4",
         urls = [
             # "https://github.com/jupp0r/prometheus-cpp/archive/refs/tags/v1.1.0.tar.gz",
-            "https://github.com/jupp0r/prometheus-cpp/archive/81e208c250748657f1d5dab247e82c4429a931af.tar.gz",
+            # "https://github.com/jupp0r/prometheus-cpp/archive/81e208c250748657f1d5dab247e82c4429a931af.tar.gz",
+            "https://github.com/jupp0r/prometheus-cpp/archive/refs/tags/v1.2.4.tar.gz",
         ],
     )
 
