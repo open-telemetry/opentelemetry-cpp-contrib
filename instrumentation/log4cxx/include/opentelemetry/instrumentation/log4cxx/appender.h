@@ -66,6 +66,4 @@ public:
   void append(const spi::LoggingEventPtr &event, helpers::Pool &) override;
 };
 
-IMPLEMENT_LOG4CXX_OBJECT(OpenTelemetryAppender)
-
 }  // namespace log4cxx

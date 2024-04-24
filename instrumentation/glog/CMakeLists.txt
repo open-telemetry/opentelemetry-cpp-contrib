@@ -8,7 +8,7 @@ set(this_target opentelemetry_glog_sink)
 project(${this_target})
 
 find_package(opentelemetry-cpp REQUIRED)
-find_package(glog REQUIRED)
+find_package(glog 0.7.0 REQUIRED)
 
 add_library(${this_target} src/sink.cc)
 
@@ -69,6 +69,10 @@ if(OPENTELEMETRY_INSTALL)
 endif() # OPENTELEMETRY_INSTALL
 
 if(BUILD_TESTING)
+  find_package(GTest 1.12 REQUIRED)
+
+  enable_testing()
+
   set(testname sink_test)
 
   include(GoogleTest)
@@ -81,8 +85,8 @@ if(BUILD_TESTING)
   )
 
   target_link_libraries(${testname} PRIVATE
-    gmock
-    gtest
+    GTest::gmock
+    GTest::gtest
     glog::glog
     opentelemetry-cpp::ostream_log_record_exporter
     ${this_target}
