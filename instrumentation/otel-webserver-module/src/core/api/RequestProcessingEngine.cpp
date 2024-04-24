@@ -271,8 +271,6 @@ OTEL_SDK_API OTEL_SDK_STATUS_CODE RequestProcessingEngine::endInteraction(
     LOG4CXX_TRACE(mLogger, "Ending Span with id: " << interactionSpan.get());
     interactionSpan->End();
     rContext->removeInteraction();
-    std::string parentSpanId = m_sdkWrapper->ReturnCurrentSpanId();
-    LOG4CXX_TRACE(mLogger, "Ending Span with id: " << parentSpanId );
     return OTEL_SUCCESS;
 }
 

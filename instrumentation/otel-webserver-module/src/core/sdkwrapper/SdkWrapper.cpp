@@ -75,8 +75,8 @@ std::string SdkWrapper::ReturnCurrentSpanId(){
     constexpr int len = 2 * trace::SpanId::kSize;
     char* data = (char*)calloc(len, sizeof(char));
     spanId.ToLowerBase16(nostd::span<char, len>{data, len});
-	std::string donex(data);
-	return donex;
+	std::string currentSpanId(data);
+	return currentSpanId;
 }
 void SdkWrapper::PopulatePropagationHeaders(
 	std::unordered_map<std::string, std::string>& carrier) {
@@ -89,14 +89,6 @@ void SdkWrapper::PopulatePropagationHeaders(
 	for (auto &propagators : mSdkHelperFactory->GetPropagators()) {
 		propagators->Inject(otelCarrier, context);
 	}
-
-	// auto ult_span = trace::GetSpan(context);
-	// trace::SpanContext span_contextz2 = ult_span->GetContext();
-	// trace::SpanId parent_span_id2 = span_contextz2.span_id();
-    // constexpr int len = 2 * trace::SpanId::kSize;
-    // char* data = (char*)calloc(len, sizeof(char));
-    // parent_span_id2.ToLowerBase16(nostd::span<char, len>{data, len});
-
 	// copy all relevant kv pairs into carrier
 	for (int i = 0; i < CARRIER_HEADER_LEN; i++) {
 		auto carrier_header = otelCarrier.Get(CARRIER_HEADER_NAME[i]).data();
