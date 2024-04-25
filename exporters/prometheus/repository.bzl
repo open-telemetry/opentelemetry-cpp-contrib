@@ -19,10 +19,10 @@ def io_opentelemetry_cpp_contrib_deps():
     maybe(
         http_archive,
         name = "io_opentelemetry_cpp",
-        sha256 = "f30cd88bf898a5726d245eba882b8e81012021eb00df34109f4dfb203f005cea",
-        strip_prefix = "opentelemetry-cpp-1.11.0",
+        sha256 = "69b0fef380658e15be9d817bfcb32e3f5de96da652bcdce77b4e750ed8beddee",
+        strip_prefix = "opentelemetry-cpp-1.15.0",
         urls = [
-            "https://github.com/open-telemetry/opentelemetry-cpp/archive/v1.11.0.tar.gz",
+            "https://github.com/open-telemetry/opentelemetry-cpp/archive/v1.15.0.tar.gz",
         ],
     )
 
@@ -30,13 +30,10 @@ def io_opentelemetry_cpp_contrib_deps():
     maybe(
         http_archive,
         name = "com_github_jupp0r_prometheus_cpp",
-        sha256 = "b4eff62bcdba10efd6210b9fa8a5b2505ad8ea6c211968be79aeb2c4c2f97338",
-        # strip_prefix = "prometheus-cpp-1.1.0",
-        # 1.1.0 with bazel 6 support
-        strip_prefix = "prometheus-cpp-81e208c250748657f1d5dab247e82c4429a931af",
+        sha256 = "48dbad454d314b836cc667ec4def93ec4a6e4255fc8387c20cacb3b8b6faee30",
+        strip_prefix = "prometheus-cpp-1.2.4",
         urls = [
-            # "https://github.com/jupp0r/prometheus-cpp/archive/refs/tags/v1.1.0.tar.gz",
-            "https://github.com/jupp0r/prometheus-cpp/archive/81e208c250748657f1d5dab247e82c4429a931af.tar.gz",
+            "https://github.com/jupp0r/prometheus-cpp/archive/refs/tags/v1.2.4.tar.gz",
         ],
     )
 
