@@ -634,9 +634,9 @@ ngx_int_t ngx_opentelemetry_initialise_trace_id(ngx_http_request_t *r, ngx_http_
 ngx_int_t ngx_opentelemetry_initialise_span_id(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data) {
     ngx_http_otel_handles_t* ctx;
     ctx = ngx_http_get_module_ctx(r, ngx_http_opentelemetry_module);
-    if(ctx->current_span_id.len){
-        v->len = ctx->current_span_id.len;
-        v->data = ctx->current_span_id.data;
+    if(ctx->root_span_id.len){
+        v->len = ctx->root_span_id.len;
+        v->data = ctx->root_span_id.data;
         v->valid = 1;
         v->no_cacheable = 0;
         v->not_found = 0;
@@ -651,112 +651,44 @@ ngx_int_t ngx_opentelemetry_initialise_span_id(ngx_http_request_t *r, ngx_http_v
 }
 
 ngx_int_t ngx_opentelemetry_initialise_context_traceparent(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data) {
-    
-    ngx_str_t context_traceparent;
-    ngx_list_part_t  *part;
-    ngx_table_elt_t  *header;
-    ngx_table_elt_t  *h;
-    ngx_uint_t       nelts;
-
+    ngx_http_otel_handles_t* ctx;
+    ctx = ngx_http_get_module_ctx(r, ngx_http_opentelemetry_module);
     ngx_http_opentelemetry_loc_conf_t *conf = ngx_http_get_module_loc_conf(r, ngx_http_opentelemetry_module);
     ngx_str_t propagator_type = conf->nginxModulePropagatorType;
-    part = &r->headers_in.headers.part;
-    header = (ngx_table_elt_t*)part->elts;
-    nelts = part->nelts;
-    int is_found = 0;
-    if(!strcmp(propagator_type.data, "w3c")){
-        for(ngx_uint_t j = 0; j<nelts; j++){
-            h = &header[j];
-            if(strcasecmp("traceparent", h->key.data)==0){
-                is_found = 1;
-                context_traceparent.data = h->value.data;
-                context_traceparent.len = h->value.len;
-            }
-        }
-    }
-    if(is_found){
-        v->len = context_traceparent.len;
-        v->data = context_traceparent.data;
+    if(ctx->tracing_context.len && !strcmp(propagator_type.data, "w3c")){
+        v->len = ctx->tracing_context.len;
+        v->data = ctx->tracing_context.data;
         v->valid = 1;
         v->no_cacheable = 0;
         v->not_found = 0;
-    }
-    else{
+    }else{
         v->len = 0;
         v->data = "";
         v->valid = 1;
         v->no_cacheable = 0;
         v->not_found = 0;
     }
-    
     return NGX_OK;
 }
 
 ngx_int_t ngx_opentelemetry_initialise_context_b3(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data) {
-    ngx_str_t trace_id, span_id, sampled;
-    ngx_list_part_t  *part;
-    ngx_table_elt_t  *header;
-    ngx_table_elt_t  *h;
-    ngx_uint_t       nelts;
-
     ngx_http_otel_handles_t* ctx;
     ctx = ngx_http_get_module_ctx(r, ngx_http_opentelemetry_module);
-
     ngx_http_opentelemetry_loc_conf_t *conf = ngx_http_get_module_loc_conf(r, ngx_http_opentelemetry_module);
     ngx_str_t propagator_type = conf->nginxModulePropagatorType;
-    part = &r->headers_in.headers.part;
-    header = (ngx_table_elt_t*)part->elts;
-    nelts = part->nelts;
-    int is_found = 0;
-    if(!strcmp(propagator_type.data, "b3")){
-        for(ngx_uint_t j = 0; j<nelts; j++){
-            h = &header[j];
-            if(strcasecmp("x-b3-traceid", h->key.data)==0){
-                is_found += 4;
-                trace_id.data = h->value.data;
-                trace_id.len = h->value.len;
-            }else if(strcasecmp("x-b3-sampled", h->key.data)==0){
-                is_found += 1;
-                sampled.data = h->value.data;
-                sampled.len = h->value.len;
-            }
-        }
-        if(ctx->current_span_id.len == 0){
-            is_found += 2;
-            span_id.data = ctx->current_span_id.data;
-            span_id.len = ctx->current_span_id.len;
-        }
-    }
-    if(is_found >= 6){
-        size_t total_length = 50;
-        ngx_str_t result;
-        if(is_found & 1){
-            total_length+=2;
-        }
-        result.data = ngx_pcalloc(r->pool, total_length+1);
-        u_char *p = result.data;
-        p = ngx_copy(p, trace_id.data, trace_id.len);
-        p = ngx_copy(p, "-", 1);
-        p = ngx_copy(p, span_id.data, span_id.len);
-        if(is_found & 1){ 
-            p = ngx_copy(p, "-", 1);
-            p = ngx_copy(p, sampled.data, sampled.len); 
-        }
-        result.len = total_length;
-
-        v->len = result.len;
-        v->data = result.data;
+    if(ctx->tracing_context.len && !strcmp(propagator_type.data, "b3")){
+        v->len = ctx->tracing_context.len;
+        v->data = ctx->tracing_context.data;
         v->valid = 1;
         v->no_cacheable = 0;
         v->not_found = 0;
-    }
-    else{
+    }else{
         v->len = 0;
         v->data = "";
         v->valid = 1;
         v->no_cacheable = 0;
         v->not_found = 0;
-    }   
+    }
     return NGX_OK;
 }
 
@@ -1139,41 +1071,64 @@ static void otel_variables_decorator(ngx_http_request_t* r){
         }
     }
 
-    if(!strcmp(propagator_type.data, "b3")){
-        for(ngx_uint_t j = 0; j<nelts; j++){
-            h = &header[j];
-            if(strcasecmp("x-b3-spanid", h->key.data)==0){
-                span_id.data = h->value.data;
-                span_id.len = h->value.len;
-
-                ctx->current_span_id.data = span_id.data;
-                ctx->current_span_id.len = span_id.len;
-            }
-        }
-    }else{
-        for(ngx_uint_t j = 0; j<nelts; j++){
-            h = &header[j];
-            if(strcasecmp("traceparent", h->key.data)==0){
-                u_char *temp_span_id = ngx_pnalloc(r->pool, 17);
-                ngx_memcpy(temp_span_id, h->value.data + 36, 16);
-                temp_span_id[16] = '\0';
-                span_id.data = temp_span_id;
-                span_id.len = 16;
-
-                ctx->current_span_id.data = span_id.data;
-                ctx->current_span_id.len = span_id.len;
-            }
-        }
-    }
-
     if(ctx->root_span_id.len == 0){
         for(int i = 0 ; i < ctx->pheaderCount ; i++ ){
             if(strcasecmp(ctx->propagationHeaders[i].name , "Parent_Span_Id") == 0){
-                ctx->root_span_id.data = ctx->propagationHeaders[i].value;
+                ctx->root_span_id.data = ngx_pcalloc(r->pool, strlen(ctx->propagationHeaders[i].value));
+                ngx_memcpy(ctx->root_span_id.data, ctx->propagationHeaders[i].value, strlen(ctx->propagationHeaders[i].value));
                 ctx->root_span_id.len = strlen(ctx->propagationHeaders[i].value);
             }
         }
-
+    }
+    
+    if(ctx->tracing_context.len == 0){
+        if(!strcmp(propagator_type.data, "w3c")){
+            for(ngx_uint_t j = 0; j<nelts; j++){
+                h = &header[j];
+                if(strcasecmp("traceparent", h->key.data)==0){
+                    ctx->tracing_context.data = ngx_pcalloc(r->pool, h->value.len + 1);
+                    ngx_memcpy(ctx->tracing_context.data, h->value.data, h->value.len + 1);
+                    ngx_memcpy(ctx->tracing_context.data + 36, ctx->root_span_id.data , 16);
+                    ctx->tracing_context.len = h->value.len;
+                }
+            }
+        }
+        else if(!strcmp(propagator_type.data, "b3")){
+            ngx_str_t sampled;
+            ngx_uint_t context_part_count = 0;
+            for(ngx_uint_t j = 0; j<nelts; j++){
+                h = &header[j];
+                if(strcasecmp("x-b3-sampled", h->key.data)==0){
+                    context_part_count += 1;
+                    sampled.data = h->value.data;
+                    sampled.len = h->value.len;
+                }
+            }
+            if(ctx->root_span_id.len != 0){
+                context_part_count += 2;
+            }
+            if(ctx->trace_id.len != 0){
+                context_part_count += 4;
+            }
+            if(context_part_count >= 6){
+                size_t total_length = 49;
+                ngx_str_t result;
+                if(context_part_count & 1){
+                    total_length+=2;
+                }
+                ctx->tracing_context.data = ngx_pcalloc(r->pool, total_length+1);
+                u_char *p = ctx->tracing_context.data;
+                p = ngx_copy(p, ctx->trace_id.data, ctx->trace_id.len);
+                p = ngx_copy(p, "-", 1);
+                p = ngx_copy(p, ctx->root_span_id.data, ctx->root_span_id.len);
+                if(context_part_count & 1){ 
+                    p = ngx_copy(p, "-", 1);
+                    p = ngx_copy(p, sampled.data, sampled.len); 
+                }
+                p[total_length] = '\0';
+                ctx->tracing_context.len = total_length;
+            }
+        }
     }
 }
 
@@ -1289,9 +1244,6 @@ static void otel_stopInteraction(ngx_http_request_t* r, const char* module_name,
     }
     ngx_writeTrace(r->connection->log, __func__, "Stopping the Interaction for: %s", module_name);
     OTEL_SDK_STATUS_CODE res = stopModuleInteraction(otel_req_handle_key, backendName, backendType, errCode, msg);
-
-    ctx->current_span_id = ctx->root_span_id;
-    
     if (OTEL_ISFAIL(res))
     {
         ngx_writeError(r->connection->log, __func__, "Error: Stop Interaction failed, result code: %d", res);
@@ -1590,10 +1542,6 @@ static void stopMonitoringRequest(ngx_http_request_t* r,
         return;
     }
 
-    if (r->pool) {
-        ngx_pfree(r->pool, ctx);
-    }
-
     ngx_writeTrace(r->connection->log, __func__, "Stopping the Request Monitoring");
 
     response_payload* res_payload = NULL;
@@ -1602,6 +1550,10 @@ static void stopMonitoringRequest(ngx_http_request_t* r,
         res_payload->response_headers_count = 0;
         res_payload->otel_attributes_count = 0;
         fillResponsePayload(res_payload, r);
+    }
+    
+    if (r->pool) {
+        ngx_pfree(r->pool, ctx);
     }
 
     OTEL_SDK_STATUS_CODE res;
@@ -2206,13 +2158,30 @@ static void fillResponsePayload(response_payload* res_payload, ngx_http_request_
         res_payload->otel_attributes = ngx_pcalloc(r->pool, ((conf->nginxModuleAttributes->nelts + 1)/3) * sizeof(http_headers));
         ngx_uint_t otel_attributes_idx=0;
 
-        resolve_attributes_variables(r);
         for (ngx_uint_t j = 0, isKey = 1, isValue = 0; j < conf->nginxModuleAttributes->nelts; j++) {
+
+            ngx_str_t var_name = (((ngx_str_t *)(conf->nginxModuleAttributes->elts))[j]);
+            ngx_uint_t           key; // The variable's hashed key.
+            ngx_http_variable_value_t  *value; // Pointer to the value object.
+
+            if(var_name.data[0] == '$'){
+                // Get the hashed key.
+                ngx_str_t new_var_name = var_name;
+                new_var_name.data++;
+                new_var_name.len--;
+                key = ngx_hash_key(new_var_name.data, new_var_name.len);
+
+                // Get the variable.
+                value = ngx_http_get_variable(r, &new_var_name, key);
+                if (!(value == NULL || value->not_found)) {
+                    var_name.data = value->data;
+                    var_name.len = value->len;
+                } 
+            }
             
-            ngx_str_t data_obj = ((ngx_str_t *)(conf->nginxModuleAttributes->elts))[j];
-            char* data = ngx_pcalloc(r->pool, data_obj.len +1);
-            ngx_memcpy(data, (const char*)(data_obj.data) , data_obj.len);
-            data[data_obj.len] = '\0';
+            char* data = ngx_pcalloc(r->pool, var_name.len +1);
+            ngx_memcpy(data, (const char*)(var_name.data) , var_name.len);
+            data[var_name.len] = '\0';
 
             if(strcmp(data, ",") == 0){
                 otel_attributes_idx++;

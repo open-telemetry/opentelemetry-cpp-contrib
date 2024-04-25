@@ -130,7 +130,6 @@ typedef struct {
     OTEL_SDK_ENV_RECORD* propagationHeaders;
     int pheaderCount;
     ngx_str_t trace_id;
-    ngx_str_t current_span_id;
     ngx_str_t root_span_id;
     ngx_str_t tracing_context;
 }ngx_http_otel_handles_t;
