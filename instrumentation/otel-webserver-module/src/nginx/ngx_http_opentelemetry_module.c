@@ -161,7 +161,9 @@ otel_ngx_module otel_monitored_modules[] = {
     }
 };
 
-
+/*
+    List of nginx variables.
+*/
 static ngx_http_variable_t otel_ngx_variables[] = {
   {
     ngx_string("opentelemetry_trace_id"),
@@ -990,7 +992,7 @@ static OTEL_SDK_STATUS_CODE otel_startInteraction(ngx_http_request_t* r, const c
         {
             resolveBackends = conf->nginxModuleResolveBackends;
         }
-        OTEL_SDK_ENV_RECORD* propagationHeaders = ngx_pcalloc(r->pool, 6 * sizeof(OTEL_SDK_ENV_RECORD));
+        OTEL_SDK_ENV_RECORD* propagationHeaders = ngx_pcalloc(r->pool, ALL_PROPAGATION_HEADERS_COUNT * sizeof(OTEL_SDK_ENV_RECORD));
         if (propagationHeaders == NULL)
         {
             ngx_writeError(r->connection->log, __func__, "Failed to allocate memory for propagation headers");
@@ -1022,6 +1024,12 @@ static OTEL_SDK_STATUS_CODE otel_startInteraction(ngx_http_request_t* r, const c
     }
     return res;
 }
+
+/*
+Function otel_variables_decorator is used to fill the values for Nginx tracing info variables like opentelemetry_trace_id,
+opentelemetry_span_id, opentelemetry_context_b3, opentelemetry_context_traceparent. It fills the information into
+ctx (module context), which is then later used by the getter function of the given nginx variables.
+*/
 static void otel_variables_decorator(ngx_http_request_t* r){
     ngx_str_t trace_id, span_id, tracing_context;
     ngx_list_part_t  *part;
@@ -1037,6 +1045,7 @@ static void otel_variables_decorator(ngx_http_request_t* r){
     header = (ngx_table_elt_t*)part->elts;
     nelts = part->nelts;
     if(ctx->trace_id.len == 0){
+        // Getting value of trace_id from the request headers.
         if(!strcmp(propagator_type.data, "b3")){
             for(ngx_uint_t j = 0; j<nelts; j++){
                 h = &header[j];
@@ -1066,6 +1075,7 @@ static void otel_variables_decorator(ngx_http_request_t* r){
     }
 
     if(ctx->root_span_id.len == 0){
+        // Getting root span id fromm ctx->propagationHeaders which is filled during otel_payload_decorator() call.
         for(int i = 0 ; i < ctx->pheaderCount ; i++ ){
             if(strcasecmp(ctx->propagationHeaders[i].name , "Parent_Span_Id") == 0){
                 ctx->root_span_id.data = ngx_pcalloc(r->pool, strlen(ctx->propagationHeaders[i].value));
@@ -1076,6 +1086,7 @@ static void otel_variables_decorator(ngx_http_request_t* r){
     }
     
     if(ctx->tracing_context.len == 0){
+        // Constructing the complete trace context for w3c or b3 headers.
         if(!strcmp(propagator_type.data, "w3c")){
             for(ngx_uint_t j = 0; j<nelts; j++){
                 h = &header[j];
@@ -1276,7 +1287,7 @@ static void resolve_attributes_variables(ngx_http_request_t* r)
         ngx_uint_t           key; // The variable's hashed key.
         ngx_http_variable_value_t  *value; // Pointer to the value object.
 
-        if(var_name.data[0] == '$'){
+        if(var_name.data[0] == NGINX_VARIABLE_IDENTIFIER){
             // Get the hashed key.
             ngx_str_t new_var_name = var_name;
             new_var_name.data++;
@@ -2162,7 +2173,7 @@ static void fillResponsePayload(response_payload* res_payload, ngx_http_request_
             ngx_uint_t           key; // The variable's hashed key.
             ngx_http_variable_value_t  *value; // Pointer to the value object.
 
-            if(var_name.data[0] == '$'){
+            if(var_name.data[0] == NGINX_VARIABLE_IDENTIFIER){
                 // Get the hashed key.
                 ngx_str_t new_var_name = var_name;
                 new_var_name.data++;
