@@ -38,6 +38,8 @@ public:
 		const SpanKind& kind,
 		const OtelKeyValueMap& attributes,
 		const std::unordered_map<std::string, std::string>& carrier = {}) = 0;
+	
+	virtual std::string ReturnCurrentSpanId() = 0;
 
 	virtual void PopulatePropagationHeaders(
 		std::unordered_map<std::string, std::string>& carrier) = 0;

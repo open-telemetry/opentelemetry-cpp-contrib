@@ -182,8 +182,9 @@ Currently, Nginx Webserver module monitores some fixed set of modules, which get
 |*NginxModulePropagatorType*                   | w3c                 | OPTIONAL: Specify the Propagator used by the instrumentation (W3C and B3 propagators available). e.g.```NginxModulePropagatorType                  b3;```|
 |*NginxModuleOperationName*                   |                 | OPTIONAL: Specify the operation name (span name) for any specific endpoint.  e.g.```NginxModuleOperationName                  My_Backend;```|
 
+#### Other Configurations
 
-
+- Nginx variables related to traceing info - $opentelemetry_trace_id , $opentelemetry_span_id $opentelemetry_context_traceparent , $opentelemetry_context_b3
 
 ### Build and Installation
 #### Prerequisites

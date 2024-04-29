@@ -41,6 +41,8 @@ public:
 	void PopulatePropagationHeaders(
 		std::unordered_map<std::string, std::string>& carrier) override;
 
+	std::string ReturnCurrentSpanId() override;
+
 private:
 	trace::SpanKind GetTraceSpanKind(const SpanKind& kind);
 
