@@ -615,38 +615,36 @@ static ngx_int_t ngx_http_opentelemetry_create_variables(ngx_conf_t *cf){
 ngx_int_t ngx_opentelemetry_initialise_trace_id(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data) {
     ngx_http_otel_handles_t* ctx;
     ctx = ngx_http_get_module_ctx(r, ngx_http_opentelemetry_module);
+
     if(ctx->trace_id.len){
         v->len = ctx->trace_id.len;
         v->data = ctx->trace_id.data;
-        v->valid = 1;
-        v->no_cacheable = 0;
-        v->not_found = 0;
     }else{
         v->len = 0;
         v->data = "";
-        v->valid = 1;
-        v->no_cacheable = 0;
-        v->not_found = 0;
     }
+    v->valid = 1;
+    v->no_cacheable = 0;
+    v->not_found = 0;
+
     return NGX_OK;
 }
 
 ngx_int_t ngx_opentelemetry_initialise_span_id(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data) {
     ngx_http_otel_handles_t* ctx;
     ctx = ngx_http_get_module_ctx(r, ngx_http_opentelemetry_module);
+
     if(ctx->root_span_id.len){
         v->len = ctx->root_span_id.len;
         v->data = ctx->root_span_id.data;
-        v->valid = 1;
-        v->no_cacheable = 0;
-        v->not_found = 0;
     }else{
         v->len = 0;
         v->data = "";
-        v->valid = 1;
-        v->no_cacheable = 0;
-        v->not_found = 0;
     }
+    v->valid = 1;
+    v->no_cacheable = 0;
+    v->not_found = 0;
+
     return NGX_OK;
 }
 
@@ -658,16 +656,14 @@ ngx_int_t ngx_opentelemetry_initialise_context_traceparent(ngx_http_request_t *r
     if(ctx->tracing_context.len && !strcmp(propagator_type.data, "w3c")){
         v->len = ctx->tracing_context.len;
         v->data = ctx->tracing_context.data;
-        v->valid = 1;
-        v->no_cacheable = 0;
-        v->not_found = 0;
     }else{
         v->len = 0;
         v->data = "";
-        v->valid = 1;
-        v->no_cacheable = 0;
-        v->not_found = 0;
     }
+    v->valid = 1;
+    v->no_cacheable = 0;
+    v->not_found = 0;
+    
     return NGX_OK;
 }
 
@@ -679,16 +675,14 @@ ngx_int_t ngx_opentelemetry_initialise_context_b3(ngx_http_request_t *r, ngx_htt
     if(ctx->tracing_context.len && !strcmp(propagator_type.data, "b3")){
         v->len = ctx->tracing_context.len;
         v->data = ctx->tracing_context.data;
-        v->valid = 1;
-        v->no_cacheable = 0;
-        v->not_found = 0;
     }else{
         v->len = 0;
         v->data = "";
-        v->valid = 1;
-        v->no_cacheable = 0;
-        v->not_found = 0;
     }
+    v->valid = 1;
+    v->no_cacheable = 0;
+    v->not_found = 0;
+
     return NGX_OK;
 }
 
@@ -1058,11 +1052,11 @@ static void otel_variables_decorator(ngx_http_request_t* r){
             for(ngx_uint_t j = 0; j<nelts; j++){
                 h = &header[j];
                 if(strcasecmp("traceparent", h->key.data)==0){
-                    u_char *temp_trace_id = ngx_pnalloc(r->pool, 33);
-                    ngx_memcpy(temp_trace_id, h->value.data + 3, 32);
-                    temp_trace_id[32] = '\0';
+                    u_char *temp_trace_id = ngx_pnalloc(r->pool, TRACE_ID_LEN + 1);
+                    ngx_memcpy(temp_trace_id, h->value.data + 3, TRACE_ID_LEN);
+                    temp_trace_id[TRACE_ID_LEN] = '\0';
                     trace_id.data = temp_trace_id;
-                    trace_id.len = 32;
+                    trace_id.len = TRACE_ID_LEN;
 
                     ctx->trace_id.data = trace_id.data;
                     ctx->trace_id.len = trace_id.len;
@@ -1088,40 +1082,44 @@ static void otel_variables_decorator(ngx_http_request_t* r){
                 if(strcasecmp("traceparent", h->key.data)==0){
                     ctx->tracing_context.data = ngx_pcalloc(r->pool, h->value.len + 1);
                     ngx_memcpy(ctx->tracing_context.data, h->value.data, h->value.len + 1);
-                    ngx_memcpy(ctx->tracing_context.data + 36, ctx->root_span_id.data , 16);
+                    ngx_memcpy(ctx->tracing_context.data + TRACE_ID_LEN + 4, ctx->root_span_id.data , SPAN_ID_LEN);
+                    // We are trying to replace span_id in the traceparent context, so we need to start after version 
+                    // and trace_id in the traceparent context
                     ctx->tracing_context.len = h->value.len;
                 }
             }
         }
         else if(!strcmp(propagator_type.data, "b3")){
             ngx_str_t sampled;
-            ngx_uint_t context_part_count = 0;
+            ngx_uint_t has_trace_id = 0, has_span_id = 0 , has_sampled = 0;
+
             for(ngx_uint_t j = 0; j<nelts; j++){
                 h = &header[j];
                 if(strcasecmp("x-b3-sampled", h->key.data)==0){
-                    context_part_count += 1;
+                    has_sampled = 1;
                     sampled.data = h->value.data;
                     sampled.len = h->value.len;
                 }
             }
             if(ctx->root_span_id.len != 0){
-                context_part_count += 2;
+                has_span_id = 1;
             }
             if(ctx->trace_id.len != 0){
-                context_part_count += 4;
+                has_trace_id = 1;
             }
-            if(context_part_count >= 6){
-                size_t total_length = 49;
+            if(has_trace_id && has_span_id){
+                size_t total_length = TRACE_ID_LEN + SPAN_ID_LEN + 1;
                 ngx_str_t result;
-                if(context_part_count & 1){
+                if(has_sampled){
                     total_length+=2;
+                    // length of "sampled" field and a '-'
                 }
                 ctx->tracing_context.data = ngx_pcalloc(r->pool, total_length+1);
                 u_char *p = ctx->tracing_context.data;
                 p = ngx_copy(p, ctx->trace_id.data, ctx->trace_id.len);
                 p = ngx_copy(p, "-", 1);
                 p = ngx_copy(p, ctx->root_span_id.data, ctx->root_span_id.len);
-                if(context_part_count & 1){ 
+                if(has_sampled){ 
                     p = ngx_copy(p, "-", 1);
                     p = ngx_copy(p, sampled.data, sampled.len); 
                 }

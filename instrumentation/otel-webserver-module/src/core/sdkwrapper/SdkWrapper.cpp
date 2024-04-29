@@ -72,10 +72,11 @@ std::string SdkWrapper::ReturnCurrentSpanId(){
 	auto currentSpan = trace::GetSpan(context);
 	trace::SpanContext spanContext = currentSpan->GetContext();
 	trace::SpanId spanId = spanContext.span_id();
-    constexpr int len = 2 * trace::SpanId::kSize;
-    char* data = (char*)calloc(len, sizeof(char));
-    spanId.ToLowerBase16(nostd::span<char, len>{data, len});
-	std::string currentSpanId(data);
+	constexpr int len = 2 * trace::SpanId::kSize;
+	char* data = new char[len];
+	spanId.ToLowerBase16(nostd::span<char, len>{data, len});
+	std::string currentSpanId(data, len);
+	delete[] data;
 	return currentSpanId;
 }
 void SdkWrapper::PopulatePropagationHeaders(

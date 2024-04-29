@@ -24,6 +24,8 @@
 #define LOWEST_HTTP_ERROR_CODE 400
 #define STATUS_CODE_BYTE_COUNT 6
 static const int CONFIG_COUNT = 18; // Number of key value pairs in config
+static const int TRACE_ID_LEN = 32; // Number of key value pairs in config
+static const int SPAN_ID_LEN = 16; // Number of key value pairs in config
 
 /*  The following enum has one-to-one mapping with
     otel_monitored_modules[] defined in .c file.

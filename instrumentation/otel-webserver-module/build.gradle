@@ -8,7 +8,8 @@ apply plugin: 'de.undercouch.download'
 
 def coverageEnabled = System.getenv('enableCoverage')
 def target_system = System.getProperty('targetSystem') ?: 'centos6'
-def buildType = System.getProperty('buildType') ?: 'release'
+// def buildType = System.getProperty('buildType') ?: 'release'
+def buildType = 'debug'
 
 project.ext {
     // To do a 32-bit build, pass "-Dos.arch=x86"
