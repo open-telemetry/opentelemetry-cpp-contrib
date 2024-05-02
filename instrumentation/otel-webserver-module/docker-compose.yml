@@ -7,9 +7,6 @@ services:
         build:
             context: .
             dockerfile: Dockerfile
-            platforms:
-                - "linux/amd64"
-                - "linux/arm64"
         image: apache_centos
         profiles:
             - default
@@ -22,12 +19,25 @@ services:
         build:
             context: .
             dockerfile: docker/centos7/Dockerfile
-            platforms:
-                - "linux/amd64"
-                - "linux/arm64"
         image: apache_centos7
         hostname: webserver
         container_name: webserver_centos7
+        command: bash -c " httpd -k start && tail -f /dev/null "
+        profiles:
+            - centos7
+        ports:
+            - "9004:80"
+        depends_on:
+            - otel-collector
+    webserver_centos7-arm64:
+        build:
+            context: .
+            dockerfile: docker/centos7-arm64/Dockerfile
+            platforms:
+                - "linux/arm64"
+        image: apache_centos7_arm64
+        hostname: webserver
+        container_name: webserver_centos7_arm64
         command: bash -c " httpd -k start && tail -f /dev/null "
         profiles:
             - centos7
@@ -39,12 +49,25 @@ services:
         build:
             context: .
             dockerfile: docker/ubuntu20.04/Dockerfile
-            platforms:
-                - "linux/amd64"
-                - "linux/arm64"
         image: apache_ubuntu
         hostname: webserver
         container_name: webserver_ubuntu
+        command: bash -c "apache2ctl -k start && tail -f /dev/null "
+        profiles:
+            - ubuntu20.04
+        ports:
+            - "9000:80"
+        depends_on:
+            - otel-collector
+    webserver_ubuntu-arm64:
+        build:
+            context: .
+            dockerfile: docker/ubuntu20.04-arm64/Dockerfile
+            platforms:
+                - "linux/arm64"
+        image: apache_ubuntu_arm64
+        hostname: webserver
+        container_name: webserver_ubuntu_arm64
         command: bash -c "apache2ctl -k start && tail -f /dev/null "
         profiles:
             - ubuntu20.04
@@ -56,9 +79,6 @@ services:
         build:
             context: .
             dockerfile: Dockerfile
-            platforms:
-                - "linux/amd64"
-                - "linux/arm64"
         image: nginx_centos
         hostname: webserver
         container_name: nginx_centos
@@ -73,12 +93,25 @@ services:
         build:
             context: .
             dockerfile: docker/centos7/Dockerfile
-            platforms:
-                - "linux/amd64"
-                - "linux/arm64"
         image: nginx_centos7
         hostname: webserver
         container_name: nginx_centos7
+        command: bash -c "export LD_LIBRARY_PATH=/opt/opentelemetry-webserver-sdk/sdk_lib/lib && nginx && tail -f /dev/null"
+        profiles:
+            - centos7_nginx
+        ports:
+            - "8012:80"
+        depends_on:
+            - otel-collector
+    nginx_centos7-arm64:
+        build:
+            context: .
+            dockerfile: docker/centos7/Dockerfile
+            platforms:
+                - "linux/arm64"
+        image: nginx_centos7_arm64
+        hostname: webserver
+        container_name: nginx_centos7_arm64
         command: bash -c "export LD_LIBRARY_PATH=/opt/opentelemetry-webserver-sdk/sdk_lib/lib && nginx && tail -f /dev/null"
         profiles:
             - centos7_nginx
@@ -90,12 +123,25 @@ services:
         build:
             context: .
             dockerfile: docker/ubuntu20.04/Dockerfile
-            platforms:
-                - "linux/amd64"
-                - "linux/arm64"
         image: nginx_ubuntu
         hostname: webserver
         container_name: nginx_ubuntu
+        command: bash -c "export LD_LIBRARY_PATH=/opt/opentelemetry-webserver-sdk/sdk_lib/lib && nginx && tail -f /dev/null"
+        profiles:
+            - ubuntu20.04_nginx
+        ports:
+            - "8016:80"
+        depends_on:
+            - otel-collector
+    nginx_ubuntu-arm64:
+        build:
+            context: .
+            dockerfile: docker/ubuntu20.04-arm64/Dockerfile
+            platforms:
+                - "linux/arm64"
+        image: nginx_ubuntu_arm64
+        hostname: webserver
+        container_name: nginx_ubuntu_arm64
         command: bash -c "export LD_LIBRARY_PATH=/opt/opentelemetry-webserver-sdk/sdk_lib/lib && nginx && tail -f /dev/null"
         profiles:
             - ubuntu20.04_nginx

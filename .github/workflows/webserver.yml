@@ -13,8 +13,8 @@ on:
       - '.github/workflows/webserver.yml'
 
 jobs:
-  webserver-build-test-ubuntu-x64:
-    name: webserver-ubuntu-build-x64
+  webserver-build-test-ubuntu:
+    name: webserver-ubuntu-build
     runs-on: ubuntu-20.04
     steps:
       - name: checkout otel webserver
@@ -24,7 +24,6 @@ jobs:
         uses: docker/setup-buildx-action@master
         with:
           install: true
-          platforms: linux/amd64
       - name: cache docker layers
         uses: actions/cache@v3
         with:
@@ -35,18 +34,18 @@ jobs:
       - name: setup docker image
         run: |
           cd instrumentation/otel-webserver-module
-          docker buildx build -t apache_ubuntu_amd64 -f docker/ubuntu20.04/Dockerfile \
-            --cache-from type=local,src=/tmp/buildx-cache/apache_ubuntu_amd64 \
-            --cache-to type=local,dest=/tmp/buildx-cache/apache_ubuntu_amd64-new \
+          docker buildx build -t apache_ubuntu -f docker/ubuntu20.04/Dockerfile \
+            --cache-from type=local,src=/tmp/buildx-cache/apache_ubuntu \
+            --cache-to type=local,dest=/tmp/buildx-cache/apache_ubuntu-new \
             --load .
       - name: build
         run: |
-          docker run -idt --name apache_ubuntu_container_amd64 apache_ubuntu_amd64 /bin/bash
+          docker run -idt --name apache_ubuntu_container apache_ubuntu /bin/bash
           cd instrumentation/otel-webserver-module
-          docker exec apache_ubuntu_container_amd64 bash -c \
+          docker exec apache_ubuntu_container bash -c \
             'cd /otel-webserver-module; rm -rf *;'
-          docker cp . $(docker inspect --format="{{.Id}}" apache_ubuntu_container_amd64):/otel-webserver-module/
-          docker exec apache_ubuntu_container_amd64 bash -c        \
+          docker cp . $(docker inspect --format="{{.Id}}" apache_ubuntu_container):/otel-webserver-module/
+          docker exec apache_ubuntu_container bash -c              \
             'cd /otel-webserver-module; rm -rf build;              \
             cp -r /dependencies /otel-webserver-module/;           \
             cp -r /build-dependencies /otel-webserver-module/;     \
@@ -55,8 +54,8 @@ jobs:
 
       - name: update cache
         run: |
-          rm -rf /tmp/buildx-cache/apache_ubuntu_amd64
-          mv /tmp/buildx-cache/apache_ubuntu_amd64-new /tmp/buildx-cache/apache_ubuntu_amd64
+          rm -rf /tmp/buildx-cache/apache_ubuntu
+          mv /tmp/buildx-cache/apache_ubuntu-new /tmp/buildx-cache/apache_ubuntu
 
   webserver-build-test-ubuntu-arm64:
     name: webserver-ubuntu-build-arm64
@@ -82,7 +81,7 @@ jobs:
       - name: setup docker image
         run: |
           cd instrumentation/otel-webserver-module
-          docker buildx build -t apache_ubuntu_arm64 -f docker/ubuntu20.04/Dockerfile \
+          docker buildx build -t apache_ubuntu_arm64 -f docker/ubuntu20.04-arm64/Dockerfile \
             --cache-from type=local,src=/tmp/buildx-cache/apache_ubuntu_arm64 \
             --cache-to type=local,dest=/tmp/buildx-cache/apache_ubuntu_arm64-new \
             --load . --platform linux/arm64
@@ -128,8 +127,8 @@ jobs:
       #     sleep 30
       #     ./gradlew :test:integration:integrationTests -i
 
-  webserver-build-test-centos7-x64:
-    name: webserver-centos7-build-x64
+  webserver-build-test-centos7:
+    name: webserver-centos7-build
     runs-on: ubuntu-20.04
     steps:
       - name: checkout otel webserver
@@ -139,7 +138,6 @@ jobs:
         uses: docker/setup-buildx-action@master
         with:
           install: true
-          platforms: linux/amd64
       # - name: cache docker layers
       #   uses: actions/cache@v3
       #   with:
@@ -150,43 +148,43 @@ jobs:
       - name: setup docker image
         run: |
           cd instrumentation/otel-webserver-module
-          docker buildx build -t apache_centos7_amd64 -f docker/centos7/Dockerfile \
+          docker buildx build -t apache_centos7 -f docker/centos7/Dockerfile \
             --load .
       - name: build
         run: |
-          docker run -idt --name apache_centos7_container_amd64 apache_centos7_amd64 /bin/bash
+          docker run -idt --name apache_centos7_container apache_centos7 /bin/bash
           cd instrumentation/otel-webserver-module
-          docker exec apache_centos7_container_amd64 bash -c \
+          docker exec apache_centos7_container bash -c \
             'cd /otel-webserver-module; rm -rf *;'
-          docker cp . $(docker inspect --format="{{.Id}}" apache_centos7_container_amd64):/otel-webserver-module/
-          docker exec apache_centos7_container_amd64 bash -c \
+          docker cp . $(docker inspect --format="{{.Id}}" apache_centos7_container):/otel-webserver-module/
+          docker exec apache_centos7_container bash -c \
             'cd /otel-webserver-module; rm -rf build; \
             cp -r /dependencies /otel-webserver-module/;           \
             cp -r /build-dependencies /otel-webserver-module/;     \
             ./gradlew assembleWebServerModule'
       - name: unit test
         run: |
-          docker exec apache_centos7_container_amd64 bash -c \
+          docker exec apache_centos7_container bash -c \
             'cd /otel-webserver-module; ./gradlew runUnitTest'
       # - name: update cache
       #   run: |
-      #     rm -rf /tmp/buildx-cache/apache_centos7_amd64
-      #     mv /tmp/buildx-cache/apache_centos7_amd64-new /tmp/buildx-cache/apache_centos7_amd64
+      #     rm -rf /tmp/buildx-cache/apache_centos7
+      #     mv /tmp/buildx-cache/apache_centos7-new /tmp/buildx-cache/apache_centos7
       - name: copy artifacts
         id: artifacts
         run: |
           cd instrumentation/otel-webserver-module
-          mkdir -p /tmp/apache_centos7_amd64/
-          docker cp apache_centos7_container_amd64:/otel-webserver-module/build/opentelemetry-webserver-sdk-x64-linux.tgz \
-            /tmp/apache_centos7_amd64/
+          mkdir -p /tmp/apache_centos7/
+          docker cp apache_centos7_container:/otel-webserver-module/build/opentelemetry-webserver-sdk-x64-linux.tgz \
+            /tmp/apache_centos7/
       - name: upload artifacts
         uses: actions/upload-artifact@v3
         with:
           name: opentelemetry-webserver-sdk-x64-linux.tgz
-          path: /tmp/apache_centos7_amd64/opentelemetry-webserver-sdk-x64-linux.tgz
+          path: /tmp/apache_centos7/opentelemetry-webserver-sdk-x64-linux.tgz
       - name: run integrationtest
         run: |
-          docker rm -f apache_centos7_container_amd64
+          docker rm -f apache_centos7_container
           cd instrumentation/otel-webserver-module
           docker compose --profile centos7 up -d
           docker ps -a
@@ -217,10 +215,8 @@ jobs:
       - name: setup docker image
         run: |
           cd instrumentation/otel-webserver-module
-          docker buildx build -t apache_centos7_arm64 -f docker/centos7/Dockerfile \
-            --load . --platform linux/arm64 --build-arg BUILD_ARCH='arm64' \
-            --build-arg CMAKE_ARCH='aarch64' --build-arg GOSU_ARCH='arm64' \
-            --build-arg JDK_ARCH='aarch64' --build-arg NGINX_ARCH='aarch64'
+          docker buildx build -t apache_centos7_arm64 -f docker/centos7-arm64/Dockerfile \
+            --load . --platform linux/arm64
       - name: build
         run: |
           docker run -idt --platform linux/arm64 --name apache_centos7_container_arm64 apache_centos7_arm64 /bin/bash

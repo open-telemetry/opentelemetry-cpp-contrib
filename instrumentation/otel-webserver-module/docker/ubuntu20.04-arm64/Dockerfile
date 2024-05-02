@@ -3,20 +3,20 @@ ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get -y update && apt-get -y upgrade && apt-get -y dist-upgrade
 RUN apt-get install -qq -y --ignore-missing \
-	build-essential		                    \
-	curl			                        \
-	git			                            \
-	make			                        \
-	pkg-config		                        \
-	protobuf-compiler	                    \
-	libprotobuf-dev                         \
-	python			                        \
-	sudo			                        \
-	tar			                            \
-	zip			                            \
-	unzip			                        \
-	wget			                        \
-    cmake                                   
+    build-essential		                    \
+    curl			                        \
+    git			                            \
+    make			                        \
+    pkg-config		                        \
+    protobuf-compiler	                    \
+    libprotobuf-dev                         \
+    python			                        \
+    sudo			                        \
+    tar			                            \
+    zip			                            \
+    unzip			                        \
+    wget			                        \
+    cmake
 
 RUN apt-get install -y \
     lcov    \
@@ -42,11 +42,11 @@ ARG NGINX_VERSION="1.26.0"
 
 # Install GRPC
 RUN git clone --shallow-submodules --depth 1 --recurse-submodules -b v${GRPC_VERSION} \
-  https://github.com/grpc/grpc \
-  && cd grpc \
-  && mkdir -p cmake/build \
-  && cd cmake/build \
-  && cmake \
+    https://github.com/grpc/grpc \
+    && cd grpc \
+    && mkdir -p cmake/build \
+    && cd cmake/build \
+    && cmake \
     -DgRPC_INSTALL=ON \
     -DgRPC_BUILD_TESTS=OFF \
     -DCMAKE_BUILD_TYPE=Release \
@@ -57,9 +57,9 @@ RUN git clone --shallow-submodules --depth 1 --recurse-submodules -b v${GRPC_VER
     -DgRPC_BUILD_GRPC_PYTHON_PLUGIN=OFF \
     -DgRPC_BUILD_GRPC_RUBY_PLUGIN=OFF \
     ../.. \
-  && make -j2 \
-  && make install \
-  && cd ../../..
+    && make -j2 \
+    && make install \
+    && cd ../../..
 
 # install opentelemetry
 RUN mkdir -p dependencies/opentelemetry/${OPENTELEMETRY_VERSION}/lib \
@@ -201,7 +201,7 @@ RUN cp -r /dependencies /otel-webserver-module/ \
     && ./gradlew assembleWebServerModule -DtargetSystem=ubuntu
 
 RUN cd /otel-webserver-module/build \
-    && tar -xf opentelemetry-webserver-sdk-x64-linux.tgz \
+    && tar -xf opentelemetry-webserver-sdk-*-linux.tgz \
     && mv -f opentelemetry-webserver-sdk /opt/ \
     && cd ../ \
     && cp opentelemetry_module.conf /etc/apache2/opentelemetry_module.conf \

@@ -1,17 +1,13 @@
 FROM centos:6.9
 
 ARG BUILD_NUMBER
-ARG BUILD_ARCH='x64'
 
-LABEL NAME=apm/build-image-webserver-agent-centos6-${BUILD_ARCH} VERSION=$BUILD_NUMBER
+LABEL NAME=apm/build-image-webserver-agent-centos6-x64 VERSION=$BUILD_NUMBER
 
-ARG GOSU_ARCH='amd64'
-ENV GOSU_ARCH=${GOSU_ARCH}
-ARG JDK_ARCH='x64'
-ENV JDK_ARCH=${JDK_ARCH}
+ENV GOSU_ARCH amd64
+ENV JDK_ARCH x64
 
-ARG PYTHON_VERSION="2.7.18"
-ARG CMAKE_ARCH='x86_64'
+ARG PYTHON_VERSION="2.7.8"
 ARG CMAKE_VERSION="3.20"
 ARG CMAKE_0VERSION="3.20.0"
 ARG GRPC_VERSION="1.36.4"
@@ -22,14 +18,12 @@ ARG APR_VERSION="1.7.0"
 ARG EXPAT_VERSION="2.3.0"
 ARG EXPAT_RVERSION="R_2_3_0"
 ARG APRUTIL_VERSION="1.6.1"
-ARG AUTOCONF_BUILD_TYPE='x86_64-unknown-linux-gnu'
 ARG AUTOCONF_VERSION="2.68"
 ARG LIBTOOL_VERSION="2.4.6"
 ARG LOG4CXX_VERSION="0.11.0"
 ARG GTEST_VERSION="1.10.0"
 ARG AUTOMAKE_VERSION="1.16.3"
 ARG PCRE_VERSION="8.44"
-ARG NGINX_ARCH='x86_64'
 ARG NGINX_VERSION="1.26.0"
 
 
@@ -79,9 +73,9 @@ RUN wget http://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERS
     && rm -rf Python-${PYTHON_VERSION}.tar.xz && rm -rf Python-${PYTHON_VERSION}.tar
 
 # install gosu for easy step-down from root (from https://github.com/tianon/gosu/blob/master/INSTALL.md#from-centos)
-ENV GOSU_VERSION=1.11
+ENV GOSU_VERSION=1.10
 
-RUN curl -o /usr/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-${GOSU_ARCH}" \
+RUN curl -o /usr/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64" \
     && chmod +x /usr/bin/gosu \
     # Verify that the binary works
     && gosu nobody true
@@ -91,11 +85,11 @@ RUN yum install git -y \
   && yum clean all
 
 # install cmake 
-RUN wget https://cmake.org/files/v${CMAKE_VERSION}/cmake-${CMAKE_0VERSION}-linux-${CMAKE_ARCH}.tar.gz \
-  && tar -xvf cmake-${CMAKE_0VERSION}-linux-${CMAKE_ARCH}.tar.gz \
-  && cd cmake-${CMAKE_0VERSION}-linux-${CMAKE_ARCH} \
+RUN wget https://cmake.org/files/v${CMAKE_VERSION}/cmake-${CMAKE_0VERSION}-linux-x86_64.tar.gz \
+  && tar -xvf cmake-${CMAKE_0VERSION}-linux-x86_64.tar.gz \
+  && cd cmake-${CMAKE_0VERSION}-linux-x86_64 \
   && cp -rf * /usr/local/ \
-  && cd .. && rm -rf cmake-${CMAKE_0VERSION}-linux-${CMAKE_ARCH}.tar.gz
+  && cd .. && rm -rf cmake-${CMAKE_0VERSION}-linux-x86_64.tar.gz
 
 # install grpc. If planning to upgrade, make sure sed command works
 RUN git clone https://github.com/grpc/grpc \
@@ -158,7 +152,7 @@ RUN yum install m4 -y
 RUN wget --no-check-certificate https://ftp.gnu.org/gnu/autoconf/autoconf-${AUTOCONF_VERSION}.tar.gz \
     && tar xzf autoconf-${AUTOCONF_VERSION}.tar.gz  \
     && cd autoconf-${AUTOCONF_VERSION} \
-    && ./configure --prefix=/usr/ --build=${AUTOCONF_BUILD_TYPE} && make -j && make install && autoconf -V \
+    && ./configure --prefix=/usr/ && make -j && make install && autoconf -V \
     && cd .. && rm -rf autoconf-${AUTOCONF_VERSION}.tar.gz
 
 # install automake
@@ -263,13 +257,13 @@ RUN cp -r /dependencies /otel-webserver-module/ \
 
 RUN echo '[nginx]' >> /etc/yum.repos.d/nginx.repo \
     && echo 'name=nginx repo' >> /etc/yum.repos.d/nginx.repo \
-    && echo "baseurl=https://nginx.org/packages/centos/6/${NGINX_ARCH}" >> /etc/yum.repos.d/nginx.repo \
+    && echo 'baseurl=https://nginx.org/packages/centos/6/x86_64' >> /etc/yum.repos.d/nginx.repo \
     && echo 'gpgcheck=0' >> /etc/yum.repos.d/nginx.repo \ 
     && echo 'enabled=1' >> /etc/yum.repos.d/nginx.repo \
     && yum install nginx -y 
 
 RUN cd /otel-webserver-module/build \
-    && tar -xf opentelemetry-webserver-sdk-${BUILD_ARCH}-linux.tgz \
+    && tar -xf opentelemetry-webserver-sdk-x64-linux.tgz \
     && mv -f opentelemetry-webserver-sdk /opt/ \
     && cd ../ \
     && cp opentelemetry_module.conf /etc/httpd/conf/ \
@@ -284,7 +278,7 @@ RUN cp /otel-webserver-module/conf/nginx/opentelemetry_module.conf /opt/ \
     && cd /
 
 # Remove unwanted files
-RUN rm -rf grpc && rm -rf autoconf-${AUTOCONF_VERSION} && rm -rf automake-${AUTOMAKE_VERSION} && rm -rf cmake-${CMAKE_VERSION}-linux-${CMAKE_ARCH} \
+RUN rm -rf grpc && rm -rf autoconf-${AUTOCONF_VERSION} && rm -rf automake-${AUTOMAKE_VERSION} && rm -rf cmake-${CMAKE_VERSION}-linux-x86_64 \
     && rm -rf libtool-${LIBTOOL_VERSION} && rm -rf Python-${PYTHON_VERSION} \
     && rm -f apr-${APR_VERSION}.tar.gz && rm -f apr-util-${APRUTIL_VERSION}.tar.gz \
     && rm -f httpd-2.2.31.tar.gz && rm -f httpd-2.4.23.tar.gz
