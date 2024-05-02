@@ -26,7 +26,7 @@ ARG AUTOMAKE_VERSION="1.16.3"
 ARG PERL_VERSION="5.20.2"
 ARG PERL_CPANVERSION="5.0"
 ARG PCRE_VERSION="8.44"
-ARG NGINX_VERSION="1.24.0"
+ARG NGINX_VERSION="1.26.0"
 
 # create default non-root user
 RUN groupadd -r swuser && useradd -u 1000 -g swuser -m -s /sbin/nologin -c "default non-root user" swuser
@@ -290,7 +290,7 @@ RUN cd /otel-webserver-module/build \
     && cd /
 
 RUN cp /otel-webserver-module/conf/nginx/opentelemetry_module.conf /opt/ \
-    && sed -i '8i load_module /opt/opentelemetry-webserver-sdk/WebServerModule/Nginx/1.24.0/ngx_http_opentelemetry_module.so;' /etc/nginx/nginx.conf \
+    && sed -i '8i load_module /opt/opentelemetry-webserver-sdk/WebServerModule/Nginx/1.26.0/ngx_http_opentelemetry_module.so;' /etc/nginx/nginx.conf \
     && sed -i '33i include /opt/opentelemetry_module.conf;' /etc/nginx/nginx.conf \ 
     && cd /
 
