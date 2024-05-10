@@ -42,31 +42,14 @@ wget https://github.com/libevent/libevent/releases/download/release-2.1.12-stabl
    && make -j2 \
    && make install
 
-git clone --shallow-submodules --depth 1 --recurse-submodules -b v0.14.0 \
-  https://github.com/apache/thrift.git \
-   && cd thrift \
-   && mkdir -p cmake-build \
-   && cd cmake-build \
-   && cmake -DCMAKE_BUILD_TYPE=Release \
-      -DBUILD_TESTING=OFF \
-      -DBUILD_COMPILER=OFF \
-      -DBUILD_C_GLIB=OFF \
-      -DBUILD_JAVA=OFF \
-      -DBUILD_JAVASCRIPT=OFF \
-      -DBUILD_NODEJS=OFF \
-      -DBUILD_PYTHON=OFF \
-      .. \
-   && make -j2 \
-   && make install
-
-git clone --shallow-submodules --depth 1 --recurse-submodules -b "v1.0.0-rc1" \
+git clone --shallow-submodules --depth 1 --recurse-submodules -b "v1.15.0" \
    https://github.com/open-telemetry/opentelemetry-cpp.git \
    && cd opentelemetry-cpp \
    && mkdir build \
    && cd build \
    && cmake -DCMAKE_BUILD_TYPE=Release \
-     -DWITH_OTLP=ON \
-     -DWITH_JAEGER=ON \
+     -DWITH_OTLP_HTTP=ON \
+     -DWITH_OTLP_GRPC=ON \
      -DBUILD_TESTING=OFF \
      -DWITH_EXAMPLES=OFF \
      -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
