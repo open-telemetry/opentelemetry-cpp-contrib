@@ -545,7 +545,14 @@ ngx_int_t FinishNgxSpan(ngx_http_request_t* req) {
   }
 
   auto span = context->request_span;
-  span->SetAttribute("http.status_code", req->headers_out.status);
+  const auto status_code = req->headers_out.status;
+  span->SetAttribute("http.status_code", status_code);
+
+  if (status_code >= 500) {
+    span->SetStatus(trace::StatusCode::kError);
+  } else {
+    span->SetStatus(trace::StatusCode::kOk);
+  }
 
   OtelNgxLocationConf* locConf = GetOtelLocationConf(req);
 
