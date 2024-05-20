@@ -34,6 +34,8 @@
 #  define FLUENT_FIELD_SPAN_KIND            "kind"                  /* Span Kind               */
 #  define FLUENT_FIELD_SPAN_LINKS           "links"                 /* Span Links array        */
 
+#  define FLUENT_FIELD_TRACE_STATE          "traceState"            /* Trace State             */
+
 #  define FLUENT_FIELD_PROPERTIES           "env_properties"
 
 /* Span option constants */
