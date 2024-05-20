@@ -26,7 +26,7 @@ static bool ToTimestampDefault(const boost::log::record_view &record,
   static constexpr boost::posix_time::ptime kEpochTime(boost::gregorian::date(1970, 1, 1));
   static constexpr boost::posix_time::ptime kInvalid{};
 
-  const auto &timestamp =
+  auto timestamp =
       boost::log::extract_or_default<boost::posix_time::ptime>(record["TimeStamp"], kInvalid);
   value = system_clock::time_point(nanoseconds((timestamp - kEpochTime).total_nanoseconds()));
   return timestamp != kInvalid;
@@ -36,7 +36,7 @@ static bool ToThreadIdDefault(const boost::log::record_view &record, std::string
 {
   static constexpr boost::log::aux::thread::id kInvalid{};
 
-  const auto &thread_id =
+  auto thread_id =
       boost::log::extract_or_default<boost::log::aux::thread::id>(record["ThreadID"], kInvalid);
 
   std::stringstream ss;
