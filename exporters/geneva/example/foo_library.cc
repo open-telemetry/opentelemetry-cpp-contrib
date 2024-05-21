@@ -71,7 +71,7 @@ void FooLibrary::observable_counter_example(const std::string &name) {
   counter->AddCallback(MeasurementFetcher::Fetcher, nullptr);
   std::this_thread::sleep_until(
       std::chrono::system_clock::now() +
-      std::chrono::hours(std::numeric_limits<int>::max()));
+      std::chrono::hours((std::numeric_limits<int>::max)()));
 }
 
 void FooLibrary::histogram_example(const std::string &name) {
