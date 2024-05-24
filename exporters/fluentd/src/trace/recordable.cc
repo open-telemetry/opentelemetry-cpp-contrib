@@ -53,6 +53,7 @@ void Recordable::SetIdentity(
   options_[FLUENT_FIELD_SPAN_PARENTID] =
       std::string(parent_span_id_lower_base16, 16);
   options_[FLUENT_FIELD_TRACE_ID] = std::string(trace_id_lower_base16, 32);
+  options_[FLUENT_FIELD_TRACE_STATE] = span_context.trace_state().ToHeader();
 }
 
 void Recordable::SetAttribute(
