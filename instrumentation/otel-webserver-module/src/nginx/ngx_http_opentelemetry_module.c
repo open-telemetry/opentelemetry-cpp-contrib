@@ -1148,17 +1148,23 @@ static void otel_payload_decorator(ngx_http_request_t* r, OTEL_SDK_ENV_RECORD* p
     ngx_table_elt_t            *h;
     ngx_http_header_t          *hh;
     ngx_http_core_main_conf_t  *cmcf;
-    ngx_uint_t       nelts;
 
     part = &r->headers_in.headers.part;
     header = (ngx_table_elt_t*)part->elts;
-    nelts = part->nelts;
 
     for(int i=0; i<count; i++){
 
         int header_found=0;
         int prop_index = -1;
-        for(ngx_uint_t j = 0; j<nelts; j++){
+        for(ngx_uint_t j = 0;; j++){
+            if (j >= part->nelts) {
+                if (part->next == NULL) {
+                    break;
+                }
+                part = part->next;
+                header = (ngx_table_elt_t*)part->elts;
+                j = 0;
+            }
             h = &header[j];
             if(strcasecmp(propagationHeaders[i].name, h->key.data)==0){
                 
@@ -2115,7 +2121,24 @@ static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t*
     int request_headers_idx = 0;
     int propagation_headers_idx = 0;
     for (ngx_uint_t j = 0; j < nelts; j++) {
+        h = &header[j];
+        req_payload->request_headers[request_headers_idx].name = (char*)(h->key).data;
+        req_payload->request_headers[request_headers_idx].value = (char*)(h->value).data;
+        if (req_payload->request_headers[request_headers_idx].value == NULL) {
+            req_payload->request_headers[request_headers_idx].value = "";
+        }
+        request_headers_idx++;
+    }
 
+    for (ngx_uint_t j = 0 ;; j++) {
+        if (j >= part->nelts) {
+            if (part->next == NULL) {
+                break;
+            }
+            part = part->next;
+            header = (ngx_table_elt_t*)part->elts;
+            j = 0;
+        }
         h = &header[j];
         for (int i = 0; i < headers_len && conf->nginxModuleTrustIncomingSpans ; i++) {
             
@@ -2129,13 +2152,6 @@ static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t*
                 break;
             }
         }
-
-        req_payload->request_headers[request_headers_idx].name = (const char*)(h->key).data;
-        req_payload->request_headers[request_headers_idx].value = (const char*)(h->value).data;
-        if (req_payload->request_headers[request_headers_idx].value == NULL) {
-            req_payload->request_headers[request_headers_idx].value = "";
-        }
-        request_headers_idx++;
     }
     req_payload->propagation_count = propagation_headers_idx;
     req_payload->request_headers_count = request_headers_idx;
