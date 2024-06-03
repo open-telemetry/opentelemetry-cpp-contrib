@@ -16,7 +16,7 @@ endif()
 
 add_library(foo_library_logs log/foo_library/foo_library.cc)
 
-target_link_libraries(foo_library_logs opentelemetry_exporter_fluentd_logs
+target_link_libraries(foo_library_logs opentelemetry_exporter_geneva_logs
                       ${CMAKE_THREAD_LIBS_INIT})
 
 add_executable(fluentd_example_logs log/main.cc)
