@@ -1,0 +1,54 @@
+# Copyright The OpenTelemetry Authors
+# SPDX-License-Identifier: Apache-2.0
+
+name: Fluentd exporter CI
+
+on:
+  push:
+    branches: "*"
+    paths:
+      - "exporters/fluentd/**"
+      - ".github/workflows/fluentd.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "exporters/fluentd/**"
+      - ".github/workflows/fluentd.yml"
+
+jobs:
+  cmake_linux:
+    name: Fluentd CMake Linux Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout opentelemetry-cpp-contrib
+        uses: actions/checkout@v3
+        with:
+          path: opentelemetry-cpp-contrib
+      - name: checkout opentelemetry-cpp
+        uses: actions/checkout@v3
+        with:
+          repository: "open-telemetry/opentelemetry-cpp"
+          ref: "v1.15.0"
+          path: "opentelemetry-cpp"
+          submodules: "recursive"
+      - name: setup dependencies
+        run: |
+          sudo apt update -y
+          sudo apt install -y --no-install-recommends --no-install-suggests \
+            build-essential \
+            cmake \
+            ninja-build \
+            libssl-dev \
+            libcurl4-openssl-dev \
+            libgmock-dev \
+            libgtest-dev \
+            libbenchmark-dev
+
+      - name: build and test
+        run: |
+          sudo $GITHUB_WORKSPACE/opentelemetry-cpp/ci/setup_googletest.sh
+          mkdir -p "$GITHUB_WORKSPACE/opentelemetry-cpp/build"
+          cd "$GITHUB_WORKSPACE/opentelemetry-cpp/build"
+          cmake .. -G Ninja -D OPENTELEMETRY_EXTERNAL_COMPONENT_PATH=$GITHUB_WORKSPACE/opentelemetry-cpp-contrib/exporters/fluentd 
+          cmake --build . -j$(nproc)
+          ctest -j1 --output-on-failure
