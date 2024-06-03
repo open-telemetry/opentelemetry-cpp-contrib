@@ -65,7 +65,7 @@ enum class CustomSeverity
 
 opentelemetry::instrumentation::boost_log::ValueMappers mappers;
 mappers.ToSeverity = [](const boost::log::record_view &record) {
-  if (const auto &result = boost::log::extract<CustomSeverity>(record["LogLevel"]))
+  if (const auto &result = boost::log::extract<CustomSeverity>(record["Severity"]))
   {
     switch (result.get())
     {
@@ -84,7 +84,7 @@ mappers.ToSeverity = [](const boost::log::record_view &record) {
       case CustomSeverity::kViolet:
         [[fallthrough]];
       default: 
-        return Severity::kInvalid;
+        return opentelemetry::logs::Severity::kInvalid;
     }
   }
 
