@@ -17,13 +17,14 @@ on:
 
 jobs:
   cmake_linux:
-    name: Fluentd CMake Linux Build
+    name: CMake Linux
     runs-on: ubuntu-latest
     steps:
       - name: checkout opentelemetry-cpp-contrib
         uses: actions/checkout@v3
         with:
           path: opentelemetry-cpp-contrib
+          submodules: "recursive"
       - name: checkout opentelemetry-cpp
         uses: actions/checkout@v3
         with:
