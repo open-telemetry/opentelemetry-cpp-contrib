@@ -3,6 +3,7 @@
 // avoid conflict between Abseil library and OpenTelemetry C++ absl::variant.
 // https://github.com/open-telemetry/opentelemetry-cpp/tree/main/examples/otlp#additional-notes-regarding-abseil-library
 #include <opentelemetry/exporters/otlp/otlp_grpc_exporter.h>
+#include <opentelemetry/exporters/otlp/otlp_http_exporter.h>
 // clang-format on
 
 #include <opentelemetry/sdk/trace/processor.h>
@@ -24,6 +25,8 @@ extern ngx_module_t otel_ngx_module;
 #include "nginx_config.h"
 #include "nginx_utils.h"
 #include "propagate.h"
+#include "post_span_processor.h"
+#include "post_batch_span_processor.h"
 #include <opentelemetry/context/context.h>
 #include <opentelemetry/nostd/shared_ptr.h>
 #include <opentelemetry/sdk/trace/batch_span_processor.h>
@@ -38,6 +41,7 @@ extern ngx_module_t otel_ngx_module;
 #include <opentelemetry/trace/provider.h>
 
 namespace trace = opentelemetry::trace;
+namespace common = opentelemetry::common;
 namespace nostd = opentelemetry::nostd;
 namespace sdktrace = opentelemetry::sdk::trace;
 namespace otlp = opentelemetry::exporter::otlp;
@@ -133,6 +137,8 @@ static ngx_int_t OtelGetContextVar(ngx_http_request_t*, ngx_http_variable_value_
   // Filled out on context creation.
   return NGX_OK;
 }
+
+
 
 static ngx_int_t
 OtelGetTraceContextVar(ngx_http_request_t* req, ngx_http_variable_value_t* v, uintptr_t data);
@@ -438,21 +444,13 @@ TraceContext* CreateTraceContext(ngx_http_request_t* req, ngx_http_variable_valu
   return context;
 }
 
-ngx_int_t StartNgxSpan(ngx_http_request_t* req) {
-  if (!IsOtelEnabled(req)) {
-    return NGX_DECLINED;
-  }
-
-  // Internal requests must be called from another location in nginx, that should already have a trace. Without this check, a call would generate an extra (unrelated) span without much information
-  if (req->internal) {
-    return NGX_DECLINED;
-  }
+TraceContext* StartNgxTrace(ngx_http_request_t* req) {
 
   ngx_http_variable_value_t* val = ngx_http_get_indexed_variable(req, otel_ngx_variables[0].index);
 
   if (!val) {
     ngx_log_error(NGX_LOG_ERR, req->connection->log, 0, "Unable to find OpenTelemetry context");
-    return NGX_DECLINED;
+    return nullptr;
   }
 
   TraceContext* context = CreateTraceContext(req, val);
@@ -466,30 +464,43 @@ ngx_int_t StartNgxSpan(ngx_http_request_t* req) {
     incomingContext = ExtractContext(&carrier);
   }
 
-  trace::StartSpanOptions startOpts;
-  startOpts.kind = trace::SpanKind::kServer;
-  startOpts.parent = GetCurrentSpan(incomingContext);
+  const auto operationName = GetOperationName(req);
 
-  context->request_span = GetTracer()->StartSpan(
-    GetOperationName(req),
-    {
-      {"http.method", FromNgxString(req->method_name)},
-      {"http.flavor", NgxHttpFlavor(req)},
-      {"http.target", FromNgxString(req->unparsed_uri)},
-    },
-    startOpts);
+  std::initializer_list<std::pair<nostd::string_view, common::AttributeValue>> commonAttributes = {
+          {"http.method", FromNgxString(req->method_name)},
+          {"http.flavor", NgxHttpFlavor(req)},
+          {"http.target", FromNgxString(req->unparsed_uri)},
+          // Add http.route as its according to OpenTelemetry spec
+          {"http.route", FromNgxString(req->unparsed_uri)}
+  };
+
+  trace::StartSpanOptions requestStartOpts;
+  requestStartOpts.parent = GetCurrentSpan(incomingContext);
+  requestStartOpts.kind = trace::SpanKind::kServer;
+  context->request_span = GetTracer()->StartSpan(operationName,commonAttributes, requestStartOpts);
+
+  trace::StartSpanOptions innerSpanOpts;
+  innerSpanOpts.parent = context->request_span->GetContext();
+  innerSpanOpts.kind = trace::SpanKind::kInternal;
+
+  context->inner_span = GetTracer()->StartSpan(operationName,commonAttributes,innerSpanOpts);
 
   nostd::string_view serverName = GetNgxServerName(req);
   if (!serverName.empty()) {
     context->request_span->SetAttribute("http.server_name", serverName);
+    context->inner_span->SetAttribute("http.server_name", serverName);
   }
 
   if (req->headers_in.host) {
-    context->request_span->SetAttribute("http.host", FromNgxString(req->headers_in.host->value));
+    const auto host = FromNgxString(req->headers_in.host->value);
+    context->request_span->SetAttribute("http.host", host);
+    context->inner_span->SetAttribute("http.host", host);
   }
 
   if (req->headers_in.user_agent) {
-    context->request_span->SetAttribute("http.user_agent", FromNgxString(req->headers_in.user_agent->value));
+    const auto userAgent = FromNgxString(req->headers_in.user_agent->value);
+    context->request_span->SetAttribute("http.user_agent", userAgent);
+    context->inner_span->SetAttribute("http.user_agent", userAgent);
   }
 
   if (locConf->captureHeaders) {
@@ -501,9 +512,23 @@ ngx_int_t StartNgxSpan(ngx_http_request_t* req) {
                        {excludedHeaders, 2});
   }
 
-  auto outgoingContext = incomingContext.SetValue(trace::kSpanKey, context->request_span);
+  auto outgoingContext = incomingContext.SetValue(trace::kSpanKey, context->inner_span);
 
   InjectContext(&carrier, outgoingContext);
+
+  return context;
+}
+
+ngx_int_t StartNgxSpan(ngx_http_request_t* req) {
+  if (!IsOtelEnabled(req)) {
+    return NGX_DECLINED;
+  }
+
+  if (req->internal) {
+    return NGX_DECLINED;
+  }
+
+  StartNgxTrace(req);
 
   return NGX_DECLINED;
 }
@@ -533,23 +558,13 @@ void AddScriptAttributes(
   }
 }
 
-ngx_int_t FinishNgxSpan(ngx_http_request_t* req) {
-  if (!IsOtelEnabled(req)) {
-    return NGX_DECLINED;
-  }
+void UpdateSpan(nostd::shared_ptr<opentelemetry::trace::Span> span, ngx_http_request_t* req, bool captureHeaders = false) {
 
-  TraceContext* context = GetTraceContext(req);
-
-  if (!context) {
-    return NGX_DECLINED;
-  }
-
-  auto span = context->request_span;
   span->SetAttribute("http.status_code", req->headers_out.status);
 
-  OtelNgxLocationConf* locConf = GetOtelLocationConf(req);
+  OtelNgxLocationConf *locConf = GetOtelLocationConf(req);
 
-  if (locConf->captureHeaders) {
+  if (locConf->captureHeaders && captureHeaders) {
     OtelCaptureHeaders(span, ngx_string("http.response.header."), &req->headers_out.headers,
 #if (NGX_PCRE)
                        locConf->sensitiveHeaderNames, locConf->sensitiveHeaderValues,
@@ -560,9 +575,49 @@ ngx_int_t FinishNgxSpan(ngx_http_request_t* req) {
   AddScriptAttributes(span.get(), GetOtelMainConf(req)->scriptAttributes, req);
   AddScriptAttributes(span.get(), locConf->customAttributes, req);
 
+  if (req->headers_out.status >= 400 && req->headers_out.status <= 599) {
+    span->SetStatus(trace::StatusCode::kError);
+  }
+
   span->UpdateName(GetOperationName(req));
+}
+
+ngx_int_t FinishNgxSpan(ngx_http_request_t* req) {
+  if (!IsOtelEnabled(req)) {
+    return NGX_DECLINED;
+  }
+
+  if (req->internal) {
+    return NGX_DECLINED;
+  }
+
+  TraceContext* context = GetTraceContext(req);
+
+  /*
+   * When nginx fails to process request (bad request, prematurely closed) then span is not started, here we can start
+   * a new span because there were no upstream calls anyway.
+   */
+  if (!context) {
+    context = StartNgxTrace(req);
+  }
+
+  auto span = context->request_span;
+  UpdateSpan(span, req, true);
+
+  if (context->inner_span) {
+
+    const bool hasUpstream = req->upstream != nullptr;
+    if (hasUpstream) {
+      context->inner_span->SetAttribute("span.kind", static_cast<int>(trace::SpanKind::kClient));
+    }
+
+    UpdateSpan(context->inner_span, req);
+
+    context->inner_span->End();
+  }
 
   span->End();
+
   return NGX_DECLINED;
 }
 
@@ -577,7 +632,7 @@ static ngx_int_t InitModule(ngx_conf_t* conf) {
 
   const PhaseHandler handlers[] = {
     {NGX_HTTP_REWRITE_PHASE, StartNgxSpan},
-    {NGX_HTTP_LOG_PHASE, FinishNgxSpan},
+    {NGX_HTTP_LOG_PHASE, FinishNgxSpan}
   };
 
   for (const PhaseHandler& ph : handlers) {
@@ -1020,11 +1075,26 @@ static std::unique_ptr<sdktrace::SpanExporter> CreateExporter(const OtelNgxAgent
 
   switch (conf->exporter.type) {
     case OtelExporterOTLP: {
-      std::string endpoint = conf->exporter.endpoint;
-      otlp::OtlpGrpcExporterOptions opts{endpoint};
-      opts.use_ssl_credentials = conf->exporter.use_ssl_credentials;
-      opts.ssl_credentials_cacert_path = conf->exporter.ssl_credentials_cacert_path;
-      exporter.reset(new otlp::OtlpGrpcExporter(opts));
+
+      switch (conf->exporter.protocol) {
+        case gRPC: {
+          otlp::OtlpGrpcExporterOptions opts;
+          opts.endpoint = conf->exporter.endpoint;
+
+          opts.use_ssl_credentials = conf->exporter.use_ssl_credentials;
+          opts.ssl_credentials_cacert_path = conf->exporter.ssl_credentials_cacert_path;
+
+          exporter.reset(new otlp::OtlpGrpcExporter(opts));
+        }
+        break;
+        case HTTP: {
+          otlp::OtlpHttpExporterOptions opts;
+          opts.url = conf->exporter.endpoint;
+
+          exporter.reset(new otlp::OtlpHttpExporter(opts));
+        }
+        break;
+      }
       break;
     }
     default:
@@ -1036,6 +1106,7 @@ static std::unique_ptr<sdktrace::SpanExporter> CreateExporter(const OtelNgxAgent
 
 static std::unique_ptr<sdktrace::SpanProcessor>
 CreateProcessor(const OtelNgxAgentConfig* conf, std::unique_ptr<sdktrace::SpanExporter> exporter) {
+
   if (conf->processor.type == OtelProcessorBatch) {
     sdktrace::BatchSpanProcessorOptions opts;
     opts.max_queue_size = conf->processor.batch.maxQueueSize;
@@ -1044,11 +1115,11 @@ CreateProcessor(const OtelNgxAgentConfig* conf, std::unique_ptr<sdktrace::SpanEx
     opts.max_export_batch_size = conf->processor.batch.maxExportBatchSize;
 
     return std::unique_ptr<sdktrace::SpanProcessor>(
-      new sdktrace::BatchSpanProcessor(std::move(exporter), opts));
+      new PostBatchSpanProcessor(std::move(exporter), opts));
   }
 
   return std::unique_ptr<sdktrace::SpanProcessor>(
-    new sdktrace::SimpleSpanProcessor(std::move(exporter)));
+    new PostSpanProcessor(std::move(exporter)));
 }
 
 static std::unique_ptr<sdktrace::Sampler> CreateSampler(const OtelNgxAgentConfig* conf) {

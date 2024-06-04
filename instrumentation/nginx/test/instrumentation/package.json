@@ -1,0 +1,14 @@
+{
+  "name": "instrumentation",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "mocha --require choma test.js"
+  },
+  "devDependencies": {
+    "axios": "^1.4.0",
+    "choma": "^1.2.1",
+    "docker-compose": "^0.24.0",
+    "mocha": "^10.2.0",
+    "tail": "^2.2.6"
+  }
+}

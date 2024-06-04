@@ -2,6 +2,7 @@
 #include "toml.h"
 #include <algorithm>
 #include <stdlib.h>
+#include <opentelemetry/ext/http/common/url_parser.h>
 
 struct ScopedTable {
   ScopedTable(toml_table_t* table) : table(table) {}
@@ -34,13 +35,38 @@ static bool SetupOtlpExporter(toml_table_t* table, ngx_log_t* log, OtelNgxAgentC
   }
 
   std::string host = FromStringDatum(hostVal);
+  opentelemetry::ext::http::common::UrlParser urlParser(host);
 
-  if (!portVal.ok) {
-    ngx_log_error(NGX_LOG_ERR, log, 0, "Missing required port field for OTLP exporter");
+  if (!urlParser.success_) {
+    ngx_log_error(NGX_LOG_ERR, log, 0, "Invalid host field for OTLP exporter");
     return false;
   }
 
-  config->exporter.endpoint = host + ":" + std::to_string(portVal.u.i);;
+  if (portVal.ok) {
+    urlParser.port_ = portVal.u.i;
+  }
+
+  config->exporter.endpoint =
+          urlParser.scheme_ + "://" +
+          urlParser.host_ + ":" +
+          std::to_string(urlParser.port_) +
+          urlParser.path_ +
+          urlParser.query_;
+
+  ngx_log_error(NGX_LOG_INFO, log, 0, "Using host: %s", config->exporter.endpoint.c_str());
+
+  const toml_datum_t protocolVal = toml_string_in(table, "protocol");
+
+  if (protocolVal.ok) {
+      std::string protocolStringVal = FromStringDatum(protocolVal);
+      if (protocolStringVal == "grpc") {
+          config->exporter.protocol = gRPC;
+      } else if (protocolStringVal == "http") {
+          config->exporter.protocol = HTTP;
+      } else {
+          config->exporter.protocol = gRPC;
+      }
+  }
 
   toml_datum_t useSSLVal = toml_bool_in(table, "use_ssl");
   if (useSSLVal.ok) {
