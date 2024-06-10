@@ -15,7 +15,10 @@ namespace logs
 {
 
 struct ExporterOptions
-{};
+{
+    std::string provider_name = "opentelemetry-logs";
+};
+
 }  // namespace logs
 }  // namespace user_events
 }  // namespace exporter

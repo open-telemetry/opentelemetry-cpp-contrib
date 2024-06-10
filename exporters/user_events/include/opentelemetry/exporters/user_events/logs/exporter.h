@@ -48,16 +48,18 @@ private:
   const ExporterOptions options_;
   bool is_shutdown_ = false;
   mutable opentelemetry::common::SpinLockMutex lock_;
+  
+  const std::array<event_level> event_levels_map = {
+    static_cast<event_level>(6),
+    event_level_verbose,
+    event_level_information,
+    event_level_warning,
+    event_level_error,
+    event_level_critical_error
+  };
 
-  ehd::Provider provider_{"opentelemetry_logs"};
-  std::array<std::shared_ptr<const ehd::EventSet>, 6> event_set_levels_ = {
-      provider_.RegisterSet(static_cast<event_level>(6), 1),
-      provider_.RegisterSet(event_level_verbose, 1),
-      provider_.RegisterSet(event_level_information, 1),
-      provider_.RegisterSet(event_level_warning, 1),
-      provider_.RegisterSet(event_level_error, 1),
-      provider_.RegisterSet(event_level_critical_error, 1)};
-
+  ehd::Provider provider_;
+  std::array<std::shared_ptr<const ehd::EventSet>, 6> event_set_levels_;
 };  // class Exporter
 
 }  // namespace logs
