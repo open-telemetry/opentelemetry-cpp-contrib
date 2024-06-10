@@ -545,7 +545,14 @@ ngx_int_t FinishNgxSpan(ngx_http_request_t* req) {
   }
 
   auto span = context->request_span;
-  span->SetAttribute("http.status_code", req->headers_out.status);
+  const auto status_code = req->headers_out.status;
+  span->SetAttribute("http.status_code", status_code);
+
+  if (status_code >= 500) {
+    span->SetStatus(trace::StatusCode::kError);
+  } else {
+    span->SetStatus(trace::StatusCode::kOk);
+  }
 
   OtelNgxLocationConf* locConf = GetOtelLocationConf(req);
 
@@ -1021,7 +1028,8 @@ static std::unique_ptr<sdktrace::SpanExporter> CreateExporter(const OtelNgxAgent
   switch (conf->exporter.type) {
     case OtelExporterOTLP: {
       std::string endpoint = conf->exporter.endpoint;
-      otlp::OtlpGrpcExporterOptions opts{endpoint};
+      otlp::OtlpGrpcExporterOptions opts;
+      opts.endpoint = endpoint;
       opts.use_ssl_credentials = conf->exporter.use_ssl_credentials;
       opts.ssl_credentials_cacert_path = conf->exporter.ssl_credentials_cacert_path;
       exporter.reset(new otlp::OtlpGrpcExporter(opts));
