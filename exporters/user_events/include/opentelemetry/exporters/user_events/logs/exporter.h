@@ -49,7 +49,7 @@ private:
   bool is_shutdown_ = false;
   mutable opentelemetry::common::SpinLockMutex lock_;
   
-  const std::array<event_level> event_levels_map = {
+  const std::array<event_level, 6> event_levels_map = {
     static_cast<event_level>(6),
     event_level_verbose,
     event_level_information,
