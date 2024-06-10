@@ -22,7 +22,7 @@ namespace logs
 Exporter::Exporter(const ExporterOptions &options) noexcept : options_(options), provider_(options.provider_name)
 {
   // Initialize the event sets
-  for (int i = 0; i < sizeof(event_level_map); i++)
+  for (int i = 0; i < sizeof(event_levels_map); i++)
   {
     event_set_levels_[i] = provider_.RegisterSet(event_level_map[i], 1);
   }
