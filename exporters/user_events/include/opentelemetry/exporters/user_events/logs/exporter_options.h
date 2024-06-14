@@ -25,8 +25,19 @@ struct ExporterOptions
 public:
     ExporterOptions() : ExporterOptions(kDefaultUserEventsLogsProviderName) {}
 
-    ExporterOptions(std::string provider_name) : provider_name(provider_name) {}
+    ExporterOptions(std::string provider_name)
+    {
+        if (provider_name.empty())
+        {
+            this->provider_name = kDefaultUserEventsLogsProviderName;
+        }
+        else
+        {
+            this->provider_name = provider_name;
+        }
+    }
 
+public:
     std::string provider_name;
 };
 
