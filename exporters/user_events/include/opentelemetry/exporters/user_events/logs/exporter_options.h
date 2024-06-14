@@ -14,7 +14,7 @@ namespace user_events
 namespace logs
 {
 
-constexpr std::string kDefaultUserEventsLogsProviderName = "opentelemetry_logs";
+const std::string kDefaultUserEventsLogsProviderName = "opentelemetry_logs";
 
 /**
  * Struct to hold the options needed for the user_events logs exporter.
