@@ -53,9 +53,9 @@ int main(int /* argc */, char ** /* argv */)
   }
 
   // Set up trace, span and context
-  auto tracer  = trace_api::Provider::GetTracerProvider()->GetTracer("log4cxx_library",
+  auto tracer  = trace_api::Provider::GetTracerProvider()->GetTracer("spdlog_library",
                                                                      OPENTELEMETRY_SDK_VERSION);
-  auto span    = tracer->StartSpan("log4cxx test span");
+  auto span    = tracer->StartSpan("spdlog test span");
   auto ctx     = context::RuntimeContext::GetCurrent();
   auto new_ctx = ctx.SetValue("active_span", span);
   auto token   = context::RuntimeContext::Attach(new_ctx);
