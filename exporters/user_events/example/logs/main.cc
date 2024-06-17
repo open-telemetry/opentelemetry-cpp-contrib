@@ -19,10 +19,12 @@ namespace user_events_logs = opentelemetry::exporter::user_events::logs;
 namespace
 {
 
+std::string provider_name;
+
 void InitLogger()
 {
   // Create user_events log exporter instance
-  auto exporter_options = user_events_logs::ExporterOptions();
+  auto exporter_options = user_events_logs::ExporterOptions(provider_name);
   auto exporter =
       std::unique_ptr<user_events_logs::Exporter>(new user_events_logs::Exporter(exporter_options));
   auto processor = logs_sdk::SimpleLogRecordProcessorFactory::Create(std::move(exporter));
@@ -58,8 +60,13 @@ std::string get_fruit_name_from_customer()
   }
 }
 
-int main()
+int main(int argc, char * argv[])
 {
+  if (argc > 1)
+  {
+    provider_name = argv[1];
+  }
+
   InitLogger();
 
   while (true)
