@@ -8,6 +8,9 @@ defaultTasks 'build'
 ext {
   ARCH = ''
   switch (System.properties['os.arch'].toLowerCase()) {
+    case "aarch64":
+      ARCH = "arm64"
+      break
     case "amd64":
     case "x86_64":
       ARCH = "x64"
@@ -42,6 +45,8 @@ ext {
     osArch = 'x86'
   } else if (osArch == 'x86_64' || osArch == 'amd64') {
     osArch = 'x64'
+  } else if (osArch == 'aarch64') {
+    osArch = 'arm64'
   }
 
   BUILD_SHA1 = System.getenv('BUILD_SHA')

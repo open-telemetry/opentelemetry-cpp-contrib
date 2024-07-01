@@ -421,5 +421,5 @@ TEST(ApiUtils, getSDKInstallPath)
 {
 	otel::core::ApiUtils apiUtils;
 	auto path = apiUtils.getSDKInstallPath();
-	EXPECT_THAT(path.string(), testing::EndsWith("build/linux-x64/opentelemetry-webserver-sdk"));
+	EXPECT_THAT(path.string(), testing::MatchesRegex(".*build/linux-(x|arm)64/opentelemetry-webserver-sdk"));
 }

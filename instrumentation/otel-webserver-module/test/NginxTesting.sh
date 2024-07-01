@@ -3,7 +3,9 @@
 # Bash script for testing Apache Server
 
 # Extract the agent
-tar -xf ../build/opentelemetry-webserver-sdk-x64-linux.tgz -C /opt
+platform=$1
+
+tar -xf ../build/opentelemetry-webserver-sdk-$platform-linux.tgz -C /opt
 
 cd /opt/opentelemetry-sdk-native
 

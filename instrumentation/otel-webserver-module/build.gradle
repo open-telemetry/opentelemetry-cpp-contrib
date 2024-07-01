@@ -23,7 +23,7 @@ project.ext {
 
     ansdkOsName = osName
     ansdkArch = (osArch == 'x86' ? 'i686' : osArch)
-    gccArchFlag = (osArch == 'x86' ? '-m32' : '-m64')
+    gccArchFlag = (osArch == 'x86' ? '-m32' : (osArch == 'arm64' ? '-march=armv8-a' : '-m64'))
     headSHA1 = "<dev>"
 
     try {
@@ -499,7 +499,7 @@ task gypUnitTest(type: Exec) {
         ANSDK_DIR: modDepDir,
         BOOST_LIB: BOOST_LIB,
         BOOST_INCLUDE: BOOST_INCLUDE,
-        GTEST_LIB_DIR: target_system == "ubuntu" ?
+        GTEST_LIB_DIR: target_system == "ubuntu" || osArch == "arm64" ?
             "${modDepDir}/googletest/1.10.0/lib" : "${modDepDir}/googletest/1.10.0/lib64",
         LIBRARY_FLAGS: libraryFlags,
         CPP_SDK_VERSION: cppSDKVersion,
@@ -536,7 +536,7 @@ task runApacheServer(type: Exec) {
     dependsOn assembleApacheModule
 
     workingDir 'test'
-    commandLine './ApacheTesting.sh', "${target_system}"
+    commandLine './ApacheTesting.sh', "${target_system}", "${osArch}"
 }
 
 // Code Coverage
@@ -602,6 +602,9 @@ model {
         release
     }
     platforms {
+        arm {
+            architecture "arm64"
+        }
         x86 {
             architecture "x86"
         }
