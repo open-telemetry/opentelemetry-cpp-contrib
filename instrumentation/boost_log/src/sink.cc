@@ -68,7 +68,9 @@ OpenTelemetrySinkBackend::OpenTelemetrySinkBackend(const ValueMappers &mappers) 
 {
   mappers_.ToSeverity =
       mappers.ToSeverity ? mappers.ToSeverity : [](const boost::log::record_view &record) {
-        return levelToSeverity(boost::log::extract_or_default<int>(record["Severity"], -1));
+        using boost::log::trivial::severity_level;
+        return levelToSeverity(boost::log::extract_or_default<severity_level>(
+            record["Severity"], static_cast<severity_level>(-1)));
       };
   mappers_.ToTimeStamp = mappers.ToTimeStamp ? mappers.ToTimeStamp : ToTimestampDefault;
   mappers_.ToThreadId  = mappers.ToThreadId ? mappers.ToThreadId : ToThreadIdDefault;
