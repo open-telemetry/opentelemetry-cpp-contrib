@@ -33,14 +33,14 @@ boost::log::core::get()->add_sink(sink);
 
 This will create a backend with the following assumptions about the attributes it collects, more precisely:
 
-| Keyword      | Type                        |
-|--------------|-----------------------------|
-| Severity     | int                         |
-| TimeStamp    | boost::posix_time::ptime    |
-| ThreadID     | boost::log::aux::thread::id |
-| FileName     | std::string                 |
-| FunctionName | std::string                 |
-| LineNumber   | int                         |
+| Keyword      | Type                                |
+|--------------|-------------------------------------|
+| Severity     | boost::log::trivial::severity_level |
+| TimeStamp    | boost::posix_time::ptime            |
+| ThreadID     | boost::log::aux::thread::id         |
+| FileName     | std::string                         |
+| FunctionName | std::string                         |
+| LineNumber   | int                                 |
 
 If, however, one or more of these attributes have a different name or type, it is possible to communicate this to the backend via the `ValueMappers` struct. It contains a function for each attribute described above, with their signatures as follows:
 
