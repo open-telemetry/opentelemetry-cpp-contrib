@@ -91,9 +91,11 @@ protected:
 
 TEST_F(OpenTelemetrySinkTest, LevelToSeverity)
 {
-  namespace Level = boost::log::trivial;
+  using Level = boost::log::trivial::severity_level;
   using logs_api::Severity;
-  using ots = instr::boost_log::OpenTelemetrySinkBackend;
+  using ots          = instr::boost_log::OpenTelemetrySinkBackend;
+  const auto lowest  = std::numeric_limits<int>::lowest();
+  const auto highest = std::numeric_limits<int>::max();
 
   ASSERT_TRUE(Severity::kFatal == ots::levelToSeverity(Level::fatal));
   ASSERT_TRUE(Severity::kError == ots::levelToSeverity(Level::error));
@@ -101,13 +103,13 @@ TEST_F(OpenTelemetrySinkTest, LevelToSeverity)
   ASSERT_TRUE(Severity::kInfo == ots::levelToSeverity(Level::info));
   ASSERT_TRUE(Severity::kDebug == ots::levelToSeverity(Level::debug));
   ASSERT_TRUE(Severity::kTrace == ots::levelToSeverity(Level::trace));
-  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverity(std::numeric_limits<int>::lowest()));
-  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverity(std::numeric_limits<int>::lowest() + 1));
-  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverity(-42));
-  ASSERT_TRUE(Severity::kTrace == ots::levelToSeverity(0));
-  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverity(42));
-  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverity(std::numeric_limits<int>::max() - 1));
-  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverity(std::numeric_limits<int>::max()));
+  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverity(static_cast<Level>(lowest)));
+  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverity(static_cast<Level>(lowest + 1)));
+  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverity(static_cast<Level>(-42)));
+  ASSERT_TRUE(Severity::kTrace == ots::levelToSeverity(static_cast<Level>(0)));
+  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverity(static_cast<Level>(42)));
+  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverity(static_cast<Level>(highest - 1)));
+  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverity(static_cast<Level>(highest)));
 }
 
 TEST_F(OpenTelemetrySinkTest, Log_Success)
@@ -119,7 +121,7 @@ TEST_F(OpenTelemetrySinkTest, Log_Success)
   auto logrecord_mock = new LogRecordMock();
   auto logrecord_ptr  = nostd::unique_ptr<logs_api::LogRecord>(logrecord_mock);
 
-  boost::log::sources::severity_logger<int> logger;
+  boost::log::sources::severity_logger<boost::log::trivial::severity_level> logger;
   auto pre_log = std::chrono::system_clock::now();
 
   EXPECT_CALL(*provider_mock, GetLogger(_, _, _, _, _))
@@ -182,7 +184,7 @@ TEST_F(OpenTelemetrySinkTest, Log_Failure)
   logs_api::Provider::SetLoggerProvider(nostd::shared_ptr<logs_api::LoggerProvider>(provider_mock));
   auto logger_mock = new LoggerMock();
   auto logger_ptr  = nostd::shared_ptr<logs_api::Logger>(logger_mock);
-  boost::log::sources::severity_logger<int> logger;
+  boost::log::sources::severity_logger<boost::log::trivial::severity_level> logger;
 
   EXPECT_CALL(*provider_mock, GetLogger(_, _, _, _, _))
       .WillOnce(DoAll(Invoke([](nostd::string_view logger_name, nostd::string_view library_name,
@@ -263,7 +265,7 @@ TEST_F(OpenTelemetrySinkTest, Multi_Threaded)
   std::vector<std::thread> threads;
   threads.reserve(count);
 
-  boost::log::sources::severity_logger<int> logger;
+  boost::log::sources::severity_logger<boost::log::trivial::severity_level> logger;
   const auto pre_log = std::chrono::system_clock::now().time_since_epoch().count();
 
   for (size_t index = 0; index < count; ++index)
@@ -360,7 +362,7 @@ TEST(OpenTelemetrySinkTestSuite, CustomMappers)
   auto logrecord_ptr  = nostd::unique_ptr<logs_api::LogRecord>(logrecord_mock);
 
   SetUpBackendWithDummyMappers();
-  boost::log::sources::severity_logger<int> logger;
+  boost::log::sources::severity_logger<boost::log::trivial::severity_level> logger;
 
   EXPECT_CALL(*provider_mock, GetLogger(_, _, _, _, _))
       .WillOnce(DoAll(Invoke([](nostd::string_view logger_name, nostd::string_view library_name,

@@ -57,7 +57,8 @@ public:
     return kLibraryVersion;
   }
 
-  static inline opentelemetry::logs::Severity levelToSeverity(int level) noexcept
+  static inline opentelemetry::logs::Severity levelToSeverity(
+      boost::log::trivial::severity_level level) noexcept
   {
     using namespace boost::log::trivial;
     using opentelemetry::logs::Severity;
