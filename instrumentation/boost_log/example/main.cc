@@ -5,6 +5,7 @@
 
 #include <boost/log/sinks/sync_frontend.hpp>
 #include <boost/log/sources/logger.hpp>
+#include <boost/log/trivial.hpp>
 #include <boost/log/utility/manipulators/add_value.hpp>
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/smart_ptr/make_shared_object.hpp>
@@ -76,7 +77,7 @@ int main(int /* argc */, char ** /* argv */)
   boost::log::sources::logger simple;
   BOOST_LOG(simple) << "Test simplest message";
 
-  boost::log::sources::severity_logger<int> logger;
+  boost::log::sources::severity_logger<boost::log::trivial::severity_level> logger;
   BOOST_LOG_SEV(logger, boost::log::trivial::info) << "Test message with severity";
 
   BOOST_LOG_SEV(logger, boost::log::trivial::debug)
