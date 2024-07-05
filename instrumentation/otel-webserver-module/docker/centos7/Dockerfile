@@ -35,6 +35,9 @@ RUN chmod -R 777 /opt
 
 # RUN curl https://www.getpagespeed.com/files/centos6-eol.repo --output /etc/yum.repos.d/CentOS-Base.repo
 
+RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-* && \
+    sed -i 's|# *baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+
 # install required packages
 RUN yum update -y \
     && yum install -y \
@@ -54,15 +57,13 @@ RUN wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm 
     && yum clean all
 
 # install devtoolset toolchain
-# RUN curl https://www.getpagespeed.com/files/centos6-eol.repo --output /etc/yum.repos.d/CentOS-Base.repo \
-#  && curl https://www.getpagespeed.com/files/centos6-epel-eol.repo --output /etc/yum.repos.d/epel.repo \
-  RUN yum -y install centos-release-scl \
-#  && curl https://www.getpagespeed.com/files/centos6-scl-eol.repo --output /etc/yum.repos.d/CentOS-SCLo-scl.repo \
-#  && curl https://www.getpagespeed.com/files/centos6-scl-rh-eol.repo --output /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo \
-  && yum install yum-utils -y \
-  && yum-config-manager --enable rhel-server-rhscl-7-rpms -y \
-  && yum install devtoolset-7 -y \
-  && yum clean all
+RUN yum -y install centos-release-scl \
+    && sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-* && \
+    sed -i 's|# *baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-* \
+    && yum install yum-utils -y \
+    && yum-config-manager --enable rhel-server-rhscl-7-rpms -y \
+    && yum install devtoolset-7 -y \
+    && yum clean all
 ENV PATH="/opt/rh/devtoolset-7/root/usr/bin:${PATH}"
 
 # install python 2.7.8
