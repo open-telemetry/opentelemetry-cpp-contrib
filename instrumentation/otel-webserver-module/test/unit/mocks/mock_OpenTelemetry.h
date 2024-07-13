@@ -102,10 +102,10 @@ public:
         const context::Context &context) noexcept override {
   		InjectImpl(carrier);
   	}
-	
+
   	MOCK_METHOD(void, ExtractImpl, (const context::propagation::TextMapCarrier &carrier));
   	MOCK_METHOD(void, InjectImpl, (context::propagation::TextMapCarrier &carrier));
-	MOCK_METHOD(bool, Fields, (nostd::function_ref<bool(nostd::string_view)> callback), 
+	MOCK_METHOD(bool, Fields, (nostd::function_ref<bool(nostd::string_view)> callback),
 		(const, noexcept, override));
 };
 
