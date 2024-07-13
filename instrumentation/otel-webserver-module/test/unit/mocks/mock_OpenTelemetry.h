@@ -52,8 +52,10 @@ public:
 	MOCK_METHOD(nostd::shared_ptr<trace::Span>, StartSpanInternal,
 		(nostd::string_view name, trace::SpanKind kind));
 
+#if OPENTELEMETRY_ABI_VERSION_NO == 1
 	MOCK_METHOD(void, ForceFlushWithMicroseconds, (uint64_t timeout), (noexcept));
 	MOCK_METHOD(void, CloseWithMicroseconds, (uint64_t timeout), (noexcept));
+#endif /* OPENTELEMETRY_ABI_VERSION_NO == 1 */
 };
 
 class MockSpan : public opentelemetry::trace::Span
