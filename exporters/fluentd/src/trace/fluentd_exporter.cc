@@ -181,7 +181,7 @@ bool FluentdExporter::Initialize() {
   else {
 #if defined(__EXCEPTIONS)
     // Customers MUST specify valid end-point configuration
-    throw new std::runtime_error("Invalid endpoint!");
+    throw std::runtime_error("Invalid endpoint!");
 #endif
     return false;
   }
