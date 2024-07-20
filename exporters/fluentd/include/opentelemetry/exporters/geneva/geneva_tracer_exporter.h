@@ -41,7 +41,7 @@ static inline bool InitializeGenevaExporter( const GenevaExporterOptions options
         return true;
     } else {
 #if defined(__EXCEPTIONS)
-        throw new std::runtime_error("Invalid endpoint! Unix domain socket should have unix:// as url-scheme");
+        throw std::runtime_error("Invalid endpoint! Unix domain socket should have unix:// as url-scheme");
 #endif
         return false;
     }
