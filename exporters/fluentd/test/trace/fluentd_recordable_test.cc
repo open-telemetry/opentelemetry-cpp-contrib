@@ -70,7 +70,7 @@ template <typename timeunit> void yield_for(timeunit duration) {
   } while (std::chrono::high_resolution_clock::now() < end);
 }
 
-#if 0
+#if 1
 // Testing Shutdown functionality of OStreamSpanExporter, should expect no data to be sent to Stream
 TEST(FluentdSpanRecordable, SetIdentity)
 {
@@ -78,7 +78,7 @@ TEST(FluentdSpanRecordable, SetIdentity)
                  {"parentId", "0000000000000003"},
                  {"traceId", "00000000000000000000000000000001"}}},
                  {"tags", "Span"}};
-  opentelemetry::exporter::fluentd::trace::Recordable rec;
+  opentelemetry::exporter::fluentd::trace::Recordable rec();
   const trace::TraceId trace_id(std::array<const uint8_t, trace::TraceId::kSize>(
       {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}));
 
