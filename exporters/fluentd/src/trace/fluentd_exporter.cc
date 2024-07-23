@@ -59,7 +59,7 @@ FluentdExporter::FluentdExporter()
  */
 std::unique_ptr<sdk::trace::Recordable>
 FluentdExporter::MakeRecordable() noexcept {
-  return std::unique_ptr<sdk::trace::Recordable>(new opentelemetry::exporter::fluentd::trace::Recordable());
+  return std::unique_ptr<sdk::trace::Recordable>(new opentelemetry::exporter::fluentd::trace::Recordable(FLUENT_VALUE_SPAN, options_.include_trace_state_for_span));
 }
 
 /**

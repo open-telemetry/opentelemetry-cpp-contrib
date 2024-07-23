@@ -28,6 +28,7 @@ static inline bool InitializeGenevaExporter( const GenevaExporterOptions options
         opentelemetry::sdk::trace::BatchSpanProcessorOptions batch_processor_options;
         fluentd_options.retry_count = options.retry_count;
         fluentd_options.endpoint = options.socket_endpoint;
+        fluentd_options.include_trace_state_for_span = options.include_trace_state_for_span;
         batch_processor_options.max_queue_size = options.max_queue_size;
         batch_processor_options.schedule_delay_millis = options.schedule_delay_millis;
         batch_processor_options.max_export_batch_size = options.max_export_batch_size;
