@@ -45,6 +45,7 @@ RUN yum update -y \
     yum install -y zlib-devel \
     yum install -y openssl-devel \
     yum install java-1.8.0-openjdk -y \
+    yum install java-1.8.0-openjdk-devel \
     yum install pcre-devel -y \
     yum install xz -y \
     yum install httpd -y \
