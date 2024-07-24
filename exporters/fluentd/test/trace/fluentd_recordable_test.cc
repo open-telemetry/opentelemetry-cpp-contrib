@@ -74,7 +74,7 @@ template <typename timeunit> void yield_for(timeunit duration) {
 // Testing Shutdown functionality of OStreamSpanExporter, should expect no data to be sent to Stream
 TEST(FluentdSpanRecordable, SetIdentity)
 {
-  json j_span = {{"events", json::array()}
+  json j_span = {{"events", json::array()},
                  {"options",
                   {{"evt_dt_spanId", "0000000000000002"},
                    {"evt_dt_traceId", "00000000000000000000000000000001"},
