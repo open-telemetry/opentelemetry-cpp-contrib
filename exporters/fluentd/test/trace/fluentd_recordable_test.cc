@@ -74,12 +74,12 @@ template <typename timeunit> void yield_for(timeunit duration) {
 // Testing Shutdown functionality of OStreamSpanExporter, should expect no data to be sent to Stream
 TEST(FluentdSpanRecordable, SetIdentity)
 {
-  json j_span = {"events", json::array(),
-                 "options",
-                 {{"evt_dt_spanId", "0000000000000002"},
-                  {"evt_dt_traceId", "00000000000000000000000000000001"},
-                  {"parentId", "0000000000000003"},
-                  {"tag", "Span"}}};
+  json j_span = {{"events", json::array()}
+                 {"options",
+                  {{"evt_dt_spanId", "0000000000000002"},
+                   {"evt_dt_traceId", "00000000000000000000000000000001"},
+                   {"parentId", "0000000000000003"},
+                   {"tag", "Span"}}}};
   opentelemetry::exporter::fluentd::trace::Recordable rec;
   const trace::TraceId trace_id(std::array<const uint8_t, trace::TraceId::kSize>(
       {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}));
