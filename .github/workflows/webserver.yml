@@ -124,6 +124,8 @@ jobs:
           sleep 30
           ./gradlew :test:integration:integrationTests -i
           curl http://localhost:9411/api/v2/spans?serviceName=demoservice
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
 
   # webserver-build-test-centos6:
   #   name: webserver-centos6-build
