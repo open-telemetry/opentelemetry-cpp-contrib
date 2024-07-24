@@ -78,7 +78,7 @@ TEST(FluentdSpanRecordable, SetIdentity)
                  {"parentId", "0000000000000003"},
                  {"traceId", "00000000000000000000000000000001"}}},
                  {"tags", "Span"}};
-  opentelemetry::exporter::fluentd::trace::Recordable rec();
+  opentelemetry::exporter::fluentd::trace::Recordable rec;
   const trace::TraceId trace_id(std::array<const uint8_t, trace::TraceId::kSize>(
       {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}));
 
