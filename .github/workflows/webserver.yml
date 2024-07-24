@@ -82,6 +82,8 @@ jobs:
             --load .
       - name: build
         run: |
+          cat /etc/os-release
+          java -version
           docker run -idt --name apache_centos7_container apache_centos7 /bin/bash
           cd instrumentation/otel-webserver-module
           docker exec apache_centos7_container bash -c \
