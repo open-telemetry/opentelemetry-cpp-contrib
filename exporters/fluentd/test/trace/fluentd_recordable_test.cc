@@ -101,7 +101,7 @@ TEST(FluentdSpanRecordable, SetIdentity)
 TEST(FluentdSpanRecordable, SetName)
 {
   nostd::string_view name = "Test Span";
-  json j_span             = {{"name", name}};
+  json j_span             = {{"events": json::array()}, {"options": {"name", name}}, {"tag", "Span"}};
   opentelemetry::exporter::fluentd::trace::Recordable rec;
   rec.SetName(name);
   EXPECT_EQ(rec.span(), j_span);
