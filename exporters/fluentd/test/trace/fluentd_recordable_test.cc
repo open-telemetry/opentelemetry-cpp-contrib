@@ -142,7 +142,7 @@ TEST(FluentdSpanRecordable, SetInstrumentationScope)
   const char *library_name    = "otel-cpp";
   const char *library_version = "0.5.0";
   json j_span                 = {
-      {"events", json::array()}, {"options", {"tags", {"otel.library.name", library_name}, {"otel.library.version", library_version}}}, {"tag", "Span"}};
+      {"events", json::array()}, {"options", {"tags", {{"otel.library.name", library_name}, {"otel.library.version", library_version}}}}, {"tag", "Span"}};
   opentelemetry::exporter::fluentd::trace::Recordable rec;
 
   rec.SetInstrumentationScope(*InstrumentationScope::Create(library_name, library_version));
@@ -162,7 +162,7 @@ TEST(FluentdSpanRecordable, SetStatus)
     if (status_code == trace::StatusCode::kError)
       j_span = {{"events", json::array()}, {"options", {{"statusMessage", description}, {"success", false}, {"tags", {"otel_status_code", status_code}}}}, {"tag", "Span"}};
     else
-      j_span = {{"events", json::array()}, {"options", {{"success", true}, {"tags", {"otel_status_code", status_code}}}}, {"tag", "Span"}};
+      j_span = {{"events", json::array()}, {"options", {{"success", true}, {"tags", {{"otel_status_code", status_code}}}}}, {"tag", "Span"}};
 
     rec.SetStatus(code, description);
     EXPECT_EQ(rec.span(), j_span);
@@ -171,7 +171,7 @@ TEST(FluentdSpanRecordable, SetStatus)
 
 TEST(FluentdSpanRecordable, SetSpanKind)
 {
-  json j_json_client = {{"events", json::array()}, {"options", {"kind", 2}}, {"tag", "Span"}};
+  json j_json_client = {{"events", json::array()}, {"options", {{"kind", 2}}}, {"tag", "Span"}};
   opentelemetry::exporter::fluentd::trace::Recordable rec;
   rec.SetSpanKind(opentelemetry::trace::SpanKind::kClient);
   EXPECT_EQ(rec.span(), j_json_client);
