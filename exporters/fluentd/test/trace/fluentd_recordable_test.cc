@@ -116,9 +116,14 @@ TEST(FluentdSpanRecordable, SetIdentityWithTraceState)
   const trace::SpanId parent_span_id(
       std::array<const uint8_t, trace::SpanId::kSize>({0, 0, 0, 0, 0, 0, 0, 3}));
 
+  std::string trace_state_header = "k1=v1,k2=v2,k3=v3";
+  auto ts = opentelemetry::trace::TraceState::FromHeader(trace_state_header);
   const opentelemetry::trace::SpanContext span_context{
-      trace_id, span_id,
-      opentelemetry::trace::TraceFlags{opentelemetry::trace::TraceFlags::kIsSampled}, true};
+      trace_id,
+      span_id,
+      opentelemetry::trace::TraceFlags{opentelemetry::trace::TraceFlags::kIsSampled},
+      true,
+      ts};
 
   rec.SetIdentity(span_context, parent_span_id);
   EXPECT_EQ(rec.span(), j_span);
