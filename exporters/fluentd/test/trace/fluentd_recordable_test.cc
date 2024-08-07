@@ -99,12 +99,13 @@ TEST(FluentdSpanRecordable, SetIdentity)
 
 TEST(FluentdSpanRecordable, SetIdentityWithTraceState)
 {
+  const std::string trace_state_header = "k1=v1,k2=v2,k3=v3";
   json j_span = {{"events", json::array()},
                  {"options",
                   {{"env_dt_spanId", "0000000000000002"},
                    {"env_dt_traceId", "00000000000000000000000000000001"},
                    {"parentId", "0000000000000003"},
-                   {"traceState", ""}}},
+                   {"traceState", trace_state_header}}},
                    {"tag", "Span"}};
   opentelemetry::exporter::fluentd::trace::Recordable rec(FLUENT_VALUE_SPAN, true);
   const trace::TraceId trace_id(std::array<const uint8_t, trace::TraceId::kSize>(
@@ -116,7 +117,6 @@ TEST(FluentdSpanRecordable, SetIdentityWithTraceState)
   const trace::SpanId parent_span_id(
       std::array<const uint8_t, trace::SpanId::kSize>({0, 0, 0, 0, 0, 0, 0, 3}));
 
-  std::string trace_state_header = "k1=v1,k2=v2,k3=v3";
   auto ts = opentelemetry::trace::TraceState::FromHeader(trace_state_header);
   const opentelemetry::trace::SpanContext span_context{
       trace_id,
