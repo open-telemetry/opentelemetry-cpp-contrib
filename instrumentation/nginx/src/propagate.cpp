@@ -79,6 +79,9 @@ opentelemetry::context::Context ExtractContext(OtelCarrier* carrier) {
     case TracePropagationW3C: {
       return OtelW3CPropagator().Extract(textMapCarrier, root);
     }
+    case TracePropagationB3Multi: {
+      return OtelB3MultiPropagator().Extract(textMapCarrier, root);
+    }
     case TracePropagationB3: {
       if (HasHeader(carrier->req, "b3")) {
         return OtelB3Propagator().Extract(textMapCarrier, root);
@@ -102,6 +105,10 @@ void InjectContext(OtelCarrier* carrier, opentelemetry::context::Context context
     }
     case TracePropagationB3: {
       OtelB3Propagator().Inject(textMapCarrier, context);
+      break;
+    }
+    case TracePropagationB3Multi: {
+      OtelB3MultiPropagator().Inject(textMapCarrier, context);
       break;
     }
     default:
