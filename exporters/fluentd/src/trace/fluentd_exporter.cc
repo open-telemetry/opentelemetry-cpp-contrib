@@ -188,6 +188,13 @@ bool FluentdExporter::Initialize() {
 
   addr_.reset(
       new SocketTools::SocketAddr(options_.endpoint.c_str(), is_unix_domain));
+  if (addr_->m_data_in.sin_family != AF_UNIX &&
+      addr_->m_data_in.sin_family != AF_INET &&
+      addr_->m_data_in.sin_family != AF_INET6)
+  {
+    LOG_ERROR("Invalid endpoint! %s", options_.endpoint.c_str());
+    return false;
+  }
   LOG_TRACE("connecting to %s", addr_->toString().c_str());
 
   return true;
