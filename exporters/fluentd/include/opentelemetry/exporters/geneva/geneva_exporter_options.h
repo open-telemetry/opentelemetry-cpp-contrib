@@ -39,6 +39,12 @@ struct GenevaExporterOptions {
     * equal to max_queue_size.
     */
     size_t max_export_batch_size = 512;
+
+    /**
+     * @brief Include trace_state in the exported spans, default to false.
+     *
+     */
+    bool include_trace_state_for_span = false;
 };
 
 }

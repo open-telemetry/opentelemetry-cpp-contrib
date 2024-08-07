@@ -145,6 +145,7 @@ struct FluentdExporterOptions {
   std::string endpoint;
   bool convert_event_to_trace =
       false; // convert events to trace. Not used for Logs.
+  bool include_trace_state_for_span = false;
 };
 
 static inline nlohmann::byte_container_with_subtype<std::vector<std::uint8_t>>

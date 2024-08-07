@@ -70,14 +70,15 @@ template <typename timeunit> void yield_for(timeunit duration) {
   } while (std::chrono::high_resolution_clock::now() < end);
 }
 
-#if 0
 // Testing Shutdown functionality of OStreamSpanExporter, should expect no data to be sent to Stream
 TEST(FluentdSpanRecordable, SetIdentity)
 {
-  json j_span = {{"options",{{"id", "0000000000000002"},
-                 {"parentId", "0000000000000003"},
-                 {"traceId", "00000000000000000000000000000001"}}},
-                 {"tags", "Span"}};
+  json j_span = {{"events", json::array()},
+                 {"options",
+                  {{"env_dt_spanId", "0000000000000002"},
+                   {"env_dt_traceId", "00000000000000000000000000000001"},
+                   {"parentId", "0000000000000003"}}},
+                   {"tag", "Span"}};
   opentelemetry::exporter::fluentd::trace::Recordable rec;
   const trace::TraceId trace_id(std::array<const uint8_t, trace::TraceId::kSize>(
       {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}));
@@ -96,16 +97,48 @@ TEST(FluentdSpanRecordable, SetIdentity)
   EXPECT_EQ(rec.span(), j_span);
 }
 
+TEST(FluentdSpanRecordable, SetIdentityWithTraceState)
+{
+  const std::string trace_state_header = "k1=v1,k2=v2,k3=v3";
+  json j_span = {{"events", json::array()},
+                 {"options",
+                  {{"env_dt_spanId", "0000000000000002"},
+                   {"env_dt_traceId", "00000000000000000000000000000001"},
+                   {"parentId", "0000000000000003"},
+                   {"traceState", trace_state_header}}},
+                   {"tag", "Span"}};
+  opentelemetry::exporter::fluentd::trace::Recordable rec(FLUENT_VALUE_SPAN, true);
+  const trace::TraceId trace_id(std::array<const uint8_t, trace::TraceId::kSize>(
+      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}));
+
+  const trace::SpanId span_id(
+      std::array<const uint8_t, trace::SpanId::kSize>({0, 0, 0, 0, 0, 0, 0, 2}));
+
+  const trace::SpanId parent_span_id(
+      std::array<const uint8_t, trace::SpanId::kSize>({0, 0, 0, 0, 0, 0, 0, 3}));
+
+  auto ts = opentelemetry::trace::TraceState::FromHeader(trace_state_header);
+  const opentelemetry::trace::SpanContext span_context{
+      trace_id,
+      span_id,
+      opentelemetry::trace::TraceFlags{opentelemetry::trace::TraceFlags::kIsSampled},
+      true,
+      ts};
+
+  rec.SetIdentity(span_context, parent_span_id);
+  EXPECT_EQ(rec.span(), j_span);
+}
+
 TEST(FluentdSpanRecordable, SetName)
 {
   nostd::string_view name = "Test Span";
-  json j_span             = {{"name", name}};
+  json j_span             = {{"events", json::array()}, {"options", {{"name", name}}}, {"tag", "Span"}};
   opentelemetry::exporter::fluentd::trace::Recordable rec;
   rec.SetName(name);
   EXPECT_EQ(rec.span(), j_span);
 }
 
-TEST(FluentdSpanRecordable, SetStartTime)
+TEST(FluentdSpanRecordable, DISABLED_SetStartTime)
 {
   opentelemetry::exporter::fluentd::trace::Recordable rec;
   std::chrono::system_clock::time_point start_time = std::chrono::system_clock::now();
@@ -118,7 +151,7 @@ TEST(FluentdSpanRecordable, SetStartTime)
   EXPECT_EQ(rec.span(), j_span);
 }
 
-TEST(FluentdSpanRecordable, SetDuration)
+TEST(FluentdSpanRecordable, DISABLED_SetDuration)
 {
   json j_span = {{"duration", 10}, {"timestamp", 0}};
   opentelemetry::exporter::fluentd::trace::Recordable rec;
@@ -140,7 +173,7 @@ TEST(FluentdSpanRecordable, SetInstrumentationScope)
   const char *library_name    = "otel-cpp";
   const char *library_version = "0.5.0";
   json j_span                 = {
-      {"tags", {{"otel.library.name", library_name}, {"otel.library.version", library_version}}}};
+      {"events", json::array()}, {"options", {{"tags", {{"otel.library.name", library_name}, {"otel.library.version", library_version}}}}}, {"tag", "Span"}};
   opentelemetry::exporter::fluentd::trace::Recordable rec;
 
   rec.SetInstrumentationScope(*InstrumentationScope::Create(library_name, library_version));
@@ -158,9 +191,9 @@ TEST(FluentdSpanRecordable, SetStatus)
     trace::StatusCode code(status_code);
     json j_span;
     if (status_code == trace::StatusCode::kError)
-      j_span = {{"tags", {{"otel.status_code", status_code}, {"error", description}}}};
+      j_span = {{"events", json::array()}, {"options", {{"statusMessage", description}, {"success", false}, {"tags", {{"otel.status_code", status_code}}}}}, {"tag", "Span"}};
     else
-      j_span = {{"tags", {{"otel.status_code", status_code}}}};
+      j_span = {{"events", json::array()}, {"options", {{"success", true}, {"tags", {{"otel.status_code", status_code}}}}}, {"tag", "Span"}};
 
     rec.SetStatus(code, description);
     EXPECT_EQ(rec.span(), j_span);
@@ -169,13 +202,13 @@ TEST(FluentdSpanRecordable, SetStatus)
 
 TEST(FluentdSpanRecordable, SetSpanKind)
 {
-  json j_json_client = {{"kind", "CLIENT"}};
+  json j_json_client = {{"events", json::array()}, {"options", {{"kind", 2}}}, {"tag", "Span"}};
   opentelemetry::exporter::fluentd::trace::Recordable rec;
   rec.SetSpanKind(opentelemetry::trace::SpanKind::kClient);
   EXPECT_EQ(rec.span(), j_json_client);
 }
 
-TEST(FluentdSpanRecordable, AddEventDefault)
+TEST(FluentdSpanRecordable, DISABLED_AddEventDefault)
 {
   opentelemetry::exporter::fluentd::trace::Recordable rec;
   nostd::string_view name = "Test Event";
@@ -194,7 +227,7 @@ TEST(FluentdSpanRecordable, AddEventDefault)
   EXPECT_EQ(rec.span(), j_span);
 }
 
-TEST(FluentdSpanRecordable, AddEventWithAttributes)
+TEST(FluentdSpanRecordable, DISABLED_AddEventWithAttributes)
 {
   opentelemetry::exporter::fluentd::trace::Recordable rec;
   nostd::string_view name = "Test Event";
@@ -221,7 +254,7 @@ TEST(FluentdSpanRecordable, AddEventWithAttributes)
 }
 
 // Test non-int single types. Int single types are tested using templates (see IntAttributeTest)
-TEST(FluentdSpanRecordable, SetSingleAtrribute)
+TEST(FluentdSpanRecordable, DISABLED_SetSingleAtrribute)
 {
   opentelemetry::exporter::fluentd::trace::Recordable rec;
   nostd::string_view bool_key = "bool_attr";
@@ -242,7 +275,7 @@ TEST(FluentdSpanRecordable, SetSingleAtrribute)
 }
 
 // Test non-int array types. Int array types are tested using templates (see IntAttributeTest)
-TEST(FluentdSpanRecordable, SetArrayAtrribute)
+TEST(FluentdSpanRecordable, DISABLED_SetArrayAtrribute)
 {
   opentelemetry::exporter::fluentd::trace::Recordable rec;
   nlohmann::json j_span = {{"tags",
@@ -272,7 +305,8 @@ TEST(FluentdSpanRecordable, SetResource)
   std::string service_name = "test";
   auto resource = opentelemetry::sdk::resource::Resource::Create({{"service.name", service_name}});
   rec.SetResource(resource);
-  EXPECT_EQ(rec.GetServiceName(), service_name);
+  // TODO: Reenable this test after fixing the issue with the resource attribute
+  // EXPECT_EQ(rec.GetServiceName(), service_name);
 }
 
 /**
@@ -289,7 +323,7 @@ struct FluentdIntAttributeTest : public testing::Test
 using IntTypes = testing::Types<int, int64_t, unsigned int, uint64_t>;
 TYPED_TEST_SUITE(FluentdIntAttributeTest, IntTypes);
 
-TYPED_TEST(FluentdIntAttributeTest, SetIntSingleAttribute)
+TYPED_TEST(FluentdIntAttributeTest, DISABLED_SetIntSingleAttribute)
 {
   using IntType = typename TestFixture::IntParamType;
   IntType i     = 2;
@@ -301,7 +335,7 @@ TYPED_TEST(FluentdIntAttributeTest, SetIntSingleAttribute)
   EXPECT_EQ(rec.span(), j_span);
 }
 
-TYPED_TEST(FluentdIntAttributeTest, SetIntArrayAttribute)
+TYPED_TEST(FluentdIntAttributeTest, DISABLED_SetIntArrayAttribute)
 {
   using IntType = typename TestFixture::IntParamType;
 
@@ -315,7 +349,6 @@ TYPED_TEST(FluentdIntAttributeTest, SetIntArrayAttribute)
   EXPECT_EQ(rec.span(), j_span);
 }
 
-#endif
 using Properties = std::map<std::string, opentelemetry::common::AttributeValue>;
 
 struct TestServer {
