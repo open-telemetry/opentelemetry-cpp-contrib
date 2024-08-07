@@ -70,7 +70,6 @@ template <typename timeunit> void yield_for(timeunit duration) {
   } while (std::chrono::high_resolution_clock::now() < end);
 }
 
-#if 1
 // Testing Shutdown functionality of OStreamSpanExporter, should expect no data to be sent to Stream
 TEST(FluentdSpanRecordable, SetIdentity)
 {
@@ -81,6 +80,32 @@ TEST(FluentdSpanRecordable, SetIdentity)
                    {"parentId", "0000000000000003"}}},
                    {"tag", "Span"}};
   opentelemetry::exporter::fluentd::trace::Recordable rec;
+  const trace::TraceId trace_id(std::array<const uint8_t, trace::TraceId::kSize>(
+      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}));
+
+  const trace::SpanId span_id(
+      std::array<const uint8_t, trace::SpanId::kSize>({0, 0, 0, 0, 0, 0, 0, 2}));
+
+  const trace::SpanId parent_span_id(
+      std::array<const uint8_t, trace::SpanId::kSize>({0, 0, 0, 0, 0, 0, 0, 3}));
+
+  const opentelemetry::trace::SpanContext span_context{
+      trace_id, span_id,
+      opentelemetry::trace::TraceFlags{opentelemetry::trace::TraceFlags::kIsSampled}, true};
+
+  rec.SetIdentity(span_context, parent_span_id);
+  EXPECT_EQ(rec.span(), j_span);
+}
+
+TEST(FluentdSpanRecordable, SetIdentityWithTraceState)
+{
+  json j_span = {{"events", json::array()},
+                 {"options",
+                  {{"env_dt_spanId", "0000000000000002"},
+                   {"env_dt_traceId", "00000000000000000000000000000001"},
+                   {"parentId", "0000000000000003"}}},
+                   {"tag", "Span"}};
+  opentelemetry::exporter::fluentd::trace::Recordable rec(FLUENT_VALUE_SPAN, true);
   const trace::TraceId trace_id(std::array<const uint8_t, trace::TraceId::kSize>(
       {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}));
 
@@ -317,8 +342,6 @@ TYPED_TEST(FluentdIntAttributeTest, DISABLED_SetIntArrayAttribute)
   nlohmann::json j_span = {{"tags", {{"int_arr_attr", {4, 5, 6}}}}};
   EXPECT_EQ(rec.span(), j_span);
 }
-
-#endif
 
 using Properties = std::map<std::string, opentelemetry::common::AttributeValue>;
 
