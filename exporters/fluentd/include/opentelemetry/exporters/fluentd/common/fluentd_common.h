@@ -142,6 +142,7 @@ struct FluentdExporterOptions {
   TransportFormat format = TransportFormat::kForward;
   std::string tag = "tag.service";
   size_t retry_count = 2; // number of retries before drop
+  uint32_t retry_delay_ms = 1000;
   std::string endpoint;
   bool convert_event_to_trace =
       false; // convert events to trace. Not used for Logs.
