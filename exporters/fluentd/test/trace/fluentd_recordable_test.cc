@@ -380,11 +380,12 @@ TEST(FluentdExporter, SendTraceEvents) {
   auto processor = std::unique_ptr<SpanProcessor>(
       new sdktrace::SimpleSpanProcessor(std::move(exporter)));
 
-  auto provider = nostd::shared_ptr<trace::TracerProvider>(
+  auto provider = std::shared_ptr<sdktrace::TracerProvider>(
       new TracerProvider(std::move(processor)));
 
+  std::shared_ptr<trace::TracerProvider> api_provider = provider;
   // Set the global trace provider
-  opentelemetry::trace::Provider::SetTracerProvider(provider);
+  opentelemetry::trace::Provider::SetTracerProvider(api_provider);
 
   std::string providerName = "MyInstrumentationName";
   auto tracer = provider->GetTracer(providerName);
@@ -426,8 +427,16 @@ TEST(FluentdExporter, SendTraceEvents) {
   }
   span1->End(); // end MySpanL1
 
+#if OPENTELEMETRY_ABI_VERSION_NO == 1
   tracer->ForceFlushWithMicroseconds(1000);
   tracer->CloseWithMicroseconds(0);
+#else
+  /* In ABI 2 >= otel-cpp v1.16.0, only the sdk Tracer objects
+   * have the ForceFlush...() and Close...() methods. The Close()
+   * method simply calls ForceFlush(). Use the SDK provider ForceFlush() instead.
+   */
+  provider->ForceFlush();
+#endif /* OPENTELEMETRY_ABI_VERSION_NO == 1 */
 
   testServer.WaitForEvents(6, 200); // 6 batches must arrive in 200ms
   testServer.Stop();
