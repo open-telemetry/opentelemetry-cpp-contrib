@@ -103,7 +103,8 @@ TEST(FluentdSpanRecordable, SetIdentityWithTraceState)
                  {"options",
                   {{"env_dt_spanId", "0000000000000002"},
                    {"env_dt_traceId", "00000000000000000000000000000001"},
-                   {"parentId", "0000000000000003"}}},
+                   {"parentId", "0000000000000003"},
+                   {"traceState", ""}}},
                    {"tag", "Span"}};
   opentelemetry::exporter::fluentd::trace::Recordable rec(FLUENT_VALUE_SPAN, true);
   const trace::TraceId trace_id(std::array<const uint8_t, trace::TraceId::kSize>(
