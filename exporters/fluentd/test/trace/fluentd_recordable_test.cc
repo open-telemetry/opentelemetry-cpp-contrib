@@ -101,7 +101,7 @@ TEST(FluentdSpanRecordable, SetIdentity)
 TEST(FluentdSpanRecordable, SetName)
 {
   nostd::string_view name = "Test Span";
-  json j_span             = {{"events", json::array()}, {"options", {"name", name}}, {"tag", "Span"}};
+  json j_span             = {{"events", json::array()}, {"options", {{"name", name}}}, {"tag", "Span"}};
   opentelemetry::exporter::fluentd::trace::Recordable rec;
   rec.SetName(name);
   EXPECT_EQ(rec.span(), j_span);
@@ -142,7 +142,7 @@ TEST(FluentdSpanRecordable, SetInstrumentationScope)
   const char *library_name    = "otel-cpp";
   const char *library_version = "0.5.0";
   json j_span                 = {
-      {"events", json::array()}, {"options", {"tags", {{"otel.library.name", library_name}, {"otel.library.version", library_version}}}}, {"tag", "Span"}};
+      {"events", json::array()}, {"options", {{"tags", {{"otel.library.name", library_name}, {"otel.library.version", library_version}}}}}, {"tag", "Span"}};
   opentelemetry::exporter::fluentd::trace::Recordable rec;
 
   rec.SetInstrumentationScope(*InstrumentationScope::Create(library_name, library_version));
@@ -160,7 +160,7 @@ TEST(FluentdSpanRecordable, SetStatus)
     trace::StatusCode code(status_code);
     json j_span;
     if (status_code == trace::StatusCode::kError)
-      j_span = {{"events", json::array()}, {"options", {{"statusMessage", description}, {"success", false}, {"tags", {"otel_status_code", status_code}}}}, {"tag", "Span"}};
+      j_span = {{"events", json::array()}, {"options", {{"statusMessage", description}, {"success", false}, {"tags", {{"otel_status_code", status_code}}}}}, {"tag", "Span"}};
     else
       j_span = {{"events", json::array()}, {"options", {{"success", true}, {"tags", {{"otel_status_code", status_code}}}}}, {"tag", "Span"}};
 
