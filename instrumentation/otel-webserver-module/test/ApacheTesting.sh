@@ -5,6 +5,7 @@
 # Extract the agent
 
 targetSystem=$1
+platform=$2
 
 OTelApacheModule="/opt/opentelemetry-webserver-sdk/WebServerModule/Apache/libmod_apache_otel22.so"
 if [ $targetSystem = "ubuntu" ] || [ $targetSystem = "centos7" ]; then
@@ -12,7 +13,7 @@ if [ $targetSystem = "ubuntu" ] || [ $targetSystem = "centos7" ]; then
 fi
 
 
-tar -xf ../build/opentelemetry-webserver-sdk-x64-linux.tgz -C /opt
+tar -xf ../build/opentelemetry-webserver-sdk-$platform-linux.tgz -C /opt
 
 cd /opt/opentelemetry-webserver-sdk
 
