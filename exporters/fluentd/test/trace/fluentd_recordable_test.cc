@@ -160,9 +160,9 @@ TEST(FluentdSpanRecordable, SetStatus)
     trace::StatusCode code(status_code);
     json j_span;
     if (status_code == trace::StatusCode::kError)
-      j_span = {{"events", json::array()}, {"options", {{"statusMessage", description}, {"success", false}, {"tags", {{"otel_status_code", status_code}}}}}, {"tag", "Span"}};
+      j_span = {{"events", json::array()}, {"options", {{"statusMessage", description}, {"success", false}, {"tags", {{"otel.status_code", status_code}}}}}, {"tag", "Span"}};
     else
-      j_span = {{"events", json::array()}, {"options", {{"success", true}, {"tags", {{"otel_status_code", status_code}}}}}, {"tag", "Span"}};
+      j_span = {{"events", json::array()}, {"options", {{"success", true}, {"tags", {{"otel.status_code", status_code}}}}}, {"tag", "Span"}};
 
     rec.SetStatus(code, description);
     EXPECT_EQ(rec.span(), j_span);
