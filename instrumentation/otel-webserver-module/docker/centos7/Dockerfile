@@ -53,7 +53,7 @@ RUN yum update -y \
 
 # install lcov package
 RUN wget https://archives.fedoraproject.org/pub/archive/epel/7/x86_64/Packages/e/epel-release-7-14.noarch.rpm \
-    && yum install ./epel-release-latest-*.noarch.rpm -y \
+    && yum install ./epel-release-*-*.noarch.rpm -y \
     && yum install lcov -y \
     && yum clean all
 
