@@ -264,8 +264,8 @@ Currently, artifact is generated on x86-64 is published.
 **Therefore, the artifact should work on any linux distribution running on x86-64 plarform and having glibc version >= 2.17.**
 
 ### Maintainers
-* [Kumar Pratyush](https://github.com/kpratyus), Cisco
 * [Debajit Das](https://github.com/DebajitDas), Cisco
+* [Aryan Ishan](https://github.com/aryanishan1001), Cisco
 
 ### Blogs
 * [Instrument Apache HttpServer with OpenTelemetry](https://opentelemetry.io/blog/2022/instrument-apache-httpd-server/)
