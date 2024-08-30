@@ -38,6 +38,7 @@ For edit access, get in touch on
 * [Siim Kallas](https://github.com/seemk), Splunk
 * [Tobias Stadler](https://github.com/tobiasstadler)
 * [Tomasz Rojek](https://github.com/TomRoSystems)
+* [Aryan Ishan](https://github.com/aryanishan1001), Cisco
 
 [Emeritus
 Maintainer/Approver/Triager](https://github.com/open-telemetry/community/blob/main/community-membership.md#emeritus-maintainerapprovertriager):
