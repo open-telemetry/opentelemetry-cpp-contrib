@@ -51,6 +51,9 @@
 #  define ETW_FIELD_SPAN_KIND         "kind"                  /* Span Kind               */
 #  define ETW_FIELD_SPAN_LINKS        "links"                 /* Span Links array        */
 
+#  define ETW_FIELD_SPAN_LINKS_TO_SPAN_ID  "toSpanId"         /* Span Links toSpanId     */
+#  define ETW_FIELD_SPAN_LINKS_TO_TRACE_ID "toTraceId"        /* Span Links toTraceId    */
+
 #  define ETW_FIELD_PAYLOAD_NAME      "name"                  /* ETW Payload["name"]     */
 
 /* Span option constants */
