@@ -43,6 +43,20 @@ services:
             - "9000:80"
         depends_on:
             - otel-collector
+    webserver_almalinux9:
+        build:
+            context: .
+            dockerfile: docker/almalinux9/Dockerfile
+        image: apache_almalinux9
+        hostname: webserver
+        container_name: webserver_almalinux9
+        command: bash -c "apache2ctl -k start && tail -f /dev/null "
+        profiles:
+            - almalinux9
+        ports:
+            - "9000:80"
+        depends_on:
+            - otel-collector
     nginx_centos:
         build:
             context: .
@@ -83,6 +97,20 @@ services:
             - ubuntu20.04_nginx
         ports:
             - "8016:80"
+        depends_on:
+            - otel-collector
+    nginx_almalinix8:
+        build:
+            context: .
+            dockerfile: docker/almalinux8/Dockerfile
+        image: nginx_almalinix8
+        hostname: webserver
+        container_name: nginx_almalinix8
+        command: bash -c "echo 'hahaha' && tail -f /dev/null"
+        profiles:
+            - almalinux8_nginx
+        ports:
+            - "8020:80"
         depends_on:
             - otel-collector
 
