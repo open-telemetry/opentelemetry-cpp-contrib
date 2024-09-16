@@ -43,16 +43,16 @@ services:
             - "9000:80"
         depends_on:
             - otel-collector
-    webserver_almalinux9:
+    webserver_almalinux8:
         build:
             context: .
-            dockerfile: docker/almalinux9/Dockerfile
-        image: apache_almalinux9
+            dockerfile: docker/almalinux8/Dockerfile
+        image: apache_almalinux8
         hostname: webserver
-        container_name: webserver_almalinux9
+        container_name: webserver_almalinux8
         command: bash -c "apache2ctl -k start && tail -f /dev/null "
         profiles:
-            - almalinux9
+            - almalinux8
         ports:
             - "9000:80"
         depends_on:
