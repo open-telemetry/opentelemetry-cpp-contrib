@@ -183,13 +183,13 @@ jobs:
         uses: docker/setup-buildx-action@master
         with:
           install: true
-      - name: cache docker layers
-        uses: actions/cache@v3
-        with:
-          path: /tmp/buildx-cache/
-          key: apache-almalinux8-${{ github.sha }}
-          restore-keys: |
-            apache-almalinux8
+      # - name: cache docker layers
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: /tmp/buildx-cache/
+      #     key: apache-almalinux8-${{ github.sha }}
+      #     restore-keys: |
+      #       apache-almalinux8
       - name: setup docker image
         run: |
           cd instrumentation/otel-webserver-module
@@ -213,10 +213,10 @@ jobs:
         run: |
           docker exec apache_almalinux8_container bash -c \
             'cd /otel-webserver-module; ./gradlew runUnitTest'
-      - name: update cache
-        run: |
-          rm -rf /tmp/buildx-cache/apache_almalinux8
-          mv /tmp/buildx-cache/apache_almalinux8-new /tmp/buildx-cache/apache_almalinux8
+      # - name: update cache
+      #   run: |
+      #     rm -rf /tmp/buildx-cache/apache_almalinux8
+      #     mv /tmp/buildx-cache/apache_almalinux8-new /tmp/buildx-cache/apache_almalinux8
       - name: copy artifacts
         id: artifacts
         run: |
