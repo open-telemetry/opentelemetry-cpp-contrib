@@ -26,7 +26,7 @@ ARG AUTOMAKE_VERSION="1.16.3"
 ARG PERL_VERSION="5.20.2"
 ARG PERL_CPANVERSION="5.0"
 ARG PCRE_VERSION="8.44"
-ARG NGINX_VERSION="1.26.2"
+ARG NGINX_VERSION="1.26.0"
 
 # create default non-root user
 RUN groupadd -r swuser && useradd -u 1000 -g swuser -m -s /sbin/nologin -c "default non-root user" swuser
@@ -239,7 +239,7 @@ RUN echo '[nginx-stable]' >> /etc/yum.repos.d/nginx.repo \
     && echo 'enabled=1' >> /etc/yum.repos.d/nginx.repo \
     && echo 'gpgkey=https://nginx.org/keys/nginx_signing.key' >> /etc/yum.repos.d/nginx.repo \
     && echo 'module_hotfixes=true' >> /etc/yum.repos.d/nginx.repo \
-    && dnf install nginx -y
+    && dnf install nginx-${NGINX_VERSION} -y
 
 RUN cd /otel-webserver-module/build \
     && tar -xf opentelemetry-webserver-sdk-x64-linux.tgz \
