@@ -3,18 +3,6 @@ networks:
     default:
         name: webserver-network
 services:
-    webserver_centos:
-        build:
-            context: .
-            dockerfile: Dockerfile
-        image: apache_centos
-        profiles:
-            - default
-        hostname: webserver
-        container_name: webserver_centos
-        command: bash -c " httpd -k start && tail -f /dev/null "
-        ports:
-            - "8000:80"
     webserver_centos7:
         build:
             context: .
@@ -52,6 +40,7 @@ services:
         container_name: webserver_almalinux8
         command: bash -c "apache2ctl -k start && tail -f /dev/null "
         profiles:
+            - default
             - almalinux8
         ports:
             - "9000:80"
