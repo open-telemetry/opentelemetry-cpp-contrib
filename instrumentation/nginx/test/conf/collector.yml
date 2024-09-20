@@ -3,8 +3,8 @@ receivers:
     protocols:
       grpc:
 exporters:
-  logging:
-    logLevel: debug
+  debug:
+    verbosity: detailed
   file:
     path: /trace.json
 processors:
@@ -14,4 +14,4 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [logging, file]
+      exporters: [debug, file]
