@@ -102,18 +102,18 @@ jobs:
       #   run: |
       #     rm -rf /tmp/buildx-cache/apache_centos7
       #     mv /tmp/buildx-cache/apache_centos7-new /tmp/buildx-cache/apache_centos7
-      - name: copy artifacts
-        id: artifacts
-        run: |
-          cd instrumentation/otel-webserver-module
-          mkdir -p /tmp/apache_centos7/
-          docker cp apache_centos7_container:/otel-webserver-module/build/opentelemetry-webserver-sdk-x64-linux.tgz \
-            /tmp/apache_centos7/
-      - name: upload artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: opentelemetry-webserver-sdk-x64-linux.tgz
-          path: /tmp/apache_centos7/opentelemetry-webserver-sdk-x64-linux.tgz
+      # - name: copy artifacts
+      #   id: artifacts
+      #   run: |
+      #     cd instrumentation/otel-webserver-module
+      #     mkdir -p /tmp/apache_centos7/
+      #     docker cp apache_centos7_container:/otel-webserver-module/build/opentelemetry-webserver-sdk-x64-linux.tgz \
+      #       /tmp/apache_centos7/
+      # - name: upload artifacts
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: opentelemetry-webserver-sdk-x64-linux.tgz
+      #     path: /tmp/apache_centos7/opentelemetry-webserver-sdk-x64-linux.tgz
       # - name: run integrationtest
       #   run: |
       #     docker ps
@@ -125,51 +125,75 @@ jobs:
       #     ./gradlew :test:integration:integrationTests -i
       #     curl http://localhost:9411/api/v2/spans?serviceName=demoservice
 
-  # webserver-build-test-centos6:
-  #   name: webserver-centos6-build
-  #   runs-on: ubuntu-20.04
-  #   steps:
-  #     - name: checkout otel webserver
-  #       uses: actions/checkout@v3
-  #     - name: setup buildx
-  #       id: buildx
-  #       uses: docker/setup-buildx-action@master
-  #       with:
-  #         install: true
-  #     - name: cache docker layers
-  #       uses: actions/cache@v3
-  #       with:
-  #         path: /tmp/buildx-cache/
-  #         key: apache-centos6-${{ github.sha }}
-  #         restore-keys: |
-  #           apache-centos6
-  #     - name: setup docker image
-  #       run: |
-  #         cd instrumentation/otel-webserver-module
-  #         docker buildx build -t apache_centos6 -f Dockerfile \
-  #           --cache-from type=local,src=/tmp/buildx-cache/apache_centos6 \
-  #           --cache-to type=local,dest=/tmp/buildx-cache/apache_centos6-new \
-  #           --load .
-  #     - name: build
-  #       run: |
-  #         docker run -idt --name apache_centos6_container apache_centos6 /bin/bash
-  #         cd instrumentation/otel-webserver-module
-  #         docker exec apache_centos6_container bash -c \
-  #           'cd /otel-webserver-module; rm -rf *;'
-  #         docker cp . $(docker inspect --format="{{.Id}}" apache_centos6_container):/otel-webserver-module/
-  #         docker exec apache_centos6_container bash -c \
-  #           'cd /otel-webserver-module; rm -rf build; \
-  #           cp -r /dependencies /otel-webserver-module/;           \
-  #           cp -r /build-dependencies /otel-webserver-module/;     \
-  #           ./gradlew assembleWebServerModule'
-  #     - name: unit test
-  #       run: |
-  #         docker exec apache_centos6_container bash -c \
-  #           'cd /otel-webserver-module; ./gradlew runUnitTest'
-  #     - name: update cache
-  #       run: |
-  #         rm -rf /tmp/buildx-cache/apache_centos6
-  #        mv /tmp/buildx-cache/apache_centos6-new /tmp/buildx-cache/apache_centos6
+
+  webserver-build-test-almalinux8:
+    name: webserver-almalinux8-build
+    runs-on: ubuntu-20.04
+    steps:
+      - name: checkout otel webserver
+        uses: actions/checkout@v3
+      - name: setup buildx
+        id: buildx
+        uses: docker/setup-buildx-action@master
+        with:
+          install: true
+      # - name: cache docker layers
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: /tmp/buildx-cache/
+      #     key: apache-almalinux8-${{ github.sha }}
+      #     restore-keys: |
+      #       apache-almalinux8
+      - name: setup docker image
+        run: |
+          cd instrumentation/otel-webserver-module
+          docker buildx build -t apache_almalinux8 -f docker/almalinux8/Dockerfile \
+            --load .
+      - name: build
+        run: |
+          cat /etc/os-release
+          java -version
+          docker run -idt --name apache_almalinux8_container apache_almalinux8 /bin/bash
+          cd instrumentation/otel-webserver-module
+          docker exec apache_almalinux8_container bash -c \
+            'cd /otel-webserver-module; rm -rf *;'
+          docker cp . $(docker inspect --format="{{.Id}}" apache_almalinux8_container):/otel-webserver-module/
+          docker exec apache_almalinux8_container bash -c \
+            'cd /otel-webserver-module; rm -rf build; \
+            cp -r /dependencies /otel-webserver-module/;           \
+            cp -r /build-dependencies /otel-webserver-module/;     \
+            ./gradlew assembleWebServerModule'
+      - name: unit test
+        run: |
+          docker exec apache_almalinux8_container bash -c \
+            'cd /otel-webserver-module; ./gradlew runUnitTest'
+      # - name: update cache
+      #   run: |
+      #     rm -rf /tmp/buildx-cache/apache_almalinux8
+      #     mv /tmp/buildx-cache/apache_almalinux8-new /tmp/buildx-cache/apache_almalinux8
+      - name: copy artifacts
+        id: artifacts
+        run: |
+          cd instrumentation/otel-webserver-module
+          mkdir -p /tmp/apache_almalinux8/
+          docker cp apache_almalinux8_container:/otel-webserver-module/build/opentelemetry-webserver-sdk-x64-linux.tgz \
+            /tmp/apache_almalinux8/
+      - name: upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: opentelemetry-webserver-sdk-x64-linux.tgz
+          path: /tmp/apache_almalinux8/opentelemetry-webserver-sdk-x64-linux.tgz
+      # - name: run integrationtest
+      #   run: |
+      #     docker ps
+      #     docker rm -f apache_centos7_container
+      #     cd instrumentation/otel-webserver-module
+      #     docker-compose --profile centos7 up -d
+      #     docker ps -a
+      #     sleep 30
+      #     ./gradlew :test:integration:integrationTests -i
+      #     curl http://localhost:9411/api/v2/spans?serviceName=demoservice
+
 
   Codeql-build:
     name: static-analysis
