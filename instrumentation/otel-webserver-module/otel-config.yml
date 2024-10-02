@@ -20,8 +20,8 @@ receivers:
         http:
     zipkin:
 exporters:
-    logging:
-        loglevel: debug
+    debug:
+        verbosity: detailed
     zipkin:
         endpoint: "http://zipkin:9411/api/v2/spans"
         format: proto
@@ -30,5 +30,5 @@ service:
     pipelines:
         traces:
             receivers: [otlp, zipkin]
-            exporters: [logging, zipkin]
+            exporters: [debug, zipkin]
             processors: [resource]
