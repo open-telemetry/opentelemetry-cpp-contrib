@@ -1,5 +1,5 @@
 if("${opentelemetry-cpp-tag}" STREQUAL "")
-	set(opentelemetry-cpp-tag "v1.9.1")
+	set(opentelemetry-cpp-tag "v1.15.0")
 endif()
 function(target_create _target _lib)
   add_library(${_target} STATIC IMPORTED)
@@ -15,7 +15,6 @@ function(build_opentelemetry)
   set(opentelemetry_CMAKE_ARGS -DCMAKE_POSITION_INDEPENDENT_CODE=ON
           -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
           -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
-          -DWITH_LOGS_PREVIEW=ON
           -DBUILD_TESTING=OFF
           -DWITH_EXAMPLES=OFF)
 
