@@ -43,7 +43,7 @@ To use the library from a CMake project, you can locate it directly with
 ```cmake
 # CMakeLists.txt
 find_package(opentelemetry-cpp CONFIG REQUIRED)
-find_package(opentelemetry-fluentd CONFIG REQUIRED)
+find_package(opentelemetry-cpp-fluentd CONFIG REQUIRED)
 ...
 target_include_directories(foo PRIVATE ${OPENTELEMETRY_CPP_FLUENTD_INCLUDE_DIRS})
 target_link_libraries(foo PRIVATE ${OPENTELEMETRY_CPP_LIBRARIES} ${OPENTELEMETRY_CPP_FLUENTD_LIBRARY_DIRS})
