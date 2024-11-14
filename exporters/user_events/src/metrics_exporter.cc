@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "opentelemetry/exporters/user_events/metrics/exporter.h"
+#include "opentelemetry/proto/collector/metrics/v1/metrics_service.pb.h"
 
 #include "tracepoint/tracepoint.h"
 
