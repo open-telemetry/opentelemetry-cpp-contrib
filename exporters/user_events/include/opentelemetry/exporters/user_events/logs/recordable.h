@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include "opentelemetry/nostd/string_view.h"
 #include "opentelemetry/logs/severity.h"
 #include "opentelemetry/sdk/common/attribute_utils.h"
