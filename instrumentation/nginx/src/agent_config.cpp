@@ -83,8 +83,6 @@ static bool SetupExporter(toml_table_t* root, ngx_log_t* log, OtelNgxAgentConfig
     if (!SetupOtlpExporter(otlp, log, config)) {
       return false;
     }
-
-    config->exporter.type = OtelExporterOTLP;
   } else {
     ngx_log_error(NGX_LOG_ERR, log, 0, "Unsupported exporter %s", exporter.c_str());
     return false;

@@ -6,13 +6,11 @@ extern "C" {
 #include <ngx_core.h>
 }
 
-enum OtelExporterType { OtelExporterOTLP, OtelExporterJaeger };
 enum OtelProcessorType { OtelProcessorSimple, OtelProcessorBatch };
 enum OtelSamplerType { OtelSamplerAlwaysOn, OtelSamplerAlwaysOff, OtelSamplerTraceIdRatioBased };
 
 struct OtelNgxAgentConfig {
   struct {
-    OtelExporterType type = OtelExporterOTLP;
     std::string endpoint;
     bool use_ssl_credentials = false;
     std::string ssl_credentials_cacert_path = "";

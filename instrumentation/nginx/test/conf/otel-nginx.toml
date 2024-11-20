@@ -1,14 +1,8 @@
-exporter = "otlp"
 processor = "simple"
 
 [exporters.otlp]
 host = "collector"
-port = 4317
-
-[exporters.jaeger]
-host = "localhost"
-port = 9090
-transport = "thrift_udp"
+port = 4318
 
 [processors.batch]
 max_queue_size = 2048

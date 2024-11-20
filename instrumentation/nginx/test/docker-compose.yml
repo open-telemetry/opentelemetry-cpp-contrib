@@ -1,28 +1,39 @@
-version: "3"
 services:
   collector:
-    image: otel/opentelemetry-collector:0.26.0
+    image: otel/opentelemetry-collector:0.113.0
+    command: ["--config=/etc/otel/config.yml"]
     volumes:
-      - ${TEST_ROOT:-.}/conf/collector.yml:/etc/otel/config.yaml
+      - ${TEST_ROOT:-.}/conf/collector.yml:/etc/otel/config.yml
       - ${TEST_ROOT:-.}/data/trace.json:/trace.json
+    ports:
+      - "4318:4318"
+      - "13133:13133" # health check
   nginx:
     image: otel-nginx-test/nginx:latest
     volumes:
-      - ${TEST_ROOT:-.}/conf/nginx.conf:/etc/nginx/nginx.conf
+      - ${TEST_ROOT:-.}/conf/nginx.conf:/otel-nginx/nginx.conf
       - ${TEST_ROOT:-.}/conf/fastcgi_params:/etc/nginx/fastcgi_params
-      - ${TEST_ROOT:-.}/conf/otel-nginx.toml:/conf/otel-nginx.toml
+      - ${TEST_ROOT:-.}/conf/otel-nginx.toml:/otel-nginx/otel.toml
       - ${TEST_ROOT:-.}/backend/files:/var/www/html/files
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=collector:4318/v1/traces
     ports:
-      - "8000:8000"
+      - "8080:8080"
     command:
-      - /usr/sbin/nginx
-      - -g
-      - daemon off;
+      - /nginx/sbin/nginx
+      - -c
+      - /otel-nginx/nginx.conf
+    depends_on:
+      - node-backend
+      - php-backend
+      - collector
   node-backend:
     image: otel-nginx-test/express-backend:latest
     command: node index.js
     volumes:
       - ${TEST_ROOT:-.}/backend/simple_express:/app
+    ports:
+      - "3500:3500"
   php-backend:
     image: bitnami/php-fpm:7.4-prod
     volumes:

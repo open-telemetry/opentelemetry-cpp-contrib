@@ -1,7 +1,8 @@
 defmodule InstrumentationTest do
   use ExUnit.Case
 
-  @host "localhost:8000"
+  @host "localhost:8080"
+  @collector_healthcheck "localhost:13133"
   @traces_path "../data/trace.json"
 
   def has_line(lines, re) do
@@ -21,39 +22,31 @@ defmodule InstrumentationTest do
     end
   end
 
+  def poll_collector(0), do: raise("Timed out waiting for collector")
+
+  def poll_collector(attempts_remaining) do
+    case HTTPoison.get(@collector_healthcheck) do
+      {:ok, %HTTPoison.Response{status_code: 200}} ->
+        :ready
+
+      _ ->
+        Process.sleep(200)
+        poll_collector(attempts_remaining - 1)
+    end
+  end
+
   def wait_nginx() do
     poll_nginx(30)
   end
 
-  def wait_until_ready(_, %{:collector => true, :express => true, :nginx => false}) do
+  def wait_collector() do
+    poll_collector(30)
+  end
+
+  def wait_until_ready(_port) do
     wait_nginx()
+    wait_collector()
     :ready
-  end
-
-  def wait_until_ready(port, ctx) do
-    receive do
-      {_, {:data, output}} ->
-        IO.puts(output)
-        lines = String.split(output, "\n", trim: true)
-
-        has_collector = ctx[:collector] || has_line(lines, ~r/everything is ready/i)
-        has_express = ctx[:express] || has_line(lines, ~r/simple_express ready/i)
-
-        wait_until_ready(
-          port,
-          Map.merge(ctx, %{
-            collector: has_collector,
-            express: has_express,
-            nginx: false
-          })
-        )
-    after
-      30_000 -> raise "Timed out waiting for docker containers"
-    end
-  end
-
-  def wait_until_ready(port) do
-    wait_until_ready(port, %{})
   end
 
   def read_traces(_file, num_traces, _timeout, traces) when num_traces <= 0, do: traces
@@ -72,7 +65,7 @@ defmodule InstrumentationTest do
     end
   end
 
-  def read_traces(file, num_traces, timeout \\ 1_000) do
+  def read_traces(file, num_traces, timeout \\ 5_000) do
     read_traces(file, num_traces, timeout, [])
   end
 
@@ -82,7 +75,7 @@ defmodule InstrumentationTest do
 
   def collect_spans(trace) do
     [resource_spans] = collect_resource_spans(trace)
-    [il_spans] = resource_spans["instrumentationLibrarySpans"]
+    [il_spans] = resource_spans["scopeSpans"]
     il_spans["spans"]
   end
 
@@ -129,9 +122,11 @@ defmodule InstrumentationTest do
 
   setup_all do
     File.chmod!(@traces_path, 0o666)
-    port = Port.open({:spawn, "docker-compose up"}, [:binary])
+    port = Port.open({:spawn, "docker compose up"}, [:binary])
 
-    on_exit(fn -> System.cmd("docker-compose", ["down"]) end)
+    on_exit(fn ->
+      System.cmd("docker", ["compose", "down"])
+    end)
 
     wait_until_ready(port)
 
@@ -162,14 +157,18 @@ defmodule InstrumentationTest do
   end
 
   test "HTTP upstream | span attributes", %{trace_file: trace_file} do
-    %HTTPoison.Response{status_code: status} = HTTPoison.get!("#{@host}/?foo=bar&x=42", [{"User-Agent", "otel-test"}, {"My-Header", "My-Value"}])
+    %HTTPoison.Response{status_code: status} =
+      HTTPoison.get!("#{@host}/?foo=bar&x=42", [
+        {"User-Agent", "otel-test"},
+        {"My-Header", "My-Value"}
+      ])
 
     [trace] = read_traces(trace_file, 1)
     [span] = collect_spans(trace)
 
     assert status == 200
 
-    assert attrib(span, "net.host.port") == 8000
+    assert attrib(span, "net.host.port") == 8080
     assert attrib(span, "net.peer.ip") =~ ~r/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
     assert attrib(span, "net.peer.port") > 0
 
@@ -185,12 +184,15 @@ defmodule InstrumentationTest do
     assert attrib(span, "http.request.header.user_agent") == nil
     assert attrib(span, "http.request.header.my_header") == nil
 
-    assert span["kind"] == "SPAN_KIND_SERVER"
+    assert span["kind"] == TraceProto.SpanKind.server()
     assert span["name"] == "simple_backend"
   end
 
-  test "location with opentelemetry_capture_headers on should capture headers", %{trace_file: trace_file} do
-    %HTTPoison.Response{status_code: status} = HTTPoison.get!("#{@host}/capture_headers", [{"Request-Header", "Request-Value"}])
+  test "location with opentelemetry_capture_headers on should capture headers", %{
+    trace_file: trace_file
+  } do
+    %HTTPoison.Response{status_code: status} =
+      HTTPoison.get!("#{@host}/capture_headers", [{"Request-Header", "Request-Value"}])
 
     [trace] = read_traces(trace_file, 1)
     [span] = collect_spans(trace)
@@ -203,8 +205,12 @@ defmodule InstrumentationTest do
     assert attrib(span, "http.response.header.response_header") == ["Response-Value"]
   end
 
-  test "location with opentelemetry_capture_headers and sensitive header name should redact header value", %{trace_file: trace_file} do
-    %HTTPoison.Response{status_code: status} = HTTPoison.get!("#{@host}/capture_headers_with_sensitive_header_name", [{"Request-Header", "Foo"}])
+  test "location with opentelemetry_capture_headers and sensitive header name should redact header value",
+       %{trace_file: trace_file} do
+    %HTTPoison.Response{status_code: status} =
+      HTTPoison.get!("#{@host}/capture_headers_with_sensitive_header_name", [
+        {"Request-Header", "Foo"}
+      ])
 
     [trace] = read_traces(trace_file, 1)
     [span] = collect_spans(trace)
@@ -217,8 +223,12 @@ defmodule InstrumentationTest do
     assert attrib(span, "http.response.header.response_header") == ["[REDACTED]"]
   end
 
-  test "location with opentelemetry_capture_headers and sensitive header value should redact header value", %{trace_file: trace_file} do
-    %HTTPoison.Response{status_code: status} = HTTPoison.get!("#{@host}/capture_headers_with_sensitive_header_value", [{"Bar", "Request-Value"}])
+  test "location with opentelemetry_capture_headers and sensitive header value should redact header value",
+       %{trace_file: trace_file} do
+    %HTTPoison.Response{status_code: status} =
+      HTTPoison.get!("#{@host}/capture_headers_with_sensitive_header_value", [
+        {"Bar", "Request-Value"}
+      ])
 
     [trace] = read_traces(trace_file, 1)
     [span] = collect_spans(trace)
@@ -231,7 +241,9 @@ defmodule InstrumentationTest do
     assert attrib(span, "http.response.header.bar") == ["[REDACTED]"]
   end
 
-   test "location without operation name should use operation name from server", %{trace_file: trace_file} do
+  test "location without operation name should use operation name from server", %{
+    trace_file: trace_file
+  } do
     %HTTPoison.Response{status_code: status} = HTTPoison.get!("#{@host}/no_operation_name")
 
     [trace] = read_traces(trace_file, 1)
@@ -296,7 +308,7 @@ defmodule InstrumentationTest do
     assert attrib(span, "http.status_code") == 200
 
     assert span["parentSpanId"] == ""
-    assert span["kind"] == "SPAN_KIND_SERVER"
+    assert span["kind"] == TraceProto.SpanKind.server()
     assert span["name"] == "php_fpm_backend"
   end
 
@@ -392,12 +404,12 @@ defmodule InstrumentationTest do
     assert attrib(span, "http.status_code") == 200
 
     assert span["parentSpanId"] == ""
-    assert span["kind"] == "SPAN_KIND_SERVER"
+    assert span["kind"] == TraceProto.SpanKind.server()
     assert span["name"] == "file_access"
   end
 
   test "Accessing a excluded uri produces no span", %{trace_file: trace_file} do
-    %HTTPoison.Response{status_code: status, body: body} =
+    %HTTPoison.Response{status_code: status, body: _body} =
       HTTPoison.get!("#{@host}/ignored.php")
 
     assert_raise RuntimeError, "timed out waiting for traces", fn ->
@@ -492,7 +504,7 @@ defmodule InstrumentationTest do
   end
 
   test "Accessing 301 redirect does not crash", %{
-    trace_file: trace_file
+    trace_file: _trace_file
   } do
     %HTTPoison.Response{status_code: status, headers: headers} =
       HTTPoison.get!(

@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION 3.12)
 
 project(opentelemetry-nginx)
 
-find_package(opentelemetry-cpp REQUIRED)
+find_package(opentelemetry-cpp CONFIG REQUIRED)
+find_package(nlohmann_json)
 find_package(Threads REQUIRED)
 find_package(Protobuf REQUIRED)
-find_package(gRPC REQUIRED)
 find_package(CURL REQUIRED)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/nginx.cmake)
@@ -42,6 +42,5 @@ target_include_directories(otel_ngx_module
 target_link_libraries(otel_ngx_module
   PRIVATE
   ${OPENTELEMETRY_CPP_LIBRARIES}
-  gRPC::grpc++
   CURL::libcurl
 )

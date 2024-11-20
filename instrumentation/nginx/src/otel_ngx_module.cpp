@@ -1,10 +1,3 @@
-// clang-format off
-// otlp_grpc_exporter header has to be included before any other API header to 
-// avoid conflict between Abseil library and OpenTelemetry C++ absl::variant.
-// https://github.com/open-telemetry/opentelemetry-cpp/tree/main/examples/otlp#additional-notes-regarding-abseil-library
-#include <opentelemetry/exporters/otlp/otlp_grpc_exporter.h>
-// clang-format on
-
 #include <opentelemetry/sdk/trace/processor.h>
 #include <opentelemetry/trace/span.h>
 #include <algorithm>
@@ -36,6 +29,7 @@ extern ngx_module_t otel_ngx_module;
 #include <opentelemetry/sdk/trace/simple_processor.h>
 #include <opentelemetry/sdk/trace/tracer_provider.h>
 #include <opentelemetry/trace/provider.h>
+#include <opentelemetry/exporters/otlp/otlp_http_exporter.h>
 
 namespace trace = opentelemetry::trace;
 namespace nostd = opentelemetry::nostd;
@@ -1025,19 +1019,12 @@ static ngx_command_t kOtelNgxCommands[] = {
 static std::unique_ptr<sdktrace::SpanExporter> CreateExporter(const OtelNgxAgentConfig* conf) {
   std::unique_ptr<sdktrace::SpanExporter> exporter;
 
-  switch (conf->exporter.type) {
-    case OtelExporterOTLP: {
-      std::string endpoint = conf->exporter.endpoint;
-      otlp::OtlpGrpcExporterOptions opts;
-      opts.endpoint = endpoint;
-      opts.use_ssl_credentials = conf->exporter.use_ssl_credentials;
-      opts.ssl_credentials_cacert_path = conf->exporter.ssl_credentials_cacert_path;
-      exporter.reset(new otlp::OtlpGrpcExporter(opts));
-      break;
-    }
-    default:
-      break;
-  }
+  std::string endpoint = conf->exporter.endpoint;
+  otlp::OtlpHttpExporterOptions opts;
+  opts.url = endpoint;
+  //opts.use_ssl_credentials = conf->exporter.use_ssl_credentials;
+  //opts.ssl_credentials_cacert_path = conf->exporter.ssl_credentials_cacert_path;
+  exporter.reset(new otlp::OtlpHttpExporter(opts));
 
   return exporter;
 }
