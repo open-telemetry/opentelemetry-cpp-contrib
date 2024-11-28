@@ -18,7 +18,8 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        image: ["ubuntu:24.04"]
+        image: ["ubuntu:24.04", "debian:11"]
+        nginx: ["1.27.3", "1.26.2", "1.24.0", "1.22.1"]
     steps:
       - name: checkout otel nginx
         uses: actions/checkout@v4
