@@ -58,7 +58,7 @@ RUN cd otel-nginx/build \
   && make install
 
 FROM scratch AS export
-COPY --from=build /otel-nginx/install/otel_ngx_module.so test/otel_ngx_module.so
+COPY --from=build /otel-nginx/install/otel_ngx_module.so .
 
 FROM build AS run
 
