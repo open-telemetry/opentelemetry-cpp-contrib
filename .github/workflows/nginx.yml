@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        os: [ubuntu-24.04]
+        image: ["ubuntu:24.04"]
     steps:
       - name: checkout otel nginx
         uses: actions/checkout@v4
@@ -40,7 +40,7 @@ jobs:
         run: |
           cd instrumentation/nginx
           docker build -t otel-nginx-test/nginx \
-            --build-arg image=${{ matrix.os }} \
+            --build-arg image=${{ matrix.image }} \
             -f test/Dockerfile \
             .
       - name: run tests
@@ -56,11 +56,11 @@ jobs:
           cd instrumentation/nginx
           mkdir -p /tmp/otel_ngx/
           docker build -f test/Dockerfile \
-          --build-arg image=${{ matrix.os }} \
+          --build-arg image=${{ matrix.image }} \
           --target export \
           --output type=local,dest=/tmp/otel_ngx .
       - name: upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: otel_ngx_module-${{ matrix.os }}.so
+          name: otel_ngx_module-${{ matrix.image }}.so
           path: /tmp/otel_ngx/otel_ngx_module.so
