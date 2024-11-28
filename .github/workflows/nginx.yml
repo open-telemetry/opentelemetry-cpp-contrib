@@ -71,8 +71,9 @@ jobs:
           --build-arg image=${{ matrix.image }} \
           --target export \
           --output type=local,dest=/tmp/otel_ngx .
+          echo "artifactName=otel_ngx_module-$(echo ${{ matrix.image }} | sed s/-/:/).so" >> $GITHUB_ENV
       - name: upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: otel_ngx_module-${{ matrix.image }}.so
+          name: ${{ env.artifactName }}
           path: /tmp/otel_ngx/otel_ngx_module.so
