@@ -19,7 +19,6 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-24.04, debian-11]
-        nginx-version: [mainline, stable]
     steps:
       - name: checkout otel nginx
         uses: actions/checkout@v4

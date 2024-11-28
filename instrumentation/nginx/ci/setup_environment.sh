@@ -15,4 +15,4 @@ echo \
 
 apt-get update
 apt-get install --no-install-recommends --no-install-suggests -y \
-  esl-erlang elixir docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  erlang elixir docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
