@@ -2,11 +2,17 @@ cmake_minimum_required(VERSION 3.12)
 
 project(opentelemetry-nginx)
 
+option(WITH_ABSEIL "Use abseil" OFF)
+
 find_package(opentelemetry-cpp CONFIG REQUIRED)
 find_package(nlohmann_json)
 find_package(Threads REQUIRED)
 find_package(Protobuf REQUIRED)
 find_package(CURL REQUIRED)
+
+if (WITH_ABSEIL)
+  find_package(absl REQUIRED)
+endif()
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/nginx.cmake)
 
