@@ -43,7 +43,7 @@ jobs:
             test/backend/simple_express
       - name: Choose Dockerfile
         run: |
-          if [ ${{ matrix.image }} == "alpine"* ]; then
+          if [[ "${{ matrix.image }}" == "alpine"* ]]; then
             echo "dockerfile=Dockerfile_alpine" >> $GITHUB_ENV
           else
             echo "dockerfile=Dockerfile" >> $GITHUB_ENV
