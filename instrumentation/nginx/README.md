@@ -8,7 +8,7 @@ Supported propagation types:
 
 ## Requirements
 
-* OS: Linux. Test suite currently runs on Ubuntu 18.04, 20.04, 20.10.
+* OS: Linux. Test suite currently runs on Ubuntu 24.04.
 * [Nginx](http://nginx.org/en/download.html)
 * Nginx modules
   * ngx_http_upstream_module (proxy_pass)

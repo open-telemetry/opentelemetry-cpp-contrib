@@ -75,8 +75,8 @@ defmodule InstrumentationTest do
 
   def collect_spans(trace) do
     [resource_spans] = collect_resource_spans(trace)
-    [il_spans] = resource_spans["scopeSpans"]
-    il_spans["spans"]
+    [scope_spans] = resource_spans["scopeSpans"]
+    scope_spans["spans"]
   end
 
   def values(map) do

@@ -22,47 +22,28 @@ jobs:
         nginx-version: [mainline, stable]
     steps:
       - name: checkout otel nginx
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: setup
         run: |
           sudo ./instrumentation/nginx/ci/setup_environment.sh
       - name: setup buildx
         id: buildx
-        uses: docker/setup-buildx-action@master
+        uses: docker/setup-buildx-action@v3
         with:
           install: true
-      - name: cache docker layers
-        uses: actions/cache@v3
-        with:
-          path: /tmp/buildx-cache/
-          key: nginx-${{ matrix.os }}-${{ matrix.nginx-rel }}-${{ github.sha }}
-          restore-keys: |
-            nginx-${{ matrix.os }}-${{ matrix.nginx-rel }}
       - name: build express backend docker
         run: |
           cd instrumentation/nginx
-          docker buildx build -t otel-nginx-test/express-backend \
+          docker build -t otel-nginx-test/express-backend \
             -f test/backend/simple_express/Dockerfile \
-            --cache-from type=local,src=/tmp/buildx-cache/express \
-            --cache-to type=local,dest=/tmp/buildx-cache/express-new \
-            --load \
             test/backend/simple_express
       - name: build nginx docker
         run: |
           cd instrumentation/nginx
-          docker buildx build -t otel-nginx-test/nginx \
-            --build-arg image=$(echo ${{ matrix.os }} | sed s/-/:/) \
-            -f test/Dockerfile.${{ matrix.os }}.${{ matrix.nginx-rel }} \
-            --cache-from type=local,src=/tmp/buildx-cache/nginx \
-            --cache-to type=local,dest=/tmp/buildx-cache/nginx-new \
-            --load \
+          docker build -t otel-nginx-test/nginx \
+            --build-arg image=${{ matrix.os }} \
+            -f test/Dockerfile \
             .
-      - name: update cache
-        run: |
-          rm -rf /tmp/buildx-cache/express
-          rm -rf /tmp/buildx-cache/nginx
-          mv /tmp/buildx-cache/express-new /tmp/buildx-cache/express
-          mv /tmp/buildx-cache/nginx-new /tmp/buildx-cache/nginx
       - name: run tests
         run: |
           cd instrumentation/nginx/test/instrumentation
@@ -75,12 +56,12 @@ jobs:
         run: |
           cd instrumentation/nginx
           mkdir -p /tmp/otel_ngx/
-          docker buildx build -f test/Dockerfile.${{ matrix.os }}.${{ matrix.nginx-rel}} \
+          docker build -f test/Dockerfile \
+          --build-arg image=${{ matrix.os }} \
           --target export \
-          --cache-from type=local,src=/tmp/.buildx-cache \
           --output type=local,dest=/tmp/otel_ngx .
       - name: upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: otel_ngx_module-${{ matrix.os }}-${{ matrix.nginx-rel }}.so
+          name: otel_ngx_module-${{ matrix.os }}.so
           path: /tmp/otel_ngx/otel_ngx_module.so
