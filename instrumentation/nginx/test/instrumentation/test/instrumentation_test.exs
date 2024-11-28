@@ -259,7 +259,7 @@ defmodule InstrumentationTest do
 
     %HTTPoison.Response{status_code: status, body: body} =
       HTTPoison.get!(url, [
-        {"traceparent", "00-#{input_trace_id}-#{parent_span_id}-00"}
+        {"traceparent", "00-#{input_trace_id}-#{parent_span_id}-01"}
       ])
 
     %{"traceparent" => traceparent} = Jason.decode!(body)
@@ -438,7 +438,7 @@ defmodule InstrumentationTest do
 
     %HTTPoison.Response{status_code: status} =
       HTTPoison.get!("#{@host}/distrust_incoming_spans", [
-        {"traceparent", "00-#{input_trace_id}-2a9d49c3e3b7c461-00"}
+        {"traceparent", "00-#{input_trace_id}-2a9d49c3e3b7c461-01"}
       ])
 
     [trace] = read_traces(trace_file, 1)

@@ -12,8 +12,6 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/nginx.cmake)
 
 add_library(otel_ngx_module SHARED
   src/nginx_config.cpp
-  src/toml.c
-  src/agent_config.cpp
   src/trace_context.cpp
   src/otel_ngx_module.cpp
   src/otel_ngx_module_modules.c

@@ -13,7 +13,6 @@ services:
     volumes:
       - ${TEST_ROOT:-.}/conf/nginx.conf:/otel-nginx/nginx.conf
       - ${TEST_ROOT:-.}/conf/fastcgi_params:/etc/nginx/fastcgi_params
-      - ${TEST_ROOT:-.}/conf/otel-nginx.toml:/otel-nginx/otel.toml
       - ${TEST_ROOT:-.}/backend/files:/var/www/html/files
     environment:
       - OTEL_EXPORTER_OTLP_ENDPOINT=collector:4318/v1/traces

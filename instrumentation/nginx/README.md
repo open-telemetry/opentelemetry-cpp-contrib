@@ -10,20 +10,14 @@ Supported propagation types:
 
 * OS: Linux. Test suite currently runs on Ubuntu 18.04, 20.04, 20.10.
 * [Nginx](http://nginx.org/en/download.html)
-  * both stable (`1.18.0`) and mainline (`1.19.8`)
 * Nginx modules
   * ngx_http_upstream_module (proxy_pass)
   * ngx_http_fastcgi_module (fastcgi_pass)
 
-Additional platforms and/or versions coming soon.
-
-
 ## Dependencies (for building)
 
-1. [gRPC](https://github.com/grpc/grpc) - currently the only supported exporter is OTLP_GRPC. This requirement will be lifted
-   once more exporters become available.
 2. [opentelemetry-cpp](https://github.com/open-telemetry/opentelemetry-cpp) - opentelemetry-cpp needs to be built with
-   position independent code and OTLP_GRPC support, e.g.:
+   position independent code, e.g.:
 ```
 cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DWITH_OTLP_GRPC=ON ..
 ```
@@ -37,15 +31,18 @@ cmake ..
 make
 ```
 
-## Usage
+## Quick usage
 
 Download the .so file from the latest [GitHub Action run](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/nginx.yml) or follow the instructions above to build. Then modify nginx.conf, or see the [example](test/conf/nginx.conf)
 
 ```
 load_module /path/to/otel_ngx_module.so;
 
+processor = "simple"
+
 http {
-  opentelemetry_config /conf/otel-nginx.toml;
+  opentelemetry_service_name "nginx-proxy";
+  opentelemetry_otlp_traces_endpoint "http://collector:4318/v1/traces"
 
   server {
     listen 80;
@@ -56,7 +53,7 @@ http {
     location = / {
       opentelemetry_operation_name my_example_backend;
       opentelemetry_propagate;
-      proxy_pass http://localhost:3500/;
+      proxy_pass http://localhost:3501/;
     }
 
     location = /b3 {
@@ -77,52 +74,6 @@ http {
   }
 }
 
-```
-
-Example [otel-nginx.toml](test/conf/otel-nginx.toml):
-```toml
-exporter = "otlp"
-processor = "batch"
-
-[exporters.otlp]
-# Alternatively the OTEL_EXPORTER_OTLP_ENDPOINT environment variable can also be used.
-host = "localhost"
-port = 4317
-# Optional: enable SSL, for endpoints that support it
-# use_ssl = true
-# Optional: set a filesystem path to a pem file to be used for SSL encryption
-# (when use_ssl = true)
-# ssl_cert_path = "/path/to/cert.pem"
-
-[processors.batch]
-max_queue_size = 2048
-schedule_delay_millis = 5000
-max_export_batch_size = 512
-
-[service]
-# Can also be set by the OTEL_SERVICE_NAME environment variable.
-name = "nginx-proxy" # Opentelemetry resource name
-
-[sampler]
-name = "AlwaysOn" # Also: AlwaysOff, TraceIdRatioBased
-ratio = 0.1
-parent_based = false
-```
-
-Here's what it would look like if you used the OTLP exporter, but only set the endpoint with an environment variables (e.g. `OTEL_EXPORTER_OTLP_ENDPOINT="localhost:4317"`).
-```toml
-exporter = "otlp"
-processor = "batch"
-
-[exporters.otlp]
-
-[processors.batch]
-max_queue_size = 2048
-schedule_delay_millis = 5000
-max_export_batch_size = 512
-
-[service]
-name = "nginx-proxy" # Opentelemetry resource name
 ```
 
 To use other environment variables defined in the [specification](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/exporter.md), must add the "env" directive.
@@ -163,14 +114,6 @@ Adds a custom attribute to the span. It is possible to access nginx variables, e
 - **required**: `false`
 - **syntax**: `opentelemetry_attribute <key> <value>`
 - **block**: `http`, `server`, `location`
-
-### `opentelemetry_config`
-
-Exporters, processors
-
-- **required**: `true`
-- **syntax**: `opentelemetry_config /path/to/config.toml`
-- **block**: `http`
 
 ### `opentelemetry_operation_name`
 
@@ -274,8 +217,7 @@ apk --no-cache add docker-compose docker-cli
 
 ```
 cd test/instrumentation
-mix dockerfiles .. ubuntu-20.04:mainline
-docker build -t otel-nginx-test/nginx -f ../Dockerfile.ubuntu-20.04.mainline ../..
+docker build -t otel-nginx-test/nginx -f ../Dockerfile ../..
 docker build -t otel-nginx-test/express-backend -f ../backend/simple_express/Dockerfile ../backend/simple_express
 mix test
 ```

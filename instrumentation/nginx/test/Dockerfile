@@ -63,7 +63,6 @@ COPY --from=build /otel-nginx/install/otel_ngx_module.so test/otel_ngx_module.so
 FROM build AS run
 
 COPY test/conf/nginx.conf /otel-nginx/nginx.conf
-COPY test/conf/otel-nginx.toml /otel-nginx/otel.toml
 RUN curl -O https://nginx.org/download/nginx-$nginx_version.tar.gz && tar xf nginx-$nginx_version.tar.gz
 RUN cd nginx-$nginx_version && ./configure --with-compat --prefix=/nginx && make -j$(nproc) && make install
 
