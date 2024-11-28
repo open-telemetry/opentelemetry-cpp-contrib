@@ -35,6 +35,9 @@ jobs:
           cd instrumentation/nginx
           docker build -t otel-nginx-test/express-backend \
             -f test/backend/simple_express/Dockerfile \
+            --cache-from type=local,src=/tmp/buildx-cache/express \
+            --cache-to type=local,dest=/tmp/buildx-cache/express-new \
+            --load \
             test/backend/simple_express
       - name: build nginx docker
         run: |
@@ -42,7 +45,16 @@ jobs:
           docker build -t otel-nginx-test/nginx \
             --build-arg image=${{ matrix.image }} \
             -f test/Dockerfile \
+            --cache-from type=local,src=/tmp/buildx-cache/nginx \
+            --cache-to type=local,dest=/tmp/buildx-cache/nginx-new \
+            --load \
             .
+      - name: update cache
+        run: |
+          rm -rf /tmp/buildx-cache/express
+          rm -rf /tmp/buildx-cache/nginx
+          mv /tmp/buildx-cache/express-new /tmp/buildx-cache/express
+          mv /tmp/buildx-cache/nginx-new /tmp/buildx-cache/nginx
       - name: run tests
         run: |
           cd instrumentation/nginx/test/instrumentation
