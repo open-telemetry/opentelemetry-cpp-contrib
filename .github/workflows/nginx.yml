@@ -15,51 +15,47 @@ on:
 jobs:
   nginx-build-test:
     name: nginx
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-18.04, debian-10.11, debian-11.3]
-        nginx-rel: [mainline, stable]
+        image: ["ubuntu:24.04", "debian:11", "alpine:3.20", "amazonlinux:2", "amazonlinux:2023"]
+        nginx: ["1.27.3", "1.27.1", "1.26.2", "1.24.0", "1.22.1"]
     steps:
       - name: checkout otel nginx
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: setup
         run: |
           sudo ./instrumentation/nginx/ci/setup_environment.sh
-      - name: generate dockerfile
-        run: |
-          cd instrumentation/nginx/test/instrumentation
-          mix local.hex --force --if-missing
-          mix local.rebar --force --if-missing
-          mix deps.get
-          mix dockerfiles .. ${{ matrix.os }}:${{ matrix.nginx-rel }}
       - name: setup buildx
         id: buildx
-        uses: docker/setup-buildx-action@master
+        uses: docker/setup-buildx-action@v3
         with:
           install: true
-      - name: cache docker layers
-        uses: actions/cache@v3
-        with:
-          path: /tmp/buildx-cache/
-          key: nginx-${{ matrix.os }}-${{ matrix.nginx-rel }}-${{ github.sha }}
-          restore-keys: |
-            nginx-${{ matrix.os }}-${{ matrix.nginx-rel }}
       - name: build express backend docker
         run: |
           cd instrumentation/nginx
-          docker buildx build -t otel-nginx-test/express-backend \
+          docker build -t otel-nginx-test/express-backend \
             -f test/backend/simple_express/Dockerfile \
             --cache-from type=local,src=/tmp/buildx-cache/express \
             --cache-to type=local,dest=/tmp/buildx-cache/express-new \
             --load \
             test/backend/simple_express
+      - name: Choose Dockerfile
+        run: |
+          if [[ "${{ matrix.image }}" == "alpine"* ]]; then
+            echo "dockerfile=Dockerfile_alpine" >> $GITHUB_ENV
+          elif [[ "${{ matrix.image }}" == "amazonlinux"* ]]; then
+            echo "dockerfile=Dockerfile_amazonlinux" >> $GITHUB_ENV
+          else
+            echo "dockerfile=Dockerfile" >> $GITHUB_ENV
+          fi
       - name: build nginx docker
         run: |
           cd instrumentation/nginx
-          docker buildx build -t otel-nginx-test/nginx \
-            --build-arg image=$(echo ${{ matrix.os }} | sed s/-/:/) \
-            -f test/Dockerfile.${{ matrix.os }}.${{ matrix.nginx-rel }} \
+          docker build -t otel-nginx-test/nginx \
+            --build-arg image=${{ matrix.image }} \
+            -f test/${{ env.dockerfile }} \
             --cache-from type=local,src=/tmp/buildx-cache/nginx \
             --cache-to type=local,dest=/tmp/buildx-cache/nginx-new \
             --load \
@@ -73,18 +69,22 @@ jobs:
       - name: run tests
         run: |
           cd instrumentation/nginx/test/instrumentation
+          mix local.hex --force --if-missing
+          mix local.rebar --force --if-missing
+          mix deps.get
           mix test
       - name: copy artifacts
         id: artifacts
         run: |
           cd instrumentation/nginx
           mkdir -p /tmp/otel_ngx/
-          docker buildx build -f test/Dockerfile.${{ matrix.os }}.${{ matrix.nginx-rel}} \
+          docker build -f test/${{ env.dockerfile }} \
+          --build-arg image=${{ matrix.image }} \
           --target export \
-          --cache-from type=local,src=/tmp/.buildx-cache \
           --output type=local,dest=/tmp/otel_ngx .
+          echo "artifactName=otel_ngx_module-$(echo ${{ matrix.image }} | sed s/:/-/)-${{ matrix.nginx }}.so" >> $GITHUB_ENV
       - name: upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: otel_ngx_module-${{ matrix.os }}-${{ matrix.nginx-rel }}.so
+          name: ${{ env.artifactName }}
           path: /tmp/otel_ngx/otel_ngx_module.so

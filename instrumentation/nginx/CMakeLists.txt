@@ -2,18 +2,22 @@ cmake_minimum_required(VERSION 3.12)
 
 project(opentelemetry-nginx)
 
-find_package(opentelemetry-cpp REQUIRED)
+option(WITH_ABSEIL "Use abseil" OFF)
+
+find_package(opentelemetry-cpp CONFIG REQUIRED)
+find_package(nlohmann_json)
 find_package(Threads REQUIRED)
 find_package(Protobuf REQUIRED)
-find_package(gRPC REQUIRED)
 find_package(CURL REQUIRED)
+
+if (WITH_ABSEIL)
+  find_package(absl REQUIRED)
+endif()
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/nginx.cmake)
 
 add_library(otel_ngx_module SHARED
   src/nginx_config.cpp
-  src/toml.c
-  src/agent_config.cpp
   src/trace_context.cpp
   src/otel_ngx_module.cpp
   src/otel_ngx_module_modules.c
@@ -42,6 +46,5 @@ target_include_directories(otel_ngx_module
 target_link_libraries(otel_ngx_module
   PRIVATE
   ${OPENTELEMETRY_CPP_LIBRARIES}
-  gRPC::grpc++
   CURL::libcurl
 )

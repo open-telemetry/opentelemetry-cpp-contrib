@@ -8,7 +8,7 @@ if (NOT NGINX_VERSION)
  
   string(REGEX MATCH "[0-9]+\\.\[0-9]+\\.[0-9]+" NGINX_VER ${NGINX_VERSION_STRING})
 else()
-  set(NGINX_VER "1.18.0")
+  set(NGINX_VER "1.27.1")
 endif()
 
 set(NGINX_VERSION ${NGINX_VER} CACHE STRING "Nginx version to compile against")
