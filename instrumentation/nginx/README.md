@@ -174,7 +174,7 @@ The same inheritance rules as [`proxy_set_header`](http://nginx.org/en/docs/http
 
 ### `opentelemetry_capture_headers`
 
-Enables the capturing of request and response headers. (default: `disabled`).
+Enables the capturing of request and response headers. (default: `off`).
 
 - **required**: `false`
 - **syntax**: `opentelemetry_capture_headers on|off`

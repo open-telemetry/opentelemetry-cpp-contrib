@@ -98,8 +98,8 @@ static void OtelCaptureHeaders(nostd::shared_ptr<opentelemetry::trace::Span> spa
         continue;
       }
 
-      u_char key[keyPrefix.len + header[i].key.len]; 
-      NgxNormalizeAndCopyString((u_char*)ngx_copy(key, keyPrefix.data, keyPrefix.len), header[i].key);
+      std::vector<u_char> key(keyPrefix.len + header[i].key.len, 0);
+      NgxNormalizeAndCopyString((u_char*)ngx_copy(key.data(), keyPrefix.data, keyPrefix.len), header[i].key);
 
       bool sensitiveHeader = false;
 #if (NGX_PCRE)
@@ -124,7 +124,7 @@ static void OtelCaptureHeaders(nostd::shared_ptr<opentelemetry::trace::Span> spa
         value = FromNgxString(header[i].value);
       }
 
-      span->SetAttribute({(const char*)key, keyPrefix.len + header[i].key.len}, nostd::span<const nostd::string_view>(&value, 1));
+      span->SetAttribute({(const char*)key.data(), keyPrefix.len + header[i].key.len}, nostd::span<const nostd::string_view>(&value, 1));
     }
   }
 }

@@ -1,5 +1,4 @@
 #include "trace_context.h"
-#include "nginx_utils.h"
 
 static TraceHeader*
 FindEmptyOrExistingSlot(TraceContext* context, opentelemetry::nostd::string_view traceType) {
