@@ -143,6 +143,9 @@ OtelGetTraceId(ngx_http_request_t* req, ngx_http_variable_value_t* v, uintptr_t 
 static ngx_int_t
 OtelGetSpanId(ngx_http_request_t* req, ngx_http_variable_value_t* v, uintptr_t data);
 
+static ngx_int_t
+OtelGetSampled(ngx_http_request_t* req, ngx_http_variable_value_t* v, uintptr_t data);
+
 static ngx_http_variable_t otel_ngx_variables[] = {
   {
     ngx_string("otel_ctx"),
@@ -172,6 +175,14 @@ static ngx_http_variable_t otel_ngx_variables[] = {
     ngx_string("opentelemetry_span_id"),
     nullptr,
     OtelGetSpanId,
+    0,
+    NGX_HTTP_VAR_NOCACHEABLE | NGX_HTTP_VAR_NOHASH,
+    0,
+  },
+  {
+    ngx_string("opentelemetry_sampled"),
+    nullptr,
+    OtelGetSampled,
     0,
     NGX_HTTP_VAR_NOCACHEABLE | NGX_HTTP_VAR_NOHASH,
     0,
@@ -222,6 +233,38 @@ nostd::string_view WithoutOtelVarPrefix(ngx_str_t value) {
   }
 
   return {(const char*)value.data + prefixLength, value.len - prefixLength};
+}
+
+static ngx_int_t
+OtelGetSampled(ngx_http_request_t* req, ngx_http_variable_value_t* v, uintptr_t data) {
+  TraceContext* traceContext = GetTraceContext(req);
+
+  if (traceContext == nullptr || !traceContext->request_span) {
+    ngx_log_error(
+        NGX_LOG_ERR, req->connection->log, 0,
+        "Unable to get trace context when getting span id");
+    return NGX_OK;
+  }
+
+  trace::SpanContext spanContext = traceContext->request_span->GetContext();
+
+  if (spanContext.IsValid()) {
+    u_char* isSampled = spanContext.trace_flags().IsSampled() ? (u_char*) "1" : (u_char*) "0";
+
+    v->len = strlen((const char*)isSampled);
+    v->valid = 1;
+    v->no_cacheable = 1;
+    v->not_found = 0;
+    v->data = isSampled;
+  } else {
+    v->len = 0;
+    v->valid = 0;
+    v->no_cacheable = 1;
+    v->not_found = 1;
+    v->data = nullptr;
+  }
+
+  return NGX_OK;
 }
 
 static ngx_int_t
@@ -778,6 +821,17 @@ std::vector<HeaderPropagation> B3PropagationVars() {
   };
 }
 
+std::vector<HeaderPropagation> B3MultiPropagationVars() {
+  return {
+    {"proxy_set_header", "x-b3-traceid", "$opentelemetry_trace_id"},
+    {"proxy_set_header", "x-b3-spanid", "$opentelemetry_span_id"},
+    {"proxy_set_header", "x-b3-sampled", "$opentelemetry_sampled"},
+    {"fastcgi_param", "HTTP_B3_TRACEID", "$opentelemetry_trace_id"},
+    {"fastcgi_param", "HTTP_B3_SPANID", "$opentelemetry_span_id"},
+    {"fastcgi_param", "HTTP_B3_SAMPLED", "$opentelemetry_sampled"},
+  };
+}
+
 std::vector<HeaderPropagation> OtelPropagationVars() {
   return {
     {"proxy_set_header", "traceparent", "$opentelemetry_context_traceparent"},
@@ -798,6 +852,8 @@ char* OtelNgxSetPropagation(ngx_conf_t* conf, ngx_command_t*, void* locConf) {
 
     if (propagationType == "b3") {
       locationConf->propagationType = TracePropagationB3;
+    } else if (propagationType == "b3multi") {
+      locationConf->propagationType = TracePropagationB3Multi;
     } else if (propagationType == "w3c") {
       locationConf->propagationType = TracePropagationW3C;
     } else {
@@ -811,6 +867,8 @@ char* OtelNgxSetPropagation(ngx_conf_t* conf, ngx_command_t*, void* locConf) {
   std::vector<HeaderPropagation> propagationVars;
   if (locationConf->propagationType == TracePropagationB3) {
     propagationVars = B3PropagationVars();
+  } else if (locationConf->propagationType == TracePropagationB3Multi) {
+    propagationVars = B3MultiPropagationVars();
   } else {
     propagationVars = OtelPropagationVars();
   }
