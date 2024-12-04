@@ -55,6 +55,8 @@ void Recordable::SetSpanId(const opentelemetry::trace::SpanId &span_id) noexcept
   json_[FLUENT_FIELD_SPAN_ID] = std::string(span_id_lower_base16, 16);
 }
 
+
+#ifdef ENABLE_FLUENT_RESOURCE_PUBLISH
 void Recordable::SetResource(const opentelemetry::sdk::resource::Resource
                        &resource) noexcept {
   if(resource.GetAttributes().size() > 0) {
@@ -66,6 +68,7 @@ void Recordable::SetResource(const opentelemetry::sdk::resource::Resource
     fluentd_common::PopulateOwnedAttribute(json_[FLUENT_FIELD_PROPERTIES], key, value);
   }
 }
+#endif
 
 void Recordable::SetAttribute(
     nostd::string_view key,
