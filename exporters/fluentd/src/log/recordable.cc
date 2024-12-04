@@ -4,6 +4,7 @@
 #include "opentelemetry/exporters/fluentd/log/recordable.h"
 #include "opentelemetry/exporters/fluentd/common/fluentd_common.h"
 #include "opentelemetry/exporters/fluentd/common/fluentd_logging.h"
+#include "opentelemetry/sdk/resource/resource.h"
 
 #include "opentelemetry/logs/severity.h"
 #include "opentelemetry/trace/span_id.h"
@@ -52,6 +53,18 @@ void Recordable::SetSpanId(const opentelemetry::trace::SpanId &span_id) noexcept
   char span_id_lower_base16[opentelemetry::trace::SpanId::kSize * 2] = {0};
   span_id.ToLowerBase16(span_id_lower_base16);
   json_[FLUENT_FIELD_SPAN_ID] = std::string(span_id_lower_base16, 16);
+}
+
+void Recordable::SetResource(const opentelemetry::sdk::resource::Resource
+                       &resource) noexcept {
+  if(resource.GetAttributes().size() > 0) {
+    if (!json_.contains(FLUENT_FIELD_PROPERTIES)) {
+      json_[FLUENT_FIELD_PROPERTIES] = nlohmann::json::object();
+    }
+  }
+  for(const auto& [key, value] : resource.GetAttributes()) {
+    fluentd_common::PopulateOwnedAttribute(json_[FLUENT_FIELD_PROPERTIES], key, value);
+  }
 }
 
 void Recordable::SetAttribute(

@@ -44,7 +44,7 @@ public:
    * @param Resource the resource to set
    */
   void SetResource(const opentelemetry::sdk::resource::Resource
-                       &resource) noexcept override {} // Not Supported
+                       &resource) noexcept override;
 
   /**
    * Set an attribute of a log.
