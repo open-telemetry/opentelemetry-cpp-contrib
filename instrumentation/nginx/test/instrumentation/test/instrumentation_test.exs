@@ -316,29 +316,79 @@ defmodule InstrumentationTest do
     test_parent_span("#{@host}/app.php", ctx)
   end
 
-  test "HTTP upstream | test b3 injection", %{trace_file: trace_file} do
-    %HTTPoison.Response{status_code: status} = HTTPoison.get!("#{@host}/b3")
+  test "HTTP upstream | b3 injection", %{trace_file: trace_file} do
+    %HTTPoison.Response{status_code: status, body: body} = HTTPoison.get!("#{@host}/b3")
+
+    %{"b3" => b3} = Jason.decode!(body)
+    [trace_id, span_id, _] = String.split(b3, "-")
 
     [trace] = read_traces(trace_file, 1)
     [span] = collect_spans(trace)
 
     assert status == 200
     assert span["parentSpanId"] == ""
+    assert span["traceId"] == trace_id
+    assert span["spanId"] == span_id
     assert span["name"] == "test_b3"
   end
 
-  test "PHP-FPM upstream | test b3 injection", %{trace_file: trace_file} do
-    %HTTPoison.Response{status_code: status} = HTTPoison.get!("#{@host}/b3")
+  test "PHP-FPM upstream | b3 propagation", %{trace_file: trace_file} do
+    input_trace_id = "aad85b4f655feed4d594a01cfa6a1d64"
+    input_span_id = "2a9d49c3e3b7c461"
+
+    %HTTPoison.Response{status_code: status, body: body} =
+      HTTPoison.get!("#{@host}/b3.php", [
+        {"b3", "#{input_trace_id}-#{input_span_id}-1"}
+      ])
+
+    %{"b3" => b3} = Jason.decode!(body)
+    [trace_id, span_id, _] = String.split(b3, "-")
+
+    assert input_trace_id == trace_id
+    assert input_span_id != span_id
 
     [trace] = read_traces(trace_file, 1)
     [span] = collect_spans(trace)
 
     assert status == 200
-    assert span["parentSpanId"] == ""
-    assert span["name"] == "test_b3"
+    assert span["parentSpanId"] == input_span_id
+    assert span["traceId"] == input_trace_id
+    assert span["spanId"] == span_id
+    assert span["name"] == "php_fpm_b3"
   end
 
-  test "HTTP upstream | test b3 propagation", %{trace_file: trace_file} do
+  test "PHP-FPM upstream | multiheader b3 propagation", %{trace_file: trace_file} do
+    input_trace_id = "aad85b4f655feed4d594a01cfa6a1d64"
+    input_span_id = "2a9d49c3e3b7c461"
+
+    %HTTPoison.Response{status_code: status, body: body} =
+      HTTPoison.get!("#{@host}/b3multi.php", [
+        {"X-B3-TraceId", input_trace_id},
+        {"X-B3-SpanId", input_span_id},
+        {"X-B3-Sampled", "1"}
+      ])
+
+    %{
+      "x-b3-traceid" => trace_id,
+      "x-b3-spanid" => span_id,
+      "x-b3-sampled" => sampled
+    } = Jason.decode!(body)
+
+    assert sampled == "1"
+    assert input_trace_id == trace_id
+    assert input_span_id != span_id
+
+    [trace] = read_traces(trace_file, 1)
+    [span] = collect_spans(trace)
+
+    assert status == 200
+    assert span["parentSpanId"] == input_span_id
+    assert span["traceId"] == input_trace_id
+    assert span["spanId"] == span_id
+    assert span["name"] == "php_fpm_b3multi"
+  end
+
+  test "HTTP upstream | b3 propagation", %{trace_file: trace_file} do
     parent_span_id = "2a9d49c3e3b7c461"
     input_trace_id = "aad85b4f655feed4d594a01cfa6a1d62"
 
@@ -361,7 +411,7 @@ defmodule InstrumentationTest do
     assert span["name"] == "test_b3"
   end
 
-  test "HTTP upstream | multiheader b3 propagation", %{trace_file: trace_file} do
+  test "HTTP upstream | multiheader b3 extraction", %{trace_file: trace_file} do
     parent_span_id = "2a9d49c3e3b7c461"
     input_trace_id = "aad85b4f655feed4d594a01cfa6a1d62"
 
@@ -384,6 +434,34 @@ defmodule InstrumentationTest do
     assert span["parentSpanId"] == parent_span_id
     assert span["spanId"] != parent_span_id
     assert span["name"] == "test_b3"
+  end
+
+  test "HTTP upstream | multiheader b3 injection", %{trace_file: trace_file} do
+    span_id = "2a9d49c3e3b7c462"
+    trace_id = "aad85b4f655feed4d594a01cfa6a1d63"
+
+    %HTTPoison.Response{status_code: status, body: body} =
+      HTTPoison.get!("#{@host}/b3multi", [
+        {"b3", "#{trace_id}-#{span_id}-1"}
+      ])
+
+    [trace] = read_traces(trace_file, 1)
+    [span] = collect_spans(trace)
+
+    %{
+      "x-b3-traceid" => header_trace_id,
+      "x-b3-spanid" => header_span_id,
+      "x-b3-sampled" => header_sampled
+    } = Jason.decode!(body)
+
+    assert header_trace_id == trace_id
+    assert header_span_id != span_id
+    assert header_sampled == "1"
+
+    assert status == 200
+    assert span["parentSpanId"] == span_id
+    assert span["spanId"] != span_id
+    assert span["name"] == "test_b3multi"
   end
 
   test "Accessing a file produces a span", %{trace_file: trace_file} do

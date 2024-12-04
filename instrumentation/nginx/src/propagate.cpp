@@ -42,11 +42,6 @@ static bool FindHeader(ngx_http_request_t* req, nostd::string_view key, nostd::s
 }
 
 
-static bool HasHeader(ngx_http_request_t* req, nostd::string_view header) {
-  nostd::string_view value;
-  return FindHeader(req, header, &value);
-}
-
 class TextMapCarrierNgx : public opentelemetry::context::propagation::TextMapCarrier
 {
 public:
@@ -79,15 +74,9 @@ opentelemetry::context::Context ExtractContext(OtelCarrier* carrier) {
     case TracePropagationW3C: {
       return OtelW3CPropagator().Extract(textMapCarrier, root);
     }
-    case TracePropagationB3Multi: {
-      return OtelB3MultiPropagator().Extract(textMapCarrier, root);
-    }
+    case TracePropagationB3Multi:
     case TracePropagationB3: {
-      if (HasHeader(carrier->req, "b3")) {
-        return OtelB3Propagator().Extract(textMapCarrier, root);
-      }
-
-      return OtelB3MultiPropagator().Extract(textMapCarrier, root);
+      return OtelB3Propagator().Extract(textMapCarrier, root);
     }
     default:
       return root;

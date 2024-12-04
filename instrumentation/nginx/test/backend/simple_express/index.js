@@ -1,6 +1,6 @@
-const express = require('express')
-const app = express()
-const port = 3500
+const express = require('express');
+const app = express();
+const port = 3500;
 
 const traceparentRegex = /00-[0-9a-f]{32}-[0-9a-f]{16}-0[0-1]/;
 
@@ -20,6 +20,30 @@ app.get("/b3", (req, res) => {
   }
 
   res.json({"b3": header});
+});
+
+app.get("/b3multi", (req, res) => {
+  let traceId = req.header("x-b3-traceid");
+  let spanId = req.header("x-b3-spanid");
+  let sampled = req.header("x-b3-sampled");
+
+  if (!/^([0-9a-f]{32}|[0-9a-f]{16})$/.test(traceId)) {
+    throw "Missing x-b3-traceid header";
+  }
+
+  if (!/^[0-9a-f]{16}$/.test(spanId)) {
+    throw "Missing x-b3-spanid header";
+  }
+
+  if (!["0", "1"].includes(sampled)) {
+    throw "Missing x-b3-sampled header";
+  }
+
+  res.json({
+    "x-b3-traceid": traceId,
+    "x-b3-spanid": spanId,
+    "x-b3-sampled": sampled
+  });
 });
 
 app.get("/off", (req, res) => {

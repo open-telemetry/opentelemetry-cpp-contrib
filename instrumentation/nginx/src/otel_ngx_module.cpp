@@ -237,6 +237,14 @@ nostd::string_view WithoutOtelVarPrefix(ngx_str_t value) {
 
 static ngx_int_t
 OtelGetSampled(ngx_http_request_t* req, ngx_http_variable_value_t* v, uintptr_t data) {
+  (void)data;
+
+  if (!IsOtelEnabled(req)) {
+    v->valid = 0;
+    v->not_found = 1;
+    return NGX_OK;
+  }
+
   TraceContext* traceContext = GetTraceContext(req);
 
   if (traceContext == nullptr || !traceContext->request_span) {
@@ -251,7 +259,7 @@ OtelGetSampled(ngx_http_request_t* req, ngx_http_variable_value_t* v, uintptr_t 
   if (spanContext.IsValid()) {
     u_char* isSampled = spanContext.trace_flags().IsSampled() ? (u_char*) "1" : (u_char*) "0";
 
-    v->len = strlen((const char*)isSampled);
+    v->len = 1;
     v->valid = 1;
     v->no_cacheable = 1;
     v->not_found = 0;
