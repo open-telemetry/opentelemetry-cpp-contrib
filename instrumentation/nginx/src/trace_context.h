@@ -15,6 +15,7 @@ enum TracePropagationType {
   TracePropagationUnset,
   TracePropagationW3C,
   TracePropagationB3,
+  TracePropagationB3Multi,
 };
 
 struct TraceContext {

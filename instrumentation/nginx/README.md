@@ -169,7 +169,7 @@ be started. The default propagator is W3C.
 The same inheritance rules as [`proxy_set_header`](http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_set_header) apply, which means this directive is applied at the current configuration level if and only if there are no `proxy_set_header` directives defined on a lower level.
 
 - **required**: `false`
-- **syntax**: `opentelemetry_propagate` or `opentelemetry_propagate b3`
+- **syntax**: `opentelemetry_propagate` or `opentelemetry_propagate b3` or `opentelemetry_propagate b3multi`
 - **block**: `http`, `server`, `location`
 
 ### `opentelemetry_capture_headers`
@@ -255,6 +255,7 @@ The following nginx variables are set by the instrumentation:
 
 - `opentelemetry_context_traceparent` - [W3C trace context](https://www.w3.org/TR/trace-context/#trace-context-http-headers-format), e.g.: `00-0af7651916cd43dd8448eb211c80319c-b9c7c989f97918e1-01`
 - `opentelemetry_context_b3` - Trace context in the [B3 format](https://github.com/openzipkin/b3-propagation#single-header). Only set when using `opentelemetry_propagate b3`.
+- `opentelemetry_sampled` - does current Span records information, "1" or "0"
 - `opentelemetry_trace_id` - Trace Id of the current span
 - `opentelemetry_span_id` - Span Id of the current span
 
