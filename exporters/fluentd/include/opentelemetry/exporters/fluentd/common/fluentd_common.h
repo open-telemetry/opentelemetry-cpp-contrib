@@ -6,6 +6,7 @@
 #include "opentelemetry/common/attribute_value.h"
 #include "opentelemetry/exporters/fluentd/common/fluentd_logging.h"
 #include "opentelemetry/nostd/string_view.h"
+#include "opentelemetry/sdk/common/attribute_utils.h"
 #include "opentelemetry/version.h"
 
 #include "nlohmann/json.hpp"
@@ -96,6 +97,93 @@ void inline PopulateAttribute(
          nostd::get<nostd::span<const nostd::string_view>>(value)) {
       attribute[key.data()].push_back(std::string(val.data(), val.size()));
     }
+  }
+}
+
+void inline PopulateOwnedAttribute(
+    nlohmann::json &attribute, nostd::string_view key,
+    const opentelemetry::sdk::common::OwnedAttributeValue &value) {
+  // Assert size of variant to ensure that this method gets updated if the
+  // variant definition changes
+  static_assert(
+      nostd::variant_size<opentelemetry::common::AttributeValue>::value ==
+          kAttributeValueSize + 1,
+      "AttributeValue contains unknown type");
+
+  namespace common = opentelemetry::sdk::common;
+  switch(value.index()) {
+    case common::kTypeBool:
+      attribute[key.data()] = nostd::get<bool>(value);
+      break;
+    case common::kTypeInt:
+      attribute[key.data()] = nostd::get<int>(value);
+      break;
+    case common::kTypeUInt:
+      attribute[key.data()] = nostd::get<unsigned int>(value);
+      break;
+    case common::kTypeInt64:
+      attribute[key.data()] = nostd::get<int64_t>(value);
+      break;
+    case common::kTypeDouble:
+      attribute[key.data()] = nostd::get<double>(value);
+      break;
+    case common::kTypeString:
+      attribute[key.data()] = nostd::get<std::string>(value);
+      break;
+    case common::kTypeSpanBool:
+      attribute[key.data()] = {};
+      for (const auto &val : nostd::get<std::vector<bool>>(value)) {
+        attribute[key.data()].push_back(val);
+      }
+      break;
+    case common::kTypeSpanInt:
+      attribute[key.data()] = {};
+      for (const auto &val : nostd::get<std::vector<int>>(value)) {
+        attribute[key.data()].push_back(val);
+      }
+      break;
+    case common::kTypeSpanUInt:
+      attribute[key.data()] = {};
+      for (const auto &val : nostd::get<std::vector<unsigned int>>(value)) {
+        attribute[key.data()].push_back(val);
+      }
+      break;
+    case common::kTypeSpanInt64:
+      attribute[key.data()] = {};
+      for (const auto &val : nostd::get<std::vector<int64_t>>(value)) {
+        attribute[key.data()].push_back(val);
+      }
+      break;
+    case common::kTypeSpanDouble:
+      attribute[key.data()] = {};
+      for (const auto &val : nostd::get<std::vector<double>>(value)) {
+        attribute[key.data()].push_back(val);
+      }
+      break;
+    case common::kTypeSpanString:
+      attribute[key.data()] = {};
+      for (const auto &val :
+          nostd::get<std::vector<std::string>>(value)) {
+        attribute[key.data()].push_back(val);
+      }
+      break;
+    case common::kTypeUInt64:
+      attribute[key.data()] = nostd::get<uint64_t>(value);
+      break;
+    case common::kTypeSpanUInt64:
+      attribute[key.data()] = {};
+      for (const auto &val : nostd::get<std::vector<uint64_t>>(value)) {
+        attribute[key.data()].push_back(val);
+      }
+      break;
+    case common::kTypeSpanByte:
+      attribute[key.data()] = {};
+      for (const auto &val : nostd::get<std::vector<uint8_t>>(value)) {
+        attribute[key.data()].push_back(val);
+      }
+      break;
+    default:
+      break;
   }
 }
 
