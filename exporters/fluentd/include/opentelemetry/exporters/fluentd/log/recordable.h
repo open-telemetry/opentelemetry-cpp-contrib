@@ -44,7 +44,7 @@ public:
    * @param Resource the resource to set
    */
   void SetResource(const opentelemetry::sdk::resource::Resource
-#ifdef ENABLE_FLUENT_RESOURCE_PUBLISH
+#ifdef OPENTELEMETRY_ENABLE_FLUENT_RESOURCE_PUBLISH_EXPERIMENTAL
                        &resource) noexcept override;
 #else
                        &resource) noexcept override {} // Not Supported

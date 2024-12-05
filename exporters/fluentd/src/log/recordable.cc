@@ -56,7 +56,7 @@ void Recordable::SetSpanId(const opentelemetry::trace::SpanId &span_id) noexcept
 }
 
 
-#ifdef ENABLE_FLUENT_RESOURCE_PUBLISH
+#ifdef OPENTELEMETRY_ENABLE_FLUENT_RESOURCE_PUBLISH_EXPERIMENTAL
 void Recordable::SetResource(const opentelemetry::sdk::resource::Resource
                        &resource) noexcept {
   if(resource.GetAttributes().size() > 0) {
