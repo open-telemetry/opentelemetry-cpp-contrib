@@ -1,11 +1,9 @@
 // Copyright The OpenTelemetry Authors
 // SPDX-License-Identifier: Apache-2.0
 
-#ifdef ENABLE_LOGS_PREVIEW
-
-#  include "opentelemetry/exporters/user_events/logs/exporter.h"
-#  include "opentelemetry/exporters/user_events/logs/recordable.h"
-#  include "opentelemetry/sdk_config.h"
+#include "opentelemetry/exporters/user_events/logs/exporter.h"
+#include "opentelemetry/exporters/user_events/logs/recordable.h"
+#include "opentelemetry/sdk_config.h"
 
 namespace nostd     = opentelemetry::nostd;
 namespace sdklogs   = opentelemetry::sdk::logs;
@@ -21,7 +19,14 @@ namespace logs
 
 /*********************** Constructor ***********************/
 
-Exporter::Exporter(const ExporterOptions &options) noexcept : options_(options) {}
+Exporter::Exporter(const ExporterOptions &options) noexcept : options_(options), provider_(options.provider_name)
+{
+  // Initialize the event sets
+  for (int i = 0; i < sizeof(event_levels_map)/sizeof(event_levels_map[0]); i++)
+  {
+    event_set_levels_[i] = provider_.RegisterSet(event_levels_map[i], 1);
+  }
+}
 
 /*********************** Exporter methods ***********************/
 
@@ -92,5 +97,3 @@ bool Exporter::isShutdown() const noexcept
 }  // namespace user_events
 }  // namespace exporter
 OPENTELEMETRY_END_NAMESPACE
-
-#endif

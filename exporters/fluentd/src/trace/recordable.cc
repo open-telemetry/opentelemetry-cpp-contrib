@@ -25,12 +25,13 @@ template <typename T> static inline json create_message(T ts, json body) {
 }
 
 // constexpr needs keys to be constexpr, const is next best to use.
-static const std::map<opentelemetry::trace::SpanKind, std::string>
+static const std::map<opentelemetry::trace::SpanKind, int>
     kSpanKindMap = {
-        {opentelemetry::trace::SpanKind::kClient, "CLIENT"},
-        {opentelemetry::trace::SpanKind::kServer, "SERVER"},
-        {opentelemetry::trace::SpanKind::kConsumer, "CONSUMER"},
-        {opentelemetry::trace::SpanKind::kProducer, "PRODUCER"},
+        {opentelemetry::trace::SpanKind::kInternal, 0},
+        {opentelemetry::trace::SpanKind::kServer, 1},
+        {opentelemetry::trace::SpanKind::kClient, 2},
+        {opentelemetry::trace::SpanKind::kProducer, 3},
+        {opentelemetry::trace::SpanKind::kConsumer, 4},
 };
 
 //
@@ -52,6 +53,9 @@ void Recordable::SetIdentity(
   options_[FLUENT_FIELD_SPAN_PARENTID] =
       std::string(parent_span_id_lower_base16, 16);
   options_[FLUENT_FIELD_TRACE_ID] = std::string(trace_id_lower_base16, 32);
+  if (include_trace_state_) {
+    options_[FLUENT_FIELD_TRACE_STATE] = span_context.trace_state()->ToHeader();
+  }
 }
 
 void Recordable::SetAttribute(
@@ -91,10 +95,11 @@ void Recordable::AddLink(
 
 void Recordable::SetStatus(opentelemetry::trace::StatusCode code,
                            nostd::string_view description) noexcept {
+  options_[FLUENT_FIELD_SUCCESS] = code != opentelemetry::trace::StatusCode::kError;
   if (code != opentelemetry::trace::StatusCode::kUnset) {
     options_["tags"]["otel.status_code"] = code;
     if (code == opentelemetry::trace::StatusCode::kError) {
-      options_["tags"]["error"] = description;
+      options_[FLUENT_FIELD_STATUSMESSAGE] = description;
     }
   }
 }
@@ -144,6 +149,10 @@ void Recordable::SetInstrumentationScope(
   options_["tags"]["otel.library.name"] = instrumentation_scope.GetName();
   options_["tags"]["otel.library.version"] =
       instrumentation_scope.GetVersion();
+}
+
+void Recordable::SetTraceFlags(opentelemetry::trace::TraceFlags flags) noexcept {
+    // TODO: process trace flags
 }
 
 } // namespace trace

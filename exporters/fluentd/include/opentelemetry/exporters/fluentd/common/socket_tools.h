@@ -257,7 +257,8 @@ struct SocketAddr {
     }
 #endif
 
-    // Convert {IPv4|IPv6}:{port} string to Network address and Port.
+    // Convert a {hostname|IPv4|IPv6}:{port} string to a network address and port.
+    // If the input is a hostname, perform a DNS lookup to resolve it to an IP address.
     int port = 0;
 
     // If numColons is more than 2, then it is IPv6 address
@@ -286,13 +287,39 @@ struct SocketAddr {
         LOG_ERROR("Invalid IPv6 address: %s", addr);
       }
     } else {
-      sockaddr_in &inet = m_data_in;
-      inet.sin_family = AF_INET;
-      inet.sin_port = htons(port);
-      void *pAddrBuf = &inet.sin_addr;
-      if (!::inet_pton(inet.sin_family, ipAddress.c_str(), pAddrBuf)) {
-        LOG_ERROR("Invalid IPv4 address: %s", addr);
-      }
+      /* Use getaddrinfo(3) to convert it */
+      struct ::addrinfo *addresses = nullptr, *address = nullptr;
+      int ret = ::getaddrinfo(ipAddress.c_str() /*or hostname*/, nullptr, nullptr, &addresses);
+      if (ret != 0) {
+        LOG_ERROR("Unable to lookup hostname/address: %s, %s", ipAddress.c_str(), ::gai_strerror(ret));
+      } else {
+        for (address = addresses; address != nullptr; address = address->ai_next) {
+          char buf[128];
+          if (address->ai_family == AF_INET) {
+            auto addrp = &((sockaddr_in *)address->ai_addr)->sin_addr;
+            LOG_DEBUG("Using AF_INET address %s", inet_ntop(AF_INET, addrp, buf, 128));
+            ::memcpy(&m_data_in.sin_addr, addrp, sizeof(m_data_in.sin_addr));
+            m_data_in.sin_family = address->ai_family;
+            m_data_in.sin_port = htons(port);
+            break;
+          } else if (address->ai_family != AF_INET6) {
+            auto addrp = &((sockaddr_in6 *)address->ai_addr)->sin6_addr;
+            LOG_DEBUG("Using AF_INET6 address %s", inet_ntop(AF_INET6, addrp, buf, 128));
+            ::memcpy(&m_data_in6.sin6_addr, addrp, sizeof(m_data_in6.sin6_addr));
+            m_data_in6.sin6_family = address->ai_family;
+            m_data_in6.sin6_port = htons(port);
+            break;
+          } else {
+            LOG_DEBUG("Ignoring address with family %d", address->ai_family);
+          }
+        }
+        freeaddrinfo(addresses);
+
+        if (address == nullptr) {
+          LOG_ERROR("Could not find a viable IPv4/IPv6 address");
+        }
+    }
+
     }
   }
 

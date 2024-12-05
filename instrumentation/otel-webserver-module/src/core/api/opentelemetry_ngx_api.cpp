@@ -21,10 +21,17 @@
 #include <sstream>
 #include <unordered_set>
 #include <algorithm>
+#include <regex>
 
 otel::core::WSAgent wsAgent; // global variable for interface between Hooks and Core Logic
 std::unordered_set<std::string> requestHeadersToCapture;
 std::unordered_set<std::string> responseHeadersToCapture;
+std::unordered_map<std::string, std::string> propagationsHeaderParse = {
+    {"x-b3-traceid", "X-B3-TraceId"},
+    {"x-b3-spanid", "X-B3-SpanId"},
+    {"x-b3-sampled", "X-B3-Sampled"}
+};
+
 constexpr char delimiter = ',';
 
 void populatePayload(request_payload* req_payload, void* load)
@@ -41,9 +48,23 @@ void populatePayload(request_payload* req_payload, void* load)
     payload->set_http_get_parameter(req_payload->http_get_param);
     payload->set_http_request_method(req_payload->request_method);
     payload->set_client_ip(req_payload->client_ip);
+    payload->set_user_agent(req_payload->user_agent);
+    payload->set_peer_port(req_payload->peer_port);
+    payload->set_operation_name(req_payload->operation_name);
+    
 
     for(int i=0; i<req_payload->propagation_count; i++){
-        payload->set_http_headers(req_payload->propagation_headers[i].name, req_payload->propagation_headers[i].value);
+        
+        std::string prop_header_lowercase(req_payload->propagation_headers[i].name);
+        for(auto &s : prop_header_lowercase ){
+            s = tolower(s);
+        }
+        if( propagationsHeaderParse.find(prop_header_lowercase) != propagationsHeaderParse.end() ){
+            payload->set_http_headers( propagationsHeaderParse[prop_header_lowercase] , req_payload->propagation_headers[i].value);
+        }
+        else{
+            payload->set_http_headers(req_payload->propagation_headers[i].name, req_payload->propagation_headers[i].value);
+        }
     }
 
     for (int i = 0; i < req_payload->request_headers_count; i++) {
@@ -119,13 +140,17 @@ OTEL_SDK_STATUS_CODE endRequest(OTEL_SDK_HANDLE_REQ req_handle_key, const char* 
     if (payload != NULL) {
         for (int i = 0; i < payload->response_headers_count; i++) {
             std::string key(payload->response_headers[i].name);
-            if (responseHeadersToCapture.find(key)
-            != responseHeadersToCapture.end()) {
+            if (responseHeadersToCapture.find(key) != responseHeadersToCapture.end()) {
                 responsePayload->response_headers[key]
                     = payload->response_headers[i].value;
             }
         }
         responsePayload->status_code = payload->status_code;
+
+        for(int i=0; i < payload->otel_attributes_count; i++){
+            std::string key(payload->otel_attributes[i].name);
+            responsePayload->otel_attributes[key] = payload->otel_attributes[i].value;
+        }
     }
 
     res = wsAgent.endRequest(req_handle_key, errMsg, responsePayload.get());
@@ -154,7 +179,7 @@ OTEL_SDK_STATUS_CODE startModuleInteraction(OTEL_SDK_HANDLE_REQ req_handle_key, 
                 propagationHeaders[*ix].name = temp_key;
                 char *temp_value= (char*)malloc(itr->second.size() + 1); 
                 std::strcpy(temp_value, itr->second.c_str());
-                 propagationHeaders[*ix].value = temp_value;
+                propagationHeaders[*ix].value = temp_value;
                 ++(*ix);
             }
         }

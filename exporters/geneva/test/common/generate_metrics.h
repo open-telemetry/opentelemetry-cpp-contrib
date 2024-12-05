@@ -2,6 +2,7 @@
 #include "opentelemetry/sdk/metrics/export/metric_producer.h"
 #include "opentelemetry/sdk/metrics/instruments.h"
 #include "opentelemetry/sdk/resource/resource.h"
+#include "opentelemetry/sdk/instrumentationscope/instrumentation_scope.h"
 
 #include<vector>
 
@@ -26,6 +27,10 @@ const std::string kCounterDoubleAttributeKey2 = "counter_double_key2";
 const std::string kCounterDoubleAttributeValue2 = "counter_double_value2";
 const std::string kCounterDoubleAttributeKey3 = "counter_double_key3";
 const std::string kCounterDoubleAttributeValue3 = "counter_double_value3";
+const std::string kPrepopulatedDimensionKey1 = "prepopulated_key1";
+const std::string kPrepopulatedDimensionValue1 = "prepopulated_value1";
+const std::string kPrepopulatedDimensionKey2 = "prepopulated_key2";
+const std::string kPrepopulatedDimensionValue2 = "prepopulated_value2";
 const uint16_t kCounterDoubleCountDimensions = 1;
 const uint16_t kCounterDoubleEventId = 55;
 
@@ -87,8 +92,8 @@ const std::string kCounterLongInstrumentDesc =
     "test_instrument_counter_long_desc";
 const std::string kCounterLongInstrumentUnit =
     "test_instrument_conter_long_unit";
-const long kCounterLongValue = 102;
-const long kCounterCustomLongValue = 103;
+const int64_t kCounterLongValue = 102;
+const int64_t kCounterCustomLongValue = 103;
 const std::string kCounterLongAttributeKey1 = "counter_long_key1";
 const std::string kCounterLongAttributeValue1 = "counter_long_value1";
 
@@ -144,7 +149,7 @@ const std::string kUpDownCounterLongInstrumentDesc =
     "test_instrument_up_down_counter_long_desc";
 const std::string kUpDownCounterLongInstrumentUnit =
     "test_instrument_up_down_conter_long_unit";
-const long kUpDownCounterLongValue = -10;
+const int64_t kUpDownCounterLongValue = -10;
 const std::string kUpDownCounterLongAttributeKey1 = "up_down_counter_long_key1";
 const std::string kUpDownCounterLongAttributeValue1 =
     "up_down_counter_long_value1";
@@ -178,7 +183,7 @@ GenerateSumDataLongMetricsNonMonotonic(
           kUpDownCounterLongInstrumentUnit,
           opentelemetry::sdk::metrics::InstrumentType::kUpDownCounter,
           opentelemetry::sdk::metrics::InstrumentValueType::kLong},
-      opentelemetry::sdk::metrics::AggregationTemporality::kDelta,
+      opentelemetry::sdk::metrics::AggregationTemporality::kCumulative,
       opentelemetry::common::SystemTimestamp{std::chrono::system_clock::now()},
       opentelemetry::common::SystemTimestamp{std::chrono::system_clock::now()},
       std::vector<opentelemetry::sdk::metrics::PointDataAttributes>{
@@ -233,7 +238,7 @@ GenerateSumDataDoubleMetricsNonMonotonic(
           kUpDownCounterDoubleInstrumentUnit,
           opentelemetry::sdk::metrics::InstrumentType::kUpDownCounter,
           opentelemetry::sdk::metrics::InstrumentValueType::kDouble},
-      opentelemetry::sdk::metrics::AggregationTemporality::kDelta,
+      opentelemetry::sdk::metrics::AggregationTemporality::kCumulative,
       opentelemetry::common::SystemTimestamp{std::chrono::system_clock::now()},
       opentelemetry::common::SystemTimestamp{std::chrono::system_clock::now()},
       std::vector<opentelemetry::sdk::metrics::PointDataAttributes>{
@@ -254,10 +259,10 @@ const std::string kHistogramLongInstrumentDesc =
 const std::string kHistogramLongInstrumentUnit =
     "test_instrument_histogram_long_unit";
 
-const long kHistogramLongSum = 4024l;
-const long kHistogramCustomLongSum = 4025l;
-const long kHistogramLongMin = 3l;
-const long kHistogramLongMax = 1004l;
+const int64_t kHistogramLongSum = 4024l;
+const int64_t kHistogramCustomLongSum = 4025l;
+const int64_t kHistogramLongMin = 3l;
+const int64_t kHistogramLongMax = 1004l;
 const size_t kHistogramLongCount = 10l;
 const uint16_t kHistogramLongBucketSize = 10;
 const uint16_t kHistogramLongNonEmptyBucketSize = 8;

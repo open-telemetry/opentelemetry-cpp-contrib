@@ -1,8 +1,5 @@
 // Copyright The OpenTelemetry Authors
 // SPDX-License-Identifier: Apache-2.0
-#ifndef HAVE_CONSOLE_LOG
-#define HAVE_CONSOLE_LOG
-#endif
 
 #include "opentelemetry/exporters/fluentd/log/fluentd_exporter.h"
 #include "opentelemetry/exporters/fluentd/log/recordable.h"
@@ -216,12 +213,20 @@ bool FluentdExporter::Initialize() {
   else {
 #if defined(__EXCEPTIONS)
     // Customers MUST specify valid end-point configuration
-    throw new std::runtime_error("Invalid endpoint!");
+    throw std::runtime_error("Invalid endpoint!");
 #endif
     return false;
   }
   addr_.reset(
       new SocketTools::SocketAddr(options_.endpoint.c_str(), is_unix_domain));
+  if (addr_->m_data_in.sin_family != AF_UNIX &&
+      addr_->m_data_in.sin_family != AF_INET &&
+      addr_->m_data_in.sin_family != AF_INET6)
+  {
+    LOG_ERROR("Invalid endpoint! %s", options_.endpoint.c_str());
+    return false;
+  }
+
   LOG_TRACE("connecting to %s", addr_->toString().c_str());
 
   return true;

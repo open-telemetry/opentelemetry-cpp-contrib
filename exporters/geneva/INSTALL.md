@@ -55,7 +55,7 @@ for instructions.
      inclusion in shared libraries, this variable is used.
    - `-DBUILD_SHARED_LIBS=ON` : To build shared libraries for the targets.
    - `-DBUILD_TESTING=ON` : Build the unit-tests
-   - `-DBUILD_EXAMPLE=ON`: Build the example code which generates measurements and collects/exports metrics periodically
+   - `-DWITH_EXAMPLES=ON`: Build the example code which generates measurements and collects/exports metrics periodically
 
 4. Once build configuration is created, build the exporter:
 
@@ -102,9 +102,9 @@ for instructions.
 
 1. Create the following directory structure in the root directory of the application. Clone the
 opentelemetry-cpp and opentelemetry-cpp-contrib under the `deps` directory as given below. And
-copy the script and patch file from to the `tools` directory.
+copy the script and patch file from the `build_tools` directory to the `tools` directory.
 
-    ```
+    ```console
     # <project-repo-root>
     #    |
     #     -  tools
@@ -119,7 +119,7 @@ copy the script and patch file from to the `tools` directory.
     #               -   opentelemetry-cpp-contrib/exporters/geneva
     #
     ```
-2. Execute `build_geneva_metrics_exporter.sh` script from the `tools` directory
+2. Execute `build_geneva_metrics_exporter.sh` script from the `tools` directory.
 
     ```console
     $ cd <project-root>/tools && ./build_geneva_metrics_exporter.sh

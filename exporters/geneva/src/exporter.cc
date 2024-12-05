@@ -7,7 +7,7 @@
 #ifdef _WIN32
 #include "opentelemetry/exporters/geneva/metrics/etw_data_transport.h"
 #endif
-#include "opentelemetry/metrics/meter_provider.h"
+#include "opentelemetry/sdk/metrics/export/metric_producer.h"
 #include "opentelemetry/sdk_config.h"
 
 #include <memory>
@@ -46,6 +46,10 @@ Exporter::Exporter(const ExporterOptions &options)
 
 sdk::metrics::AggregationTemporality Exporter::GetAggregationTemporality(
     sdk::metrics::InstrumentType instrument_type) const noexcept {
+  if (instrument_type == sdk::metrics::InstrumentType::kUpDownCounter)
+    {
+      return sdk::metrics::AggregationTemporality::kCumulative;
+    }
   return sdk::metrics::AggregationTemporality::kDelta;
 }
 
@@ -206,6 +210,18 @@ size_t Exporter::SerializeNonHistogramMetrics(
   SerializeString(buffer_, bufferIndex, metric_name);
 
   uint16_t attributes_size = 0;
+
+  // serialize prepopulated names
+  for (const auto &kv : options_.prepopulated_dimensions) {
+    if (kv.first.size() > kMaxDimensionNameSize) {
+      LOG_WARN("Dimension name limit overflow: %s Limit: %zd", kv.first.c_str(),
+               kMaxDimensionNameSize);
+      continue;
+    }
+    attributes_size++;
+    SerializeString(buffer_, bufferIndex, kv.first);
+  }
+
   for (const auto &kv : attributes) {
     if (kv.first.size() > kMaxDimensionNameSize) {
       LOG_WARN("Dimension name limit overflow: %s Limit: %d", kv.first.c_str(),
@@ -221,6 +237,16 @@ size_t Exporter::SerializeNonHistogramMetrics(
     attributes_size++;
     SerializeString(buffer_, bufferIndex, kv.first);
   }
+
+  // serialize prepopulated values
+  for (const auto &kv : options_.prepopulated_dimensions) {
+    if (kv.second.size() > kMaxDimensionNameSize) {
+      // warning is already logged earlier, no logging again
+      continue;
+    }
+    SerializeString(buffer_, bufferIndex, kv.second);
+  }
+
   for (const auto &kv : attributes) {
     if (kv.first.size() > kMaxDimensionNameSize) {
       LOG_WARN("Dimension name limit overflow: %s Limit: %d", kv.first.c_str(),
@@ -322,6 +348,18 @@ size_t Exporter::SerializeHistogramMetrics(
   SerializeString(buffer_, bufferIndex, metric_name);
 
   uint16_t attributes_size = 0;
+
+  // dimensions - prepopulated names
+  for (const auto &kv : options_.prepopulated_dimensions) {
+    if (kv.first.size() > kMaxDimensionNameSize) {
+      LOG_WARN("Dimension name limit overflow: %s Limit: %zd", kv.first.c_str(),
+               kMaxDimensionNameSize);
+      continue;
+    }
+    attributes_size++;
+    SerializeString(buffer_, bufferIndex, kv.first);
+  }
+
   // dimentions - name
   for (const auto &kv : attributes) {
     if (kv.first.size() > kMaxDimensionNameSize) {
@@ -337,6 +375,16 @@ size_t Exporter::SerializeHistogramMetrics(
     }
     attributes_size++;
     SerializeString(buffer_, bufferIndex, kv.first);
+  }
+
+
+  // dimensions - prepopulated values
+  for (const auto &kv : options_.prepopulated_dimensions) {
+    if (kv.second.size() > kMaxDimensionNameSize) {
+      // warning is already logged earlier, no logging again
+      continue;
+    }
+    SerializeString(buffer_, bufferIndex, kv.second);
   }
 
   // dimentions - value

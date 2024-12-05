@@ -19,10 +19,10 @@ def io_opentelemetry_cpp_contrib_deps():
     maybe(
         http_archive,
         name = "io_opentelemetry_cpp",
-        sha256 = "1fc371be049b3220b8b9571c8b713f03e9a84f3c5684363f64ccc814638391a5",
-        strip_prefix = "opentelemetry-cpp-1.6.1",
+        sha256 = "69b0fef380658e15be9d817bfcb32e3f5de96da652bcdce77b4e750ed8beddee",
+        strip_prefix = "opentelemetry-cpp-1.15.0",
         urls = [
-            "https://github.com/open-telemetry/opentelemetry-cpp/archive/v1.6.1.tar.gz",
+            "https://github.com/open-telemetry/opentelemetry-cpp/archive/v1.15.0.tar.gz",
         ],
     )
 
@@ -30,10 +30,21 @@ def io_opentelemetry_cpp_contrib_deps():
     maybe(
         http_archive,
         name = "com_github_jupp0r_prometheus_cpp",
-        sha256 = "593e028d401d3298eada804d252bc38d8cab3ea1c9e88bcd72095281f85e6d16",
-        strip_prefix = "prometheus-cpp-1.0.1",
+        sha256 = "48dbad454d314b836cc667ec4def93ec4a6e4255fc8387c20cacb3b8b6faee30",
+        strip_prefix = "prometheus-cpp-1.2.4",
         urls = [
-            "https://github.com/jupp0r/prometheus-cpp/archive/refs/tags/v1.0.1.tar.gz",
+            "https://github.com/jupp0r/prometheus-cpp/archive/refs/tags/v1.2.4.tar.gz",
+        ],
+    )
+
+    # bazel platforms
+    maybe(
+        http_archive,
+        name = "platforms",
+        sha256 = "5308fc1d8865406a49427ba24a9ab53087f17f5266a7aabbfc28823f3916e1ca",
+        urls = [
+            "https://mirror.bazel.build/github.com/bazelbuild/platforms/releases/download/0.0.6/platforms-0.0.6.tar.gz",
+            "https://github.com/bazelbuild/platforms/releases/download/0.0.6/platforms-0.0.6.tar.gz",
         ],
     )
 
@@ -64,4 +75,13 @@ def io_opentelemetry_cpp_contrib_deps():
             "https://github.com/google/googletest/archive/release-1.12.1.tar.gz",
             # "https://github.com/google/googletest/archive/release-1.10.0.tar.gz",
         ],
+    )
+
+    # Some versions of GoogleTest depend com_googlesource_code_re2.
+    maybe(
+        http_archive,
+        name = "com_googlesource_code_re2",  # 2023-06-01
+        sha256 = "1726508efc93a50854c92e3f7ac66eb28f0e57652e413f11d7c1e28f97d997ba",
+        strip_prefix = "re2-03da4fc0857c285e3a26782f6bc8931c4c950df4",
+        urls = ["https://github.com/google/re2/archive/03da4fc0857c285e3a26782f6bc8931c4c950df4.zip"],
     )

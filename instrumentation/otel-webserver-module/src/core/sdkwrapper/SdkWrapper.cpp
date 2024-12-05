@@ -26,8 +26,8 @@ namespace sdkwrapper {
 
 namespace {
 
-constexpr const char* TRACEPARENT_HEADER_NAME = "traceparent";
-constexpr const char* TRACESTATE_HEADER_NAME = "tracestate";
+constexpr const char* CARRIER_HEADER_NAME[] = {"X-B3-TraceId", "X-B3-SpanId", "X-B3-Sampled", "traceparent", "tracestate"};
+const size_t CARRIER_HEADER_LEN = sizeof(CARRIER_HEADER_NAME)/sizeof(CARRIER_HEADER_NAME[0]);
 
 } // anyonymous
 
@@ -66,22 +66,37 @@ std::shared_ptr<IScopedSpan> SdkWrapper::CreateSpan(
 			mLogger));
 	}
 }
-
+std::string SdkWrapper::ReturnCurrentSpanId(){
+	
+	auto context = context::RuntimeContext::GetCurrent();
+	auto currentSpan = trace::GetSpan(context);
+	trace::SpanContext spanContext = currentSpan->GetContext();
+	trace::SpanId spanId = spanContext.span_id();
+	constexpr int len = 2 * trace::SpanId::kSize;
+	char* data = new char[len];
+	spanId.ToLowerBase16(nostd::span<char, len>{data, len});
+	std::string currentSpanId(data, len);
+	delete[] data;
+	return currentSpanId;
+}
 void SdkWrapper::PopulatePropagationHeaders(
 	std::unordered_map<std::string, std::string>& carrier) {
 
   // TODO : This is inefficient change as we are copying otel carrier data
   // into unordered map and sending it back to agent.
   // Ideally agent should keep otelCarrier data structure on its side.
-  auto otelCarrier = OtelCarrier();
+  	auto otelCarrier = OtelCarrier();
 	auto context = context::RuntimeContext::GetCurrent();
 	for (auto &propagators : mSdkHelperFactory->GetPropagators()) {
 		propagators->Inject(otelCarrier, context);
 	}
-
-  // copy all relevant kv pairs into carrier
-  carrier[TRACEPARENT_HEADER_NAME] = otelCarrier.Get(TRACEPARENT_HEADER_NAME).data();
-  carrier[TRACESTATE_HEADER_NAME] = otelCarrier.Get(TRACESTATE_HEADER_NAME).data();
+	// copy all relevant kv pairs into carrier
+	for (int i = 0; i < CARRIER_HEADER_LEN; i++) {
+		auto carrier_header = otelCarrier.Get(CARRIER_HEADER_NAME[i]).data();
+		if(carrier_header != ""){
+			carrier[CARRIER_HEADER_NAME[i]] = otelCarrier.Get(CARRIER_HEADER_NAME[i]).data();
+		}
+	}
 }
 
 trace::SpanKind SdkWrapper::GetTraceSpanKind(const SpanKind& kind)

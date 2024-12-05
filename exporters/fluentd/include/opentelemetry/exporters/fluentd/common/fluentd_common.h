@@ -116,8 +116,8 @@ inline std::string AttributeValueToString(
     result = std::to_string(nostd::get<double>(value));
   } else if (nostd::holds_alternative<const char*>(value)) {
     result = std::string(nostd::get<const char*>(value));
-  } else if (nostd::holds_alternative<opentelemetry::v1::nostd::string_view>(value)) {
-    result = std::string(nostd::get<opentelemetry::v1::nostd::string_view>(value).data());
+  } else if (nostd::holds_alternative<opentelemetry::nostd::string_view>(value)) {
+    result = std::string(nostd::get<opentelemetry::nostd::string_view>(value).data());
   } else {
     LOG_WARN("[Fluentd Exporter] AttributeValueToString - "
              " Nested attributes not supported - ignored");
@@ -145,6 +145,7 @@ struct FluentdExporterOptions {
   std::string endpoint;
   bool convert_event_to_trace =
       false; // convert events to trace. Not used for Logs.
+  bool include_trace_state_for_span = false;
 };
 
 static inline nlohmann::byte_container_with_subtype<std::vector<std::uint8_t>>

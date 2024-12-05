@@ -1,0 +1,67 @@
+ARG image=amazonlinux:2
+FROM $image AS build
+
+ARG otel_cpp_version=1.17.0
+ARG nginx_version=1.27.3
+
+RUN yum check-update && \
+  yum install -y git gcc-c++ make tar curl-devel unzip zlib-devel pcre2-devel
+
+RUN curl -LO https://github.com/Kitware/CMake/releases/download/v3.31.1/cmake-3.31.1-linux-x86_64.tar.gz && tar xf cmake-3.31.1-linux-x86_64.tar.gz && mv cmake-3.31.1-linux-x86_64 cmake
+
+RUN git clone --shallow-submodules --depth 1 --recurse-submodules -b v21.12 https://github.com/protocolbuffers/protobuf.git
+RUN cd protobuf \
+  && mkdir build \
+  && cd build \
+  && /cmake/bin/cmake \
+    -DCMAKE_INSTALL_PREFIX=/protobuf/install \
+    -Dprotobuf_BUILD_TESTS=OFF \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON .. \
+    .. \
+  && /cmake/bin/cmake --build . --config Release -j$(nproc) \
+  && /cmake/bin/cmake --install .
+
+RUN git clone --shallow-submodules --depth 1 --recurse-submodules -b v$otel_cpp_version \
+  https://github.com/open-telemetry/opentelemetry-cpp.git \
+  && cd opentelemetry-cpp \
+  && mkdir build \
+  && cd build \
+  && /cmake/bin/cmake -DCMAKE_BUILD_TYPE=Release \
+    -DWITH_OTLP_HTTP=ON \
+    -DWITH_OTLP_GRPC=OFF \
+    -DWITH_PROMETHEUS=OFF \
+    -DWITH_ELASTICSEARCH=OFF \
+    -DBUILD_TESTING=OFF \
+    -DWITH_EXAMPLES=OFF \
+    -DWITH_FUNC_TESTS=OFF \
+    -DOPENTELEMETRY_INSTALL=ON \
+    -DCMAKE_CXX_STANDARD=14 \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+    -DCMAKE_PREFIX_PATH=/protobuf/install \
+    .. \
+  && /cmake/bin/cmake --build . --target all -j$(nproc) \
+  && /cmake/bin/cmake --install . --prefix /opentelemetry-cpp/install
+
+RUN mkdir -p otel-nginx/build && mkdir -p otel-nginx/src
+COPY src otel-nginx/src/
+COPY CMakeLists.txt nginx.cmake otel-nginx/
+RUN cd otel-nginx/build \
+  && /cmake/bin/cmake -DCMAKE_BUILD_TYPE=Release \
+    -DNGINX_VERSION=$nginx_version \
+    -DCMAKE_PREFIX_PATH="/opentelemetry-cpp/install;/protobuf/install" \
+    -DCMAKE_INSTALL_PREFIX=/otel-nginx/install \
+    .. \
+  && make -j$(nproc) \
+  && make install
+
+FROM scratch AS export
+COPY --from=build /otel-nginx/install/otel_ngx_module.so .
+
+FROM build AS run
+
+COPY test/conf/nginx.conf /otel-nginx/nginx.conf
+RUN curl -O https://nginx.org/download/nginx-$nginx_version.tar.gz && tar xf nginx-$nginx_version.tar.gz
+RUN cd nginx-$nginx_version && ./configure --with-compat --prefix=/nginx && make -j$(nproc) && make install
+
+CMD ["/nginx/sbin/nginx", "-c", "/otel-nginx/nginx.conf"]

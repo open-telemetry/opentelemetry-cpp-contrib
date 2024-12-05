@@ -25,7 +25,7 @@
 extern "C" {
 #endif
 
-const char* httpHeaders[] = {"traceparent", "tracestate"};
+const char* httpHeaders[] = {"x-b3-traceid", "x-b3-spanid", "x-b3-sampled", "traceparent", "tracestate"};
 const size_t headers_len = sizeof(httpHeaders)/sizeof(httpHeaders[0]);
 
 typedef struct{
@@ -45,16 +45,22 @@ typedef struct {
     const char* http_post_param;
     const char* request_method;
     const char* client_ip;
+    const char* user_agent;
+    const char* operation_name;
+
     http_headers* propagation_headers;
     http_headers* request_headers;
 
     int propagation_count;
     int request_headers_count;
+    int peer_port;
 }request_payload;
 
 typedef struct {
     http_headers* response_headers;
     int response_headers_count;
+    http_headers* otel_attributes;
+    int otel_attributes_count;
 
     unsigned int status_code;
 }response_payload;

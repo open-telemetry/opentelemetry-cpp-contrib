@@ -23,7 +23,11 @@
 
 #define LOWEST_HTTP_ERROR_CODE 400
 #define STATUS_CODE_BYTE_COUNT 6
-static const int CONFIG_COUNT = 17; // Number of key value pairs in config
+static const int CONFIG_COUNT = 18; // Number of key value pairs in config
+static const int TRACE_ID_LEN = 32; // Length of trace_id
+static const int SPAN_ID_LEN = 16; // Length of span_id
+static const char NGINX_VARIABLE_IDENTIFIER = '$'; // Identifier for Nginx variables
+static const int ALL_PROPAGATION_HEADERS_COUNT = 16; // Length of span_id
 
 /*  The following enum has one-to-one mapping with
     otel_monitored_modules[] defined in .c file.
@@ -103,7 +107,14 @@ typedef struct {
     ngx_str_t   nginxModuleRequestHeaders;
     ngx_str_t   nginxModuleResponseHeaders;
     ngx_str_t   nginxModuleOtelExporterOtlpHeaders;
+    ngx_flag_t  nginxModuleTrustIncomingSpans;
+    ngx_array_t  *nginxModuleAttributes;
+    ngx_array_t  *nginxModuleIgnorePaths;
+    ngx_str_t nginxModulePropagatorType;
+    ngx_str_t nginxModuleOperationName;
+
 } ngx_http_opentelemetry_loc_conf_t;
+
 
 /*
     Configuration structure for storing information throughout the worker process life-time
@@ -119,9 +130,12 @@ typedef struct{
 }NGX_HTTP_OTEL_RECORDS;
 
 typedef struct {
-   OTEL_SDK_HANDLE_REQ otel_req_handle_key;
-   OTEL_SDK_ENV_RECORD* propagationHeaders;
-   int pheaderCount;
+    OTEL_SDK_HANDLE_REQ otel_req_handle_key;
+    OTEL_SDK_ENV_RECORD* propagationHeaders;
+    int pheaderCount;
+    ngx_str_t trace_id;
+    ngx_str_t root_span_id;
+    ngx_str_t tracing_context;
 }ngx_http_otel_handles_t;
 
 typedef struct{
@@ -152,8 +166,14 @@ static void otel_payload_decorator(ngx_http_request_t* r, OTEL_SDK_ENV_RECORD* p
 static ngx_flag_t otel_requestHasErrors(ngx_http_request_t* r);
 static ngx_uint_t otel_getErrorCode(ngx_http_request_t* r);
 static char* ngx_otel_context_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
+static char* ngx_otel_attributes_set(ngx_conf_t* cf, ngx_command_t*, void* conf);
+static char* ngx_conf_ignore_path_set(ngx_conf_t* cf, ngx_command_t* cmd, void* conf);
+static char* ngx_conf_set_propagator(ngx_conf_t* cf, ngx_command_t* cmd, void* conf) ;
 static void ngx_otel_set_global_context(ngx_http_opentelemetry_loc_conf_t * prev);
+static void ngx_otel_set_attributes(ngx_http_opentelemetry_loc_conf_t * prev, ngx_http_opentelemetry_loc_conf_t * conf);
+static void ngx_conf_merge_ignore_paths(ngx_http_opentelemetry_loc_conf_t * prev, ngx_http_opentelemetry_loc_conf_t * conf);
 static void removeUnwantedHeader(ngx_http_request_t* r);
+static void otel_variables_decorator(ngx_http_request_t* r);
 /*
     Module specific handler
 */
@@ -187,3 +207,8 @@ static char* computeContextName(ngx_http_request_t *r, ngx_http_opentelemetry_lo
 // static ngx_int_t ngx_http_opentelemetry_header_filter(ngx_http_request_t *r);
 // static ngx_int_t ngx_http_opentelemetry_body_filter(ngx_http_request_t *r, ngx_chain_t *in);
 
+static ngx_int_t ngx_http_opentelemetry_create_variables(ngx_conf_t *cf);
+ngx_int_t ngx_opentelemetry_initialise_trace_id(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data);
+ngx_int_t ngx_opentelemetry_initialise_span_id(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data);
+ngx_int_t ngx_opentelemetry_initialise_context_traceparent(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data);
+ngx_int_t ngx_opentelemetry_initialise_context_b3(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data);

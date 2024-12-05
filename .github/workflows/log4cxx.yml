@@ -1,0 +1,101 @@
+name: log4cxx
+
+on:
+  push:
+    branches:
+      - '*'
+    path:
+      - 'instrumentation/log4cxx/**'
+      - '.github/workflows/log4cxx.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'instrumentation/log4cxx/**'
+      - '.github/workflows/log4cxx.yml'
+
+jobs:
+  cmake_linux:
+    name: CMake Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout googletest
+        uses: actions/checkout@v3
+        with:
+          repository: "google/googletest"
+          ref: "release-1.12.1"
+          path: "googletest"
+      - name: checkout logging-log4cxx
+        uses: actions/checkout@v3
+        with:
+          repository: "apache/logging-log4cxx"
+          ref: "rel/v1.2.0"
+          path: "logging-log4cxx"
+      - name: checkout opentelemetry-cpp-contrib
+        uses: actions/checkout@v3
+        with:
+          path: opentelemetry-cpp-contrib
+      - name: checkout opentelemetry-cpp
+        uses: actions/checkout@v3
+        with:
+          repository: "open-telemetry/opentelemetry-cpp"
+          ref: "v1.15.0"
+          path: "opentelemetry-cpp"
+          submodules: "recursive"
+      - name: setup dependencies
+        run: |
+          sudo apt update -y
+          sudo apt install -y --no-install-recommends --no-install-suggests \
+            build-essential \
+            cmake \
+            ninja-build \
+            libssl-dev \
+            libcurl4-openssl-dev \
+            libprotobuf-dev \
+            protobuf-compiler \
+            libgmock-dev \
+            libgtest-dev \
+            libbenchmark-dev \
+            liblog4cxx-dev
+
+      # This is needed because libgmock-dev libgtest-dev installs 1.11,
+      # and v1.12 is required
+      - name: build googletest 1.12
+        run: |
+          mkdir -p "${GITHUB_WORKSPACE}/googletest/build"
+          cd "${GITHUB_WORKSPACE}/googletest/build"
+          cmake .. -G Ninja
+          cmake --build . -j$(nproc)
+          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
+
+      # This is needed because liblog4cxx-dev installs 0.12.1-4,
+      # and v1.0.0 is required
+      - name: build logging-log4cxx
+        run: |
+          mkdir -p "${GITHUB_WORKSPACE}/logging-log4cxx/build"
+          cd "${GITHUB_WORKSPACE}/logging-log4cxx/build"
+          cmake .. -G Ninja
+          cmake --build . -j$(nproc)
+          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
+
+      - name: build opentelemetry-cpp
+        run: |
+          mkdir -p "${GITHUB_WORKSPACE}/opentelemetry-cpp/build"
+          cd "${GITHUB_WORKSPACE}/opentelemetry-cpp/build"
+          cmake .. -G Ninja -DBUILD_TESTING=OFF -DWITH_BENCHMARK=OFF -DOPENTELEMETRY_INSTALL=ON
+          cmake --build . -j$(nproc)
+          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
+
+      - name: build instrumentation/log4cxx contrib
+        run: |
+          mkdir -p "${GITHUB_WORKSPACE}/instrumentation-log4cxx/build"
+          cd "${GITHUB_WORKSPACE}/instrumentation-log4cxx/build"
+          cmake ../../opentelemetry-cpp-contrib/instrumentation/log4cxx \
+            -G Ninja \
+            -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/sandbox" \
+            -DBUILD_TESTING=ON \
+            -DWITH_EXAMPLES=ON \
+            -DOPENTELEMETRY_INSTALL=ON
+          cmake --build . -j$(nproc)
+          ctest -j1 --output-on-failure
+          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
+

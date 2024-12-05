@@ -51,6 +51,9 @@
 #  define ETW_FIELD_SPAN_KIND         "kind"                  /* Span Kind               */
 #  define ETW_FIELD_SPAN_LINKS        "links"                 /* Span Links array        */
 
+#  define ETW_FIELD_SPAN_LINKS_TO_SPAN_ID  "toSpanId"         /* Span Links toSpanId     */
+#  define ETW_FIELD_SPAN_LINKS_TO_TRACE_ID "toTraceId"        /* Span Links toTraceId    */
+
 #  define ETW_FIELD_PAYLOAD_NAME      "name"                  /* ETW Payload["name"]     */
 
 /* Span option constants */
@@ -71,6 +74,8 @@
 
 #  define ETW_VALUE_SPAN_START        "SpanStart"             /* ETW for Span Start      */
 #  define ETW_VALUE_SPAN_END          "SpanEnd"               /* ETW for Span Start      */
+
+# define ETW_FIELD_ENV_PROPERTIES     "env_properties"        /* ETW event_properties with JSON string */
 
 #  define ETW_FIELD_LOG_BODY          "body"                  /* Log body   */
 #  define ETW_FIELD_LOG_SEVERITY_TEXT "severityText"          /* Sev text  */

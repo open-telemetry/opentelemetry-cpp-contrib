@@ -34,6 +34,21 @@ For example:
     $ .../opentelemetry-cpp-contrib2/exporters/fluentd$ make
 ```
 
+### Incorporating into an existing CMake Project
+
+To use the library from a CMake project, you can locate it directly with
+ `find_package` and use the imported targets from generated package
+ configurations. As of now, this will import targets for both `trace` and `logs`.
+
+```cmake
+# CMakeLists.txt
+find_package(opentelemetry-cpp CONFIG REQUIRED)
+find_package(opentelemetry-fluentd CONFIG REQUIRED)
+...
+target_include_directories(foo PRIVATE ${OPENTELEMETRY_CPP_FLUENTD_INCLUDE_DIRS})
+target_link_libraries(foo PRIVATE ${OPENTELEMETRY_CPP_LIBRARIES} ${OPENTELEMETRY_CPP_FLUENTD_LIBRARY_DIRS})
+```
+
 ### Bazel Install Instructions
 
 TODO

@@ -3,8 +3,9 @@
 
 #pragma once
 
-#include "opentelemetry/version.h"
 #include <string>
+
+#include "opentelemetry/version.h"
 
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter {
@@ -22,6 +23,7 @@ struct ExporterOptions {
   */
 // clang-format off
   std::string connection_string;
+  const std::map<std::string, std::string> prepopulated_dimensions;
 };
 } // namespace metrics
 } // namespace geneva

@@ -11,8 +11,8 @@ on:
     paths:
       - "exporters/geneva/**"
       - ".github/workflows/geneva_metrics.yml"
-  
- cmake_linux:
+jobs:
+  cmake_linux:
     name: CMake on Linux
     runs-on: ubuntu-latest
     steps:
@@ -24,7 +24,7 @@ on:
         uses: actions/checkout@v3
         with:
           repository: "open-telemetry/opentelemetry-cpp"
-          ref: "v1.8.2"
+          ref: "v1.15.0"
           path: "otel_cpp"
           submodules: "recursive"
       - name: setup
@@ -34,13 +34,15 @@ on:
             ca-certificates wget git valgrind lcov
       - name: run tests
         run: |
+          sudo $GITHUB_WORKSPACE/otel_cpp/ci/setup_googletest.sh
           mkdir -p "$GITHUB_WORKSPACE/otel_cpp/build"
           cd "$GITHUB_WORKSPACE/otel_cpp/build"
-          cmake .. -DCMAKE_BUILD_TYPE=Debug 
-          cmake --build . -j --config Debug
-          cmake --install . --prefix "$HOME/prebuilt-otel" --config Debug
+          cmake .. -DOPENTELEMETRY_INSTALL=ON
+          cmake --build . -j$(nproc)
+          cmake --install . --prefix "$HOME/prebuilt-otel"
           mkdir -p "$GITHUB_WORKSPACE/otel_cpp_contrib/exporters/geneva/build"
           cd "$GITHUB_WORKSPACE/otel_cpp_contrib/exporters/geneva/build"
-          cmake .. "-DCMAKE_PREFIX_PATH=$HOME/prebuilt-otel" -DCMAKE_BUILD_TYPE=Debug \
-            -DBUILD_TESTING=ON -DBUILD_EXAMPLE=ON
-          cmake --build . -j --config Debug
+          cmake .. "-DCMAKE_PREFIX_PATH=$HOME/prebuilt-otel" \
+            -DBUILD_TESTING=ON -DWITH_EXAMPLES=ON
+          cmake --build . -j$(nproc)
+          ctest

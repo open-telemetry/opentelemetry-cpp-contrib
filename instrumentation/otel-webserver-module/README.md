@@ -51,8 +51,8 @@ Monitoring individual modules is crucial to the instrumentation of Apache web se
 |*ApacheModuleOtelScheduledDelayMillis*          | 5000            | OPTIONAL: The delay interval in milliseconds between two consecutive exports|
 |*ApacheModuleOtelExportTimeoutMillis*           | 30000           | OPTIONAL: How long the export can run in milliseconds before it is cancelled|
 |*ApacheModuleOtelMaxExportBatchSize*            | 512             | OPTIONAL: The maximum batch size of every export. It must be smaller or equal to maxQueueSize |
-|*ApacheModuleServiceName*                       |                 | REQUIRED: A namespace for the ServiceName|
-|*ApacheModuleServiceNamespace*                  |                 | REQUIRED: Logical name of the service |
+|*ApacheModuleServiceName*                       |                 | REQUIRED: Logical name of the service |
+|*ApacheModuleServiceNamespace*                  |                 | REQUIRED: A namespace for the ServiceName |
 |*ApacheModuleServiceInstanceId*                 |                 | REQUIRED: The string ID of the service instance |
 |*ApacheModuleTraceAsError*                      |                 | OPTIONAL: Trace level for logging to Apache log|
 |*ApacheModuleWebserverContext*                  |                 | OPTIONAL: Takes 3 values(space-seperated) ServiceName, ServiceNamespace and ServiceInstanceId|
@@ -68,7 +68,7 @@ A sample configuration is mentioned in [opentelemetry_module.conf](https://githu
 
 #### Platform Supported
 - The build is supported for **x86-64** platforms.
-- OS support: **Centos6**, **Centos7, ubuntu20.04**.
+- OS support: **Centos7, Almalinux8, ubuntu20.04**.
 
 #### Automatic build and Installation
 
@@ -78,9 +78,9 @@ Then execute the following commands -:
 docker-compose --profile default build
 docker-compose --profile default up
 ```
-Alternatively, replace the value of *profile* from **'default'** to **'centos7'** or **'ubuntu20.04'** to build in respective supported platforms.
+Alternatively, replace the value of *profile* from **'default'** to **'centos7'** or **'almalinux8'** or **'ubuntu20.04'** to build in respective supported platforms.
 
-This would start the container alongwith the the Opentelemetry Collector and Zipkin. You can check the traces on Zipkin dashboard by checking the port number of Zipkin using ```docker ps``` command. Multiple requests can be sent using the browser.
+This would start the container alongwith the Opentelemetry Collector and Zipkin. You can check the traces on Zipkin dashboard by checking the port number of Zipkin using ```docker ps``` command. Multiple requests can be sent using the browser.
 
 #### Manual build and Installation
 
@@ -150,7 +150,7 @@ Currently, Nginx Webserver module monitores some fixed set of modules, which get
 
 | Library                                        | Present Version |
 | ---------------------------------------------- | -----------     |
-| Nginx                                          | 1.22.0, 1.23.0,1.23.1          |
+| Nginx                                          | 1.26.0, 1.25.5          |
 | Apr                                            | 1.7.0           |
 | Apr-util                                       | 1.6.1           |
 
@@ -166,8 +166,8 @@ Currently, Nginx Webserver module monitores some fixed set of modules, which get
 |*NginxModuleOtelScheduledDelayMillis*          | 5000            | OPTIONAL: The delay interval in milliseconds between two consecutive exports|
 |*NginxModuleOtelExportTimeoutMillis*           | 30000           | OPTIONAL: How long the export can run in milliseconds before it is cancelled|
 |*NginxModuleOtelMaxExportBatchSize*            | 512             | OPTIONAL: The maximum batch size of every export. It must be smaller or equal to maxQueueSize |
-|*NginxModuleServiceName*                       |                 | REQUIRED: A namespace for the ServiceName|
-|*NginxModuleServiceNamespace*                  |                 | REQUIRED: Logical name of the service |
+|*NginxModuleServiceName*                       |                 | REQUIRED: Logical name of the service |
+|*NginxModuleServiceNamespace*                  |                 | REQUIRED: A namespace for the ServiceName |
 |*NginxModuleServiceInstanceId*                 |                 | REQUIRED: The string ID of the service instance |
 |*NginxModuleTraceAsError*                      |                 | OPTIONAL: Trace level for logging to Apache log|
 |*NginxModuleWebserverContext*                  |                 | OPTIONAL: Takes 3 values(space-seperated) ServiceName, ServiceNamespace and ServiceInstanceId|
@@ -176,28 +176,37 @@ Currently, Nginx Webserver module monitores some fixed set of modules, which get
 |*NginxModuleRequestHeaders*                    |                 | OPTIONAL: Specify the request headers to be captured in the span attributes. The headers are Case-Sensitive and should be comma-separated. e.g.```NginxModuleRequestHeaders               Accept-Charset,Accept-Encoding,User-Agent;```|
 |*NginxModuleResponseHeaders*                   |                  | OPTIONAL: Specify the response headers to be captured in the span attributes. The headers are Case-Sensitive and should be comma-separated. e.g.```NginxModuleResponseHeaders                  Content-Length,Content-Type;```|
 |*NginxModuleOtelExporterOtlpHeaders*           |                  | OPTIONAL: OTEL exporter headers like Meta data related exposrted end point. a list of key value pairs, and these are expected to be represented in a format matching to the W3C Correlation-Context, except that additional semi-colon delimited metadata is not supported, i.e.: key1=value1,key2=value2.|
+|*NginxModuleTrustIncomingSpans*           | ON               | OPTIONAL: Specify if you want to correlate Nginx instrumented traces and spans with incoming requests.|
+|*NginxModuleAttributes*           |                | OPTIONAL: Can be used to pass additionalccustom attributes to the span, nginx variables are also supported. All elements must be separated by a space, and different attribute key value pairs must be separated by a comma( even the comma needs to be separated by space). e.g. ```NginxModuleAttributes     Key1 Value1 , Key2 $request_uri;``` |
+|*NginxModuleIgnorePaths*           |               | OPTIONAL: Request URIs matching the Regex will not be monitored. Multiple space separated Regex can be provided( `'\'` symbol needs to be used carefully, Nginx treats `'\'` as a escape sequence, thus if the Regex sequence contains a `'\'`, it need to be replaced by `'\\'`, likewise if sequence contains `'\\'`, it need to be written as `'\\\\'` e.g. `.*\.html` -> `.*\\.html` ) e.g. ```NginxModuleIgnorePaths               .*\\.html /test_.*;```|
+|*NginxModulePropagatorType*                   | w3c                 | OPTIONAL: Specify the Propagator used by the instrumentation (W3C and B3 propagators available). e.g.```NginxModulePropagatorType                  b3;```|
+|*NginxModuleOperationName*                   |                 | OPTIONAL: Specify the operation name (span name) for any specific endpoint.  e.g.```NginxModuleOperationName                  My_Backend;```|
+
+#### Other Configurations
+
+- Nginx variables related to traceing info - $opentelemetry_trace_id , $opentelemetry_span_id $opentelemetry_context_traceparent , $opentelemetry_context_b3
 
 ### Build and Installation
 #### Prerequisites
 - Docker Desktop should be installed on the system
 
 #### Platform Supported
-- Supports both stable(1.22.0) and mainline(1.23.1).
+- Supports both stable(1.26.0) and mainline(1.25.5).
 - Earlier support of v1.18.0 is deprecated.
 - The build is supported for **x86-64** platforms.
-- OS support: **Centos6**, **Centos7, ubuntu20.04**.
+- OS support: **Centos7, Almalinux8, ubuntu20.04**.
 
 #### Automatic build and Installation
 
 We will use Docker to run the Module. First, it is to be made sure that the Docker is up and running.
 Then execute the following commands -:
 ```
-docker-compose --profile centos_nginx build
-docker-compose --profile centos_nginx up
+docker-compose --profile nginx_almalinix8 build
+docker-compose --profile nginx_almalinix8 up
 ```
 Alternatively, replace the value of *centos_nginx* from **'centos_nginx'** to **'centos7_nginx'** or **'ubuntu20.04_nginx'** to build in respective supported platforms.
 
-This would start the container alongwith the the Opentelemetry Collector and Zipkin. You can check the traces on Zipkin dashboard by checking the port number of Zipkin using ```docker ps``` command. Multiple requests can be sent using the browser.
+This would start the container alongwith the Opentelemetry Collector and Zipkin. You can check the traces on Zipkin dashboard by checking the port number of Zipkin using ```docker ps``` command. Multiple requests can be sent using the browser.
 
 #### Manual build and Installation
 
@@ -249,13 +258,13 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/opentelemetry-webserver-sdk/sdk_lib
 ```
 
 ### Usability of the downloaded artifact
-The downloaded artifact from [Release/Tag](https://github.com/open-telemetry/opentelemetry-cpp-contrib/releases) or [GitHub Actions](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/webserver.yml) is built on CentOS7. This contains shared libraries for both apache and nginx instrumentation. The shared libraries can be located at ```WebServerModule/Apache``` or ```WebServerModule/Nginx``` for respective webservers. But, the common libraries, related to opentelemetry, are located at ```sdk_lib/lib/``` which are used by both apache and nginx instrumentation.
+The downloaded artifact from [Release/Tag](https://github.com/open-telemetry/opentelemetry-cpp-contrib/releases) or [GitHub Actions](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/webserver.yml) is built on Almalinux8. This contains shared libraries for both apache and nginx instrumentation. The shared libraries can be located at ```WebServerModule/Apache``` or ```WebServerModule/Nginx``` for respective webservers. But, the common libraries, related to opentelemetry, are located at ```sdk_lib/lib/``` which are used by both apache and nginx instrumentation.
 
 Currently, artifact is generated on x86-64 is published.
 **Therefore, the artifact should work on any linux distribution running on x86-64 plarform and having glibc version >= 2.17.**
 
 ### Maintainers
-* [Kumar Pratyush](https://github.com/kpratyus), Cisco
+* [Aryan Ishan](https://github.com/aryanishan1001), Cisco
 * [Debajit Das](https://github.com/DebajitDas), Cisco
 
 ### Blogs

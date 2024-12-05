@@ -58,6 +58,9 @@ public:
         const otel::core::sdkwrapper::SpanKind& kind,
         const otel::core::sdkwrapper::OtelKeyValueMap& attributes,
         const std::unordered_map<std::string, std::string>& carrier));
+    MOCK_METHOD(std::string, ReturnCurrentSpanId,
+        (),
+        (override));
 };
 
 class FakeSdkWrapper : public otel::core::sdkwrapper::SdkWrapper

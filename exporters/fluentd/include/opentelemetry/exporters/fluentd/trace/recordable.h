@@ -20,9 +20,10 @@ using FluentdSpan = nlohmann::json;
 
 class Recordable final : public sdk::trace::Recordable {
 public:
-  Recordable(std::string tag = FLUENT_VALUE_SPAN) : sdk::trace::Recordable() {
+  Recordable(std::string tag = FLUENT_VALUE_SPAN, bool include_trace_state = false) : sdk::trace::Recordable() {
     tag_ = tag;
     events_ = nlohmann::json::array();
+    include_trace_state_ = include_trace_state;
   }
 
   const FluentdSpan span() const noexcept {
@@ -71,10 +72,13 @@ public:
       const opentelemetry::sdk::instrumentationscope::InstrumentationScope
           &instrumentation_scope) noexcept override;
 
+  void SetTraceFlags(opentelemetry::trace::TraceFlags flags) noexcept override;
+
 private:
   std::string tag_;
   nlohmann::json events_;
   nlohmann::json options_;
+  bool include_trace_state_ = false;
 };
 
 } // namespace trace

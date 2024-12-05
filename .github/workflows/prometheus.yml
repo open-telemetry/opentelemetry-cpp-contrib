@@ -53,25 +53,44 @@ jobs:
           cd otel_cpp_contrib/exporters/prometheus
           bazel --output_user_root=$HOME/.cache/bazel build --copt=-DENABLE_TEST --@io_opentelemetry_cpp//api:with_abseil //...
           bazel --output_user_root=$HOME/.cache/bazel test --copt=-DENABLE_TEST --@io_opentelemetry_cpp//api:with_abseil //...
-  prometheus_bazel_window:
-    name: Bazel on Windows
+  prometheus_cmake_window:
+    name: CMake on Windows
     runs-on: windows-latest
     steps:
       - name: checkout otel contrib prometheus
         uses: actions/checkout@v3
         with:
           path: "otel_cpp_contrib"
+      - name: checkout otel cpp
+        uses: actions/checkout@v3
+        with:
+          repository: "open-telemetry/opentelemetry-cpp"
+          ref: "v1.15.0"
+          path: "otel_cpp"
+          submodules: "recursive"
       - name: run tests
         shell: pwsh
         run: |
           New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" `
             -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
-          $RUNNER_ROOT_PATH = Split-Path (Split-Path (Get-Location))
-          Set-Location otel_cpp_contrib/exporters/prometheus
-          & bazel --windows_enable_symlinks "--output_user_root=$RUNNER_ROOT_PATH/bazel_build" `
-            build --copt=-DENABLE_TEST --copt=/utf-8 --sandbox_debug --@io_opentelemetry_cpp//api:with_abseil //...
-          & bazel --windows_enable_symlinks "--output_user_root=$RUNNER_ROOT_PATH/bazel_build" `
-            test --copt=-DENABLE_TEST --copt=/utf-8 --sandbox_debug --@io_opentelemetry_cpp//api:with_abseil //...
+          vcpkg install "prometheus-cpp[pull,push]" nlohmann-json gtest benchmark --triplet=x64-windows-static-md
+          New-Item -Path "$ENV:GITHUB_WORKSPACE/otel_cpp/build_jobs_ci" -ItemType "directory" -Force 
+          Set-Location "$ENV:GITHUB_WORKSPACE/otel_cpp/build_jobs_ci"
+          cmake .. -DWITH_PROMETHEUS=ON -DWITH_METRICS_PREVIEW=OFF -DCMAKE_BUILD_TYPE=Debug `
+            -DVCPKG_TARGET_TRIPLET=x64-windows-static-md `
+            "-DCMAKE_TOOLCHAIN_FILE=$ENV:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" `
+            "-DCMAKE_INSTALL_PREFIX=$HOME/prebuilt-otel" `
+            "-DBUILD_SHARED_LIBS=OFF" "-DBUILD_TESTING=OFF" "-DWITH_EXAMPLES=OFF" "-DWITH_FUNC_TESTS=OFF"
+          cmake --build . -j --config Debug || cmake --build . -j2 --config Debug || cmake --build . --config Debug
+          cmake --install . --prefix "$HOME/prebuilt-otel" --config Debug
+          New-Item -Path "$ENV:GITHUB_WORKSPACE/otel_cpp_contrib/exporters/prometheus/build_jobs_ci" -ItemType "directory" -Force
+          Set-Location "$ENV:GITHUB_WORKSPACE/otel_cpp_contrib/exporters/prometheus/build_jobs_ci"
+          cmake .. "-DCMAKE_PREFIX_PATH=$HOME/prebuilt-otel" -DCMAKE_BUILD_TYPE=Debug `
+            -DVCPKG_TARGET_TRIPLET=x64-windows-static-md `
+            "-DCMAKE_TOOLCHAIN_FILE=$ENV:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" `
+            "-DBUILD_SHARED_LIBS=OFF"
+          cmake --build . -j --config Debug || cmake --build . -j2 --config Debug || cmake --build . --config Debug
+          ctest -VV -C Debug -R "opentelemetry_cpp_ecosystem_test.*" .
   prometheus_cmake_linux:
     name: CMake on Linux
     runs-on: ubuntu-latest
@@ -84,7 +103,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: "open-telemetry/opentelemetry-cpp"
-          ref: "v1.6.1"
+          ref: "v1.15.0"
           path: "otel_cpp"
           submodules: "recursive"
       - name: setup
@@ -94,18 +113,20 @@ jobs:
             ca-certificates wget git valgrind lcov
       - name: run tests
         run: |
-          vcpkg install prometheus-cpp[pull,push] nlohmann-json GTest Benchmark --triplet=x64-linux
-          mkdir -p "$GITHUB_WORKSPACE/otel_cpp/build"
-          cd "$GITHUB_WORKSPACE/otel_cpp/build"
+          vcpkg install 'prometheus-cpp[pull,push]' nlohmann-json gtest benchmark --triplet=x64-linux
+          mkdir -p "$GITHUB_WORKSPACE/otel_cpp/build_jobs_ci"
+          cd "$GITHUB_WORKSPACE/otel_cpp/build_jobs_ci"
           cmake .. -DWITH_PROMETHEUS=ON -DWITH_METRICS_PREVIEW=OFF -DCMAKE_BUILD_TYPE=Debug \
             -DVCPKG_TARGET_TRIPLET=x64-linux \
-            "-DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
-          cmake --build . -j --config Debug
+            "-DCMAKE_INSTALL_PREFIX=$HOME/prebuilt-otel" \
+            "-DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" \
+            "-DBUILD_TESTING=OFF" "-DWITH_EXAMPLES=OFF" "-DWITH_FUNC_TESTS=OFF"
+          cmake --build . -j --config Debug || cmake --build . -j2 --config Debug || cmake --build . --config Debug
           cmake --install . --prefix "$HOME/prebuilt-otel" --config Debug
-          mkdir -p "$GITHUB_WORKSPACE/otel_cpp_contrib/exporters/prometheus/build"
-          cd "$GITHUB_WORKSPACE/otel_cpp_contrib/exporters/prometheus/build"
+          mkdir -p "$GITHUB_WORKSPACE/otel_cpp_contrib/exporters/prometheus/build_jobs_ci"
+          cd "$GITHUB_WORKSPACE/otel_cpp_contrib/exporters/prometheus/build_jobs_ci"
           cmake .. "-DCMAKE_PREFIX_PATH=$HOME/prebuilt-otel" -DCMAKE_BUILD_TYPE=Debug \
             -DVCPKG_TARGET_TRIPLET=x64-linux \
-            "-DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
-          cmake --build . -j --config Debug
+            "-DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
+          cmake --build . -j --config Debug || cmake --build . -j2 --config Debug || cmake --build . --config Debug
           ctest -VV -R "opentelemetry_cpp_ecosystem_test.*" .

@@ -3,18 +3,6 @@ networks:
     default:
         name: webserver-network
 services:
-    webserver_centos:
-        build:
-            context: .
-            dockerfile: Dockerfile
-        image: apache_centos
-        profiles:
-            - default
-        hostname: webserver
-        container_name: webserver_centos
-        command: bash -c " httpd -k start && tail -f /dev/null "
-        ports:
-            - "8000:80"
     webserver_centos7:
         build:
             context: .
@@ -39,6 +27,21 @@ services:
         command: bash -c "apache2ctl -k start && tail -f /dev/null "
         profiles:
             - ubuntu20.04
+        ports:
+            - "9000:80"
+        depends_on:
+            - otel-collector
+    webserver_almalinux8:
+        build:
+            context: .
+            dockerfile: docker/almalinux8/Dockerfile
+        image: apache_almalinux8
+        hostname: webserver
+        container_name: webserver_almalinux8
+        command: bash -c "apache2ctl -k start && tail -f /dev/null "
+        profiles:
+            - default
+            - almalinux8
         ports:
             - "9000:80"
         depends_on:
@@ -83,6 +86,20 @@ services:
             - ubuntu20.04_nginx
         ports:
             - "8016:80"
+        depends_on:
+            - otel-collector
+    nginx_almalinix8:
+        build:
+            context: .
+            dockerfile: docker/almalinux8/Dockerfile
+        image: nginx_almalinix8
+        hostname: webserver
+        container_name: nginx_almalinix8
+        command: bash -c "echo 'hahaha' && tail -f /dev/null"
+        profiles:
+            - almalinux8_nginx
+        ports:
+            - "8020:80"
         depends_on:
             - otel-collector
 

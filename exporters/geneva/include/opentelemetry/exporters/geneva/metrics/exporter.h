@@ -4,10 +4,13 @@
 #pragma once
 
 #include "opentelemetry/common/spin_lock_mutex.h"
+#include "opentelemetry/common/timestamp.h"
 #include "opentelemetry/exporters/geneva/metrics/connection_string_parser.h"
 #include "opentelemetry/exporters/geneva/metrics/data_transport.h"
 #include "opentelemetry/exporters/geneva/metrics/exporter_options.h"
 #include "opentelemetry/sdk/metrics/push_metric_exporter.h"
+#include "opentelemetry/sdk/metrics/data/metric_data.h"
+
 
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter {

@@ -1,0 +1,98 @@
+name: glog
+
+on:
+  push:
+    branches:
+      - '*'
+    path:
+      - 'instrumentation/glog/**'
+      - '.github/workflows/glog.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'instrumentation/glog/**'
+      - '.github/workflows/glog.yml'
+
+jobs:
+  cmake_linux:
+    name: CMake Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout googletest
+        uses: actions/checkout@v3
+        with:
+          repository: "google/googletest"
+          ref: "release-1.12.1"
+          path: "googletest"
+      - name: checkout glog
+        uses: actions/checkout@v3
+        with:
+          repository: "google/glog"
+          ref: "v0.7.0"
+          path: "glog"
+      - name: checkout opentelemetry-cpp-contrib
+        uses: actions/checkout@v3
+        with:
+          path: opentelemetry-cpp-contrib
+      - name: checkout opentelemetry-cpp
+        uses: actions/checkout@v3
+        with:
+          repository: "open-telemetry/opentelemetry-cpp"
+          ref: "v1.15.0"
+          path: "opentelemetry-cpp"
+          submodules: "recursive"
+      - name: setup dependencies
+        run: |
+          sudo apt update -y
+          sudo apt install -y --no-install-recommends --no-install-suggests \
+            build-essential \
+            cmake \
+            ninja-build \
+            libssl-dev \
+            libcurl4-openssl-dev \
+            libprotobuf-dev \
+            protobuf-compiler \
+            libgmock-dev \
+            libgtest-dev \
+            libbenchmark-dev
+
+      # This is needed because libgmock-dev libgtest-dev installs 1.11,
+      # and 1.11 breaks the build.
+      - name: build googletest 1.12
+        run: |
+          mkdir -p "${GITHUB_WORKSPACE}/googletest/build"
+          cd "${GITHUB_WORKSPACE}/googletest/build"
+          cmake .. -G Ninja
+          cmake --build . -j$(nproc)
+          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
+
+      - name: build glog
+        run: |
+          mkdir -p "${GITHUB_WORKSPACE}/glog/build"
+          cd "${GITHUB_WORKSPACE}/glog/build"
+          cmake .. -G Ninja
+          cmake --build . -j$(nproc)
+          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
+
+      - name: build opentelemetry-cpp
+        run: |
+          mkdir -p "${GITHUB_WORKSPACE}/opentelemetry-cpp/build"
+          cd "${GITHUB_WORKSPACE}/opentelemetry-cpp/build"
+          cmake .. -G Ninja -DBUILD_TESTING=OFF -DWITH_BENCHMARK=OFF -DOPENTELEMETRY_INSTALL=ON
+          cmake --build . -j$(nproc)
+          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
+
+      - name: build instrumentation/glog contrib
+        run: |
+          mkdir -p "${GITHUB_WORKSPACE}/instrumentation-glog/build"
+          cd "${GITHUB_WORKSPACE}/instrumentation-glog/build"
+          cmake ../../opentelemetry-cpp-contrib/instrumentation/glog \
+            -G Ninja \
+            -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/sandbox" \
+            -DBUILD_TESTING=ON \
+            -DWITH_EXAMPLES=ON \
+            -DOPENTELEMETRY_INSTALL=ON
+          cmake --build . -j$(nproc)
+          ctest -j1 --output-on-failure
+          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
+
