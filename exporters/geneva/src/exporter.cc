@@ -3,9 +3,10 @@
 
 #include "opentelemetry/exporters/geneva/metrics/exporter.h"
 #include "opentelemetry/exporters/geneva/metrics/macros.h"
-#include "opentelemetry/exporters/geneva/metrics/unix_domain_socket_data_transport.h"
 #ifdef _WIN32
 #include "opentelemetry/exporters/geneva/metrics/etw_data_transport.h"
+#else
+#include "opentelemetry/exporters/geneva/metrics/unix_domain_socket_data_transport.h"
 #endif
 #include "opentelemetry/sdk/metrics/export/metric_producer.h"
 #include "opentelemetry/sdk_config.h"
