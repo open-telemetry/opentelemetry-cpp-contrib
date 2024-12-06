@@ -56,6 +56,10 @@ endif()
 
 include_directories(include)
 
+if(OPENTELEMETRY_ENABLE_FLUENT_RESOURCE_PUBLISH_EXPERIMENTAL)
+  add_definitions(-DOPENTELEMETRY_ENABLE_FLUENT_RESOURCE_PUBLISH_EXPERIMENTAL)
+endif()
+
 # create fluentd trace exporter
 add_library(opentelemetry_exporter_geneva_trace src/trace/fluentd_exporter.cc
                                                 src/trace/recordable.cc)
