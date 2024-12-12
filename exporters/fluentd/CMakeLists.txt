@@ -56,6 +56,10 @@ endif()
 
 include_directories(include)
 
+if(OPENTELEMETRY_ENABLE_FLUENT_RESOURCE_PUBLISH_EXPERIMENTAL)
+  add_definitions(-DOPENTELEMETRY_ENABLE_FLUENT_RESOURCE_PUBLISH_EXPERIMENTAL)
+endif()
+
 # create fluentd trace exporter
 add_library(opentelemetry_exporter_geneva_trace src/trace/fluentd_exporter.cc
                                                 src/trace/recordable.cc)
@@ -72,7 +76,7 @@ else()
   target_link_libraries(
     opentelemetry_exporter_geneva_trace
     PUBLIC opentelemetry_trace opentelemetry_resources opentelemetry_common
-    INTERFACE nlohmann_json::nlohmann_json)
+      nlohmann_json::nlohmann_json)
 endif()
 
 # create fluentd logs exporter
@@ -93,7 +97,7 @@ else()
     target_link_libraries(
       opentelemetry_exporter_geneva_logs
       PUBLIC opentelemetry_logs opentelemetry_resources opentelemetry_common
-      INTERFACE nlohmann_json::nlohmann_json)
+        nlohmann_json::nlohmann_json)
 endif()
 
 if(nlohmann_json_clone)
