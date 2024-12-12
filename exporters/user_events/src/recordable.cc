@@ -48,6 +48,7 @@ void Recordable::SetBody(const opentelemetry::common::AttributeValue &message) n
   // Set intial bookmark size to 1 for body below.
   cs_part_b_bookmark_size_++;
   event_builder_.AddStruct("PartB", 1, 0, &cs_part_b_bookmark_);
+  utils::PopulateAttribute("_typeName", "Log", event_builder_);
   utils::PopulateAttribute("body", message, event_builder_);
 }
 
