@@ -4,8 +4,7 @@ FROM $image AS build
 ARG otel_cpp_version=1.17.0
 ARG nginx_version=1.27.3
 
-RUN yum check-update && \
-  yum install -y git gcc-c++ make tar curl-devel unzip zlib-devel pcre2-devel
+RUN yum install -y git gcc-c++ make tar curl-devel unzip zlib-devel pcre2-devel
 
 RUN curl -LO https://github.com/Kitware/CMake/releases/download/v3.31.1/cmake-3.31.1-linux-x86_64.tar.gz && tar xf cmake-3.31.1-linux-x86_64.tar.gz && mv cmake-3.31.1-linux-x86_64 cmake
 
