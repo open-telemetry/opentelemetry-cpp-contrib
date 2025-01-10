@@ -42,6 +42,12 @@ public:
   bool Shutdown(
       std::chrono::microseconds timeout = (std::chrono::microseconds::max)()) noexcept override;
 
+  bool ForceFlush(
+      std::chrono::microseconds timeout = (std::chrono::microseconds::max)()) noexcept override {
+        // TODO: implement forceflush
+        return true;
+      }
+
   bool isShutdown() const noexcept;
 
 private:
