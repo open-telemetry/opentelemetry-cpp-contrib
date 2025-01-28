@@ -3,7 +3,8 @@
 ## Introduction
 
 Welcome to the opentelemetry-cpp-contrib repository! This project is an integral part of the broader OpenTelemetry ecosystem, providing additional instrumentation and tools to enhance C/C++ observability.
-We greatly appreciate any contributions, no matter the size or scope. Please feel free to reach out to the OpenTelemetry C/C++ community on Gitter with questions or for assistance.
+
+We greatly appreciate any contributions, no matter the size or scope. Please feel free to reach out to the OpenTelemetry C/C++ community on [slack](https://cloud-native.slack.com/archives/C01N3AT62SJ) with questions or for assistance.
 
 ## Prerequisites
 
@@ -80,13 +81,13 @@ The maintainers will squash and merge your commit when approved
 
 ## Further Help
 
-The OpenTelemetry C/C++ special interest group (SIG) meets regularly. See the
-OpenTelemetry [community](https://github.com/open-telemetry/community#cc-sdk)
-repo for information on this and other language SIGs.
+The OpenTelemetry C/C++ special interest group (SIG) meets regularly. 
 
-See the [public meeting notes](https://docs.google.com/document/d/1i1E4-_y4uJ083lCutKGDhkpi3n4_e774SBLi9hPLocw/edit)
-for a summary description of past meetings. To request edit access, join the
-meeting or get in touch on [Gitter](https://gitter.im/open-telemetry/opentelemetry-cpp).
+See the puclic meeting notes via the [README](https://github.com/open-telemetry/opentelemetry-cpp?tab=readme-ov-file#contributing) by following the link to the google doc.
+
+Link to join SIG meets also available in the README
+
+For more info and help, join the meeting or get in touch on the [CNCF Slack channel for opentelemetry-cpp](https://cloud-native.slack.com/archives/C01N3AT62SJ).  
 
 
 
