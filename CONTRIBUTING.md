@@ -74,7 +74,7 @@ Address any reviewer
 
 Ensure all tests pass
 
-Squash and merge your commit when approved
+The maintainers will squash and merge your commit when approved
 
 
 
