@@ -8,7 +8,7 @@ We greatly appreciate any contributions, no matter the size or scope. Please fee
 
 ## Prerequisites
 
-C++17 or higher
+[C++14](https://github.com/open-telemetry/opentelemetry-cpp/?tab=readme-ov-file#supported-c-versions) or higher
 
 CMake 3.18 or higher
 
@@ -16,7 +16,7 @@ Git
 
 ## Workflow
 
--Use feature branches when contributing
+-Use forked repo when contributing
 
 -Follow the OpenTelemetry C++ SDK contributing guidelines
 
