@@ -133,7 +133,14 @@ if(OPENTELEMETRY_INSTALL)
 endif()
 
 if(BUILD_TESTING)
-  include(GoogleTest)
+  if(MAIN_PROJECT)
+    find_package(GTest CONFIG REQUIRED)
+  else()
+    if (NOT DEFINED GTEST_BOTH_LIBRARIES)
+      message(STATUS_FATAL, "Test is not enable.")
+    endif()
+  endif()
+  # include(GoogleTest)
   # build trace exporter tests
   add_executable(
     fluentd_recordable_trace_test test/trace/fluentd_recordable_test.cc
@@ -141,8 +148,7 @@ if(BUILD_TESTING)
 
   target_link_libraries(
     fluentd_recordable_trace_test
-    gtest
-    gtest_main
+    ${GTEST_BOTH_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     opentelemetry_common
     opentelemetry_trace
@@ -164,8 +170,7 @@ if(BUILD_TESTING)
 
   target_link_libraries(
     fluentd_recordable_logs_test
-    gtest
-    gtest_main
+    ${GTEST_BOTH_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     opentelemetry_common
     opentelemetry_logs
