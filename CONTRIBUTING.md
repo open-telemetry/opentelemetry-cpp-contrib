@@ -83,7 +83,7 @@ The maintainers will squash and merge your commit when approved
 
 The OpenTelemetry C/C++ special interest group (SIG) meets regularly. 
 
-See the puclic meeting notes via the [README](https://github.com/open-telemetry/opentelemetry-cpp?tab=readme-ov-file#contributing) by following the link to the google doc.
+See the public meeting notes via the [README](https://github.com/open-telemetry/opentelemetry-cpp?tab=readme-ov-file#contributing) by following the link to the google doc.
 
 Link to join SIG meets also available in the README
 
