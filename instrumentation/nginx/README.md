@@ -136,7 +136,7 @@ Chooses the traces sampler. (default: `parentbased_always_on`).
 - **syntax**: `opentelemetry_traces_sampler always_on|always_off|traceidratio|parentbased_always_on|parentbased_always_off|parentbased_traceidratio`
 - **block**: `http`
 
-### `opentelemetry_traces_sampler`
+### `opentelemetry_traces_sampler_ratio`
 
 Chooses the trace sampling ratio between `0.0` and `1.0` when a ratio based sampler is active. (default: `1.0`).
 
