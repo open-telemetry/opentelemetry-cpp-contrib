@@ -1,4 +1,4 @@
-FROM centos:6.9
+FROM centos:8
 
 ARG BUILD_NUMBER
 
@@ -23,48 +23,47 @@ ARG LIBTOOL_VERSION="2.4.6"
 ARG LOG4CXX_VERSION="0.11.0"
 ARG GTEST_VERSION="1.10.0"
 ARG AUTOMAKE_VERSION="1.16.3"
+ARG PERL_VERSION="5.20.2"
+ARG PERL_CPANVERSION="5.0"
 ARG PCRE_VERSION="8.44"
 ARG NGINX_VERSION="1.27.3"
-
 
 # create default non-root user
 RUN groupadd -r swuser && useradd -u 1000 -g swuser -m -s /sbin/nologin -c "default non-root user" swuser
 
 RUN chmod -R 777 /opt
 
-RUN curl https://www.getpagespeed.com/files/centos6-eol.repo --output /etc/yum.repos.d/CentOS-Base.repo
+# RUN curl https://www.getpagespeed.com/files/centos6-eol.repo --output /etc/yum.repos.d/CentOS-Base.repo
+
+RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-* && \
+    sed -i 's|# *baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
 
 # install required packages
 RUN yum update -y \
     && yum install -y \
-    yum install wget -y \
-    yum install -y zlib-devel \
-    yum install -y openssl-devel \
-    yum install java-1.8.0-openjdk -y \
-    yum install pcre-devel -y \
-    yum install xz -y \
-    yum install httpd -y \
+    yum  wget -y \
+    yum  -y zlib-devel \
+    yum  -y openssl-devel \
+    yum  java-1.8.0-openjdk -y \
+    yum  java-1.8.0-openjdk-devel \
+    yum  pcre-devel -y \
+    yum  xz -y \
+    yum  httpd -y \
     && yum clean all
 
 # install lcov package
-RUN wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
-    && yum install ./epel-release-latest-*.noarch.rpm -y \
-    && yum install lcov -y \
-    && yum clean all
+RUN yum install -y epel-release && \
+    yum install -y lcov && \
+    yum clean all
+
 
 # install devtoolset toolchain
-RUN curl https://www.getpagespeed.com/files/centos6-eol.repo --output /etc/yum.repos.d/CentOS-Base.repo \
-  && curl https://www.getpagespeed.com/files/centos6-epel-eol.repo --output /etc/yum.repos.d/epel.repo \
-  && yum -y install centos-release-scl \
-  && curl https://www.getpagespeed.com/files/centos6-scl-eol.repo --output /etc/yum.repos.d/CentOS-SCLo-scl.repo \
-  && curl https://www.getpagespeed.com/files/centos6-scl-rh-eol.repo --output /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo \
-  && yum install yum-utils -y \
-  && yum-config-manager --enable rhel-server-rhscl-7-rpms -y \
-  && yum install devtoolset-7 -y \
-  && yum clean all
-ENV PATH="/opt/rh/devtoolset-7/root/usr/bin:${PATH}"
+RUN dnf install -y gcc-toolset-9 && \
+    dnf clean all
 
-# install python 
+ENV PATH="/opt/rh/gcc-toolset-9/root/usr/bin:${PATH}"
+
+# install python 2.7.8
 RUN wget http://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tar.xz \
     && unxz Python-${PYTHON_VERSION}.tar.xz \
     && tar -xf Python-${PYTHON_VERSION}.tar \
@@ -74,7 +73,12 @@ RUN wget http://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERS
 
 # install gosu for easy step-down from root (from https://github.com/tianon/gosu/blob/master/INSTALL.md#from-centos)
 ENV GOSU_VERSION=1.10
-
+#RUN gpg --keyserver pgp.mit.edu --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 \
+#    && curl -o /usr/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64" \
+#    && curl -o /usr/bin/gosu.asc -SL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64.asc" \
+#    && gpg --verify /usr/bin/gosu.asc \
+#    && rm /usr/bin/gosu.asc \
+#    && rm -r /root/.gnupg/ \
 RUN curl -o /usr/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64" \
     && chmod +x /usr/bin/gosu \
     # Verify that the binary works
@@ -84,7 +88,7 @@ RUN curl -o /usr/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/
 RUN yum install git -y \
   && yum clean all
 
-# install cmake 
+# install cmake 3.20
 RUN wget https://cmake.org/files/v${CMAKE_VERSION}/cmake-${CMAKE_0VERSION}-linux-x86_64.tar.gz \
   && tar -xvf cmake-${CMAKE_0VERSION}-linux-x86_64.tar.gz \
   && cd cmake-${CMAKE_0VERSION}-linux-x86_64 \
@@ -107,13 +111,16 @@ RUN git clone https://github.com/grpc/grpc \
 # Create dependencies folder to store all dependencies.
 RUN mkdir -p dependencies
 
-# install boost version 
-RUN wget https://boostorg.jfrog.io/artifactory/main/release/${BOOST_VERSION}/source/${BOOST_FILENAME}_rc1.tar.gz \
-    && tar -xvf ${BOOST_FILENAME}_rc1.tar.gz \
+# install boost version 1.75.0
+#RUN wget https://boostorg.jfrog.io/artifactory/main/release/${BOOST_VERSION}/source/${BOOST_FILENAME}_rc1.tar.gz \
+RUN wget https://archives.boost.io/release/${BOOST_VERSION}/source/${BOOST_FILENAME}.tar.gz \
+    # && tar -xvf ${BOOST_FILENAME}_rc1.tar.gz \
+    && tar -xvf ${BOOST_FILENAME}.tar.gz \
     && cd ${BOOST_FILENAME} \
     && ./bootstrap.sh --with-libraries=filesystem,system --prefix=/dependencies/boost/${BOOST_VERSION}/ \
     && ./b2 install define=BOOST_ERROR_CODE_HEADER_ONLY link=static threading=multi cxxflags="-fvisibility=hidden -fPIC" cflags="-fvisibility=hidden -fPIC" \
-    && cd .. && rm -rf ${BOOST_FILENAME} && rm ${BOOST_FILENAME}_rc1.tar.gz
+    # && cd .. && rm -rf ${BOOST_FILENAME} && rm ${BOOST_FILENAME}_rc1.tar.gz
+    && cd .. && rm -rf ${BOOST_FILENAME} && rm ${BOOST_FILENAME}.tar.gz
 
 #install Apr
 RUN mkdir -p dependencies/apr/${APR_VERSION} \
@@ -146,7 +153,19 @@ RUN mkdir -p dependencies/apr-util/${APRUTIL_VERSION} \
     && cd ../ && rm -rf apr-util-${APRUTIL_VERSION} && rm -rf apr-util-${APRUTIL_VERSION}.tar.gz
 
 # install m4
-RUN yum install m4 -y
+RUN yum install m4 -y \
+    && yum install perl-Data-Dumper -y
+
+# Update perl version
+RUN yum install perl-Thread-Queue.noarch -y \
+    && wget http://www.cpan.org/src/${PERL_CPANVERSION}/perl-${PERL_VERSION}.tar.gz \
+    && tar -xzf perl-${PERL_VERSION}.tar.gz \
+    && cd perl-${PERL_VERSION} \
+    && ./Configure -des -Dprefix=$HOME/localperl \
+    && make \
+    && make test; echo 0 \
+    && make install 
+ENV PATH=$HOME/localperl/bin:$PATH
 
 # install autoconf
 RUN wget --no-check-certificate https://ftp.gnu.org/gnu/autoconf/autoconf-${AUTOCONF_VERSION}.tar.gz \
@@ -173,8 +192,6 @@ RUN wget --no-check-certificate https://ftpmirror.gnu.org/libtool/libtool-${LIBT
     && make install \
     && libtool --version \
     && cd .. && rm -rf libtool--${LIBTOOL_VERSION}.tar.gz
-
-RUN ls
 
 #install log4cxx
 RUN mkdir -p dependencies/apache-log4cxx/${LOG4CXX_VERSION} \
@@ -255,18 +272,30 @@ RUN cp -r /dependencies /otel-webserver-module/ \
     && cd otel-webserver-module \
     && ./gradlew assembleWebServerModule 
 
-RUN echo '[nginx]' >> /etc/yum.repos.d/nginx.repo \
-    && echo 'name=nginx repo' >> /etc/yum.repos.d/nginx.repo \
-    && echo 'baseurl=https://nginx.org/packages/centos/6/x86_64' >> /etc/yum.repos.d/nginx.repo \
-    && echo 'gpgcheck=0' >> /etc/yum.repos.d/nginx.repo \ 
-    && echo 'enabled=1' >> /etc/yum.repos.d/nginx.repo \
-    && yum install nginx -y 
+# Add the Nginx repository
+RUN echo "[nginx]" > /etc/yum.repos.d/nginx.repo && \
+    echo "name=nginx repo" >> /etc/yum.repos.d/nginx.repo && \
+    echo "baseurl=https://nginx.org/packages/mainline/centos/8/x86_64/" >> /etc/yum.repos.d/nginx.repo && \
+    echo "gpgcheck=1" >> /etc/yum.repos.d/nginx.repo && \
+    echo "enabled=1" >> /etc/yum.repos.d/nginx.repo && \
+    rpm --import https://nginx.org/keys/nginx_signing.key
+
+# Install necessary tools
+RUN dnf install -y wget && dnf clean all
+
+# Download and install Nginx 1.27.3 from the correct path
+RUN wget https://nginx.org/packages/mainline/centos/8/x86_64/RPMS/nginx-1.27.3-1.el8.ngx.x86_64.rpm && \
+    dnf install -y ./nginx-1.27.3-1.el8.ngx.x86_64.rpm && \
+    rm -f nginx-1.27.3-1.el8.ngx.x86_64.rpm && \
+    dnf clean all
+
 
 RUN cd /otel-webserver-module/build \
     && tar -xf opentelemetry-webserver-sdk-x64-linux.tgz \
     && mv -f opentelemetry-webserver-sdk /opt/ \
     && cd ../ \
     && cp opentelemetry_module.conf /etc/httpd/conf/ \
+    && sed -i "s/libmod_apache_otel22.so/libmod_apache_otel.so/g" /etc/httpd/conf/opentelemetry_module.conf \
     && echo 'Include conf/opentelemetry_module.conf' >> /etc/httpd/conf/httpd.conf \
     && cd /opt/opentelemetry-webserver-sdk \
     && ./install.sh \

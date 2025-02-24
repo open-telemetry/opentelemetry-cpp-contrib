@@ -1,0 +1,61 @@
+name: webserver centos8
+
+on:
+  workflow_dispatch:
+
+jobs:
+  webserver-build-test-centos8:
+    name: webserver-centos8-build
+    runs-on: ubuntu-20.04
+    steps:
+      - name: checkout otel webserver
+        uses: actions/checkout@v4
+      - name: setup buildx
+        id: buildx
+        uses: docker/setup-buildx-action@master
+        with:
+          install: true
+      # - name: cache docker layers
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: /tmp/buildx-cache/
+      #     key: apache-centos8-${{ github.sha }}
+      #     restore-keys: |
+      #       apache-centos8
+      - name: setup docker image
+        run: |
+          cd instrumentation/otel-webserver-module
+          docker buildx build -t apache_centos8 -f docker/centos8/Dockerfile \
+            --load .
+      - name: build
+        run: |
+          docker run -idt --name apache_centos8_container apache_centos8 /bin/bash
+          cd instrumentation/otel-webserver-module
+          docker exec apache_centos8_container bash -c \
+            'cd /otel-webserver-module; rm -rf *;'
+          docker cp . $(docker inspect --format="{{.Id}}" apache_centos8_container):/otel-webserver-module/
+          docker exec apache_centos8_container bash -c \
+            'cd /otel-webserver-module; rm -rf build; \
+            cp -r /dependencies /otel-webserver-module/;           \
+            cp -r /build-dependencies /otel-webserver-module/;     \
+            ./gradlew assembleWebServerModule'
+      - name: unit test
+        run: |
+          docker exec apache_centos8_container bash -c \
+            'cd /otel-webserver-module; ./gradlew runUnitTest'
+      # - name: update cache
+      #   run: |
+      #     rm -rf /tmp/buildx-cache/apache_centos8
+      #     mv /tmp/buildx-cache/apache_centos8-new /tmp/buildx-cache/apache_centos8
+      - name: copy artifacts
+        id: artifacts
+        run: |
+          cd instrumentation/otel-webserver-module
+          mkdir -p /tmp/apache_centos8/
+          docker cp apache_centos8_container:/otel-webserver-module/build/opentelemetry-webserver-sdk-x64-linux.tgz \
+            /tmp/apache_centos8/
+      - name: upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: opentelemetry-webserver-sdk-x64-linux.tgz
+          path: /tmp/apache_centos8/opentelemetry-webserver-sdk-x64-linux.tgz
