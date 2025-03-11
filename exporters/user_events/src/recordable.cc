@@ -67,7 +67,7 @@ void Recordable::SetBody(const opentelemetry::common::AttributeValue &message) n
 void Recordable::SetEventId(int64_t id, nostd::string_view name) noexcept
 {
   has_event_id_ = true;
-  event_id_.id_ = id;
+  event_id_= id;
   event_name_ = name;
 }
 
