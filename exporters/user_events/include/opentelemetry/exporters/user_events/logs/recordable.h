@@ -117,11 +117,15 @@ public:
 
 private:
   ehd::EventBuilder event_builder_;
-  int level_index_;
+  int64_t event_id_               = 0;
+  nostd::string_view event_name_;
+  int level_index_                = 0;
   size_t cs_part_b_bookmark_      = 0;
   size_t cs_part_b_bookmark_size_ = 0;
   size_t cs_part_c_bookmark_      = 0;
   size_t cs_part_c_bookmark_size_ = 0;
+  uint_8 severity_                = 0; 
+  bool has_event_id_              = false;
 };
 
 }  // namespace logs
