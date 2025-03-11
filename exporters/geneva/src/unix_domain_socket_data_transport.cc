@@ -45,17 +45,17 @@ bool UnixDomainSocketDataTransport::Send(MetricsEventType event_type,
   if (error_code != 0) {
     LOG_ERROR("Geneva Exporter: UDS::Send failed - not connected");
     connected_ = false;
+    return false;
   }
 
   // try to write
   size_t sent_size = socket_.writeall(data, length);
-  if (length == sent_size) {
-    // Disconnect();
-    return true;
-  } else {
+  if (length != sent_size) {
+    Disconnect();
     LOG_ERROR("Geneva Exporter: UDS::Send failed");
+    return false;
   }
-  return false;
+  return true;
 }
 
 bool UnixDomainSocketDataTransport::Disconnect() noexcept {
