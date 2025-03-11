@@ -29,7 +29,7 @@ void Recordable::SetSeverity(api_logs::Severity severity) noexcept
     severity_value = 0;
   }
 
-  severity_ = severity_value;
+  severity_    = severity_value;
   level_index_ = (severity_value - 1) >> 2;
 }
 
@@ -53,7 +53,7 @@ void Recordable::SetBody(const opentelemetry::common::AttributeValue &message) n
                           event_field_format_default);
   auto severity_text = api_logs::SeverityNumToText[static_cast<uint32_t>(severity_)].data();
   event_builder_.AddString<char>("severityText", severity_text, event_field_format_default);
-  cs_part_b_bookmark_size_ = 4; // with the below body counted because it is available.
+  cs_part_b_bookmark_size_ = 4;  // with the below body counted because it is available.
 
   if (has_event_id_)
   {
@@ -67,8 +67,8 @@ void Recordable::SetBody(const opentelemetry::common::AttributeValue &message) n
 void Recordable::SetEventId(int64_t id, nostd::string_view name) noexcept
 {
   has_event_id_ = true;
-  event_id_= id;
-  event_name_ = name;
+  event_id_     = id;
+  event_name_   = name;
 }
 
 void Recordable::SetTraceId(const opentelemetry::trace::TraceId &trace_id) noexcept

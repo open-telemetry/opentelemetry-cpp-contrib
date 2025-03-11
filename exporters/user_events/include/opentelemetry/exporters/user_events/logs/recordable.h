@@ -4,8 +4,8 @@
 #pragma once
 
 #include <cstdint>
-#include "opentelemetry/nostd/string_view.h"
 #include "opentelemetry/logs/severity.h"
+#include "opentelemetry/nostd/string_view.h"
 #include "opentelemetry/sdk/common/attribute_utils.h"
 #include "opentelemetry/sdk/logs/recordable.h"
 #include "opentelemetry/version.h"
@@ -117,7 +117,7 @@ public:
 
 private:
   ehd::EventBuilder event_builder_;
-  int64_t event_id_               = 0;
+  int64_t event_id_ = 0;
   nostd::string_view event_name_;
   int level_index_                = 0;
   size_t cs_part_b_bookmark_      = 0;
