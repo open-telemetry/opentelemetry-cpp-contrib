@@ -51,7 +51,7 @@ void Recordable::SetBody(const opentelemetry::common::AttributeValue &message) n
 
   event_builder_.AddValue("severityNumber", static_cast<uint16_t>(severity_),
                           event_field_format_default);
-  auto severity_text = api_logs::SeverityNumToText[static_cast<uint32_t>(severity_value)].data();
+  auto severity_text = api_logs::SeverityNumToText[static_cast<uint32_t>(severity_)].data();
   event_builder_.AddString<char>("severityText", severity_text, event_field_format_default);
   cs_part_b_bookmark_size_ = 4; // with the below body counted because it is available.
 
