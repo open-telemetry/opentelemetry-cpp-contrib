@@ -124,7 +124,7 @@ private:
   size_t cs_part_b_bookmark_size_ = 0;
   size_t cs_part_c_bookmark_      = 0;
   size_t cs_part_c_bookmark_size_ = 0;
-  uint_8 severity_                = 0; 
+  uint8_t severity_               = 0;
   bool has_event_id_              = false;
 };
 
