@@ -104,10 +104,17 @@ void Recordable::SetTimestamp(opentelemetry::common::SystemTimestamp timestamp) 
 
 bool Recordable::PrepareExport() noexcept
 {
-  if (cs_part_b_bookmark_size_ > 0)
+  if (cs_part_b_bookmark_size_ == 0)
+  {
+    // Part B is mandatory for exporting to user_events.
+    OTEL_INTERNAL_LOG_ERROR("[user_events Log Exporter] Recordable: no data to export.");
+    return false;
+  }
+  else
   {
     event_builder_.SetStructFieldCount(cs_part_b_bookmark_, cs_part_b_bookmark_size_);
   }
+
   if (cs_part_c_bookmark_size_ > 0)
   {
     event_builder_.SetStructFieldCount(cs_part_c_bookmark_, cs_part_c_bookmark_size_);

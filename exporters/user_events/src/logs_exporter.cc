@@ -52,9 +52,10 @@ sdk::common::ExportResult Exporter::Export(
     auto user_events_record =
         std::unique_ptr<Recordable>(static_cast<Recordable *>(record.release()));
 
-    user_events_record->PrepareExport();
-
-    // assert(user_events_record != nullptr, "Recordable is null");
+    if (!user_events_record->PrepareExport())
+    {
+      continue;
+    }
 
     int level_index = user_events_record->GetLevelIndex();
 
