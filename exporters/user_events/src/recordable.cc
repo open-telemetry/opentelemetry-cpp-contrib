@@ -41,7 +41,7 @@ void Recordable::SetBody(const opentelemetry::common::AttributeValue &message) n
     return;
   }
 
-  auto event_name = !event_name_.empty() ? event_name_.data() : "OpenTelemetryLogs";
+  auto event_name = !event_name_.empty() ? event_name_.data() : "Logs";
 
   event_builder_.Reset(event_name);
   utils::PopulateAttribute("__csver__", static_cast<uint16_t>(0x400), event_builder_);
