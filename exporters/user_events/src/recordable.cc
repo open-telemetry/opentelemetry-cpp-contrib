@@ -44,7 +44,7 @@ void Recordable::SetBody(const opentelemetry::common::AttributeValue &message) n
   auto event_name = !event_name_.empty() ? event_name_.data() : "Logs";
 
   event_builder_.Reset(event_name);
-  utils::PopulateAttribute("__csver__", static_cast<uint16_t>(0x400), event_builder_);
+  event_builder_.AddValue("__csver__", static_cast<uint16_t>(0x400), event_field_format_unsigned_int);
 
   event_builder_.AddStruct("PartB", 1, 0, &cs_part_b_bookmark_);
   utils::PopulateAttribute("_typeName", "Log", event_builder_);
