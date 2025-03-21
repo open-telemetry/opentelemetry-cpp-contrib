@@ -40,7 +40,7 @@ const std::string kAttrRequestProtocol        = "request_protocol";
 const std::string kHTTPFlavor1_0              = "1.0";
 const std::string kHTTPFlavor1_1              = "1.1";
 const std::string kOtelAttributes             = "";
-const std::string kAttrHTTPUserAgent          = "http.user_agent";
+//const std::string kAttrHTTPUserAgent          = "http.user_agent";
 const std::string kAttrNETPeerPort            = "net.remote.port";
 
 constexpr int HTTP_ERROR_1XX = 100;

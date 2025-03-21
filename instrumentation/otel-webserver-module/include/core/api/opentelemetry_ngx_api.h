@@ -45,7 +45,7 @@ typedef struct {
     const char* http_post_param;
     const char* request_method;
     const char* client_ip;
-    const char* user_agent;
+    //const char* user_agent;
     const char* operation_name;
 
     http_headers* propagation_headers;

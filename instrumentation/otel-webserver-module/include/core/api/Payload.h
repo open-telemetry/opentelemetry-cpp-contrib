@@ -46,7 +46,7 @@ class RequestPayload
     std::string target;
     std::string flavor;
     std::string client_ip;
-	std::string user_agent;
+	//std::string user_agent;
 	std::string operation_name;
 	long peer_port;
     long port = 80;
@@ -71,7 +71,7 @@ public:
     void set_target(const char* aTarget) {target = aTarget; }
     void set_flavor(const char* aflavor) {flavor = aflavor; }
     void set_client_ip(const char* clientIp) {client_ip = clientIp; }
-	void set_user_agent(const char* userAgent) {user_agent = userAgent; }
+	//void set_user_agent(const char* userAgent) {user_agent = userAgent; }
 	void set_operation_name(const char* operationName) {operation_name = operationName; }
 	
 	void set_peer_port(long aPeerPort) {peer_port = aPeerPort; }
@@ -90,7 +90,7 @@ public:
     std::string& get_target() {return target; }
     std::string& get_flavor() {return flavor; }
     std::string& get_client_ip() {return client_ip; }
-	std::string& get_user_agent() {return user_agent; }
+	//std::string& get_user_agent() {return user_agent; }
 	std::string& get_operation_name() {return operation_name; }
 	long get_peer_port() {return peer_port; }
     long get_port() {return port; }
