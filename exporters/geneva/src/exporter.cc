@@ -3,9 +3,10 @@
 
 #include "opentelemetry/exporters/geneva/metrics/exporter.h"
 #include "opentelemetry/exporters/geneva/metrics/macros.h"
-#include "opentelemetry/exporters/geneva/metrics/unix_domain_socket_data_transport.h"
 #ifdef _WIN32
 #include "opentelemetry/exporters/geneva/metrics/etw_data_transport.h"
+#else
+#include "opentelemetry/exporters/geneva/metrics/unix_domain_socket_data_transport.h"
 #endif
 #include "opentelemetry/sdk/metrics/export/metric_producer.h"
 #include "opentelemetry/sdk_config.h"
@@ -21,17 +22,18 @@ Exporter::Exporter(const ExporterOptions &options)
     : options_(options), connection_string_parser_(options_.connection_string),
       data_transport_{nullptr} {
   if (connection_string_parser_.IsValid()) {
+#ifdef _WIN32
+    if (connection_string_parser_.transport_protocol_ ==
+             TransportProtocol::kETW) {
+      data_transport_ = std::unique_ptr<DataTransport>(
+          new ETWDataTransport(kBinaryHeaderSize));
+    }
+#else
     if (connection_string_parser_.transport_protocol_ ==
         TransportProtocol::kUNIX) {
       data_transport_ =
           std::unique_ptr<DataTransport>(new UnixDomainSocketDataTransport(
               connection_string_parser_.connection_string_));
-    }
-#ifdef _WIN32
-    else if (connection_string_parser_.transport_protocol_ ==
-             TransportProtocol::kETW) {
-      data_transport_ = std::unique_ptr<DataTransport>(
-          new ETWDataTransport(kBinaryHeaderSize));
     }
 #endif
   }

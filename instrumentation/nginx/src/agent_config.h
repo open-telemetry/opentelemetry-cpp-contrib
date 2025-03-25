@@ -6,37 +6,36 @@ extern "C" {
 #include <ngx_core.h>
 }
 
-enum OtelExporterType { OtelExporterOTLP, OtelExporterJaeger };
-enum OtelProcessorType { OtelProcessorSimple, OtelProcessorBatch };
-enum OtelSamplerType { OtelSamplerAlwaysOn, OtelSamplerAlwaysOff, OtelSamplerTraceIdRatioBased };
+enum OtelProcessorType
+{
+  OtelProcessorSimple,
+  OtelProcessorBatch
+};
 
-struct OtelNgxAgentConfig {
-  struct {
-    OtelExporterType type = OtelExporterOTLP;
+struct OtelNgxAgentConfig
+{
+  struct
+  {
     std::string endpoint;
-    bool use_ssl_credentials = false;
-    std::string ssl_credentials_cacert_path = "";
   } exporter;
 
-  struct {
-    std::string name = "unknown:nginx";
+  struct
+  {
+    std::string name;
   } service;
 
-  struct {
-    OtelProcessorType type = OtelProcessorSimple;
+  struct
+  {
+    OtelProcessorType type = OtelProcessorBatch;
 
-    struct {
-      uint32_t maxQueueSize = 2048;
-      uint32_t maxExportBatchSize = 512;
+    struct
+    {
+      uint32_t maxQueueSize        = 2048;
+      uint32_t maxExportBatchSize  = 512;
       uint32_t scheduleDelayMillis = 5000;
     } batch;
   } processor;
 
-  struct {
-    OtelSamplerType type = OtelSamplerAlwaysOn;
-    bool parentBased = false;
-    double ratio = 0;
-  } sampler;
+  std::string sampler = "parentbased_always_on";
+  double samplerRatio = 1.0;
 };
-
-bool OtelAgentConfigLoad(const std::string& path, ngx_log_t* log, OtelNgxAgentConfig* config);

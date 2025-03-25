@@ -8,24 +8,18 @@ Supported propagation types:
 
 ## Requirements
 
-* OS: Linux. Test suite currently runs on Ubuntu 18.04, 20.04, 20.10.
+* OS: Linux. Test suite currently runs on Ubuntu 24.04, Alpine 3.20, Amazon Linux 2 & 2023.
 * [Nginx](http://nginx.org/en/download.html)
-  * both stable (`1.18.0`) and mainline (`1.19.8`)
 * Nginx modules
   * ngx_http_upstream_module (proxy_pass)
   * ngx_http_fastcgi_module (fastcgi_pass)
 
-Additional platforms and/or versions coming soon.
-
-
 ## Dependencies (for building)
 
-1. [gRPC](https://github.com/grpc/grpc) - currently the only supported exporter is OTLP_GRPC. This requirement will be lifted
-   once more exporters become available.
 2. [opentelemetry-cpp](https://github.com/open-telemetry/opentelemetry-cpp) - opentelemetry-cpp needs to be built with
-   position independent code and OTLP_GRPC support, e.g.:
+   position independent code, e.g.:
 ```
-cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DWITH_OTLP_GRPC=ON ..
+cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON ..
 ```
 
 ## Building
@@ -33,11 +27,11 @@ cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DWITH_OTLP_GRPC=ON ..
 ```
 mkdir build
 cd build
-cmake ..
+cmake -DNGINX_VERSION=1.27.3 ..
 make
 ```
 
-## Usage
+## Quick usage
 
 Download the .so file from the latest [GitHub Action run](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/nginx.yml) or follow the instructions above to build. Then modify nginx.conf, or see the [example](test/conf/nginx.conf)
 
@@ -45,7 +39,8 @@ Download the .so file from the latest [GitHub Action run](https://github.com/ope
 load_module /path/to/otel_ngx_module.so;
 
 http {
-  opentelemetry_config /conf/otel-nginx.toml;
+  opentelemetry_service_name "nginx-proxy";
+  opentelemetry_otlp_traces_endpoint "http://collector:4318/v1/traces"
 
   server {
     listen 80;
@@ -56,7 +51,7 @@ http {
     location = / {
       opentelemetry_operation_name my_example_backend;
       opentelemetry_propagate;
-      proxy_pass http://localhost:3500/;
+      proxy_pass http://localhost:3501/;
     }
 
     location = /b3 {
@@ -79,52 +74,6 @@ http {
 
 ```
 
-Example [otel-nginx.toml](test/conf/otel-nginx.toml):
-```toml
-exporter = "otlp"
-processor = "batch"
-
-[exporters.otlp]
-# Alternatively the OTEL_EXPORTER_OTLP_ENDPOINT environment variable can also be used.
-host = "localhost"
-port = 4317
-# Optional: enable SSL, for endpoints that support it
-# use_ssl = true
-# Optional: set a filesystem path to a pem file to be used for SSL encryption
-# (when use_ssl = true)
-# ssl_cert_path = "/path/to/cert.pem"
-
-[processors.batch]
-max_queue_size = 2048
-schedule_delay_millis = 5000
-max_export_batch_size = 512
-
-[service]
-# Can also be set by the OTEL_SERVICE_NAME environment variable.
-name = "nginx-proxy" # Opentelemetry resource name
-
-[sampler]
-name = "AlwaysOn" # Also: AlwaysOff, TraceIdRatioBased
-ratio = 0.1
-parent_based = false
-```
-
-Here's what it would look like if you used the OTLP exporter, but only set the endpoint with an environment variables (e.g. `OTEL_EXPORTER_OTLP_ENDPOINT="localhost:4317"`).
-```toml
-exporter = "otlp"
-processor = "batch"
-
-[exporters.otlp]
-
-[processors.batch]
-max_queue_size = 2048
-schedule_delay_millis = 5000
-max_export_batch_size = 512
-
-[service]
-name = "nginx-proxy" # Opentelemetry resource name
-```
-
 To use other environment variables defined in the [specification](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/exporter.md), must add the "env" directive.
 
 ```
@@ -141,15 +90,63 @@ http {
 
 ### `opentelemetry`
 
-Enable or disable OpenTelemetry (default: enabled).
+Enable or disable OpenTelemetry (default: `enabled`).
 
 - **required**: `false`
 - **syntax**: `opentelemetry on|off`
 - **block**: `http`, `server`, `location`
 
+### `opentelemetry_service_name`
+
+Service name for the nginx instance (default: `uknown:nginx`).
+
+- **required**: `false`
+- **syntax**: `opentelemetry_service_name <name>`
+- **block**: `http`
+
+### `opentelemetry_span_processor`
+
+Chooses between simple and batch span processor (default: `batch`).
+
+- **required**: `false`
+- **syntax**: `opentelemetry_span_processor simple|batch`
+- **block**: `http`
+
+### `opentelemetry_otlp_traces_endpoint`
+
+OTLP HTTP traces endpoint. (default: `http://localhost:4318/v1/traces`).
+
+- **required**: `false`
+- **syntax**: `opentelemetry_otlp_traces_endpoint <endpoint>`
+- **block**: `http`
+
+### `opentelemetry_operation_name`
+
+Set the operation name when starting a new span.
+
+- **required**: `false`
+- **syntax**: `opentelemetry_operation_name <name>`
+- **block**: `http`, `server`, `location`
+
+### `opentelemetry_traces_sampler`
+
+Chooses the traces sampler. (default: `parentbased_always_on`).
+
+- **required**: `false`
+- **syntax**: `opentelemetry_traces_sampler always_on|always_off|traceidratio|parentbased_always_on|parentbased_always_off|parentbased_traceidratio`
+- **block**: `http`
+
+### `opentelemetry_traces_sampler_ratio`
+
+Chooses the trace sampling ratio between `0.0` and `1.0` when a ratio based sampler is active. (default: `1.0`).
+
+- **required**: `false`
+- **syntax**: `opentelemetry_traces_sampler_ratio <value>`
+- **block**: `http`
+
 ### `opentelemetry_trust_incoming_spans`
 
-Enables or disables using spans from incoming requests as parent for created ones. (default: enabled).
+Enables or disables using spans from incoming requests as parent for created ones. (default: `enabled`).
 
 - **required**: `false`
 - **syntax**: `opentelemetry_trust_incoming_spans on|off`
@@ -164,22 +161,6 @@ Adds a custom attribute to the span. It is possible to access nginx variables, e
 - **syntax**: `opentelemetry_attribute <key> <value>`
 - **block**: `http`, `server`, `location`
 
-### `opentelemetry_config`
-
-Exporters, processors
-
-- **required**: `true`
-- **syntax**: `opentelemetry_config /path/to/config.toml`
-- **block**: `http`
-
-### `opentelemetry_operation_name`
-
-Set the operation name when starting a new span.
-
-- **required**: `false`
-- **syntax**: `opentelemetry_operation_name <name>`
-- **block**: `http`, `server`, `location`
-
 ### `opentelemetry_propagate`
 
 Enable propagation of distributed tracing headers, e.g. `traceparent`. When no parent trace is given, a new trace will
@@ -188,12 +169,12 @@ be started. The default propagator is W3C.
 The same inheritance rules as [`proxy_set_header`](http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_set_header) apply, which means this directive is applied at the current configuration level if and only if there are no `proxy_set_header` directives defined on a lower level.
 
 - **required**: `false`
-- **syntax**: `opentelemetry_propagate` or `opentelemetry_propagate b3`
+- **syntax**: `opentelemetry_propagate` or `opentelemetry_propagate b3` or `opentelemetry_propagate b3multi`
 - **block**: `http`, `server`, `location`
 
 ### `opentelemetry_capture_headers`
 
-Enables the capturing of request and response headers. (default: disabled).
+Enables the capturing of request and response headers. (default: `off`).
 
 - **required**: `false`
 - **syntax**: `opentelemetry_capture_headers on|off`
@@ -223,6 +204,33 @@ No span will be created for URIs matching the given regex (case insensitive).
 - **syntax**: `opentelemetry_ignore_paths <regex>`
 - **block**: `http`, `server`, `location`
 
+### `opentelemetry_bsp_schedule_delay_millis`
+
+Only applicable when batch span processor is selected.
+Chooses the span batch exporting interval in milliseconds. (default: `5000`)
+
+- **required**: `false`
+- **syntax**: `opentelemetry_bsp_schedule_delay_millis <value>`
+- **block**: `http`
+
+### `opentelemetry_bsp_max_export_batch_size`
+
+Only applicable when batch span processor is selected.
+Chooses the span export batch size. (default: `512`)
+
+- **required**: `false`
+- **syntax**: `opentelemetry_bsp_max_export_batch_size <value>`
+- **block**: `http`
+
+### `opentelemetry_bsp_max_queue_size`
+
+Only applicable when batch span processor is selected.
+Chooses the span exporter queue size. (default: `2048`)
+
+- **required**: `false`
+- **syntax**: `opentelemetry_bsp_max_queue_size <value>`
+- **block**: `http`
+
 ## OpenTelemetry attributes
 
 List of exported attributes and their corresponding nginx variables if applicable:
@@ -245,10 +253,9 @@ List of exported attributes and their corresponding nginx variables if applicabl
 
 The following nginx variables are set by the instrumentation:
 
-- `opentelemetry_context_traceparent` - [W3C trace
-  context](https://www.w3.org/TR/trace-context/#trace-context-http-headers-format), e.g.: `00-0af7651916cd43dd8448eb211c80319c-b9c7c989f97918e1-01`
-- `opentelemetry_context_b3` - Trace context in the [B3
-  format](https://github.com/openzipkin/b3-propagation#single-header). Only set when using `opentelemetry_propagate b3`.
+- `opentelemetry_context_traceparent` - [W3C trace context](https://www.w3.org/TR/trace-context/#trace-context-http-headers-format), e.g.: `00-0af7651916cd43dd8448eb211c80319c-b9c7c989f97918e1-01`
+- `opentelemetry_context_b3` - Trace context in the [B3 format](https://github.com/openzipkin/b3-propagation#single-header). Only set when using `opentelemetry_propagate b3`.
+- `opentelemetry_sampled` - does current Span records information, "1" or "0"
 - `opentelemetry_trace_id` - Trace Id of the current span
 - `opentelemetry_span_id` - Span Id of the current span
 
@@ -274,8 +281,7 @@ apk --no-cache add docker-compose docker-cli
 
 ```
 cd test/instrumentation
-mix dockerfiles .. ubuntu-20.04:mainline
-docker build -t otel-nginx-test/nginx -f ../Dockerfile.ubuntu-20.04.mainline ../..
+docker build -t otel-nginx-test/nginx -f ../Dockerfile ../..
 docker build -t otel-nginx-test/express-backend -f ../backend/simple_express/Dockerfile ../backend/simple_express
 mix test
 ```
@@ -283,4 +289,5 @@ mix test
 ## Troubleshooting
 
 ### `otel_ngx_module.so is not binary compatible`
-- Make sure your nginx is compiled with `--with-compat` (`nginx -V`). On Ubuntu 18.04 the default nginx (`1.14.0`) from apt does not have compatibility enabled. nginx provides [repositories](https://docs.nginx.com/nginx/admin-guide/installing-nginx/installing-nginx-open-source/#prebuilt_ubuntu) to install more up to date versions.
+
+Make sure your nginx is compiled with `--with-compat` (`nginx -V`).
