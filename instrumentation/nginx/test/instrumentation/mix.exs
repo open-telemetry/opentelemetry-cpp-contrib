@@ -8,13 +8,17 @@ defmodule Instrumentation.MixProject do
       elixir: "~> 1.11",
       start_permanent: Mix.env() == :prod,
       deps: deps()
+      # elixirc_paths: elixirc_paths(Mix.env())
     ]
   end
 
+  # defp elixirc_paths(:test), do: ["lib", "test/helpers"]
+  # defp elixirc_paths
+
   defp deps do
     [
-      {:httpoison, "1.8.0"},
-      {:jason, "1.2.2"}
+      {:httpoison, "2.2.1"},
+      {:jason, "1.4.4"}
     ]
   end
 end

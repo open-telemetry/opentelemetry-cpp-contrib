@@ -1,8 +1,6 @@
 #pragma once
 
 #include <opentelemetry/trace/span.h>
-#include <unordered_map>
-#include "script.h"
 
 extern "C" {
 #include <ngx_http.h>
@@ -17,6 +15,7 @@ enum TracePropagationType {
   TracePropagationUnset,
   TracePropagationW3C,
   TracePropagationB3,
+  TracePropagationB3Multi,
 };
 
 struct TraceContext {

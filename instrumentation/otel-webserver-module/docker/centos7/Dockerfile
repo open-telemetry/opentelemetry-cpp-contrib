@@ -35,6 +35,9 @@ RUN chmod -R 777 /opt
 
 # RUN curl https://www.getpagespeed.com/files/centos6-eol.repo --output /etc/yum.repos.d/CentOS-Base.repo
 
+RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-* && \
+    sed -i 's|# *baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+
 # install required packages
 RUN yum update -y \
     && yum install -y \
@@ -42,27 +45,26 @@ RUN yum update -y \
     yum install -y zlib-devel \
     yum install -y openssl-devel \
     yum install java-1.8.0-openjdk -y \
+    yum install java-1.8.0-openjdk-devel \
     yum install pcre-devel -y \
     yum install xz -y \
     yum install httpd -y \
     && yum clean all
 
 # install lcov package
-RUN wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
-    && yum install ./epel-release-latest-*.noarch.rpm -y \
+RUN wget https://archives.fedoraproject.org/pub/archive/epel/7/x86_64/Packages/e/epel-release-7-14.noarch.rpm \
+    && yum install ./epel-release-*-*.noarch.rpm -y \
     && yum install lcov -y \
     && yum clean all
 
 # install devtoolset toolchain
-# RUN curl https://www.getpagespeed.com/files/centos6-eol.repo --output /etc/yum.repos.d/CentOS-Base.repo \
-#  && curl https://www.getpagespeed.com/files/centos6-epel-eol.repo --output /etc/yum.repos.d/epel.repo \
-  RUN yum -y install centos-release-scl \
-#  && curl https://www.getpagespeed.com/files/centos6-scl-eol.repo --output /etc/yum.repos.d/CentOS-SCLo-scl.repo \
-#  && curl https://www.getpagespeed.com/files/centos6-scl-rh-eol.repo --output /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo \
-  && yum install yum-utils -y \
-  && yum-config-manager --enable rhel-server-rhscl-7-rpms -y \
-  && yum install devtoolset-7 -y \
-  && yum clean all
+RUN yum -y install centos-release-scl \
+    && sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-* && \
+    sed -i 's|# *baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-* \
+    && yum install yum-utils -y \
+    && yum-config-manager --enable rhel-server-rhscl-7-rpms -y \
+    && yum install devtoolset-7 -y \
+    && yum clean all
 ENV PATH="/opt/rh/devtoolset-7/root/usr/bin:${PATH}"
 
 # install python 2.7.8
@@ -114,7 +116,7 @@ RUN git clone https://github.com/grpc/grpc \
 RUN mkdir -p dependencies
 
 # install boost version 1.75.0
-RUN wget https://boostorg.jfrog.io/artifactory/main/release/${BOOST_VERSION}/source/${BOOST_FILENAME}_rc1.tar.gz \
+RUN wget https://archives.boost.io/release/${BOOST_VERSION}/source/${BOOST_FILENAME}_rc1.tar.gz \
     && tar -xvf ${BOOST_FILENAME}_rc1.tar.gz \
     && cd ${BOOST_FILENAME} \
     && ./bootstrap.sh --with-libraries=filesystem,system --prefix=/dependencies/boost/${BOOST_VERSION}/ \

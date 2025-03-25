@@ -59,7 +59,7 @@ FluentdExporter::FluentdExporter()
  */
 std::unique_ptr<sdk::trace::Recordable>
 FluentdExporter::MakeRecordable() noexcept {
-  return std::unique_ptr<sdk::trace::Recordable>(new opentelemetry::exporter::fluentd::trace::Recordable());
+  return std::unique_ptr<sdk::trace::Recordable>(new opentelemetry::exporter::fluentd::trace::Recordable(FLUENT_VALUE_SPAN, options_.include_trace_state_for_span));
 }
 
 /**
@@ -181,13 +181,20 @@ bool FluentdExporter::Initialize() {
   else {
 #if defined(__EXCEPTIONS)
     // Customers MUST specify valid end-point configuration
-    throw new std::runtime_error("Invalid endpoint!");
+    throw std::runtime_error("Invalid endpoint!");
 #endif
     return false;
   }
 
   addr_.reset(
       new SocketTools::SocketAddr(options_.endpoint.c_str(), is_unix_domain));
+  if (addr_->m_data_in.sin_family != AF_UNIX &&
+      addr_->m_data_in.sin_family != AF_INET &&
+      addr_->m_data_in.sin_family != AF_INET6)
+  {
+    LOG_ERROR("Invalid endpoint! %s", options_.endpoint.c_str());
+    return false;
+  }
   LOG_TRACE("connecting to %s", addr_->toString().c_str());
 
   return true;

@@ -1,5 +1,8 @@
 # OpenTelemetry C++ Contrib
 
+[![FOSSA License Status](https://app.fossa.com/api/projects/custom%2B162%2Fgithub.com%2Fopen-telemetry%2Fopentelemetry-cpp-contrib.svg?type=shield&issueType=license)](https://app.fossa.com/projects/custom%2B162%2Fgithub.com%2Fopen-telemetry%2Fopentelemetry-cpp-contrib?ref=badge_shield&issueType=license)
+[![FOSSA Security Status](https://app.fossa.com/api/projects/custom%2B162%2Fgithub.com%2Fopen-telemetry%2Fopentelemetry-cpp-contrib.svg?type=shield&issueType=security)](https://app.fossa.com/projects/custom%2B162%2Fgithub.com%2Fopen-telemetry%2Fopentelemetry-cpp-contrib?ref=badge_shield&issueType=security)
+
 This repository contains set of components extending functionality of the
 OpenTelemetry SDK. Instrumentation libraries, exporters, and other components
 can find their home here.
@@ -38,6 +41,7 @@ For edit access, get in touch on
 * [Siim Kallas](https://github.com/seemk), Splunk
 * [Tobias Stadler](https://github.com/tobiasstadler)
 * [Tomasz Rojek](https://github.com/TomRoSystems)
+* [Aryan Ishan](https://github.com/aryanishan1001), Cisco
 
 [Emeritus
 Maintainer/Approver/Triager](https://github.com/open-telemetry/community/blob/main/community-membership.md#emeritus-maintainerapprovertriager):

@@ -69,7 +69,7 @@ void PopulateAttribute(nostd::string_view key,
   {
     event_builder.AddValue(key_name, nostd::get<uint64_t>(value), event_field_format_default);
   }
-  else if (nostd::holds_alternative<double>(value), event_field_format_default)
+  else if (nostd::holds_alternative<double>(value))
   {
     event_builder.AddValue(key_name, nostd::get<double>(value), event_field_format_float);
   }

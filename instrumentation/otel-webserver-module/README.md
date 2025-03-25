@@ -68,7 +68,7 @@ A sample configuration is mentioned in [opentelemetry_module.conf](https://githu
 
 #### Platform Supported
 - The build is supported for **x86-64** platforms.
-- OS support: **Centos6**, **Centos7, ubuntu20.04**.
+- OS support: **Centos7, Almalinux8, ubuntu20.04**.
 
 #### Automatic build and Installation
 
@@ -78,7 +78,7 @@ Then execute the following commands -:
 docker-compose --profile default build
 docker-compose --profile default up
 ```
-Alternatively, replace the value of *profile* from **'default'** to **'centos7'** or **'ubuntu20.04'** to build in respective supported platforms.
+Alternatively, replace the value of *profile* from **'default'** to **'centos7'** or **'almalinux8'** or **'ubuntu20.04'** to build in respective supported platforms.
 
 This would start the container alongwith the Opentelemetry Collector and Zipkin. You can check the traces on Zipkin dashboard by checking the port number of Zipkin using ```docker ps``` command. Multiple requests can be sent using the browser.
 
@@ -194,15 +194,15 @@ Currently, Nginx Webserver module monitores some fixed set of modules, which get
 - Supports both stable(1.26.0) and mainline(1.25.5).
 - Earlier support of v1.18.0 is deprecated.
 - The build is supported for **x86-64** platforms.
-- OS support: **Centos6**, **Centos7, ubuntu20.04**.
+- OS support: **Centos7, Almalinux8, ubuntu20.04**.
 
 #### Automatic build and Installation
 
 We will use Docker to run the Module. First, it is to be made sure that the Docker is up and running.
 Then execute the following commands -:
 ```
-docker-compose --profile centos_nginx build
-docker-compose --profile centos_nginx up
+docker-compose --profile nginx_almalinix8 build
+docker-compose --profile nginx_almalinix8 up
 ```
 Alternatively, replace the value of *centos_nginx* from **'centos_nginx'** to **'centos7_nginx'** or **'ubuntu20.04_nginx'** to build in respective supported platforms.
 
@@ -258,13 +258,13 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/opentelemetry-webserver-sdk/sdk_lib
 ```
 
 ### Usability of the downloaded artifact
-The downloaded artifact from [Release/Tag](https://github.com/open-telemetry/opentelemetry-cpp-contrib/releases) or [GitHub Actions](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/webserver.yml) is built on CentOS7. This contains shared libraries for both apache and nginx instrumentation. The shared libraries can be located at ```WebServerModule/Apache``` or ```WebServerModule/Nginx``` for respective webservers. But, the common libraries, related to opentelemetry, are located at ```sdk_lib/lib/``` which are used by both apache and nginx instrumentation.
+The downloaded artifact from [Release/Tag](https://github.com/open-telemetry/opentelemetry-cpp-contrib/releases) or [GitHub Actions](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/webserver.yml) is built on Almalinux8. This contains shared libraries for both apache and nginx instrumentation. The shared libraries can be located at ```WebServerModule/Apache``` or ```WebServerModule/Nginx``` for respective webservers. But, the common libraries, related to opentelemetry, are located at ```sdk_lib/lib/``` which are used by both apache and nginx instrumentation.
 
 Currently, artifact is generated on x86-64 is published.
 **Therefore, the artifact should work on any linux distribution running on x86-64 plarform and having glibc version >= 2.17.**
 
 ### Maintainers
-* [Kumar Pratyush](https://github.com/kpratyus), Cisco
+* [Aryan Ishan](https://github.com/aryanishan1001), Cisco
 * [Debajit Das](https://github.com/DebajitDas), Cisco
 
 ### Blogs
