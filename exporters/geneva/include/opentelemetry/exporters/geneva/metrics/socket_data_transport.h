@@ -14,18 +14,18 @@ OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter {
 namespace geneva {
 namespace metrics {
-class UnixDomainSocketDataTransport : public DataTransport {
+class SocketDataTransport : public DataTransport {
 public:
-  UnixDomainSocketDataTransport(const std::string &connection_string);
+  SocketDataTransport(const ConnectionStringParser &parser);
   bool Connect() noexcept override;
   bool Send(MetricsEventType event_type, const char *data,
             uint16_t length) noexcept override;
   bool Disconnect() noexcept override;
-  ~UnixDomainSocketDataTransport() = default;
+  ~SocketDataTransport() = default;
 
 private:
   // Socket connection is re-established for every batch of events
-  const SocketTools::SocketParams socketparams_{AF_UNIX, SOCK_STREAM, 0};
+  SocketTools::SocketParams socketparams_{AF_UNIX, SOCK_STREAM, 0};
   SocketTools::Socket socket_;
   std::unique_ptr<SocketTools::SocketAddr> addr_;
   bool connected_{false};
