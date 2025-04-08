@@ -19,8 +19,8 @@
 #   OPENTELEMETRY_CPP_FLUENTD_VERSION           - Version of opentelemetry-cpp-fluentd.
 #
 # ::
-#   opentelemetry-cpp-fluentd::trace                    - Imported target of opentelemetry-fluentd::trace
-#   opentelemetry-cpp::logs                             - Imported target of opentelemetry-fluentd::logs
+#   opentelemetry-cpp-fluentd::trace                    - Imported target of oopentelemetry-cpp-fluentd::trace
+#   opentelemetry-cpp::logs                             - Imported target of opentelemetry-cpp-fluentd::logs
 
 # =============================================================================
 # Copyright 2020 opentelemetry.
@@ -49,8 +49,8 @@ set(_OPENTELEMETRY_CPP_FLUENTD_LIBRARIES_TEST_TARGETS
         logs)
 
 foreach(_TEST_TARGET IN LISTS _OPENTELEMETRY_CPP_FLUENTD_LIBRARIES_TEST_TARGETS)
-        if(TARGET opentelemetry-fluentd::${_TEST_TARGET})
-                list(APPEND OPENTELEMETRY_CPP_FLUENTD_LIBRARIES opentelemetry-fluentd::${_TEST_TARGET})
+        if(TARGET opentelemetry-cpp-fluentd::${_TEST_TARGET})
+                list(APPEND OPENTELEMETRY_CPP_FLUENTD_LIBRARIES opentelemetry-cpp-fluentd::${_TEST_TARGET})
         else()
                 message("Target not found: " ${_TEST_TARGET})
         endif()

@@ -19,7 +19,7 @@ cmake_minimum_required(VERSION 3.12)
 ##
 set(MAIN_PROJECT OFF)
 if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-  project(opentelemetry-fluentd)
+  project(opentelemetry-cpp-fluentd)
   set(MAIN_PROJECT ON)
 endif()
 
