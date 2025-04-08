@@ -4,7 +4,7 @@ set(CPACK_PACKAGE_VENDOR "OpenTelemetry")
 set(CPACK_PACKAGE_CONTACT "OpenTelemetry-cpp")
 set(CPACK_PACKAGE_HOMEPAGE_URL "https://opentelemetry.io/")
 set(CMAKE_PROJECT_NAME "opentelemetry-cpp-geneva-metrics")
-set(OPENTELEMETRY_GENEVA_METRICS_VERSION "1.0.0")
+set(OPENTELEMETRY_GENEVA_METRICS_VERSION "1.0.1")
 
 option(TARBALL "Build a tarball package" OFF)
 
