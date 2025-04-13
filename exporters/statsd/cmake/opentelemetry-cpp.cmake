@@ -1,5 +1,5 @@
 if("${opentelemetry-cpp-tag}" STREQUAL "")
-	set(opentelemetry-cpp-tag "v1.9.1")
+	set(opentelemetry-cpp-tag "v1.20.0")
 endif()
 function(target_create _target _lib)
   add_library(${_target} STATIC IMPORTED)
@@ -57,7 +57,6 @@ function(build_opentelemetry)
 
     target_create("opentelemetry_trace" "sdk/src/trace/libopentelemetry_trace.a")
     target_create("opentelemetry_logs" "sdk/src/logs/libopentelemetry_logs.a")
-    target_create("opentelemetry_metrics" "sdk/src/metrics/libopentelemetry_metrics.a")
     target_create("opentelemetry_resources"
                   "sdk/src/resource/libopentelemetry_resources.a")
     target_create("opentelemetry_common"
