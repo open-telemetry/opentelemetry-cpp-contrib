@@ -77,7 +77,7 @@ bool SocketDataTransport::Send(MetricsEventType event_type,
 bool SocketDataTransport::Disconnect() noexcept {
   if (connected_) {
     connected_ = false;
-    if (socket_.invalid()) {
+    if (!socket_.invalid()) {
       socket_.close();
       return true;
     }
