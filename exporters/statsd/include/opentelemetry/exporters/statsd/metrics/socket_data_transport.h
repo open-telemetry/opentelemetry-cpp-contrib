@@ -3,16 +3,16 @@
 
 #pragma once
 
-#include "opentelemetry/exporters/geneva/metrics/connection_string_parser.h"
-#include "opentelemetry/exporters/geneva/metrics/data_transport.h"
-#include "opentelemetry/exporters/geneva/metrics/socket_tools.h"
+#include "opentelemetry/exporters/statsd/metrics/connection_string_parser.h"
+#include "opentelemetry/exporters/statsd/metrics/data_transport.h"
+#include "opentelemetry/exporters/statsd/metrics/socket_tools.h"
 #include "opentelemetry/version.h"
 
 #include <memory>
 
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter {
-namespace geneva {
+namespace statsd {
 namespace metrics {
 class SocketDataTransport : public DataTransport {
 public:
@@ -31,6 +31,6 @@ private:
   bool connected_{false};
 };
 } // namespace metrics
-} // namespace geneva
+} // namespace statsd
 } // namespace exporter
 OPENTELEMETRY_END_NAMESPACE
