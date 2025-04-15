@@ -58,7 +58,7 @@ bool SocketDataTransport::Send(MetricsEventType event_type,
           "Geneva Exporter: UDS::Send Socket reconnect failed. Send failed");
     }
   }
-  if (error_code != 0) {
+  if (!connected_ || error_code != 0 ) {
     LOG_ERROR("Geneva Exporter: UDS::Send failed - not connected");
     connected_ = false;
     return false;
