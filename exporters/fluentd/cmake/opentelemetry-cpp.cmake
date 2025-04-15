@@ -57,7 +57,6 @@ function(build_opentelemetry)
 
     target_create("opentelemetry_trace" "sdk/src/trace/libopentelemetry_trace.a")
     target_create("opentelemetry_logs" "sdk/src/logs/libopentelemetry_logs.a")
-    target_create("opentelemetry_metrics" "sdk/src/metrics/libopentelemetry_metrics.a")
     target_create("opentelemetry_resources"
                   "sdk/src/resource/libopentelemetry_resources.a")
     target_create("opentelemetry_common"
