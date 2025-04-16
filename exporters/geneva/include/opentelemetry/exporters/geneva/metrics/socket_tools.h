@@ -570,8 +570,14 @@ struct Socket {
     assert(m_sock != Invalid);
     if ((m_sock == Invalid) || (buffer == nullptr) || (size == 0))
       return 0;
+    int flags =
+#ifdef _WIN32
+        0;
+#else
+        MSG_NOSIGNAL;
+#endif
     return static_cast<int>(
-        ::send(m_sock, reinterpret_cast<char const *>(buffer), size, 0));
+        ::send(m_sock, reinterpret_cast<char const *>(buffer), size, flags));
   }
 
   int sendto(void const *buffer, size_t size, int flags, SocketAddr &destAddr) {
