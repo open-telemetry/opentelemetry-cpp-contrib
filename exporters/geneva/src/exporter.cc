@@ -42,7 +42,6 @@ Exporter::Exporter(const ExporterOptions &options)
   auto status = data_transport_->Connect();
   if (!status) {
     LOG_ERROR("[Geneva Exporter] Connect failed. No data would be sent.");
-    is_shutdown_ = true;
     return;
   }
 }
