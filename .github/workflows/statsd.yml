@@ -16,33 +16,31 @@ jobs:
     name: CMake on Linux
     runs-on: ubuntu-latest
     steps:
-      - name: checkout otel contrib statsd
+      - name: checkout opentelemetry-cpp-contrib
         uses: actions/checkout@v3
         with:
-          path: "otel_cpp_contrib"
-      - name: checkout otel cpp
+          path: opentelemetry-cpp-contrib
+          submodules: "recursive"
+      - name: checkout opentelemetry-cpp
         uses: actions/checkout@v3
         with:
           repository: "open-telemetry/opentelemetry-cpp"
           ref: "v1.20.0"
-          path: "otel_cpp"
+          path: "opentelemetry-cpp"
           submodules: "recursive"
       - name: setup
         run: |
           sudo apt update -y 
-          sudo apt install -y --no-install-recommends --no-install-suggests build-essential\
+          sudo apt install -y --no-install-recommends --no-install-suggest \
+            build-essential \
+            cmake \
+            ninja-build \
             ca-certificates wget git valgrind lcov
       - name: run tests
         run: |
-          sudo $GITHUB_WORKSPACE/otel_cpp/ci/setup_googletest.sh
-          mkdir -p "$GITHUB_WORKSPACE/otel_cpp/build"
-          cd "$GITHUB_WORKSPACE/otel_cpp/build"
-          cmake .. -DOPENTELEMETRY_INSTALL=ON
+          sudo $GITHUB_WORKSPACE/opentelemetry-cpp/ci/setup_googletest.sh
+          mkdir -p "$GITHUB_WORKSPACE/opentelemetry-cpp/build"
+          cd "$GITHUB_WORKSPACE/opentelemetry-cpp/build"
+          cmake .. -G Ninja -DOPENTELEMETRY_EXTERNAL_COMPONENT_PATH=$GITHUB_WORKSPACE/opentelemetry-cpp-contrib/exporters/statsd 
           cmake --build . -j$(nproc)
-          cmake --install . --prefix "$HOME/prebuilt-otel"
-          mkdir -p "$GITHUB_WORKSPACE/otel_cpp_contrib/exporters/statsd/build"
-          cd "$GITHUB_WORKSPACE/otel_cpp_contrib/exporters/statsd/build"
-          cmake .. "-DCMAKE_PREFIX_PATH=$HOME/prebuilt-otel" \
-            -DBUILD_TESTING=ON -DWITH_EXAMPLES=ON
-          cmake --build . -j$(nproc)
-          ctest
+          ctest -j1 --output-on-failure

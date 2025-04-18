@@ -5,16 +5,16 @@
 
 #include "opentelemetry/common/spin_lock_mutex.h"
 #include "opentelemetry/common/timestamp.h"
-#include "opentelemetry/exporters/geneva/metrics/connection_string_parser.h"
-#include "opentelemetry/exporters/geneva/metrics/data_transport.h"
-#include "opentelemetry/exporters/geneva/metrics/exporter_options.h"
+#include "opentelemetry/exporters/statsd/metrics/connection_string_parser.h"
+#include "opentelemetry/exporters/statsd/metrics/data_transport.h"
+#include "opentelemetry/exporters/statsd/metrics/exporter_options.h"
 #include "opentelemetry/sdk/metrics/push_metric_exporter.h"
 #include "opentelemetry/sdk/metrics/data/metric_data.h"
 
 
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter {
-namespace geneva {
+namespace statsd {
 namespace metrics {
 
 constexpr size_t kBufferSize = 65360; // the maximum ETW payload (inclusive)
@@ -121,7 +121,7 @@ static std::string AttributeValueToString(
   } else if (nostd::holds_alternative<std::string>(value)) {
     result = nostd::get<std::string>(value);
   } else {
-    LOG_WARN("[Geneva Metrics Exporter] AttributeValueToString - "
+    LOG_WARN("[Statsd Metrics Exporter] AttributeValueToString - "
              " Nested attributes not supported - ignored");
   }
   return result;
@@ -133,6 +133,6 @@ static uint64_t UnixTimeToWindowsTicks(uint64_t unix_epoch_secs) {
 }
 
 } // namespace metrics
-} // namespace geneva
+} // namespace statsd
 } // namespace exporter
 OPENTELEMETRY_END_NAMESPACE

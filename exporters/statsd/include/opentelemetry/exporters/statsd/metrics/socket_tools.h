@@ -109,7 +109,7 @@ typedef u_short sa_family_t;
 #endif
 #endif
 
-#include "opentelemetry/exporters/geneva/metrics/macros.h"
+#include "opentelemetry/exporters/statsd/metrics/macros.h"
 
 namespace net {
 
