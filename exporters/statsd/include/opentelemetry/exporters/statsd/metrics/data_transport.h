@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <string>
 #include "opentelemetry/version.h"
 
 #include <vector>
@@ -12,20 +13,34 @@ namespace exporter {
 namespace statsd {
 namespace metrics {
 
-// These enums are defined in
-// file: test/decoder/ifx_metrics_bin.ksy (enum metric_event_type)
-enum class MetricsEventType : uint16_t {
-  Uint64Metric = 50,
-  DoubleScaledToLongMetric = 51,
-  BatchMetric = 52,
-  ExternallyAggregatedUlongMetric = 53,
-  ExternallyAggregatedDoubleMetric = 54,
-  DoubleMetric = 55,
-  ExternallyAggregatedUlongDistributionMetric = 56,
-  ExternallyAggregatedDoubleDistributionMetric = 57,
-  ExternallyAggregatedDoubleScaledToLongDistributionMetric = 58,
-  Undefined = 100
+// Metrics Type defined in Statsd Protocol
+// Other statsd metric types, such as c ("c"ounter), t ("t"imer), m ("m"eters), h ("h"istograms), etc are not supported, typically because such functionality is implemented differently in MDM.
+enum class MetricsEventType {
+  // g ("g"auge) is a standard metric with a single 64-bit integer value; <value> is an integer number.
+  Gauge,
+
+  // s ("s"caled fixed-point number) is used to represent fixed-point values (such as CPU usages, load averages, fractions, etc). 
+  // Precision for a fixed-point metric is determined by a precision setting in per-metric setup. <value> can be any fractional number, but note that the actual value would in Geneva Metrics be truncated to a specified precision and still stored in 64-bit container.
+  ScaledFixedPointNumber,
+
+  // f ("f"loating point number) is used to represent floating point numbers which vary a lot in its magnitude and thus warrant storage in a mantissa + expontent format (such as physical quantities, results of complex calculations, etc). <value> can be any fractional number, which would be stored as double precision IEEE 754 float.
+  FloatingPointNumber,
+
+  Unknown
 };
+
+inline std::string MetricsEventTypeToString(MetricsEventType type) {
+  switch (type) {
+    case MetricsEventType::Gauge:
+      return "g";
+    case MetricsEventType::ScaledFixedPointNumber:
+      return "s";
+    case MetricsEventType::FloatingPointNumber:
+      return "f";
+    default:
+      return "";      
+  }
+}
 
 class DataTransport {
 public:

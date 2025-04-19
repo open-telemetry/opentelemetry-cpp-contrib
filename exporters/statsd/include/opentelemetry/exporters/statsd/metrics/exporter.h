@@ -70,38 +70,10 @@ private:
   mutable opentelemetry::common::SpinLockMutex lock_;
   std::unique_ptr<DataTransport> data_transport_;
 
-  // metrics storage
-  char buffer_[kBufferSize];
+  void SendMetrics(std::string metric_name, MetricsEventType type,
+                   ValueType value) noexcept;
 
-  size_t SerializeNonHistogramMetrics(sdk::metrics::AggregationType,
-                                      MetricsEventType,
-                                      const sdk::metrics::ValueType &,
-                                      common::SystemTimestamp,
-                                      const std::string &,
-                                      const sdk::metrics::PointAttributes &);
-  size_t SerializeHistogramMetrics(
-      sdk::metrics::AggregationType, MetricsEventType, uint64_t,
-      const sdk::metrics::ValueType &, const sdk::metrics::ValueType &,
-      const sdk::metrics::ValueType &, const std::vector<double> &boundaries,
-      const std::vector<uint64_t> &counts, common::SystemTimestamp,
-      const std::string &, const sdk::metrics::PointAttributes &);
 };
-
-template <class T>
-static void SerializeInt(char *buffer, size_t &index, T value) {
-  *(reinterpret_cast<T *>(buffer + index)) = value;
-  index += sizeof(T);
-}
-
-static void SerializeString(char *buffer, size_t &index,
-                            const std::string &str) {
-  auto size = str.size();
-  SerializeInt<uint16_t>(buffer, index, static_cast<uint16_t>(size));
-  if (size > 0) {
-    memcpy(buffer + index, str.c_str(), size);
-  }
-  index += size;
-}
 
 static std::string AttributeValueToString(
     const opentelemetry::sdk::common::OwnedAttributeValue &value) {
