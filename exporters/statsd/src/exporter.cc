@@ -148,18 +148,18 @@ opentelemetry::sdk::common::ExportResult Exporter::Export(
 void Exporter::SendMetrics(std::string metric_name, MetricsEventType type, ValueType value) noexcept {
   std::string message;
 
-  std::string value;
+  std::string value_str;
   if (nostd::holds_alternative<int64_t>(value)) {
-    value = std::to_string(nostd::get<int64_t>(value));
+    value_str = std::to_string(nostd::get<int64_t>(value));
   } else if (nostd::holds_alternative<double>(value)) {
-    value = std::to_string(nostd::get<double>(value));
+    value_str = std::to_string(nostd::get<double>(value));
   } else {
     LOG_ERROR("[Statsd Exporter] SendMetrics - "
               "Unsupported value type");
     return;
   }
 
-  message = metric_name + ":" + value + "|" +
+  message = metric_name + ":" + value_str + "|" +
             MetricsEventTypeToString(type);
   data_transport_->Send(type, message.c_str(), message.size());
 }
