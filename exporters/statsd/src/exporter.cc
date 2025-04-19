@@ -161,7 +161,7 @@ void Exporter::SendMetrics(std::string metric_name, MetricsEventType type, Value
 
   message = metric_name + ":" + value + "|" +
             MetricsEventTypeToString(type);
-  data_transport_->Send(message.c_str(), message.size());
+  data_transport_->Send(type, message.c_str(), message.size());
 }
 
 bool Exporter::ForceFlush(std::chrono::microseconds timeout) noexcept {
