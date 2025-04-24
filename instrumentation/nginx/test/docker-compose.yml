@@ -1,6 +1,6 @@
 services:
   collector:
-    image: otel/opentelemetry-collector:0.113.0
+    image: otel/opentelemetry-collector:latest
     command: ["--config=/etc/otel/config.yml"]
     volumes:
       - ${TEST_ROOT:-.}/conf/collector.yml:/etc/otel/config.yml
