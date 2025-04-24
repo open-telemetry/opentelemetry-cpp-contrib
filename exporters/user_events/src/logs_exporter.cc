@@ -19,10 +19,11 @@ namespace logs
 
 /*********************** Constructor ***********************/
 
-Exporter::Exporter(const ExporterOptions &options) noexcept : options_(options), provider_(options.provider_name)
+Exporter::Exporter(const ExporterOptions &options) noexcept
+    : options_(options), provider_(options.provider_name)
 {
   // Initialize the event sets
-  for (int i = 0; i < sizeof(event_levels_map)/sizeof(event_levels_map[0]); i++)
+  for (int i = 0; i < sizeof(event_levels_map) / sizeof(event_levels_map[0]); i++)
   {
     event_set_levels_[i] = provider_.RegisterSet(event_levels_map[i], 1);
   }
@@ -52,9 +53,10 @@ sdk::common::ExportResult Exporter::Export(
     auto user_events_record =
         std::unique_ptr<Recordable>(static_cast<Recordable *>(record.release()));
 
-    user_events_record->PrepareExport();
-
-    // assert(user_events_record != nullptr, "Recordable is null");
+    if (!user_events_record->PrepareExport())
+    {
+      continue;
+    }
 
     int level_index = user_events_record->GetLevelIndex();
 

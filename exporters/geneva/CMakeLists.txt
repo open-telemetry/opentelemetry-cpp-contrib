@@ -22,7 +22,7 @@ endif()
 
 include_directories(include)
 
-set(OTEL_GENEVA_EXPORTER_VERSION 1.0.0)
+set(OTEL_GENEVA_EXPORTER_VERSION 1.0.1)
 set(OTEL_GENEVA_EXPORTER_MAJOR_VERSION 1)
 
 function(set_target_version target_name)
@@ -38,10 +38,10 @@ if(WIN32)
   add_library(
     opentelemetry_exporter_geneva_metrics
     src/exporter.cc src/etw_data_transport.cc
-    src/unix_domain_socket_data_transport.cc)
+    src/socket_data_transport.cc)
 else()
   add_library(opentelemetry_exporter_geneva_metrics
-              src/exporter.cc src/unix_domain_socket_data_transport.cc)
+              src/exporter.cc src/socket_data_transport.cc)
 endif()
 
 if(MAIN_PROJECT)

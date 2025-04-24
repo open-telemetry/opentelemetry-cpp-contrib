@@ -1,17 +1,21 @@
 receivers:
   otlp:
     protocols:
-      grpc:
+      http:
+        endpoint: 0.0.0.0:4318
 exporters:
   debug:
     verbosity: detailed
   file:
     path: /trace.json
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
 processors:
   batch:
 service:
+  extensions: [health_check]
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [batch]
       exporters: [debug, file]

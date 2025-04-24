@@ -55,6 +55,12 @@ public:
   Export(const nostd::span<std::unique_ptr<trace_sdk::Recordable>>
              &spans) noexcept override;
 
+  bool ForceFlush(
+      std::chrono::microseconds timeout = (std::chrono::microseconds::max)()) noexcept override
+  {
+        return true;
+  }
+
   /**
    * Shut down the exporter.
    * @param timeout an optional timeout, default to max.

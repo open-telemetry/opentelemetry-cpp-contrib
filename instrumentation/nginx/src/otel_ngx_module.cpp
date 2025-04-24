@@ -1,13 +1,9 @@
-// clang-format off
-// otlp_grpc_exporter header has to be included before any other API header to 
-// avoid conflict between Abseil library and OpenTelemetry C++ absl::variant.
-// https://github.com/open-telemetry/opentelemetry-cpp/tree/main/examples/otlp#additional-notes-regarding-abseil-library
-#include <opentelemetry/exporters/otlp/otlp_grpc_exporter.h>
-// clang-format on
-
 #include <opentelemetry/sdk/trace/processor.h>
+#include <opentelemetry/sdk/trace/samplers/always_off.h>
 #include <opentelemetry/trace/span.h>
 #include <algorithm>
+#include <cstdint>
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
@@ -15,6 +11,7 @@ extern "C" {
 #include <ngx_config.h>
 #include <ngx_core.h>
 #include <ngx_http.h>
+#include <ngx_conf_file.h>
 
 extern ngx_module_t otel_ngx_module;
 }
@@ -29,13 +26,16 @@ extern ngx_module_t otel_ngx_module;
 #include <opentelemetry/sdk/trace/batch_span_processor.h>
 #include <opentelemetry/sdk/trace/batch_span_processor_options.h>
 #include <opentelemetry/sdk/trace/id_generator.h>
-#include <opentelemetry/sdk/trace/samplers/always_off.h>
-#include <opentelemetry/sdk/trace/samplers/always_on.h>
-#include <opentelemetry/sdk/trace/samplers/parent.h>
+#include <opentelemetry/sdk/trace/samplers/always_on_factory.h>
+#include <opentelemetry/sdk/trace/samplers/always_off_factory.h>
+#include <opentelemetry/sdk/trace/samplers/trace_id_ratio_factory.h>
 #include <opentelemetry/sdk/trace/samplers/trace_id_ratio.h>
 #include <opentelemetry/sdk/trace/simple_processor.h>
+#include <opentelemetry/sdk/trace/samplers/parent_factory.h>
+
 #include <opentelemetry/sdk/trace/tracer_provider.h>
 #include <opentelemetry/trace/provider.h>
+#include <opentelemetry/exporters/otlp/otlp_http_exporter.h>
 
 namespace trace = opentelemetry::trace;
 namespace nostd = opentelemetry::nostd;
@@ -98,8 +98,8 @@ static void OtelCaptureHeaders(nostd::shared_ptr<opentelemetry::trace::Span> spa
         continue;
       }
 
-      u_char key[keyPrefix.len + header[i].key.len]; 
-      NgxNormalizeAndCopyString((u_char*)ngx_copy(key, keyPrefix.data, keyPrefix.len), header[i].key);
+      std::vector<u_char> key(keyPrefix.len + header[i].key.len, 0);
+      NgxNormalizeAndCopyString((u_char*)ngx_copy(key.data(), keyPrefix.data, keyPrefix.len), header[i].key);
 
       bool sensitiveHeader = false;
 #if (NGX_PCRE)
@@ -124,7 +124,7 @@ static void OtelCaptureHeaders(nostd::shared_ptr<opentelemetry::trace::Span> spa
         value = FromNgxString(header[i].value);
       }
 
-      span->SetAttribute({(const char*)key, keyPrefix.len + header[i].key.len}, nostd::span<const nostd::string_view>(&value, 1));
+      span->SetAttribute({(const char*)key.data(), keyPrefix.len + header[i].key.len}, nostd::span<const nostd::string_view>(&value, 1));
     }
   }
 }
@@ -142,6 +142,9 @@ OtelGetTraceId(ngx_http_request_t* req, ngx_http_variable_value_t* v, uintptr_t 
 
 static ngx_int_t
 OtelGetSpanId(ngx_http_request_t* req, ngx_http_variable_value_t* v, uintptr_t data);
+
+static ngx_int_t
+OtelGetSampled(ngx_http_request_t* req, ngx_http_variable_value_t* v, uintptr_t data);
 
 static ngx_http_variable_t otel_ngx_variables[] = {
   {
@@ -176,6 +179,14 @@ static ngx_http_variable_t otel_ngx_variables[] = {
     NGX_HTTP_VAR_NOCACHEABLE | NGX_HTTP_VAR_NOHASH,
     0,
   },
+  {
+    ngx_string("opentelemetry_sampled"),
+    nullptr,
+    OtelGetSampled,
+    0,
+    NGX_HTTP_VAR_NOCACHEABLE | NGX_HTTP_VAR_NOHASH,
+    0,
+  },
   ngx_http_null_variable,
 };
 
@@ -202,7 +213,7 @@ TraceContext* GetTraceContext(ngx_http_request_t* req) {
   }
 
   std::unordered_map<ngx_http_request_t*, TraceContext*>* map = (std::unordered_map<ngx_http_request_t*, TraceContext*>*)val->data;
-  if (map == nullptr){
+  if (map == nullptr) {
     ngx_log_error(NGX_LOG_INFO, req->connection->log, 0, "TraceContext not found");
     return nullptr;
   }
@@ -222,6 +233,46 @@ nostd::string_view WithoutOtelVarPrefix(ngx_str_t value) {
   }
 
   return {(const char*)value.data + prefixLength, value.len - prefixLength};
+}
+
+static ngx_int_t
+OtelGetSampled(ngx_http_request_t* req, ngx_http_variable_value_t* v, uintptr_t data) {
+  (void)data;
+
+  if (!IsOtelEnabled(req)) {
+    v->valid = 0;
+    v->not_found = 1;
+    return NGX_OK;
+  }
+
+  TraceContext* traceContext = GetTraceContext(req);
+
+  if (traceContext == nullptr || !traceContext->request_span) {
+    ngx_log_error(
+        NGX_LOG_ERR, req->connection->log, 0,
+        "Unable to get trace context when getting span id");
+    return NGX_OK;
+  }
+
+  trace::SpanContext spanContext = traceContext->request_span->GetContext();
+
+  if (spanContext.IsValid()) {
+    u_char* isSampled = spanContext.trace_flags().IsSampled() ? (u_char*) "1" : (u_char*) "0";
+
+    v->len = 1;
+    v->valid = 1;
+    v->no_cacheable = 1;
+    v->not_found = 0;
+    v->data = isSampled;
+  } else {
+    v->len = 0;
+    v->valid = 0;
+    v->no_cacheable = 1;
+    v->not_found = 1;
+    v->data = nullptr;
+  }
+
+  return NGX_OK;
 }
 
 static ngx_int_t
@@ -266,6 +317,8 @@ OtelGetTraceContextVar(ngx_http_request_t* req, ngx_http_variable_value_t* v, ui
 
 static ngx_int_t
 OtelGetTraceId(ngx_http_request_t* req, ngx_http_variable_value_t* v, uintptr_t data) {
+  (void)data;
+
   if (!IsOtelEnabled(req)) {
     v->valid = 0;
     v->not_found = 1;
@@ -321,6 +374,7 @@ OtelGetTraceId(ngx_http_request_t* req, ngx_http_variable_value_t* v, uintptr_t 
 
 static ngx_int_t
 OtelGetSpanId(ngx_http_request_t* req, ngx_http_variable_value_t* v, uintptr_t data) {
+  (void)data;
   if (!IsOtelEnabled(req)) {
     v->valid = 0;
     v->not_found = 1;
@@ -408,6 +462,10 @@ ngx_http_core_main_conf_t* NgxHttpModuleMainConf(ngx_http_request_t* req) {
 
 OtelMainConf* GetOtelMainConf(ngx_http_request_t* req) {
   return (OtelMainConf*)ngx_http_get_module_main_conf(req, otel_ngx_module);
+}
+
+OtelMainConf* GetOtelMainConf(ngx_conf_t* conf) {
+  return (OtelMainConf*)ngx_http_conf_get_module_main_conf(conf, otel_ngx_module);
 }
 
 nostd::string_view GetNgxServerName(const ngx_http_request_t* req) {
@@ -598,8 +656,7 @@ static ngx_int_t InitModule(ngx_conf_t* conf) {
     *ngx_handler = ph.handler;
   }
 
-  OtelMainConf* otelMainConf =
-    (OtelMainConf*)ngx_http_conf_get_module_main_conf(conf, otel_ngx_module);
+  OtelMainConf* otelMainConf = GetOtelMainConf(conf);
 
   if (!otelMainConf) {
     return NGX_ERROR;
@@ -772,6 +829,17 @@ std::vector<HeaderPropagation> B3PropagationVars() {
   };
 }
 
+std::vector<HeaderPropagation> B3MultiPropagationVars() {
+  return {
+    {"proxy_set_header", "x-b3-traceid", "$opentelemetry_trace_id"},
+    {"proxy_set_header", "x-b3-spanid", "$opentelemetry_span_id"},
+    {"proxy_set_header", "x-b3-sampled", "$opentelemetry_sampled"},
+    {"fastcgi_param", "HTTP_B3_TRACEID", "$opentelemetry_trace_id"},
+    {"fastcgi_param", "HTTP_B3_SPANID", "$opentelemetry_span_id"},
+    {"fastcgi_param", "HTTP_B3_SAMPLED", "$opentelemetry_sampled"},
+  };
+}
+
 std::vector<HeaderPropagation> OtelPropagationVars() {
   return {
     {"proxy_set_header", "traceparent", "$opentelemetry_context_traceparent"},
@@ -792,6 +860,8 @@ char* OtelNgxSetPropagation(ngx_conf_t* conf, ngx_command_t*, void* locConf) {
 
     if (propagationType == "b3") {
       locationConf->propagationType = TracePropagationB3;
+    } else if (propagationType == "b3multi") {
+      locationConf->propagationType = TracePropagationB3Multi;
     } else if (propagationType == "w3c") {
       locationConf->propagationType = TracePropagationW3C;
     } else {
@@ -805,6 +875,8 @@ char* OtelNgxSetPropagation(ngx_conf_t* conf, ngx_command_t*, void* locConf) {
   std::vector<HeaderPropagation> propagationVars;
   if (locationConf->propagationType == TracePropagationB3) {
     propagationVars = B3PropagationVars();
+  } else if (locationConf->propagationType == TracePropagationB3Multi) {
+    propagationVars = B3MultiPropagationVars();
   } else {
     propagationVars = OtelPropagationVars();
   }
@@ -836,17 +908,146 @@ char* OtelNgxSetPropagation(ngx_conf_t* conf, ngx_command_t*, void* locConf) {
   return NGX_CONF_OK;
 }
 
-char* OtelNgxSetConfig(ngx_conf_t* conf, ngx_command_t*, void*) {
-  OtelMainConf* mainConf = (OtelMainConf*)ngx_http_conf_get_module_main_conf(conf, otel_ngx_module);
+char* OtelNgxSetServiceName(ngx_conf_t* cf, ngx_command_t*, void*) {
+  OtelMainConf* otelMainConf = GetOtelMainConf(cf);
 
-  ngx_str_t* values = (ngx_str_t*)conf->args->elts;
-  ngx_str_t* path = &values[1];
+  ngx_str_t* values = (ngx_str_t*)cf->args->elts;
+  ngx_str_t* name = &values[1];
 
-  if (!OtelAgentConfigLoad(
-        std::string((const char*)path->data, path->len), conf->log, &mainConf->agentConfig)) {
-    return (char*)NGX_CONF_ERROR;
+  otelMainConf->agentConfig.service.name = std::string((const char*)name->data, name->len);
+
+  return NGX_CONF_OK;
+}
+
+char* OtelNgxSetEndpoint(ngx_conf_t* cf, ngx_command_t*, void*) {
+  OtelMainConf* otelMainConf = GetOtelMainConf(cf);
+
+  ngx_str_t* values = (ngx_str_t*)cf->args->elts;
+  ngx_str_t* name = &values[1];
+
+  otelMainConf->agentConfig.exporter.endpoint = std::string((const char*)name->data, name->len);
+
+  return NGX_CONF_OK;
+}
+
+char* OtelNgxSetSpanProcessorType(ngx_conf_t* cf, ngx_command_t*, void*) {
+  OtelMainConf* otelMainConf = GetOtelMainConf(cf);
+
+  ngx_str_t* values = (ngx_str_t*)cf->args->elts;
+  ngx_str_t* name = &values[1];
+
+  std::string type = std::string((const char*)name->data, name->len);
+
+  if (type == "simple") {
+    otelMainConf->agentConfig.processor.type = OtelProcessorSimple;
+    return NGX_CONF_OK;
   }
 
+  if (type == "batch") {
+    otelMainConf->agentConfig.processor.type = OtelProcessorBatch;
+    return NGX_CONF_OK;
+  }
+
+  return (char*)NGX_CONF_ERROR;
+}
+  
+char* OtelNgxSetBspMaxQueueSize(ngx_conf_t* cf, ngx_command_t*, void*) {
+  OtelMainConf* otelMainConf = GetOtelMainConf(cf);
+
+  ngx_str_t* values = (ngx_str_t*)cf->args->elts;
+  ngx_str_t* value = &values[1];
+
+  std::string strValue((const char*)value->data, value->len);
+  int32_t v = atoi(strValue.c_str());
+
+  if (v <= 0) {
+    ngx_log_error(NGX_LOG_ERR, cf->log, 0, "opentelemetry: max bsp queue size can't be <= 0");
+  } else {
+    otelMainConf->agentConfig.processor.batch.maxQueueSize = v;
+  }
+
+  return NGX_CONF_OK;
+}
+  
+char* OtelNgxSetBspScheduleDelayMillis(ngx_conf_t* cf, ngx_command_t*, void*) {
+  OtelMainConf* otelMainConf = GetOtelMainConf(cf);
+
+  ngx_str_t* values = (ngx_str_t*)cf->args->elts;
+  ngx_str_t* value = &values[1];
+
+  std::string strValue((const char*)value->data, value->len);
+  int32_t v = atoi(strValue.c_str());
+
+  if (v <= 0) {
+    ngx_log_error(NGX_LOG_ERR, cf->log, 0, "opentelemetry: bsp schedule delay can't be <= 0");
+  } else {
+    otelMainConf->agentConfig.processor.batch.maxExportBatchSize = v;
+  }
+
+  return NGX_CONF_OK;
+}
+
+char* OtelNgxSetBspMaxExportBatchSize(ngx_conf_t* cf, ngx_command_t*, void*) {
+  OtelMainConf* otelMainConf = GetOtelMainConf(cf);
+
+  ngx_str_t* values = (ngx_str_t*)cf->args->elts;
+  ngx_str_t* value = &values[1];
+
+  std::string strValue((const char*)value->data, value->len);
+  int32_t v = atoi(strValue.c_str());
+
+  if (v <= 0) {
+    ngx_log_error(NGX_LOG_ERR, cf->log, 0, "opentelemetry: bsp export batch size can't be <= 0");
+  } else {
+    otelMainConf->agentConfig.processor.batch.maxExportBatchSize = v;
+  }
+
+  return NGX_CONF_OK;
+}
+
+char* OtelNgxSetTracesSampler(ngx_conf_t* cf, ngx_command_t*, void*) {
+  OtelMainConf* otelMainConf = GetOtelMainConf(cf);
+
+  ngx_str_t* values = (ngx_str_t*)cf->args->elts;
+  ngx_str_t* value = &values[1];
+
+  std::string strSampler((const char*)value->data, value->len);
+
+  const std::vector<std::string> knownSamplers = {
+    "always_on",
+    "always_off",
+    "traceidratio",
+    "parentbased_always_on",
+    "parentbased_always_off",
+    "parentbased_traceidratio"
+  };
+
+  bool isValidSampler = false;
+  for (const auto& knownSampler : knownSamplers)  {
+    if (strSampler == knownSampler) {
+      isValidSampler = true;
+      break;
+    }
+  }
+
+  if (isValidSampler) {
+    otelMainConf->agentConfig.sampler = strSampler;
+  } else {
+    ngx_log_error(NGX_LOG_ERR, cf->log, 0, "opentelemetry: unknown sampler %V", values);
+  }
+
+  return NGX_CONF_OK;
+}
+
+char* OtelNgxSetTracesSamplerRatio(ngx_conf_t* cf, ngx_command_t*, void*) {
+  OtelMainConf* otelMainConf = GetOtelMainConf(cf);
+
+  ngx_str_t* values = (ngx_str_t*)cf->args->elts;
+  ngx_str_t* value = &values[1];
+
+  std::string strRatio((const char*)value->data, value->len);
+
+  otelMainConf->agentConfig.samplerRatio = std::min(1.0, std::max(0.0, atof(strRatio.c_str())));
   return NGX_CONF_OK;
 }
 
@@ -954,14 +1155,6 @@ static ngx_command_t kOtelNgxCommands[] = {
     nullptr,
   },
   {
-    ngx_string("opentelemetry_config"),
-    NGX_HTTP_MAIN_CONF | NGX_CONF_TAKE1,
-    OtelNgxSetConfig,
-    NGX_HTTP_LOC_CONF_OFFSET,
-    0,
-    nullptr,
-  },
-  {
     ngx_string("opentelemetry_attribute"),
     NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE2,
     OtelNgxSetCustomAttribute,
@@ -978,6 +1171,14 @@ static ngx_command_t kOtelNgxCommands[] = {
     nullptr,
   },
   {
+    ngx_string("opentelemetry_service_name"),
+    NGX_HTTP_MAIN_CONF | NGX_CONF_TAKE1,
+    OtelNgxSetServiceName,
+    NGX_HTTP_MAIN_CONF_OFFSET,
+    0,
+    nullptr,
+  },
+  {
     ngx_string("opentelemetry_trust_incoming_spans"),
     NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,
     ngx_conf_set_flag_slot,
@@ -991,6 +1192,62 @@ static ngx_command_t kOtelNgxCommands[] = {
     ngx_conf_set_flag_slot,
     NGX_HTTP_LOC_CONF_OFFSET,
     offsetof(OtelNgxLocationConf, captureHeaders),
+    nullptr,
+  },
+  {
+    ngx_string("opentelemetry_otlp_traces_endpoint"),
+    NGX_HTTP_MAIN_CONF | NGX_CONF_TAKE1,
+    OtelNgxSetEndpoint,
+    NGX_HTTP_MAIN_CONF_OFFSET,
+    0,
+    nullptr,
+  },
+  {
+    ngx_string("opentelemetry_span_processor"),
+    NGX_HTTP_MAIN_CONF | NGX_CONF_TAKE1,
+    OtelNgxSetSpanProcessorType,
+    NGX_HTTP_MAIN_CONF_OFFSET,
+    0,
+    nullptr,
+  },
+  {
+    ngx_string("opentelemetry_bsp_max_queue_size"),
+    NGX_HTTP_MAIN_CONF | NGX_CONF_TAKE1,
+    OtelNgxSetBspMaxQueueSize,
+    NGX_HTTP_MAIN_CONF_OFFSET,
+    0,
+    nullptr,
+  },
+  {
+    ngx_string("opentelemetry_bsp_schedule_delay_millis"),
+    NGX_HTTP_MAIN_CONF | NGX_CONF_TAKE1,
+    OtelNgxSetBspScheduleDelayMillis,
+    NGX_HTTP_MAIN_CONF_OFFSET,
+    0,
+    nullptr,
+  },
+  {
+    ngx_string("opentelemetry_bsp_max_export_batch_size"),
+    NGX_HTTP_MAIN_CONF | NGX_CONF_TAKE1,
+    OtelNgxSetBspMaxExportBatchSize,
+    NGX_HTTP_MAIN_CONF_OFFSET,
+    0,
+    nullptr,
+  },
+  {
+    ngx_string("opentelemetry_traces_sampler"),
+    NGX_HTTP_MAIN_CONF | NGX_CONF_TAKE1,
+    OtelNgxSetTracesSampler,
+    NGX_HTTP_MAIN_CONF_OFFSET,
+    0,
+    nullptr,
+  },
+  {
+    ngx_string("opentelemetry_traces_sampler_ratio"),
+    NGX_HTTP_MAIN_CONF | NGX_CONF_TAKE1,
+    OtelNgxSetTracesSamplerRatio,
+    NGX_HTTP_MAIN_CONF_OFFSET,
+    0,
     nullptr,
   },
 #if (NGX_PCRE)
@@ -1025,19 +1282,10 @@ static ngx_command_t kOtelNgxCommands[] = {
 static std::unique_ptr<sdktrace::SpanExporter> CreateExporter(const OtelNgxAgentConfig* conf) {
   std::unique_ptr<sdktrace::SpanExporter> exporter;
 
-  switch (conf->exporter.type) {
-    case OtelExporterOTLP: {
-      std::string endpoint = conf->exporter.endpoint;
-      otlp::OtlpGrpcExporterOptions opts;
-      opts.endpoint = endpoint;
-      opts.use_ssl_credentials = conf->exporter.use_ssl_credentials;
-      opts.ssl_credentials_cacert_path = conf->exporter.ssl_credentials_cacert_path;
-      exporter.reset(new otlp::OtlpGrpcExporter(opts));
-      break;
-    }
-    default:
-      break;
-  }
+  std::string endpoint = conf->exporter.endpoint;
+  otlp::OtlpHttpExporterOptions opts;
+  opts.url = endpoint.empty() ? opts.url : endpoint;
+  exporter.reset(new otlp::OtlpHttpExporter(opts));
 
   return exporter;
 }
@@ -1060,48 +1308,41 @@ CreateProcessor(const OtelNgxAgentConfig* conf, std::unique_ptr<sdktrace::SpanEx
 }
 
 static std::unique_ptr<sdktrace::Sampler> CreateSampler(const OtelNgxAgentConfig* conf) {
-  if (conf->sampler.parentBased) {
-    std::shared_ptr<sdktrace::Sampler> sampler;
-
-    switch (conf->sampler.type) {
-      case OtelSamplerAlwaysOn: {
-        sampler = std::make_shared<sdktrace::AlwaysOnSampler>();
-        break;
-      }
-      case OtelSamplerAlwaysOff: {
-        sampler = std::make_shared<sdktrace::AlwaysOffSampler>();
-        break;
-      }
-      case OtelSamplerTraceIdRatioBased: {
-        sampler = std::make_shared<sdktrace::TraceIdRatioBasedSampler>(conf->sampler.ratio);
-        break;
-      }
-      default:
-        break;
-    }
-
-    return std::unique_ptr<sdktrace::ParentBasedSampler>(new sdktrace::ParentBasedSampler(sampler));
+  if (conf->sampler == "always_on") {
+    return sdktrace::AlwaysOnSamplerFactory::Create();
   }
 
-  std::unique_ptr<sdktrace::Sampler> sampler;
-
-  switch (conf->sampler.type) {
-    case OtelSamplerAlwaysOn: {
-      sampler.reset(new sdktrace::AlwaysOnSampler());
-      break;
-    }
-    case OtelSamplerAlwaysOff: {
-      sampler.reset(new sdktrace::AlwaysOffSampler());
-      break;
-    }
-    case OtelSamplerTraceIdRatioBased: {
-      sampler.reset(new sdktrace::TraceIdRatioBasedSampler(conf->sampler.ratio));
-      break;
-    }
-    default:
-      break;
+  if (conf->sampler == "always_off") {
+    return sdktrace::AlwaysOffSamplerFactory::Create();
   }
-  return sampler;
+
+  if (conf->sampler == "traceidratio") {
+    return sdktrace::TraceIdRatioBasedSamplerFactory::Create(conf->samplerRatio);
+  }
+
+  if (conf->sampler == "parentbased_always_on") {
+    return sdktrace::ParentBasedSamplerFactory::Create(std::make_shared<sdktrace::AlwaysOnSampler>());
+  }
+
+  if (conf->sampler == "parentbased_always_off") {
+    return sdktrace::ParentBasedSamplerFactory::Create(std::make_shared<sdktrace::AlwaysOffSampler>());
+  }
+
+  if (conf->sampler == "parentbased_traceidratio") {
+    return sdktrace::ParentBasedSamplerFactory::Create(std::make_shared<sdktrace::TraceIdRatioBasedSampler>(conf->samplerRatio));
+  }
+
+  return sdktrace::AlwaysOnSamplerFactory::Create();
+}
+
+static std::string getEnvValue(const char* key, const std::string& defaultValue) {
+  const char* envValue = std::getenv(key);
+
+  if (envValue) {
+    return envValue;
+  }
+
+  return defaultValue;
 }
 
 static ngx_int_t OtelNgxStart(ngx_cycle_t* cycle) {
@@ -1124,11 +1365,17 @@ static ngx_int_t OtelNgxStart(ngx_cycle_t* cycle) {
     return NGX_ERROR;
   }
 
+  std::string serviceName = agentConf->service.name;
+
+  if (serviceName.empty()) {
+    serviceName = getEnvValue("OTEL_SERVICE_NAME", "unknown:nginx");
+  }
+
   auto processor = CreateProcessor(agentConf, std::move(exporter));
   auto provider =
     nostd::shared_ptr<opentelemetry::trace::TracerProvider>(new sdktrace::TracerProvider(
       std::move(processor),
-      opentelemetry::sdk::resource::Resource::Create({{"service.name", agentConf->service.name}}),
+      opentelemetry::sdk::resource::Resource::Create({{"service.name", serviceName}}),
       std::move(sampler)));
 
   opentelemetry::trace::Provider::SetTracerProvider(std::move(provider));
