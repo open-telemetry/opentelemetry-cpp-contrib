@@ -47,8 +47,7 @@ void Recordable::SetBody(const opentelemetry::common::AttributeValue &message) n
   event_builder_.AddValue("__csver__", static_cast<uint16_t>(0x400), event_field_format_unsigned_int);
 
   event_builder_.AddStruct("PartB", 1, 0, &cs_part_b_bookmark_);
-  utils::PopulateAttribute("_typeName", "Log", event_builder_);
-
+  event_builder_.AddString<char>("_typeName", "Log", event_field_format_default);
   event_builder_.AddValue("severityNumber", static_cast<uint16_t>(severity_),
                           event_field_format_default);
   auto severity_text = api_logs::SeverityNumToText[static_cast<uint32_t>(severity_)].data();
