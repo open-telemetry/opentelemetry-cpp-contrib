@@ -37,10 +37,10 @@ bool SocketDataTransport::Connect() noexcept {
     connected_ = socket_.connect(*addr_);
     if (!connected_) {
       LOG_ERROR("Geneva Exporter: UDS::Connect failed");
-      return false;
+      socket_.close();
     }
   }
-  return true;
+  return connected_;
 }
 
 bool SocketDataTransport::Send(MetricsEventType event_type,
