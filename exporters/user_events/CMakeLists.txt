@@ -8,12 +8,11 @@ option(WITH_EXAMPLES "Build example" ON)
 option(BUILD_TESTING "Build tests" ON)
 option(BUILD_TRACEPOINTS "Build tracepoints library" ON)
 
-project(opentelemetry-user_events-exporter)
+set(MAIN_PROJECT OFF)
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+  project(opentelemetry-user_events-exporter)
   set(MAIN_PROJECT ON)
   message(STATUS "${PROJECT_NAME} is main project")
-else()
-  set(MAIN_PROJECT OFF)
 endif()
 
 if(MAIN_PROJECT)
@@ -21,7 +20,7 @@ if(MAIN_PROJECT)
   find_package(Protobuf REQUIRED)
   find_package(CURL REQUIRED)
   find_package(nlohmann_json REQUIRED)
-  find_package(opentelemetry-cpp REQUIRED)
+  find_package(opentelemetry-cpp CONFIG REQUIRED COMPONENTS api sdk exporters_otlp_common)
 endif()
 
 if(BUILD_TRACEPOINTS)
@@ -49,41 +48,27 @@ target_compile_features(opentelemetry_exporter_user_events_logs
 target_compile_definitions(opentelemetry_exporter_user_events_logs
                            PUBLIC HAVE_CONSOLE_LOG HAVE_LOGS_PREVIEW)
 
-if(MAIN_PROJECT)
-  target_include_directories(opentelemetry_exporter_user_events_logs
-                             PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
-  target_link_libraries(opentelemetry_exporter_user_events_logs
-                        PUBLIC ${OPENTELEMETRY_CPP_LIBRARIES})
-else()
-  target_link_libraries(
+target_link_libraries(
     opentelemetry_exporter_user_events_logs
-    PUBLIC opentelemetry_logs opentelemetry_resources opentelemetry_common)
-endif()
+    PUBLIC opentelemetry-cpp::logs opentelemetry-cpp::version)
 
 target_link_libraries(opentelemetry_exporter_user_events_logs
                       PUBLIC eventheader-tracepoint tracepoint)
 
 set_target_properties(opentelemetry_exporter_user_events_logs
-                      PROPERTIES EXPORT_NAME logs)
+                      PROPERTIES EXPORT_NAME user_events_logs_exporter)
 
 add_library(opentelemetry_exporter_user_events_metrics src/metrics_exporter.cc)
 
 target_compile_features(opentelemetry_exporter_user_events_metrics
                         PRIVATE cxx_std_17)
 
-if(MAIN_PROJECT)
-  target_include_directories(opentelemetry_exporter_user_events_metrics
-                             PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
-  target_link_libraries(
+target_link_libraries(
     opentelemetry_exporter_user_events_metrics
-    PUBLIC ${OPENTELEMETRY_CPP_LIBRARIES} tracepoint protobuf::libprotobuf)
-  # TODO: link to opentelemetry_otlp_recordable
-else()
-  target_link_libraries(
-    opentelemetry_exporter_user_events_metrics
-    PUBLIC opentelemetry_metrics opentelemetry_resources opentelemetry_common
-           opentelemetry_otlp_recordable tracepoint)
-endif()
+    PUBLIC opentelemetry-cpp::metrics opentelemetry-cpp::otlp_recordable tracepoint)
+
+set_target_properties(opentelemetry_exporter_user_events_metrics
+                  PROPERTIES EXPORT_NAME user_events_metrics_exporter)
 
 if(WITH_EXAMPLES)
   add_executable(user_events_logs example/logs/main.cc
@@ -136,15 +121,24 @@ if(WITH_BENCHMARK)
     opentelemetry_exporter_user_events_logs)
 endif()
 
-install(
-  TARGETS opentelemetry_exporter_user_events_logs
-  EXPORT "${PROJECT_NAME}-target"
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+if(NOT MAIN_PROJECT)
+  otel_add_component(
+    COMPONENT exporters_user_events
+    TARGETS opentelemetry_exporter_user_events_logs opentelemetry_exporter_user_events_metrics
+    FILES_DIRECTORY include/opentelemetry/exporters/user_events
+    FILES_DESTINATION include/opentelemetry/exporters
+    FILES_MATCHING PATTERN "*.h")
+elseif(OPENTELEMETRY_INSTALL)
+  install(
+    TARGETS opentelemetry_exporter_user_events_logs
+    EXPORT "${PROJECT_NAME}-target"
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-install(
-  DIRECTORY include/opentelemetry/exporters/user_events
-  DESTINATION include/opentelemetry/exporters
-  FILES_MATCHING
-  PATTERN "*.h")
+  install(
+    DIRECTORY include/opentelemetry/exporters/user_events
+    DESTINATION include/opentelemetry/exporters
+    FILES_MATCHING
+    PATTERN "*.h")
+endif() 

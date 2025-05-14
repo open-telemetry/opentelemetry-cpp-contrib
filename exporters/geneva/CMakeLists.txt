@@ -17,7 +17,7 @@ endif()
     
 add_definitions(-DHAVE_CONSOLE_LOG)
 if(MAIN_PROJECT)
-  find_package(opentelemetry-cpp REQUIRED)
+  find_package(opentelemetry-cpp REQUIRED COMPONENTS api sdk)
 endif()
 
 include_directories(include)
@@ -44,17 +44,12 @@ else()
               src/exporter.cc src/unix_domain_socket_data_transport.cc)
 endif()
 
-if(MAIN_PROJECT)
-   target_include_directories(opentelemetry_exporter_geneva_metrics
-                      PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
-   target_link_libraries(opentelemetry_exporter_geneva_metrics
-                      PUBLIC ${OPENTELEMETRY_CPP_LIBRARIES})
-else()
-   target_link_libraries(opentelemetry_exporter_geneva_metrics
-                      PUBLIC opentelemetry_metrics opentelemetry_resources opentelemetry_common)
-endif()
+target_link_libraries(opentelemetry_exporter_geneva_metrics
+                      PUBLIC opentelemetry-cpp::metrics)
 
 set_target_version(opentelemetry_exporter_geneva_metrics)
+
+set_target_properties(opentelemetry_exporter_geneva_metrics PROPERTIES EXPORT_NAME geneva_metrics_exporter)
 
 if(BUILD_TESTING)
   if(EXISTS ${CMAKE_BINARY_DIR}/lib/libgtest.a)
@@ -90,7 +85,14 @@ if(BUILD_TESTING)
     TEST_LIST geneva_metrics_exporter_test)
 endif()
 
-if(OPENTELEMETRY_INSTALL)
+if(NOT MAIN_PROJECT)
+  otel_add_component(
+    COMPONENT exporters_geneva_metrics
+    TARGETS opentelemetry_exporter_geneva_metrics
+    FILES_DIRECTORY include/opentelemetry/exporters/geneva
+    FILES_DESTINATION include/opentelemetry/exporters
+    FILES_MATCHING PATTERN "*.h")
+elseif(OPENTELEMETRY_INSTALL)
   install(
     TARGETS opentelemetry_exporter_geneva_metrics
     EXPORT "${PROJECT_NAME}-target"
@@ -112,7 +114,7 @@ if(WITH_EXAMPLES)
 
   if(NOT WIN32)
     add_executable(stress_test_linux example/stress_test_linux.cc)
-    find_package(Boost QUIET)
+    find_package(Boost CONFIG QUIET)
     if(Boost_FOUND)
       include_directories(${Boost_INCLUDE_DIRS})
       target_compile_definitions(stress_test_linux PRIVATE HAVE_BOOST)
