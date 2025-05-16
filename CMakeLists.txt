@@ -5,12 +5,17 @@ cmake_minimum_required(VERSION 3.14)
 
 project(opentelemetry-cpp-contrib VERSION 0.1.0 LANGUAGES CXX)
 
-# silence CMP0169 deprecation of one-arg Populate()
-cmake_policy(SET CMP0169 OLD)
-
 # Define options for each component in opentelemetry-cpp-contrib
-option(WITH_GENEVA "Build with Geneva exporters" ON)
-option(WITH_USER_EVENTS "Build with User Events exporters" ON)
+option(WITH_COMPONENT_GENEVA "Build with Geneva exporters" ON)
+option(WITH_COMPONENT_USER_EVENTS "Build with User Events exporters" ON)
+
+# Other options for opentelemetry-cpp-contrib
+option(OPENTELEMETRY_CONTRIB_INSTALL "Install the opentelemetry-cpp-contrib package" ON)
+option(WITH_EXAMPLES "Build example" ON)
+option(WITH_BENCHMARK "Build with benchmark" ON)
+option(BUILD_TESTING "Build tests" ON)
+option(BUILD_TRACEPOINTS "Build tracepoints library" ON)
+option(OTELCPP_VERSIONED_LIBS "Whether to generate the versioned shared libs" OFF)
 
 # Set the opentelemetry-cpp provider to use. 
 # - "fetch" will use the FetchContent module to download the opentelemetry-cpp repo and build in the same build tree
@@ -18,47 +23,26 @@ option(WITH_USER_EVENTS "Build with User Events exporters" ON)
 set(opentelemetry-cpp_PROVIDER "fetch" CACHE STRING "Provider for opentelemetry-cpp")
 set_property(CACHE opentelemetry-cpp_PROVIDER PROPERTY STRINGS "package" "fetch")
 
-set(OPENTELEMETRY_INSTALL OFF)
-set(OPENTELEMETRY_CONTRIB_INSTALL ON)
-
-include(CTest)
-include(GoogleTest)
 include(FetchContent)
 
-# Fetch opentelemetry-cpp: 
-#   This is required for the cmake install functions. 
-FetchContent_Declare(
-  opentelemetry-cpp
-  GIT_REPOSITORY
-  https://github.com/dbarker/opentelemetry-cpp.git
-  GIT_TAG
-  poc_otel_cmake_external_repo_support
-)
-# Alternatively fetch from an opentelemetry-cpp submodule
-# FetchContent_Declare(
-#  opentelemetry-cpp
-#  SOURCE_DIR "${PROJECT_SOURCE_DIR}/third_party/opentelemetry-cpp")
+if(BUILD_TESTING)
+  include(CTest)
+  include(GoogleTest)
+  # Find or Fetch googletest
+  include(${PROJECT_SOURCE_DIR}/cmake/googletest.cmake)
+  enable_testing()
+endif() 
 
-if(opentelemetry-cpp_PROVIDER STREQUAL "package")
-  find_package(opentelemetry-cpp CONFIG REQUIRED)
-  FetchContent_Populate(opentelemetry-cpp)
-elseif(opentelemetry-cpp_PROVIDER STREQUAL "fetch")
-  if(WITH_USER_EVENTS)
-    # User Events needs the otlp_common component. Turn on one of the otlp components (There is no WITH_OTLP_COMMON option)
-    set(WITH_OTLP_FILE ON)
-  endif()
+if(WITH_BENCHMARK)
+  # Find or Fetch benchmark
+  include(${PROJECT_SOURCE_DIR}/cmake/benchmark.cmake)
+endif() 
 
-  set(OPENTELEMETRY_INSTALL ON)
+# Make Threads available
+find_package(Threads REQUIRED)
 
-  # Add opetelemetry-cpp to the build tree
-  FetchContent_MakeAvailable(opentelemetry-cpp)
-
-  if(WITH_ABI_VERSION_2)
-    set(OPENTELEMETRY_ABI_VERSION_NO "2")
-  elseif(WITH_ABI_VERSION_1)
-    set(OPENTELEMETRY_ABI_VERSION_NO "1")
-  endif()
-endif()
+# Find or Fetch opentelemetry-cpp
+include(${PROJECT_SOURCE_DIR}/cmake/opentelemetry-cpp.cmake)
 
 # Include the opentelemetry-cpp cmake functions to support adding and installing components
 include(${opentelemetry-cpp_SOURCE_DIR}/cmake/otel-install-functions.cmake)
@@ -68,8 +52,6 @@ add_subdirectory(exporters)
 
 # install the opentelemetry-cpp-contrib package
 if(OPENTELEMETRY_CONTRIB_INSTALL)
-  # Set the version for the opentelemetry-cpp-contrib package used in the config file template
-  set(OPENTELEMETRY_VERSION ${PROJECT_VERSION})
   otel_install_cmake_config()
   otel_install_components()
   otel_install_thirdparty_definitions()
