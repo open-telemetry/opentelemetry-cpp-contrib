@@ -1,0 +1,48 @@
+# Copyright The OpenTelemetry Authors
+# SPDX-License-Identifier: Apache-2.0
+
+#.rst:
+# opentelemetry-cpp-contrib-config.cmake
+# --------
+# Finding opentelemetry-cpp-contrib in CMake projects
+# ========================================
+#
+#  - find_package(opentelemetry-cpp-contrib CONFIG REQUIRED) to import all installed targets and dependencies
+#  - find_package(opentelemetry-cpp-contrib CONFIG COMPONENTS ...) to import specific components' targets and dependencies
+#
+
+@PACKAGE_INIT@
+
+# Include the opentelemetry-cpp cmake functions file that includes component defintions, thirdparty definitons and functions to support finding this package and dependencies.
+include("${CMAKE_CURRENT_LIST_DIR}/find-package-support-functions.cmake")
+
+set(_INSTALLED_COMPONENTS "")
+get_installed_components(_INSTALLED_COMPONENTS)
+
+set(OPENTELEMETRY_CPP_CONTRIB_COMPONENTS_INSTALLED ${_INSTALLED_COMPONENTS} CACHE STRING "opentelemetry-cpp-contrib components installed" FORCE)
+
+set(_REQUESTED_COMPONENTS "")
+get_requested_components(_INSTALLED_COMPONENTS _REQUESTED_COMPONENTS)
+
+find_required_dependencies(_REQUESTED_COMPONENTS)
+
+# include the target files selected and set the component found flag
+foreach(_COMPONENT IN LISTS _REQUESTED_COMPONENTS)
+  include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@-${_COMPONENT}-target.cmake")
+  set(${CMAKE_FIND_PACKAGE_NAME}_${_COMPONENT}_FOUND TRUE
+    CACHE BOOL "whether ${CMAKE_FIND_PACKAGE_NAME} component ${_COMPONENT} is found" FORCE)
+endforeach()
+
+# get installed and requested targets
+set(_OPENTELEMETRY_CPP_CONTRIB_TARGETS "")
+get_targets(_REQUESTED_COMPONENTS _OPENTELEMETRY_CPP_CONTRIB_TARGETS)
+check_targets_imported(_OPENTELEMETRY_CPP_CONTRIB_TARGETS)
+
+# handle the QUIETLY and REQUIRED arguments and set opentelemetry-cpp-contrib_FOUND to
+# TRUE
+include("FindPackageHandleStandardArgs")
+find_package_handle_standard_args(
+  ${CMAKE_FIND_PACKAGE_NAME}
+  FOUND_VAR ${CMAKE_FIND_PACKAGE_NAME}_FOUND)
+
+check_required_components(${CMAKE_FIND_PACKAGE_NAME})
