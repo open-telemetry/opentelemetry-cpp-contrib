@@ -86,6 +86,7 @@ void ApacheHooks::registerHooks(apr_pool_t *p)
     ap_hook_fixups(ApacheHooks::otel_hook_interaction_end, NULL, NULL, APR_HOOK_REALLY_FIRST - 2);
     ap_hook_handler(ApacheHooks::otel_hook_interaction_end, NULL, NULL, APR_HOOK_REALLY_FIRST - 2);
     ap_hook_log_transaction(ApacheHooks::otel_hook_interaction_end_log_transaction, NULL, NULL, APR_HOOK_REALLY_FIRST - 2);
+    ap_hook_translate_name(ApacheHooks::otel_hook_interaction_end, NULL, NULL, APR_HOOK_REALLY_FIRST - 2);
 
     // Stage Hooks
     // TODO: Decide among the following stages at what all we need the modules to be instrumented,
@@ -170,6 +171,14 @@ void ApacheHooks::registerHooks(apr_pool_t *p)
             ApacheHooksForStage::otel_log_transaction_indexes,
             ApacheHooks::otel_hook_interaction_end,
             "log_transaction");
+    ApacheHooksForStage::insertHooksForStage(
+            p,
+            ap_hook_get_translate_name,
+            ap_hook_translate_name,
+            ApacheHooksForStage::otel_translate_name_hooks,
+            ApacheHooksForStage::otel_translate_name_indexes,
+            ApacheHooks::otel_hook_interaction_end,
+            "translate_name");
 }
 
 apr_status_t ApacheHooks::otel_output_filter(ap_filter_t* f, apr_bucket_brigade* bb)
@@ -1300,6 +1309,7 @@ int ApacheHooksForStage::otel_hook_log_transaction3(request_rec* r)
             HookContainer::OTEL_ENDPOINT_LOG_TRANSACTION3);
     return DECLINED;
 }
+
 int ApacheHooksForStage::otel_hook_log_transaction4(request_rec* r)
 {
     ApacheHooks::otel_startInteraction(
@@ -1307,6 +1317,7 @@ int ApacheHooksForStage::otel_hook_log_transaction4(request_rec* r)
             HookContainer::OTEL_ENDPOINT_LOG_TRANSACTION4);
     return DECLINED;
 }
+
 int ApacheHooksForStage::otel_hook_log_transaction5(request_rec* r)
 {
     ApacheHooks::otel_startInteraction(
@@ -1314,6 +1325,47 @@ int ApacheHooksForStage::otel_hook_log_transaction5(request_rec* r)
             HookContainer::OTEL_ENDPOINT_LOG_TRANSACTION5);
     return DECLINED;
 }
+
+int ApacheHooksForStage::otel_hook_translate_name1(request_rec* r)
+{
+    ApacheHooks::otel_startInteraction(
+            r,
+            HookContainer::OTEL_ENDPOINT_TRANSLATE_NAME1);
+    return DECLINED;
+}
+
+int ApacheHooksForStage::otel_hook_translate_name2(request_rec* r)
+{
+    ApacheHooks::otel_startInteraction(
+            r,
+            HookContainer::OTEL_ENDPOINT_TRANSLATE_NAME2);
+    return DECLINED;
+}
+
+int ApacheHooksForStage::otel_hook_translate_name3(request_rec* r)
+{
+    ApacheHooks::otel_startInteraction(
+            r,
+            HookContainer::OTEL_ENDPOINT_TRANSLATE_NAME3);
+    return DECLINED;
+}
+
+int ApacheHooksForStage::otel_hook_translate_name4(request_rec* r)
+{
+    ApacheHooks::otel_startInteraction(
+            r,
+            HookContainer::OTEL_ENDPOINT_TRANSLATE_NAME4);
+    return DECLINED;
+}
+
+int ApacheHooksForStage::otel_hook_translate_name5(request_rec* r)
+{
+    ApacheHooks::otel_startInteraction(
+            r,
+            HookContainer::OTEL_ENDPOINT_TRANSLATE_NAME5);
+    return DECLINED;
+}
+
 
 // These hooks are for stopping interactions after a module
 int ApacheHooks::otel_hook_interaction_end(request_rec *r)
@@ -1542,3 +1594,15 @@ const std::vector<HookContainer::otel_endpoint_indexes> ApacheHooksForStage::ote
         ,HookContainer::OTEL_ENDPOINT_LOG_TRANSACTION3
         ,HookContainer::OTEL_ENDPOINT_LOG_TRANSACTION4
         ,HookContainer::OTEL_ENDPOINT_LOG_TRANSACTION5};
+const std::vector<ApacheHooksForStage::processRequestHooks> ApacheHooksForStage::otel_translate_name_hooks =
+        {otel_hook_translate_name1
+        ,otel_hook_translate_name2
+        ,otel_hook_translate_name3
+        ,otel_hook_translate_name4
+        ,otel_hook_translate_name5};
+const std::vector<HookContainer::otel_endpoint_indexes> ApacheHooksForStage::otel_translate_name_indexes =
+        {HookContainer::OTEL_ENDPOINT_TRANSLATE_NAME1
+        ,HookContainer::OTEL_ENDPOINT_TRANSLATE_NAME2
+        ,HookContainer::OTEL_ENDPOINT_TRANSLATE_NAME3
+        ,HookContainer::OTEL_ENDPOINT_TRANSLATE_NAME4
+        ,HookContainer::OTEL_ENDPOINT_TRANSLATE_NAME5};
