@@ -76,7 +76,7 @@ else()
   target_link_libraries(
     opentelemetry_exporter_geneva_trace
     PUBLIC opentelemetry_trace opentelemetry_resources opentelemetry_common
-      nlohmann_json::nlohmann_json)
+      opentelemetry_ext nlohmann_json::nlohmann_json)
 endif()
 
 # create fluentd logs exporter
@@ -97,7 +97,7 @@ else()
     target_link_libraries(
       opentelemetry_exporter_geneva_logs
       PUBLIC opentelemetry_logs opentelemetry_resources opentelemetry_common
-        nlohmann_json::nlohmann_json)
+        opentelemetry_ext nlohmann_json::nlohmann_json)
 endif()
 
 if(nlohmann_json_clone)
