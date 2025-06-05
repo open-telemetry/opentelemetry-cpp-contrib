@@ -91,6 +91,9 @@ if(BUILD_TESTING)
 endif()
 
 if(OPENTELEMETRY_INSTALL)
+
+if(MAIN_PROJECT)
+
   install(
     TARGETS opentelemetry_exporter_geneva_metrics
     EXPORT "${PROJECT_NAME}-target"
@@ -103,6 +106,25 @@ if(OPENTELEMETRY_INSTALL)
     DESTINATION include/opentelemetry/exporters
     FILES_MATCHING
     PATTERN "*.h")
+
+else()
+
+  set_target_properties(opentelemetry_exporter_geneva_metrics PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_metrics)
+
+  otel_add_component(
+    COMPONENT
+    exporters_geneva_metrics
+    TARGETS
+    opentelemetry_exporter_geneva_metrics
+    FILES_DIRECTORY
+    "include/opentelemetry/exporters/geneva"
+    FILES_DESTINATION
+    "include/opentelemetry/exporters"
+    FILES_MATCHING
+    PATTERN
+    "*.h")
+
+endif()
 endif()
 
 if(WITH_EXAMPLES)

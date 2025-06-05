@@ -117,19 +117,34 @@ if (WITH_EXAMPLES)
 endif()
 
 if(OPENTELEMETRY_INSTALL)
-  install(
-    TARGETS opentelemetry_exporter_geneva_logs
-            opentelemetry_exporter_geneva_trace
-    EXPORT "${PROJECT_NAME}-target"
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+  if(MAIN_PROJECT)
+    install(
+      TARGETS opentelemetry_exporter_geneva_logs
+              opentelemetry_exporter_geneva_trace
+      EXPORT "${PROJECT_NAME}-target"
+      RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+      LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+      ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-  install(
-    DIRECTORY include/opentelemetry/exporters/
-    DESTINATION include/opentelemetry/exporters/
-    FILES_MATCHING
-    PATTERN "*.h")
+    install(
+      DIRECTORY include/opentelemetry/exporters/
+      DESTINATION include/opentelemetry/exporters/
+      FILES_MATCHING
+      PATTERN "*.h")
+  else()
+    otel_add_component(
+      COMPONENT
+      exporters_geneva_fluentd
+      TARGETS
+      opentelemetry_exporter_geneva_logs
+      opentelemetry_exporter_geneva_trace
+      FILES_DIRECTORY
+      "include/opentelemetry/exporters/"
+      FILES_DESTINATION
+      "include/opentelemetry/exporters"
+      FILES_MATCHING
+      PATTERN "*.h")
+  endif()
 endif()
 
 if(BUILD_TESTING)
