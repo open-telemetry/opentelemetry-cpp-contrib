@@ -136,29 +136,29 @@ if(WITH_BENCHMARK)
     opentelemetry_exporter_user_events_logs)
 endif()
 
+set_target_properties(
+  opentelemetry_exporter_user_events_logs
+  PROPERTIES
+    EXPORT_NAME opentelemetry_exporter_user_events_logs)
+set_target_properties(
+  opentelemetry_exporter_user_events_metrics
+  PROPERTIES
+    EXPORT_NAME opentelemetry_exporter_user_events_metrics)
+
 if(MAIN_PROJECT)
+  install(
+    TARGETS opentelemetry_exporter_user_events_logs
+    EXPORT "${PROJECT_NAME}-target"
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-install(
-  TARGETS opentelemetry_exporter_user_events_logs
-  EXPORT "${PROJECT_NAME}-target"
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
-
-install(
-  DIRECTORY include/opentelemetry/exporters/user_events
-  DESTINATION include/opentelemetry/exporters
-  FILES_MATCHING
-  PATTERN "*.h")
+  install(
+    DIRECTORY include/opentelemetry/exporters/user_events
+    DESTINATION include/opentelemetry/exporters
+    FILES_MATCHING
+    PATTERN "*.h")
 else()
-  set_target_properties(
-    opentelemetry_exporter_user_events_logs
-    PROPERTIES
-      EXPORT_NAME opentelemetry_exporter_user_events_logs)
-  set_target_properties(
-    opentelemetry_exporter_user_events_metrics
-    PROPERTIES
-      EXPORT_NAME opentelemetry_exporter_user_events_metrics)
   otel_add_component(
     COMPONENT
     exporters_user_events

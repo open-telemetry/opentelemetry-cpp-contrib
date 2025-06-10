@@ -30,6 +30,13 @@ if(WITH_EXAMPLES)
 endif()
 
 if(OPENTELEMETRY_INSTALL)
+  set_target_properties(
+    opentelemetry_exporter_geneva_trace
+    PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_trace)
+  set_target_properties(
+    opentelemetry_exporter_geneva_logs
+    PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_logs)
+
   if(MAIN_PROJECT)
     install(DIRECTORY include/ DESTINATION include)
 
@@ -44,13 +51,6 @@ if(OPENTELEMETRY_INSTALL)
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
     endif()
   else()
-    set_target_properties(
-      opentelemetry_exporter_geneva_trace
-      PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_trace)
-    set_target_properties(
-      opentelemetry_exporter_geneva_logs
-      PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_logs)
-
     otel_add_component(
       COMPONENT
       exporters_geneva_trace_logs
@@ -60,7 +60,7 @@ if(OPENTELEMETRY_INSTALL)
       FILES_DIRECTORY
       "include/opentelemetry/exporters/geneva"
       FILES_DESTINATION
-      "include/opentelemetry/exporters/geneva"
+      "include/opentelemetry/exporters"
       FILES_MATCHING
       PATTERN
       "*.h")

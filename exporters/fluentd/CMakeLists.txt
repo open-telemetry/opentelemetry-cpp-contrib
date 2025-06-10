@@ -117,6 +117,14 @@ if (WITH_EXAMPLES)
 endif()
 
 if(OPENTELEMETRY_INSTALL)
+  set_target_properties(
+    opentelemetry_exporter_geneva_trace
+    PROPERTIES
+      EXPORT_NAME opentelemetry_exporter_geneva_trace)
+  set_target_properties(
+    opentelemetry_exporter_geneva_logs
+    PROPERTIES
+      EXPORT_NAME opentelemetry_exporter_geneva_logs)
   if(MAIN_PROJECT)
     install(
       TARGETS opentelemetry_exporter_geneva_logs
@@ -132,14 +140,6 @@ if(OPENTELEMETRY_INSTALL)
       FILES_MATCHING
       PATTERN "*.h")
   else()
-    set_target_properties(
-      opentelemetry_exporter_geneva_trace
-      PROPERTIES
-        EXPORT_NAME opentelemetry_exporter_geneva_trace)
-    set_target_properties(
-      opentelemetry_exporter_geneva_logs
-      PROPERTIES
-        EXPORT_NAME opentelemetry_exporter_geneva_logs)
     otel_add_component(
       COMPONENT
       exporters_geneva_fluentd
