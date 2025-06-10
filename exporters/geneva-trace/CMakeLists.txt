@@ -17,12 +17,19 @@ target_include_directories(
   opentelemetry_exporter_geneva_trace INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
+set_target_properties(
+  opentelemetry_exporter_geneva_trace
+  PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_trace)
 
 add_library(opentelemetry_exporter_geneva_logs INTERFACE)
 target_include_directories(
   opentelemetry_exporter_geneva_logs INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
+set_target_properties(
+  opentelemetry_exporter_geneva_logs
+  PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_logs)
+
 
 if(WITH_EXAMPLES)
   include_directories(include)
@@ -30,13 +37,6 @@ if(WITH_EXAMPLES)
 endif()
 
 if(OPENTELEMETRY_INSTALL)
-  set_target_properties(
-    opentelemetry_exporter_geneva_trace
-    PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_trace)
-  set_target_properties(
-    opentelemetry_exporter_geneva_logs
-    PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_logs)
-
   if(MAIN_PROJECT)
     install(DIRECTORY include/ DESTINATION include)
 

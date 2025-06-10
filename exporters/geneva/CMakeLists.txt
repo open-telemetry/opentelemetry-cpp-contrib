@@ -44,6 +44,10 @@ else()
               src/exporter.cc src/unix_domain_socket_data_transport.cc)
 endif()
 
+set_target_properties(
+  opentelemetry_exporter_geneva_metrics
+  PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_metrics)
+
 if(MAIN_PROJECT)
    target_include_directories(opentelemetry_exporter_geneva_metrics
                       PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
@@ -91,9 +95,6 @@ if(BUILD_TESTING)
 endif()
 
 if(OPENTELEMETRY_INSTALL)
-  set_target_properties(
-    opentelemetry_exporter_geneva_metrics
-    PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_metrics)
   if(MAIN_PROJECT)
     install(
       TARGETS opentelemetry_exporter_geneva_metrics
