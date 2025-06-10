@@ -91,7 +91,7 @@ if(BUILD_TESTING)
 endif()
 
 if(OPENTELEMETRY_INSTALL)
-  set_targt_properties(
+  set_target_properties(
     opentelemetry_exporter_geneva_metrics
     PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_metrics)
   if(MAIN_PROJECT)
