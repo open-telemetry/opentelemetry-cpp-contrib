@@ -43,8 +43,13 @@ if(OPENTELEMETRY_INSTALL)
       DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
   endif()
 
-set_target_properties(opentelemetry_exporter_geneva_trace PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_trace)
-set_target_properties(opentelemetry_exporter_geneva_logs PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_logs)
+  set_target_properties(
+    opentelemetry_exporter_geneva_trace
+    PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_trace)
+  set_target_properties(
+    opentelemetry_exporter_geneva_logs
+    PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_logs)
+
   otel_add_component(
     COMPONENT
     exporters_geneva_trace_logs
