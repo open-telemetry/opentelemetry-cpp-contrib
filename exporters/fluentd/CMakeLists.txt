@@ -63,6 +63,10 @@ endif()
 # create fluentd trace exporter
 add_library(opentelemetry_exporter_geneva_trace src/trace/fluentd_exporter.cc
                                                 src/trace/recordable.cc)
+set_target_properties(
+  opentelemetry_exporter_geneva_trace
+  PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_trace)
+
 if(MAIN_PROJECT)
   target_include_directories(opentelemetry_exporter_geneva_trace
                            PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
@@ -83,6 +87,10 @@ endif()
 
 add_library(opentelemetry_exporter_geneva_logs src/log/fluentd_exporter.cc
                                                src/log/recordable.cc)
+set_target_properties(
+  opentelemetry_exporter_geneva_logs
+  PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_logs)
+
 if(MAIN_PROJECT)
   target_include_directories(opentelemetry_exporter_geneva_logs
                            PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
@@ -132,14 +140,6 @@ if(OPENTELEMETRY_INSTALL)
       FILES_MATCHING
       PATTERN "*.h")
   else()
-    set_target_properties(
-      opentelemetry_exporter_geneva_trace
-      PROPERTIES
-        EXPORT_NAME opentelemetry_exporter_geneva_trace)
-    set_target_properties(
-      opentelemetry_exporter_geneva_logs
-      PROPERTIES
-        EXPORT_NAME opentelemetry_exporter_geneva_logs)
     otel_add_component(
       COMPONENT
       exporters_geneva_fluentd

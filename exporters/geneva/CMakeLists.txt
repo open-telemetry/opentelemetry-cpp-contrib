@@ -44,6 +44,10 @@ else()
               src/exporter.cc src/unix_domain_socket_data_transport.cc)
 endif()
 
+set_target_properties(
+  opentelemetry_exporter_geneva_metrics
+  PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_metrics)
+
 if(MAIN_PROJECT)
    target_include_directories(opentelemetry_exporter_geneva_metrics
                       PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
@@ -91,40 +95,33 @@ if(BUILD_TESTING)
 endif()
 
 if(OPENTELEMETRY_INSTALL)
+  if(MAIN_PROJECT)
+    install(
+      TARGETS opentelemetry_exporter_geneva_metrics
+      EXPORT "${PROJECT_NAME}-target"
+      RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+      LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+      ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-if(MAIN_PROJECT)
-
-  install(
-    TARGETS opentelemetry_exporter_geneva_metrics
-    EXPORT "${PROJECT_NAME}-target"
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
-
-  install(
-    DIRECTORY include/opentelemetry/exporters/geneva
-    DESTINATION include/opentelemetry/exporters
-    FILES_MATCHING
-    PATTERN "*.h")
-
-else()
-
-  set_target_properties(opentelemetry_exporter_geneva_metrics PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_metrics)
-
-  otel_add_component(
-    COMPONENT
-    exporters_geneva_metrics
-    TARGETS
-    opentelemetry_exporter_geneva_metrics
-    FILES_DIRECTORY
-    "include/opentelemetry/exporters/geneva"
-    FILES_DESTINATION
-    "include/opentelemetry/exporters"
-    FILES_MATCHING
-    PATTERN
-    "*.h")
-
-endif()
+    install(
+      DIRECTORY include/opentelemetry/exporters/geneva
+      DESTINATION include/opentelemetry/exporters
+      FILES_MATCHING
+      PATTERN "*.h")
+  else()
+    otel_add_component(
+      COMPONENT
+      exporters_geneva_metrics
+      TARGETS
+      opentelemetry_exporter_geneva_metrics
+      FILES_DIRECTORY
+      "include/opentelemetry/exporters/geneva"
+      FILES_DESTINATION
+      "include/opentelemetry/exporters"
+      FILES_MATCHING
+      PATTERN
+      "*.h")
+  endif()
 endif()
 
 if(WITH_EXAMPLES)
