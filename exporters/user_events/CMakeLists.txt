@@ -36,6 +36,8 @@ if(BUILD_TRACEPOINTS)
   # Restore original values
   set(BUILD_SAMPLES ${ORIGINAL_BUILD_SAMPLES})
   set(BUILD_TOOLS ${ORIGINAL_BUILD_TOOLS})
+else()
+  find_package(eventheader-headers REQUIRED CONFIG)
 endif()
 
 include_directories(include)
@@ -61,7 +63,7 @@ else()
 endif()
 
 target_link_libraries(opentelemetry_exporter_user_events_logs
-                      PUBLIC eventheader-tracepoint tracepoint)
+                      PUBLIC eventheader-tracepoint eventheader-headers tracepoint)
 
 set_target_properties(opentelemetry_exporter_user_events_logs
                       PROPERTIES EXPORT_NAME logs)
