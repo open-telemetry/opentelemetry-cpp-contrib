@@ -22,16 +22,16 @@ doc](https://docs.google.com/document/d/1i1E4-_y4uJ083lCutKGDhkpi3n4_e774SBLi9hP
 For edit access, get in touch on
 [Slack](https://cloud-native.slack.com/archives/C01N3AT62SJ).
 
-[Maintainers](https://github.com/open-telemetry/community/blob/main/community-membership.md#maintainer)
-([@open-telemetry/cpp-contrib-maintainers](https://github.com/orgs/open-telemetry/teams/cpp-contrib-maintainers)):
+### Maintainers
 
 * [Ehsan Saei](https://github.com/esigo)
 * [Lalit Kumar Bhasin](https://github.com/lalitb), Microsoft
 * [Marc Alff](https://github.com/marcalff), Oracle
 * [Tom Tan](https://github.com/ThomsonTan), Microsoft
 
-[Approvers](https://github.com/open-telemetry/community/blob/main/community-membership.md#approver)
-([@open-telemetry/cpp-contrib-approvers](https://github.com/orgs/open-telemetry/teams/cpp-contrib-approvers)):
+For more information about the maintainer role, see the [community repository](https://github.com/open-telemetry/community/blob/main/community-membership.md#maintainer).
+
+### Approvers
 
 * [DEBAJIT DAS](https://github.com/DebajitDas), Cisco
 * [Johannes Tax](https://github.com/pyohannes), Grafana Labs
@@ -43,10 +43,13 @@ For edit access, get in touch on
 * [Tomasz Rojek](https://github.com/TomRoSystems)
 * [Aryan Ishan](https://github.com/aryanishan1001), Cisco
 
-[Emeritus
-Maintainer/Approver/Triager](https://github.com/open-telemetry/community/blob/main/community-membership.md#emeritus-maintainerapprovertriager):
+For more information about the approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/community-membership.md#approver).
+
+### Emeritus Maintainer/Approver/Triager
 
 * None
+
+For more information about the emeritus role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#emeritus-maintainerapprovertriager).
 
 ### Thanks to all the people who have contributed
 
