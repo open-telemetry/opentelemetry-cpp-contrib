@@ -29,7 +29,7 @@ For edit access, get in touch on
 * [Marc Alff](https://github.com/marcalff), Oracle
 * [Tom Tan](https://github.com/ThomsonTan), Microsoft
 
-For more information about the maintainer role, see the [community repository](https://github.com/open-telemetry/community/blob/main/community-membership.md#maintainer).
+For more information about the maintainer role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#maintainer).
 
 ### Approvers
 
@@ -43,7 +43,7 @@ For more information about the maintainer role, see the [community repository](h
 * [Tomasz Rojek](https://github.com/TomRoSystems)
 * [Aryan Ishan](https://github.com/aryanishan1001), Cisco
 
-For more information about the approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/community-membership.md#approver).
+For more information about the approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver).
 
 ### Thanks to all the people who have contributed
 
