@@ -13,6 +13,9 @@ on:
       - 'instrumentation/log4cxx/**'
       - '.github/workflows/log4cxx.yml'
 
+permissions:
+  contents: read
+
 jobs:
   cmake_linux:
     name: CMake Linux

@@ -13,6 +13,9 @@ on:
       - 'instrumentation/boost_log/**'
       - '.github/workflows/boost_log.yml'
 
+permissions:
+  contents: read
+
 jobs:
   cmake_linux:
     name: CMake Linux

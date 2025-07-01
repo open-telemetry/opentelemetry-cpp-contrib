@@ -13,6 +13,9 @@ on:
       - 'instrumentation/spdlog/**'
       - '.github/workflows/spdlog.yml'
 
+permissions:
+  contents: read
+
 jobs:
   cmake_linux:
     name: CMake Linux

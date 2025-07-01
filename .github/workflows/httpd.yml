@@ -12,6 +12,9 @@ on:
       - 'instrumentation/httpd/**'
       - '.github/workflows/httpd.yml'
 
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Build module

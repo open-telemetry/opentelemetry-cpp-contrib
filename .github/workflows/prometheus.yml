@@ -12,6 +12,9 @@ on:
       - "exporters/prometheus/**"
       - ".github/workflows/prometheus.yml"
 
+permissions:
+  contents: read
+
 jobs:
   prometheus_bazel_linux:
     name: Bazel on Linux

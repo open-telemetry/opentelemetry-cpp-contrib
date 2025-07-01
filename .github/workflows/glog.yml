@@ -13,6 +13,9 @@ on:
       - 'instrumentation/glog/**'
       - '.github/workflows/glog.yml'
 
+permissions:
+  contents: read
+
 jobs:
   cmake_linux:
     name: CMake Linux
