@@ -13,6 +13,9 @@ on:
       - 'exporters/user_events/**'
       - '.github/workflows/user_events.yml'
 
+permissions:
+  contents: read
+
 jobs:
   cmake_linux:
     name: CMake Linux

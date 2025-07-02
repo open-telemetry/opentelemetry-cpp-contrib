@@ -11,6 +11,8 @@ on:
     paths:
       - "exporters/geneva/**"
       - ".github/workflows/geneva_metrics.yml"
+permissions:
+  contents: read
 jobs:
   cmake_linux:
     name: CMake on Linux

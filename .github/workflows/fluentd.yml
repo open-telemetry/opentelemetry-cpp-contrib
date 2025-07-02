@@ -15,6 +15,9 @@ on:
       - "exporters/fluentd/**"
       - ".github/workflows/fluentd.yml"
 
+permissions:
+  contents: read
+
 jobs:
   cmake_linux:
     name: CMake Linux

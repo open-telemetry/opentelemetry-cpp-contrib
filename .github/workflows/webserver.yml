@@ -12,6 +12,9 @@ on:
       - 'instrumentation/otel-webserver-module/**'
       - '.github/workflows/webserver.yml'
 
+permissions:
+  contents: read
+
 jobs:
   webserver-build-test-ubuntu:
     name: webserver-ubuntu-build
