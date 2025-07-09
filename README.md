@@ -33,6 +33,7 @@ For more information about the maintainer role, see the [community repository](h
 
 ### Approvers
 
+* [Aryan Ishan](https://github.com/aryanishan1001), Cisco
 * [DEBAJIT DAS](https://github.com/DebajitDas), Cisco
 * [Johannes Tax](https://github.com/pyohannes), Grafana Labs
 * [Josh Suereth](https://github.com/jsuereth), Google
@@ -41,7 +42,6 @@ For more information about the maintainer role, see the [community repository](h
 * [Siim Kallas](https://github.com/seemk), Splunk
 * [Tobias Stadler](https://github.com/tobiasstadler)
 * [Tomasz Rojek](https://github.com/TomRoSystems)
-* [Aryan Ishan](https://github.com/aryanishan1001), Cisco
 
 For more information about the approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver).
 
