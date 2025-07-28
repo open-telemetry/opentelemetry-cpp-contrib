@@ -1396,8 +1396,11 @@ static ngx_int_t OtelNgxStart(ngx_cycle_t* cycle) {
 
   auto processor = CreateProcessor(agentConf, std::move(exporter));
   
-  // Build resource attributes map
-  std::unordered_map<std::string, std::string> resourceAttrs = agentConf->resourceAttributes;
+  // Build resource attributes
+  opentelemetry::sdk::resource::ResourceAttributes resourceAttrs;
+  for (const auto& attr : agentConf->resourceAttributes) {
+    resourceAttrs[attr.first] = attr.second;
+  }
   
   // Set service.name if not already provided via resource attributes
   if (resourceAttrs.find("service.name") == resourceAttrs.end()) {
