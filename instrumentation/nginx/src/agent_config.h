@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <unordered_map>
 
 extern "C" {
 #include <ngx_core.h>
@@ -38,4 +39,5 @@ struct OtelNgxAgentConfig
 
   std::string sampler = "parentbased_always_on";
   double samplerRatio = 1.0;
+  std::unordered_map<std::string, std::string> resourceAttributes;
 };

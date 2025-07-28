@@ -1051,6 +1051,21 @@ char* OtelNgxSetTracesSamplerRatio(ngx_conf_t* cf, ngx_command_t*, void*) {
   return NGX_CONF_OK;
 }
 
+char* OtelNgxSetResourceAttr(ngx_conf_t* cf, ngx_command_t*, void*) {
+  OtelMainConf* otelMainConf = GetOtelMainConf(cf);
+
+  ngx_str_t* values = (ngx_str_t*)cf->args->elts;
+  ngx_str_t* key = &values[1];
+  ngx_str_t* value = &values[2];
+
+  std::string strKey((const char*)key->data, key->len);
+  std::string strValue((const char*)value->data, value->len);
+
+  otelMainConf->agentConfig.resourceAttributes[strKey] = strValue;
+
+  return NGX_CONF_OK;
+}
+
 static char* OtelNgxSetCustomAttribute(ngx_conf_t* conf, ngx_command_t*, void* userConf) {
   OtelNgxLocationConf* locConf = (OtelNgxLocationConf*)userConf;
 
@@ -1250,6 +1265,14 @@ static ngx_command_t kOtelNgxCommands[] = {
     0,
     nullptr,
   },
+  {
+    ngx_string("opentelemetry_resource_attr"),
+    NGX_HTTP_MAIN_CONF | NGX_CONF_TAKE2,
+    OtelNgxSetResourceAttr,
+    NGX_HTTP_MAIN_CONF_OFFSET,
+    0,
+    nullptr,
+  },
 #if (NGX_PCRE)
   {
     ngx_string("opentelemetry_sensitive_header_names"),
@@ -1372,10 +1395,19 @@ static ngx_int_t OtelNgxStart(ngx_cycle_t* cycle) {
   }
 
   auto processor = CreateProcessor(agentConf, std::move(exporter));
+  
+  // Build resource attributes map
+  std::unordered_map<std::string, std::string> resourceAttrs = agentConf->resourceAttributes;
+  
+  // Set service.name if not already provided via resource attributes
+  if (resourceAttrs.find("service.name") == resourceAttrs.end()) {
+    resourceAttrs["service.name"] = serviceName;
+  }
+  
   auto provider =
     nostd::shared_ptr<opentelemetry::trace::TracerProvider>(new sdktrace::TracerProvider(
       std::move(processor),
-      opentelemetry::sdk::resource::Resource::Create({{"service.name", serviceName}}),
+      opentelemetry::sdk::resource::Resource::Create(resourceAttrs),
       std::move(sampler)));
 
   opentelemetry::trace::Provider::SetTracerProvider(std::move(provider));
