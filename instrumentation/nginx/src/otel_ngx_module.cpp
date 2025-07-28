@@ -1055,9 +1055,29 @@ char* OtelNgxSetResourceAttr(ngx_conf_t* cf, ngx_command_t*, void*) {
   OtelMainConf* otelMainConf = GetOtelMainConf(cf);
 
   ngx_str_t* values = (ngx_str_t*)cf->args->elts;
+
+  if (cf->args->nelts != 3) {
+    ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, 
+                       "opentelemetry_resource_attr takes 2 arguments");
+    return (char*)NGX_CONF_ERROR;
+  }
+
   ngx_str_t* key = &values[1];
   ngx_str_t* value = &values[2];
 
+  if (key->len == 0) {
+    ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, 
+                       "opentelemetry_resource_attr key cannot be empty");
+    return (char*)NGX_CONF_ERROR;
+  }
+
+  if (value->len == 0) {
+    ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, 
+                       "opentelemetry_resource_attr value cannot be empty");
+    return (char*)NGX_CONF_ERROR;
+  }
+
+  // Safe string construction with explicit length
   std::string strKey((const char*)key->data, key->len);
   std::string strValue((const char*)value->data, value->len);
 
