@@ -379,4 +379,24 @@ INSTANTIATE_TEST_SUITE_P(GenericMetricsExporterText,
                          GenericMetricsExporterTextFixture,
                          ::testing::Values(kUnixDomainPathUDS, kUnixDomainPathAbstractSocket));
 
+// Test for GetAggregationTemporality method
+TEST(GenevaExporterTest, GetAggregationTemporalityTest) {
+  ExporterOptions options{"Endpoint=unix:///tmp/test;Account=test;Namespace=test"};
+  Exporter exporter(options);
+  
+  // Test that kUpDownCounter returns kCumulative
+  EXPECT_EQ(exporter.GetAggregationTemporality(InstrumentType::kUpDownCounter), 
+            AggregationTemporality::kCumulative);
+            
+  // Test that kObservableUpDownCounter returns kCumulative
+  EXPECT_EQ(exporter.GetAggregationTemporality(InstrumentType::kObservableUpDownCounter), 
+            AggregationTemporality::kCumulative);
+            
+  // Test that other instrument types return kDelta
+  EXPECT_EQ(exporter.GetAggregationTemporality(InstrumentType::kCounter), 
+            AggregationTemporality::kDelta);
+  EXPECT_EQ(exporter.GetAggregationTemporality(InstrumentType::kHistogram), 
+            AggregationTemporality::kDelta);
+}
+
 #endif
