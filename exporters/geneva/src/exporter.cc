@@ -47,10 +47,10 @@ Exporter::Exporter(const ExporterOptions &options)
 
 sdk::metrics::AggregationTemporality Exporter::GetAggregationTemporality(
     sdk::metrics::InstrumentType instrument_type) const noexcept {
-  if (instrument_type == sdk::metrics::InstrumentType::kUpDownCounter)
-    {
-      return sdk::metrics::AggregationTemporality::kCumulative;
-    }
+  if (instrument_type == sdk::metrics::InstrumentType::kUpDownCounter ||
+      instrument_type == sdk::metrics::InstrumentType::kObservableUpDownCounter) {
+    return sdk::metrics::AggregationTemporality::kCumulative;
+  }
   return sdk::metrics::AggregationTemporality::kDelta;
 }
 
