@@ -8,12 +8,12 @@ option(WITH_EXAMPLES "Build example" ON)
 option(BUILD_TESTING "Build tests" ON)
 option(BUILD_TRACEPOINTS "Build tracepoints library" ON)
 
-project(opentelemetry-user_events-exporter)
+set(MAIN_PROJECT OFF)
+
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   set(MAIN_PROJECT ON)
+  project(opentelemetry-user_events-exporter)
   message(STATUS "${PROJECT_NAME} is main project")
-else()
-  set(MAIN_PROJECT OFF)
 endif()
 
 if(MAIN_PROJECT)
