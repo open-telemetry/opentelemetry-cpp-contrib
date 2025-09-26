@@ -57,7 +57,7 @@ void initMetrics(const std::string &name, const std::string &account_name) {
   std::unique_ptr<metric_sdk::MeterSelector> meter_selector{
       new metric_sdk::MeterSelector(name, version, schema)};
   std::unique_ptr<metric_sdk::View> sum_view{new metric_sdk::View{
-      name, "description", "", metric_sdk::AggregationType::kSum}};
+      name, "description", metric_sdk::AggregationType::kSum}};
   p->AddView(std::move(instrument_selector), std::move(meter_selector),
              std::move(sum_view));
 
@@ -70,7 +70,7 @@ void initMetrics(const std::string &name, const std::string &account_name) {
   std::unique_ptr<metric_sdk::MeterSelector> observable_meter_selector{
       new metric_sdk::MeterSelector(name, version, schema)};
   std::unique_ptr<metric_sdk::View> observable_sum_view{new metric_sdk::View{
-      name, "description", "", metric_sdk::AggregationType::kSum}};
+      name, "description", metric_sdk::AggregationType::kSum}};
   p->AddView(std::move(observable_instrument_selector),
              std::move(observable_meter_selector),
              std::move(observable_sum_view));
@@ -90,7 +90,7 @@ void initMetrics(const std::string &name, const std::string &account_name) {
       ->boundaries_ = std::vector<double>{0.0,   50.0,   100.0,  250.0,  500.0,
                                         750.0, 1000.0, 2500.0, 5000.0, 10000.0};
   std::unique_ptr<metric_sdk::View> histogram_view{new metric_sdk::View{
-      name, "description", "", metric_sdk::AggregationType::kHistogram,
+      name, "description", metric_sdk::AggregationType::kHistogram,
       aggregation_config}};
   p->AddView(std::move(histogram_instrument_selector),
              std::move(histogram_meter_selector), std::move(histogram_view));
