@@ -50,7 +50,9 @@ jobs:
 
       - name: run tests
         run: |
-          sudo $GITHUB_WORKSPACE/opentelemetry-cpp/ci/install_thirdparty.sh --install-dir /usr/local --tags-file third_party_release --packages "googletest;benchmark"
+          pushd "$GITHUB_WORKSPACE/opentelemetry-cpp"
+          sudo ./ci/install_thirdparty.sh --install-dir /usr/local --tags-file third_party_release --packages "googletest;benchmark"
+          popd
           mkdir -p "$GITHUB_WORKSPACE/opentelemetry-cpp/build"
           cd "$GITHUB_WORKSPACE/opentelemetry-cpp/build"
           cmake .. -G Ninja -D OPENTELEMETRY_EXTERNAL_COMPONENT_PATH=$GITHUB_WORKSPACE/opentelemetry-cpp-contrib/exporters/user_events -D WITH_OTLP_HTTP=ON
