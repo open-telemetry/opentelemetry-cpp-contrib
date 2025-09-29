@@ -35,7 +35,7 @@ jobs:
           cd instrumentation/httpd && ./build.sh
           cp bazel-out/k8-opt/bin/otel.so /tmp/mod-otel.so
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.os }}_mod-otel.so
           path: /tmp/mod-otel.so
