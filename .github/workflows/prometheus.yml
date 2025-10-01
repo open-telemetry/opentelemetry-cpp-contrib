@@ -25,7 +25,7 @@ jobs:
         with:
           path: "otel_cpp_contrib"
       - name: Mount Bazel Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: bazel_cache
         with:
@@ -45,7 +45,7 @@ jobs:
         with:
           path: "otel_cpp_contrib"
       - name: Mount Bazel Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: bazel_cache
         with:
