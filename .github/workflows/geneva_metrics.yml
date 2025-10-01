@@ -19,11 +19,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout otel contrib geneva metrics
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
         with:
           path: "otel_cpp_contrib"
       - name: checkout otel cpp
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
         with:
           repository: "open-telemetry/opentelemetry-cpp"
           ref: "v1.23.0"
