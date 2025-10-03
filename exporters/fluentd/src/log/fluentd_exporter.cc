@@ -173,7 +173,6 @@ bool FluentdExporter::Connect() {
       if (!socket_.invalid()) {
         socket_.close();
       }
-      connected_ = false;
       return false;
     }
   }
