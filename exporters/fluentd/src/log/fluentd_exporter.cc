@@ -169,6 +169,11 @@ bool FluentdExporter::Connect() {
     connected_ = socket_.connect(*addr_);
     if (!connected_) {
       LOG_ERROR("Unable to connect to %s", options_.endpoint.c_str());
+      // Close the socket to avoid leaking file descriptors on failure.
+      if (!socket_.invalid()) {
+        socket_.close();
+      }
+      connected_ = false;
       return false;
     }
   }
