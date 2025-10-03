@@ -121,7 +121,7 @@ jobs:
         run: |
           mv /tmp/otel_ngx/otel_ngx_module.so /tmp/otel_ngx/${{ env.artifactName }}
       - name: upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.6.2
         with:
           name: ${{ env.artifactName }}
           path: /tmp/otel_ngx/${{ env.artifactName }}
