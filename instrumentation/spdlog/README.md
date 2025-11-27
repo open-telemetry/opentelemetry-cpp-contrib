@@ -8,7 +8,7 @@
 ## Requirements
 
 - Current release tested only with Ubuntu 20.04.6 LTS
-- OpenTelemetry >= v1.12.0 
+- OpenTelemetry >= v1.20.0 
 - spdlog >= v1.5.0
 
 ### Usage

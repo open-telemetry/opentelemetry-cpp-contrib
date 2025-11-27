@@ -6,7 +6,8 @@
 #include <opentelemetry/instrumentation/spdlog/sink.h>
 
 #include <opentelemetry/logs/provider.h>
-#include <opentelemetry/trace/semantic_conventions.h>
+#include <opentelemetry/semconv/code_attributes.h>
+#include <opentelemetry/semconv/incubating/thread_attributes.h>
 #include <opentelemetry/version.h>
 
 namespace spdlog
@@ -25,15 +26,16 @@ void OpenTelemetrySink<Mutex>::sink_it_(const spdlog::details::log_msg &msg)
 
   if (log_record)
   {
-    using namespace opentelemetry::trace::SemanticConventions;
+    using namespace opentelemetry::semconv::code;
+    using namespace opentelemetry::semconv::thread;
 
     log_record->SetSeverity(levelToSeverity(msg.level));
     log_record->SetBody(opentelemetry::nostd::string_view(msg.payload.data(), msg.payload.size()));
     log_record->SetTimestamp(msg.time);
     if (!msg.source.empty())
     {
-      log_record->SetAttribute(kCodeFilepath, msg.source.filename);
-      log_record->SetAttribute(kCodeLineno, msg.source.line);
+      log_record->SetAttribute(kCodeFilePath, msg.source.filename);
+      log_record->SetAttribute(kCodeLineNumber, msg.source.line);
     }
     log_record->SetAttribute(kThreadId, msg.thread_id);
     logger->EmitLogRecord(std::move(log_record));
