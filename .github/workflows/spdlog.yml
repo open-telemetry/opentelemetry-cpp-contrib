@@ -35,7 +35,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: "open-telemetry/opentelemetry-cpp"
-          ref: "v1.21.0"
+          ref: "v1.24.0"
           path: "opentelemetry-cpp"
           submodules: "recursive"
       - name: setup dependencies
