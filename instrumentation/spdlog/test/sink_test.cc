@@ -143,12 +143,12 @@ TEST_F(OpenTelemetrySinkTest, Log_Success)
         ASSERT_TRUE(timestamp.time_since_epoch() >= pre_log.time_since_epoch());
         ASSERT_TRUE(timestamp.time_since_epoch() <= post_log.time_since_epoch());
       }));
-  EXPECT_CALL(*logrecord_mock, SetAttribute(nostd::string_view("code.lineno"), _))
+  EXPECT_CALL(*logrecord_mock, SetAttribute(nostd::string_view("code.line.number"), _))
       .WillOnce(Invoke([](nostd::string_view, const common::AttributeValue &line_number) {
         ASSERT_TRUE(nostd::holds_alternative<int>(line_number));
         ASSERT_GE(nostd::get<int>(line_number), 0);
       }));
-  EXPECT_CALL(*logrecord_mock, SetAttribute(nostd::string_view("code.filepath"), _))
+  EXPECT_CALL(*logrecord_mock, SetAttribute(nostd::string_view("code.file.path"), _))
       .WillOnce(Invoke([](nostd::string_view, const common::AttributeValue &file_name) {
         ASSERT_TRUE(nostd::holds_alternative<const char *>(file_name));
         ASSERT_TRUE(std::strstr(nostd::get<const char *>(file_name), "sink_test.cc") != nullptr);
