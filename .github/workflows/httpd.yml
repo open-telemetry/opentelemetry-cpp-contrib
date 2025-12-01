@@ -25,7 +25,7 @@ jobs:
         os: [ubuntu-18.04, ubuntu-20.04]
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.0
       - name: Setup buildtools
         run: |
           sudo ./instrumentation/httpd/setup-buildtools.sh
@@ -49,7 +49,7 @@ jobs:
         os: [ubuntu-18.04, ubuntu-20.04]
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.0
       - name: Setup buildtools
         run: |
           sudo ./instrumentation/httpd/setup-buildtools.sh
@@ -71,7 +71,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.0
       - name: Setup formatting tool (clang)
         run: |
           sudo ./instrumentation/httpd/tools/setup-tools.sh code
@@ -83,7 +83,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.0
       - name: Setup formatting tool (buildifier)
         run: |
           sudo ./instrumentation/httpd/tools/setup-tools.sh buildifier
@@ -99,7 +99,7 @@ jobs:
         os: [ubuntu-18.04, ubuntu-20.04]
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.0
       - name: Setup buildtools
         run: |
           sudo ./instrumentation/httpd/tests/setup-tools.sh
