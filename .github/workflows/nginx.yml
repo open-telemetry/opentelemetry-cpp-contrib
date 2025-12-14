@@ -55,7 +55,7 @@ jobs:
         nginx: ["1.27.3", "1.27.2", "1.27.1", "1.26.2", "1.24.0", "1.22.1"]
     steps:
       - name: checkout otel nginx
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.1
       - name: setup
         run: |
           sudo ./instrumentation/nginx/ci/setup_environment.sh
