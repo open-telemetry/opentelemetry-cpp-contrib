@@ -154,6 +154,8 @@ defmodule InstrumentationTest do
     assert status == 200
 
     assert attrib(resource, "service.name") == "nginx-proxy"
+    assert attrib(resource, "service.version") == "1.0.0"
+    assert attrib(resource, "deployment.environment.name") == "test"
   end
 
   test "HTTP upstream | span attributes", %{trace_file: trace_file} do
