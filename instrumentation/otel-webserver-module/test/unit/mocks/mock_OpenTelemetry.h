@@ -52,8 +52,10 @@ public:
 	MOCK_METHOD(nostd::shared_ptr<trace::Span>, StartSpanInternal,
 		(nostd::string_view name, trace::SpanKind kind));
 
+#if OPENTELEMETRY_ABI_VERSION_NO == 1
 	MOCK_METHOD(void, ForceFlushWithMicroseconds, (uint64_t timeout), (noexcept));
 	MOCK_METHOD(void, CloseWithMicroseconds, (uint64_t timeout), (noexcept));
+#endif /* OPENTELEMETRY_ABI_VERSION_NO == 1 */
 };
 
 class MockSpan : public opentelemetry::trace::Span
@@ -100,10 +102,10 @@ public:
         const context::Context &context) noexcept override {
   		InjectImpl(carrier);
   	}
-	
+
   	MOCK_METHOD(void, ExtractImpl, (const context::propagation::TextMapCarrier &carrier));
   	MOCK_METHOD(void, InjectImpl, (context::propagation::TextMapCarrier &carrier));
-	MOCK_METHOD(bool, Fields, (nostd::function_ref<bool(nostd::string_view)> callback), 
+	MOCK_METHOD(bool, Fields, (nostd::function_ref<bool(nostd::string_view)> callback),
 		(const, noexcept, override));
 };
 
