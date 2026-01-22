@@ -22,17 +22,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout googletest
-        uses: actions/checkout@v6.0.1
+        uses: actions/checkout@v6.0.2
         with:
           repository: "google/googletest"
           ref: "release-1.12.1"
           path: "googletest"
       - name: checkout opentelemetry-cpp-contrib
-        uses: actions/checkout@v6.0.1
+        uses: actions/checkout@v6.0.2
         with:
           path: opentelemetry-cpp-contrib
       - name: checkout opentelemetry-cpp
-        uses: actions/checkout@v6.0.1
+        uses: actions/checkout@v6.0.2
         with:
           repository: "open-telemetry/opentelemetry-cpp"
           ref: "v1.24.0"
