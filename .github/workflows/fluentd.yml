@@ -24,12 +24,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout opentelemetry-cpp-contrib
-        uses: actions/checkout@v6.0.1
+        uses: actions/checkout@v6.0.2
         with:
           path: opentelemetry-cpp-contrib
           submodules: "recursive"
       - name: checkout opentelemetry-cpp
-        uses: actions/checkout@v6.0.1
+        uses: actions/checkout@v6.0.2
         with:
           repository: "open-telemetry/opentelemetry-cpp"
           ref: "v1.21.0"
