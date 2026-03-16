@@ -38,7 +38,8 @@
 #include "opentelemetry/exporters/geneva/metrics/macros.h"
 #include "opentelemetry/exporters/geneva/metrics/socket_tools.h"
 
-using namespace SocketTools;
+// Use geneva_metrics namespace for socket tools to avoid conflicts with fluentd
+using namespace geneva_metrics::SocketTools;
 
 namespace SOCKET_SERVER_NS {
 

@@ -14,6 +14,10 @@ OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter {
 namespace geneva {
 namespace metrics {
+
+// Use geneva_metrics namespace for socket tools to avoid conflicts with fluentd
+using namespace geneva_metrics;
+
 class UnixDomainSocketDataTransport : public DataTransport {
 public:
   UnixDomainSocketDataTransport(const std::string &connection_string);
