@@ -38,10 +38,10 @@
 #include "opentelemetry/exporters/geneva/metrics/macros.h"
 #include "opentelemetry/exporters/geneva/metrics/socket_tools.h"
 
+namespace SOCKET_SERVER_NS {
+
 // Use geneva_metrics namespace for socket tools to avoid conflicts with fluentd
 using namespace geneva_metrics::SocketTools;
-
-namespace SOCKET_SERVER_NS {
 
 /**
  * @brief Common Server for TCP, UDP and Unix Domain.
@@ -81,7 +81,7 @@ struct SocketServer : public Reactor::SocketCallback {
 
   // Active client-server connections protected by recursive mutex
   std::recursive_mutex connections_mutex;
-  std::map<SocketTools::Socket, Connection> connections;
+  std::map<Socket, Connection> connections;
 
   // Macro to safely obtain TEMPORARY string buffer pointer
 #define CLID(conn) conn.client.toString().c_str()
@@ -320,7 +320,7 @@ struct SocketServer : public Reactor::SocketCallback {
     }
 
     // Handle TCP and Unix Domain response
-    reactor.addSocket(conn.socket, SocketTools::Reactor::Writable);
+    reactor.addSocket(conn.socket, Reactor::Writable);
     total_bytes_sent = conn.socket.writeall(conn.response_buffer.data(),
                                             conn.request_buffer.size());
     if (conn.response_buffer.size() != total_bytes_sent) {
@@ -372,7 +372,7 @@ struct SocketServer : public Reactor::SocketCallback {
 
   void CloseConnection(Connection &conn) {
     LOG_TRACE("Server: [%s] closing connection...", CLID(conn));
-    conn.socket.shutdown(SocketTools::Socket::ShutdownSend);
+    conn.socket.shutdown(Socket::ShutdownSend);
     onConnectionClosed(conn);
   }
 
@@ -412,7 +412,7 @@ struct SocketServer : public Reactor::SocketCallback {
     if (conn.keepalive) {
       LOG_TRACE("Server: [%s] idle (keep-alive)", CLID(conn));
       reactor.addSocket(conn.socket,
-                        SocketTools::Reactor::Readable | Reactor::Closed);
+                        Reactor::Readable | Reactor::Closed);
       conn.state.insert(Connection::Idle);
     }
   }
