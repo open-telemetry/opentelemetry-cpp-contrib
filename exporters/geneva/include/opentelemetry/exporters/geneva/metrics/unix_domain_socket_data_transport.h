@@ -15,9 +15,6 @@ namespace exporter {
 namespace geneva {
 namespace metrics {
 
-// Use geneva_metrics namespace for socket tools to avoid conflicts with fluentd
-using namespace geneva_metrics;
-
 class UnixDomainSocketDataTransport : public DataTransport {
 public:
   UnixDomainSocketDataTransport(const std::string &connection_string);
@@ -29,9 +26,9 @@ public:
 
 private:
   // Socket connection is re-established for every batch of events
-  const SocketTools::SocketParams socketparams_{AF_UNIX, SOCK_STREAM, 0};
-  SocketTools::Socket socket_;
-  std::unique_ptr<SocketTools::SocketAddr> addr_;
+  const geneva_metrics::SocketTools::SocketParams socketparams_{AF_UNIX, SOCK_STREAM, 0};
+  geneva_metrics::SocketTools::Socket socket_;
+  std::unique_ptr<geneva_metrics::SocketTools::SocketAddr> addr_;
   bool connected_{false};
 };
 } // namespace metrics
