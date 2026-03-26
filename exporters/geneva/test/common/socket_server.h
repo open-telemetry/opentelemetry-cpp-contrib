@@ -40,12 +40,12 @@
 
 namespace SOCKET_SERVER_NS {
 
-namespace ST = geneva_metrics::SocketTools;
+namespace socket_tools = opentelemetry::exporter::geneva::metrics::detail::SocketTools;
 
 /**
  * @brief Common Server for TCP, UDP and Unix Domain.
  */
-struct SocketServer : public ST::Reactor::SocketCallback {
+struct SocketServer : public socket_tools::Reactor::SocketCallback {
   struct Connection {
     enum State {
       Idle,       // No data transfer initiated
@@ -56,8 +56,8 @@ struct SocketServer : public ST::Reactor::SocketCallback {
       Aborted     // Connection aborted
     };
 
-    ST::Socket socket;     // Active client-server socket
-    ST::SocketAddr client; // Client address
+    socket_tools::Socket socket;     // Active client-server socket
+    socket_tools::SocketAddr client; // Client address
 
     std::string request_buffer;  // Receive buffer for current event
     std::string response_buffer; // Send buffer for current event
@@ -66,11 +66,11 @@ struct SocketServer : public ST::Reactor::SocketCallback {
     bool keepalive{true};  // Keep connection alive (reserved for future use)
   };
 
-  ST::SocketAddr bind_address; // Server bind address
+  socket_tools::SocketAddr bind_address; // Server bind address
   bool is_bound{false};
-  ST::SocketParams server_socket_params; // Server socket params
-  ST::Socket server_socket;              // Server listening socket
-  ST::Reactor reactor;                   // Socket event handler
+  socket_tools::SocketParams server_socket_params; // Server socket params
+  socket_tools::Socket server_socket;              // Server listening socket
+  socket_tools::Reactor reactor;                   // Socket event handler
 
   // Custom callback when server receives data
   std::function<void(Connection &conn)> onRequest;
@@ -80,12 +80,12 @@ struct SocketServer : public ST::Reactor::SocketCallback {
 
   // Active client-server connections protected by recursive mutex
   std::recursive_mutex connections_mutex;
-  std::map<ST::Socket, Connection> connections;
+  std::map<socket_tools::Socket, Connection> connections;
 
   // Macro to safely obtain TEMPORARY string buffer pointer
 #define CLID(conn) conn.client.toString().c_str()
 
-  const ST::SocketAddr &address() const { return bind_address; };
+  const socket_tools::SocketAddr &address() const { return bind_address; };
 
   /**
    * @brief Route to start TCP, UDP or Unix Domain socket server.
@@ -93,9 +93,9 @@ struct SocketServer : public ST::Reactor::SocketCallback {
    * @param sock Socket type.
    * @param numConnections Maximum number of connections.
    */
-  SocketServer(ST::SocketAddr addr, ST::SocketParams params, int numConnections = 10)
+  SocketServer(socket_tools::SocketAddr addr, socket_tools::SocketParams params, int numConnections = 10)
       : bind_address(addr), server_socket_params(params), reactor(*this) {
-    server_socket = ST::Socket(server_socket_params);
+    server_socket = socket_tools::Socket(server_socket_params);
 
     // Default lambda here implements an echo server
     onRequest = [this](Connection &conn) {
@@ -117,11 +117,11 @@ struct SocketServer : public ST::Reactor::SocketCallback {
     server_socket.getsockname(bind_address);
     if (server_socket_params.type == SOCK_STREAM) {
       // In TCP and Unix Domain mode we listen and accept.
-      reactor.addSocket(server_socket, ST::Reactor::Acceptable);
+      reactor.addSocket(server_socket, socket_tools::Reactor::Acceptable);
       server_socket.listen(numConnections);
     } else {
       // In UDP mode we read in a loop, no need to accept.
-      reactor.addSocket(server_socket, ST::Reactor::Readable);
+      reactor.addSocket(server_socket, socket_tools::Reactor::Readable);
     }
 
     LOG_INFO("Server: Listening on %s://%s", server_socket_params.scheme(),
@@ -142,11 +142,11 @@ struct SocketServer : public ST::Reactor::SocketCallback {
    * @brief Handle Reactor::State::Acceptable event.
    * @param socket Client socket.
    */
-  virtual void onSocketAcceptable(ST::Socket socket) override {
+  virtual void onSocketAcceptable(socket_tools::Socket socket) override {
     LOG_TRACE("Server: accepting socket fd=0x%llx", socket.m_sock);
 
-    ST::Socket csocket;
-    ST::SocketAddr caddr;
+    socket_tools::Socket csocket;
+    socket_tools::SocketAddr caddr;
     if (socket.accept(csocket, caddr)) {
 #ifdef HAVE_UNIX_DOMAIN
       // If server is Unix domain, then the client socket is also Unix domain
@@ -166,7 +166,7 @@ struct SocketServer : public ST::Reactor::SocketCallback {
       conn.socket = csocket;
       conn.state = {Connection::Idle};
       conn.client = caddr;
-      reactor.addSocket(csocket, ST::Reactor::Readable | ST::Reactor::Closed);
+      reactor.addSocket(csocket, socket_tools::Reactor::Readable | socket_tools::Reactor::Closed);
       LOG_TRACE("Server: [%s] accepted", CLID(conn));
     }
   }
@@ -175,7 +175,7 @@ struct SocketServer : public ST::Reactor::SocketCallback {
    * @brief Handle Reactor::State::Reasable event.
    * @param socket Client socket.
    */
-  virtual void onSocketReadable(ST::Socket socket) override {
+  virtual void onSocketReadable(socket_tools::Socket socket) override {
     LOG_TRACE("Server: reading socket fd=0x%x",
               static_cast<int>(socket.m_sock));
     int size = 0;
@@ -206,7 +206,7 @@ struct SocketServer : public ST::Reactor::SocketCallback {
    * @brief Event triggered when server may write data back to client.
    * @param socket Client socket.
    */
-  virtual void onSocketWritable(ST::Socket socket) override {
+  virtual void onSocketWritable(socket_tools::Socket socket) override {
     LOG_TRACE("Server: writing socket fd=0x%llx", socket.m_sock);
     decltype(connections)::iterator it;
     {
@@ -226,7 +226,7 @@ struct SocketServer : public ST::Reactor::SocketCallback {
    * @brief Handle event when socket is closed.
    * @param socket
    */
-  virtual void onSocketClosed(ST::Socket socket) override {
+  virtual void onSocketClosed(socket_tools::Socket socket) override {
     LOG_TRACE("Server: closing socket fd=0x%llx", socket.m_sock);
     LOCKGUARD(connections_mutex);
     auto it = connections.find(socket);
@@ -319,7 +319,7 @@ struct SocketServer : public ST::Reactor::SocketCallback {
     }
 
     // Handle TCP and Unix Domain response
-    reactor.addSocket(conn.socket, ST::Reactor::Writable);
+    reactor.addSocket(conn.socket, socket_tools::Reactor::Writable);
     total_bytes_sent = conn.socket.writeall(conn.response_buffer.data(),
                                             conn.request_buffer.size());
     if (conn.response_buffer.size() != total_bytes_sent) {
@@ -371,7 +371,7 @@ struct SocketServer : public ST::Reactor::SocketCallback {
 
   void CloseConnection(Connection &conn) {
     LOG_TRACE("Server: [%s] closing connection...", CLID(conn));
-    conn.socket.shutdown(ST::Socket::ShutdownSend);
+    conn.socket.shutdown(socket_tools::Socket::ShutdownSend);
     onConnectionClosed(conn);
   }
 
@@ -390,7 +390,7 @@ struct SocketServer : public ST::Reactor::SocketCallback {
   void HandleConnection(Connection &conn) {
 
     if (conn.state.count(Connection::Responding)) {
-      reactor.addSocket(conn.socket, ST::Reactor::Writable | ST::Reactor::Closed);
+      reactor.addSocket(conn.socket, socket_tools::Reactor::Writable | socket_tools::Reactor::Closed);
       // Got data to send back
       LOG_TRACE("Server: [%s] responding...", CLID(conn));
       // If WriteResponseBuffer returns true, then more data to send.
@@ -399,7 +399,7 @@ struct SocketServer : public ST::Reactor::SocketCallback {
       }
       // No more data to send. Stop responding.
       conn.state.erase(Connection::Responding);
-      reactor.addSocket(conn.socket, ST::Reactor::Readable | ST::Reactor::Closed);
+      reactor.addSocket(conn.socket, socket_tools::Reactor::Readable | socket_tools::Reactor::Closed);
     }
 
     if (conn.state.count(Connection::Closing)) {
@@ -411,7 +411,7 @@ struct SocketServer : public ST::Reactor::SocketCallback {
     if (conn.keepalive) {
       LOG_TRACE("Server: [%s] idle (keep-alive)", CLID(conn));
       reactor.addSocket(conn.socket,
-                        ST::Reactor::Readable | ST::Reactor::Closed);
+                        socket_tools::Reactor::Readable | socket_tools::Reactor::Closed);
       conn.state.insert(Connection::Idle);
     }
   }
