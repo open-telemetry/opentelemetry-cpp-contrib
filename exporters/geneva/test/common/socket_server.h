@@ -40,7 +40,7 @@
 
 namespace SOCKET_SERVER_NS {
 
-namespace socket_tools = opentelemetry::exporter::geneva::metrics::detail::SocketTools;
+namespace socket_tools = opentelemetry::v1::exporter::geneva::metrics::detail::SocketTools;
 
 /**
  * @brief Common Server for TCP, UDP and Unix Domain.
