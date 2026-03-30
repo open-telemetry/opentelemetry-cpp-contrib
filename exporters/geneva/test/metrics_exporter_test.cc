@@ -314,8 +314,8 @@ TEST_P(GenericMetricsExporterTextFixture, BasicTests)
   bool isRunning              = true;
 
   // Start test server
-  geneva_metrics::SocketTools::SocketAddr destination(kUnixDomainPath.data(), true);
-  geneva_metrics::SocketTools::SocketParams params{AF_UNIX, SOCK_STREAM, 0};
+  opentelemetry::v1::exporter::geneva::metrics::detail::SocketTools::SocketAddr destination(kUnixDomainPath.data(), true);
+  opentelemetry::v1::exporter::geneva::metrics::detail::SocketTools::SocketParams params{AF_UNIX, SOCK_STREAM, 0};
   SocketServer socketServer(destination, params);
   TestServer testServer(socketServer);
   testServer.Start();
