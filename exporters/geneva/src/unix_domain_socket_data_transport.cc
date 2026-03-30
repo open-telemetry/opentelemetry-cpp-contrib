@@ -12,12 +12,12 @@ namespace metrics {
 UnixDomainSocketDataTransport::UnixDomainSocketDataTransport(
     const std::string &connection_string) 
 {      
-  addr_.reset(new SocketTools::SocketAddr(connection_string.c_str(), true));
+  addr_.reset(new detail::SocketTools::SocketAddr(connection_string.c_str(), true));
 }
 
 bool UnixDomainSocketDataTransport::Connect() noexcept {
   if (!connected_) {
-    socket_ = SocketTools::Socket(socketparams_);
+    socket_ = detail::SocketTools::Socket(socketparams_);
     connected_ = socket_.connect(*addr_);
     if (!connected_) {
       socket_.close();

@@ -110,6 +110,14 @@ typedef u_short sa_family_t;
 #endif
 
 #include "opentelemetry/exporters/geneva/metrics/macros.h"
+#include "opentelemetry/version.h"
+
+// Wrap in detail namespace to avoid ODR violations with fluentd socket_tools.h
+OPENTELEMETRY_BEGIN_NAMESPACE
+namespace exporter {
+namespace geneva {
+namespace metrics {
+namespace detail {
 
 namespace net {
 
@@ -1129,6 +1137,12 @@ public:
 };
 
 } // namespace SocketTools
+
+} // namespace detail
+} // namespace metrics
+} // namespace geneva
+} // namespace exporter
+OPENTELEMETRY_END_NAMESPACE
 
 #ifdef _MSC_VER
 #pragma warning(pop)
