@@ -24,6 +24,7 @@ For edit access, get in touch on
 
 ### Maintainers
 
+* [Doug Barker](https://github.com/dbarker)
 * [Ehsan Saei](https://github.com/esigo)
 * [Lalit Kumar Bhasin](https://github.com/lalitb), Microsoft
 * [Marc Alff](https://github.com/marcalff), Oracle
