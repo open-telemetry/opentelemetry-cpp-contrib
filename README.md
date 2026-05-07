@@ -22,6 +22,11 @@ doc](https://docs.google.com/document/d/1i1E4-_y4uJ083lCutKGDhkpi3n4_e774SBLi9hP
 For edit access, get in touch on
 [Slack](https://cloud-native.slack.com/archives/C01N3AT62SJ).
 
+The meeting is open for all to join. We invite everyone to join our meeting,
+regardless of your experience level. Whether you're a seasoned OpenTelemetry
+developer, just starting your journey, or simply curious about the work we do,
+you're more than welcome to participate!
+
 ### Maintainers
 
 * [Doug Barker](https://github.com/dbarker)
