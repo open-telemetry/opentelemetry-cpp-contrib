@@ -71,6 +71,12 @@ static const command_rec otel_cmds[] =
             OR_ALL,
             "AppDynamics Otel export Headers key value pairs"),
     AP_INIT_TAKE1(
+            "apacheModuleOtelExporterOtlpProtocol",
+            (CMD_HAND_TYPE)ApacheConfigHandlers::otel_set_otelExporterOtlpProtocol,
+            NULL,
+            OR_ALL,
+            "OTLP export protocol: grpc, http/protobuf, or http/json (default: http/protobuf)"),
+    AP_INIT_TAKE1(
             "apacheModuleOtelSslEnabled",
             (CMD_HAND_TYPE)ApacheConfigHandlers::otel_set_otelSslEnabled,
             NULL,
