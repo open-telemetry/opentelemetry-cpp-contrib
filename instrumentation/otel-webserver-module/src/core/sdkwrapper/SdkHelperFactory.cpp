@@ -26,6 +26,7 @@
 #include "opentelemetry/sdk/trace/samplers/trace_id_ratio.h"
 #include "opentelemetry/sdk/resource/resource.h"
 #include "opentelemetry/exporters/otlp/otlp_grpc_exporter.h"
+#include "opentelemetry/exporters/otlp/otlp_http_exporter.h"
 #include "opentelemetry/exporters/otlp/otlp_environment.h"
 #include "opentelemetry/baggage/propagation/baggage_propagator.h"
 #include <module_version.h>
@@ -48,6 +49,9 @@ namespace {
   constexpr const char* PARENT_BASED_SAMPLER = "parent";
   constexpr const char* TRACE_ID_RATIO_BASED_SAMPLER = "trace_id_ratio";
   constexpr const char* PROPAGATOR_TYPE_B3 = "b3";
+  constexpr const char* PROTOCOL_GRPC = "grpc";
+  constexpr const char* PROTOCOL_HTTP_PROTOBUF = "http/protobuf";
+  constexpr const char* PROTOCOL_HTTP_JSON = "http/json";
 }
 
 SdkHelperFactory::SdkHelperFactory(
@@ -132,45 +136,99 @@ OtelSpanExporter SdkHelperFactory::GetExporter(
         exporter.reset(new opentelemetry::exporter::trace::OStreamSpanExporter);
     } else {
         if (type != OTLP_EXPORTER_TYPE) {
-          // default is otlp exporter
           LOG4CXX_WARN(mLogger, "Received unknown exporter type: " << type << ". Will create default(otlp) exporter");
           type = OTLP_EXPORTER_TYPE;
         }
-        opentelemetry::exporter::otlp::OtlpGrpcExporterOptions opts;
-        opts.endpoint = config->getOtelExporterEndpoint();
-        if (config->getOtelSslEnabled()) {
-            opts.use_ssl_credentials = config->getOtelSslEnabled();
-            opts.ssl_credentials_cacert_path = config->getOtelSslCertPath();
-            LOG4CXX_TRACE(mLogger, "Ssl Credentials are enabled for exporter, path: "
-                << opts.ssl_credentials_cacert_path);
+
+        auto protocol = config->getOtelExporterOtlpProtocol();
+        if (protocol.empty()) {
+            protocol = PROTOCOL_HTTP_PROTOBUF;
         }
 
-        opentelemetry::common::KeyValueStringTokenizer tokenizer{config->getOtelExporterOtlpHeaders()};
-        opentelemetry::nostd::string_view header_key;
-        opentelemetry::nostd::string_view header_value;
-        bool header_valid = true;
-        std::unordered_set<std::string> remove_cache;
+        LOG4CXX_INFO(mLogger, "OTLP exporter protocol: " << protocol);
 
-        while (tokenizer.next(header_valid, header_key, header_value))
-        {
-            if (header_valid)
-            {
-                std::string key = static_cast<std::string>(header_key);
-                if (remove_cache.end() == remove_cache.find(key))
-                {
-                    remove_cache.insert(key);
-                    auto range = opts.metadata.equal_range(key);
-                    if (range.first != range.second)
-                    {
-                        opts.metadata.erase(range.first, range.second);
-                    }
-                }
-
-                opts.metadata.emplace(std::make_pair(std::move(key), static_cast<std::string>(header_value)));
+        if (protocol == PROTOCOL_GRPC) {
+            opentelemetry::exporter::otlp::OtlpGrpcExporterOptions opts;
+            opts.endpoint = config->getOtelExporterEndpoint();
+            if (config->getOtelSslEnabled()) {
+                opts.use_ssl_credentials = config->getOtelSslEnabled();
+                opts.ssl_credentials_cacert_path = config->getOtelSslCertPath();
+                LOG4CXX_TRACE(mLogger, "Ssl Credentials are enabled for exporter, path: "
+                    << opts.ssl_credentials_cacert_path);
             }
-        }
 
-        exporter.reset(new opentelemetry::exporter::otlp::OtlpGrpcExporter(opts));
+            opentelemetry::common::KeyValueStringTokenizer tokenizer{config->getOtelExporterOtlpHeaders()};
+            opentelemetry::nostd::string_view header_key;
+            opentelemetry::nostd::string_view header_value;
+            bool header_valid = true;
+            std::unordered_set<std::string> remove_cache;
+
+            while (tokenizer.next(header_valid, header_key, header_value))
+            {
+                if (header_valid)
+                {
+                    std::string key = static_cast<std::string>(header_key);
+                    if (remove_cache.end() == remove_cache.find(key))
+                    {
+                        remove_cache.insert(key);
+                        auto range = opts.metadata.equal_range(key);
+                        if (range.first != range.second)
+                        {
+                            opts.metadata.erase(range.first, range.second);
+                        }
+                    }
+
+                    opts.metadata.emplace(std::make_pair(std::move(key), static_cast<std::string>(header_value)));
+                }
+            }
+
+            exporter.reset(new opentelemetry::exporter::otlp::OtlpGrpcExporter(opts));
+        } else {
+            if (protocol != PROTOCOL_HTTP_PROTOBUF && protocol != PROTOCOL_HTTP_JSON) {
+                LOG4CXX_WARN(mLogger, "Received unknown OTLP protocol: " << protocol
+                    << ". Will use default(http/protobuf)");
+            }
+
+            opentelemetry::exporter::otlp::OtlpHttpExporterOptions opts;
+            opts.url = config->getOtelExporterEndpoint();
+
+            if (protocol == PROTOCOL_HTTP_JSON) {
+                opts.content_type = opentelemetry::exporter::otlp::HttpRequestContentType::kJson;
+            }
+
+            if (config->getOtelSslEnabled()) {
+                opts.ssl_ca_cert_path = config->getOtelSslCertPath();
+                LOG4CXX_TRACE(mLogger, "Ssl Credentials are enabled for exporter, path: "
+                    << opts.ssl_ca_cert_path);
+            }
+
+            opentelemetry::common::KeyValueStringTokenizer tokenizer{config->getOtelExporterOtlpHeaders()};
+            opentelemetry::nostd::string_view header_key;
+            opentelemetry::nostd::string_view header_value;
+            bool header_valid = true;
+            std::unordered_set<std::string> remove_cache;
+
+            while (tokenizer.next(header_valid, header_key, header_value))
+            {
+                if (header_valid)
+                {
+                    std::string key = static_cast<std::string>(header_key);
+                    if (remove_cache.end() == remove_cache.find(key))
+                    {
+                        remove_cache.insert(key);
+                        auto it = opts.http_headers.find(key);
+                        if (it != opts.http_headers.end())
+                        {
+                            opts.http_headers.erase(it);
+                        }
+                    }
+
+                    opts.http_headers[std::move(key)] = static_cast<std::string>(header_value);
+                }
+            }
+
+            exporter.reset(new opentelemetry::exporter::otlp::OtlpHttpExporter(opts));
+        }
     }
 
     LOG4CXX_INFO(mLogger, "Exporter created with ExporterType: "

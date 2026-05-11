@@ -168,6 +168,7 @@ OTEL_SDK_STATUS_CODE ApiUtils::ReadSettingsFromReader(
     std::string otelExporterType;
     std::string otelExporterEndpoint;
     std::string otelExporterOtlpHeaders;
+    std::string otelExporterOtlpProtocol;
     bool otelSslEnabled;
     std::string otelSslCertPath;
     std::string otelLibraryName;
@@ -263,6 +264,19 @@ OTEL_SDK_STATUS_CODE ApiUtils::ReadSettingsFromReader(
     reader.ReadOptional(
             std::string(OTEL_SDK_ENV_OTEL_EXPORTER_OTLPHEADERS), otelExporterOtlpHeaders);
 
+    reader.ReadOptional(
+            std::string(OTEL_SDK_ENV_OTEL_EXPORTER_OTLP_PROTOCOL), otelExporterOtlpProtocol);
+
+    // Fall back to standard OTel environment variable if not set via module config
+    if (otelExporterOtlpProtocol.empty()) {
+        char* envProtocol = getenv("OTEL_EXPORTER_OTLP_TRACES_PROTOCOL");
+        if (!envProtocol) {
+            envProtocol = getenv("OTEL_EXPORTER_OTLP_PROTOCOL");
+        }
+        if (envProtocol) {
+            otelExporterOtlpProtocol = envProtocol;
+        }
+    }
 
     tenantConfig.setServiceNamespace(serviceNamespace);
     tenantConfig.setServiceName(serviceName);
@@ -270,6 +284,7 @@ OTEL_SDK_STATUS_CODE ApiUtils::ReadSettingsFromReader(
     tenantConfig.setOtelExporterType(otelExporterType);
     tenantConfig.setOtelExporterEndpoint(otelExporterEndpoint);
     tenantConfig.setOtelExporterOtlpHeaders(otelExporterOtlpHeaders);
+    tenantConfig.setOtelExporterOtlpProtocol(otelExporterOtlpProtocol);
     tenantConfig.setOtelLibraryName(otelLibraryName);
     tenantConfig.setOtelProcessorType(otelProcessorType);
     tenantConfig.setOtelPropagatorType(otelPropagatorType);

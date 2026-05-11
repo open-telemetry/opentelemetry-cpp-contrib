@@ -250,6 +250,13 @@ static ngx_command_t ngx_http_opentelemetry_commands[] = {
       offsetof(ngx_http_opentelemetry_loc_conf_t, nginxModuleOtelExporterOtlpHeaders),
       NULL},
 
+    { ngx_string("NginxModuleOtelExporterOtlpProtocol"),
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
+      ngx_conf_set_str_slot,
+      NGX_HTTP_LOC_CONF_OFFSET,
+      offsetof(ngx_http_opentelemetry_loc_conf_t, nginxModuleOtelExporterOtlpProtocol),
+      NULL},
+
     { ngx_string("NginxModuleOtelSpanProcessor"),
       NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
       ngx_conf_set_str_slot,
@@ -540,6 +547,7 @@ static char* ngx_http_opentelemetry_merge_loc_conf(ngx_conf_t *cf, void *parent,
     ngx_conf_merge_str_value(conf->nginxModuleOtelSpanExporter, prev->nginxModuleOtelSpanExporter, "");
     ngx_conf_merge_str_value(conf->nginxModuleOtelExporterEndpoint, prev->nginxModuleOtelExporterEndpoint, "");
     ngx_conf_merge_str_value(conf->nginxModuleOtelExporterOtlpHeaders, prev->nginxModuleOtelExporterOtlpHeaders, "");
+    ngx_conf_merge_str_value(conf->nginxModuleOtelExporterOtlpProtocol, prev->nginxModuleOtelExporterOtlpProtocol, "");
     ngx_conf_merge_value(conf->nginxModuleOtelSslEnabled, prev->nginxModuleOtelSslEnabled, 0);
     ngx_conf_merge_str_value(conf->nginxModuleOtelSslCertificatePath, prev->nginxModuleOtelSslCertificatePath, "");
     ngx_conf_merge_str_value(conf->nginxModuleOtelSpanProcessor, prev->nginxModuleOtelSpanProcessor, "");
@@ -1401,6 +1409,11 @@ static ngx_flag_t ngx_initialize_opentelemetry(ngx_http_request_t *r)
         // Otel Exporter OTEL headers
         env_config[ix].name = OTEL_SDK_ENV_OTEL_EXPORTER_OTLPHEADERS;
         env_config[ix].value = (const char*)(conf->nginxModuleOtelExporterOtlpHeaders).data;
+        ++ix;
+
+        // Otel Exporter OTLP Protocol
+        env_config[ix].name = OTEL_SDK_ENV_OTEL_EXPORTER_OTLP_PROTOCOL;
+        env_config[ix].value = (const char*)(conf->nginxModuleOtelExporterOtlpProtocol).data;
         ++ix;
 
         // Otel SSL Enabled
