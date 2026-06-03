@@ -25,7 +25,7 @@ jobs:
     steps:
     - name: github config
       run: git config --system core.longpaths true
-    - uses: actions/checkout@v6.0.2
+    - uses: actions/checkout@v6.0.3
       with:
         submodules: 'recursive'
     - name: NuGet package generation
