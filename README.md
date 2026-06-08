@@ -30,7 +30,6 @@ you're more than welcome to participate!
 ### Maintainers
 
 * [Doug Barker](https://github.com/dbarker)
-* [Ehsan Saei](https://github.com/esigo)
 * [Lalit Kumar Bhasin](https://github.com/lalitb), Microsoft
 * [Marc Alff](https://github.com/marcalff), Oracle
 * [Tom Tan](https://github.com/ThomsonTan), Microsoft
@@ -39,15 +38,6 @@ For more information about the maintainer role, see the [community repository](h
 
 ### Approvers
 
-* [Aryan Ishan](https://github.com/aryanishan1001), Cisco
-* [DEBAJIT DAS](https://github.com/DebajitDas), Cisco
-* [Johannes Tax](https://github.com/pyohannes), Grafana Labs
-* [Josh Suereth](https://github.com/jsuereth), Google
-* [Kumar Pratyush](https://github.com/kpratyus), Cisco
-* [Max Golovanov](https://github.com/maxgolov), Microsoft
-* [Siim Kallas](https://github.com/seemk), Splunk
-* [Tobias Stadler](https://github.com/tobiasstadler)
-* [Tomasz Rojek](https://github.com/TomRoSystems)
 
 For more information about the approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver).
 
@@ -72,3 +62,19 @@ This repository is great for community supported components. Vendor specific
 code that requires a higher supportability guarantees needs to be placed in
 vendor's repository. Packages in vendor repositories would be prefixed with the
 vendor name to signify the difference from community-supported components.
+
+### Emeritus
+
+* [Aryan Ishan](https://github.com/aryanishan1001), Approver
+* [DEBAJIT DAS](https://github.com/DebajitDas), Approver
+* [Ehsan Saei](https://github.com/esigo), Maintainer
+* [Johannes Tax](https://github.com/pyohannes), Approver
+* [Josh Suereth](https://github.com/jsuereth), Approver
+* [Kumar Pratyush](https://github.com/kpratyus), Approver
+* [Max Golovanov](https://github.com/maxgolov), Approver
+* [Siim Kallas](https://github.com/seemk), Approver
+* [Tobias Stadler](https://github.com/tobiasstadler), Approver
+* [Tomasz Rojek](https://github.com/TomRoSystems), Approver
+
+For more information about the emeritus role, see the
+[community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#emeritus-maintainerapprovertriager).
