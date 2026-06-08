@@ -5,8 +5,5 @@
 #  https://help.github.com/en/articles/about-code-owners
 #
 
+# For anything not explicitly taken by someone else:
 * @open-telemetry/cpp-contrib-approvers
-
-instrumentation/httpd/ @TomRoSystems @open-telemetry/cpp-contrib-approvers
-instrumentation/nginx/ @seemk @tobiasstadler @open-telemetry/cpp-contrib-approvers
-instrumentation/otel-webserver-module/ @kpratyus @ajaynagariya @debajitdas @aryanishan1001 @open-telemetry/cpp-contrib-approvers
