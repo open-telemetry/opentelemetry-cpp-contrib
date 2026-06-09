@@ -1,0 +1,59 @@
+#.rst:
+# opentelemetry-cpp-statsd.config.cmake
+# --------
+#
+# Find the native opentelemetry-cpp-statsd includes and library.
+#
+#
+# Result Variables
+# ^^^^^^^^^^^^^^^^
+#
+# This module defines the following variables:
+#
+# ::
+#
+#   OPENTELEMETRY_CPP_STATSD_INCLUDE_DIRS  - Include directories of opentelemetry-cpp-statsd.
+#   OPENTELEMETRY_CPP_STATSD_LIBRARY_DIRS  - Link directories of opentelemetry-cpp-statsd.
+#   OPENTELEMETRY_CPP_STATSD_LIBRARIES     - List of libraries when using opentelemetry-cpp-statsd.
+#   OPENTELEMETRY_CPP_STATSD_FOUND         - True if opentelemetry-cpp-statsd found.
+#   OPENTELEMETRY_CPP_STATSD_VERSION           - Version of opentelemetry-cpp-statsd.
+#
+# ::
+#   opentelemetry-cpp-statsd::metrics                    - Imported target of oopentelemetry-cpp-statsd::metrics
+
+# =============================================================================
+# Copyright 2020 opentelemetry.
+#
+# Distributed under the Apache License (the "License"); see accompanying file
+# LICENSE for details.
+# =============================================================================
+set(OPENTELEMETRY_CPP_STATSD_VERSION
+    "@OPENTELEMETRY_CPP_STATSD_VERSION@"
+    CACHE STRING "opentelemetry-cpp-statsd version" FORCE)
+
+@PACKAGE_INIT@
+
+message(OPENTELEMETRY_CPP_STATSD_VERSION)
+find_package(Threads)
+
+set_and_check(OPENTELEMETRY_CPP_STATSD_INCLUDE_DIRS "@PACKAGE_INCLUDE_INSTALL_DIR@")
+set_and_check(OPENTELEMETRY_CPP_STATSD_LIBRARY_DIRS "@PACKAGE_CMAKE_INSTALL_LIBDIR@")
+
+include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@-target.cmake")
+
+set(OPENTELEMETRY_CPP_STATSD_LIBRARIES)
+
+set(_OPENTELEMETRY_CPP_STATSD_LIBRARIES_TEST_TARGETS metrics)
+
+foreach(_TEST_TARGET IN LISTS _OPENTELEMETRY_CPP_STATSD_LIBRARIES_TEST_TARGETS)
+        if(TARGET opentelemetry-cpp-statsd::${_TEST_TARGET})
+                list(APPEND OPENTELEMETRY_CPP_STATSD_LIBRARIES opentelemetry-cpp-statsd::${_TEST_TARGET})
+        else()
+                message("Target not found: " ${_TEST_TARGET})
+        endif()
+endforeach()
+
+# handle the QUIETLY and REQUIRED arguments and set opentelemetry-cpp_FOUND to
+# TRUE if all variables listed contain valid results, e.g. valid file paths.
+include(CMakeFindDependencyMacro)
+find_dependency(opentelemetry-cpp CONFIG)
