@@ -129,6 +129,14 @@ const char* ApacheConfigHandlers::otel_set_otelExporterOtlpHeaders(cmd_parms *cm
     return helperChar(cmd, cfg, arg, cfg->otelExporterOtlpHeaders, cfg->otelExporterOtlpHeaders_initialized, "otel_set_otelExporterOtlpHeaders");
 }
 
+//  char *otelExporterOtlpProtocol;
+//  int otelExporterOtlpProtocol_initialized;
+const char* ApacheConfigHandlers::otel_set_otelExporterOtlpProtocol(cmd_parms *cmd, void *conf, const char *arg)
+{
+    otel_cfg* cfg = (otel_cfg*) conf;
+    return helperChar(cmd, cfg, arg, cfg->otelExporterOtlpProtocol, cfg->otelExporterOtlpProtocol_initialized, "otel_set_otelExporterOtlpProtocol");
+}
+
 //  char *otelSslEnabled;
 //  int otelSslEnabled_initialized;
 const char* ApacheConfigHandlers::otel_set_otelSslEnabled(cmd_parms *cmd, void *conf, const char *arg)
@@ -444,6 +452,10 @@ void otel_cfg::init()
     otelExporterOtlpHeaders = "";
     otelExporterOtlpHeaders_initialized = 0;
 
+    // otelExporterOtlpProtocol         Optional: OTLP export protocol: grpc, http/protobuf, http/json
+    otelExporterOtlpProtocol = "";
+    otelExporterOtlpProtocol_initialized = 0;
+
     // otelSslEnabled       OPTIONAL: Decides whether the connection to the endpoint is secured
     otelSslEnabled = 0;
     otelSslEnabled_initialized = 0;
@@ -657,6 +669,11 @@ void* ApacheConfigHandlers::otel_merge_dir_config(apr_pool_t* p, void* parent_co
             apr_pstrdup(p, nconf->otelSslCertificatePath) : apr_pstrdup(p, pconf->otelSslCertificatePath);
     merged_config->otelSslCertificatePath_initialized = 1;
 
+    // otelExporterOtlpProtocol          OPTIONAL: OTLP export protocol: grpc, http/protobuf, http/json
+    merged_config->otelExporterOtlpProtocol = nconf->otelExporterOtlpProtocol_initialized ?
+            apr_pstrdup(p, nconf->otelExporterOtlpProtocol) : apr_pstrdup(p, pconf->otelExporterOtlpProtocol);
+    merged_config->otelExporterOtlpProtocol_initialized = 1;
+
     // otelExporterType          OPTIONAL: Type of exporter to be configured in TracerProvider of OTel SDK embedded into Agent
     merged_config->otelExporterType = nconf->otelExporterType_initialized ?
             apr_pstrdup(p, nconf->otelExporterType) : apr_pstrdup(p, pconf->otelExporterType);
@@ -785,6 +802,9 @@ otel_cfg* ApacheConfigHandlers::getProcessConfig(const request_rec* r)
 
     process_cfg->otelExporterOtlpHeaders = apr_pstrdup(r->server->process->pool, our_config->otelExporterOtlpHeaders);
     process_cfg->otelExporterOtlpHeaders_initialized = our_config->otelExporterOtlpHeaders_initialized;
+
+    process_cfg->otelExporterOtlpProtocol = apr_pstrdup(r->server->process->pool, our_config->otelExporterOtlpProtocol);
+    process_cfg->otelExporterOtlpProtocol_initialized = our_config->otelExporterOtlpProtocol_initialized;
 
     process_cfg->otelSslEnabled = our_config->otelSslEnabled;
     process_cfg->otelSslEnabled_initialized = our_config->otelSslEnabled_initialized;
