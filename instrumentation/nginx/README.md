@@ -40,7 +40,9 @@ load_module /path/to/otel_ngx_module.so;
 
 http {
   opentelemetry_service_name "nginx-proxy";
-  opentelemetry_otlp_traces_endpoint "http://collector:4318/v1/traces"
+  opentelemetry_otlp_traces_endpoint "http://collector:4318/v1/traces";
+  opentelemetry_resource_attr "service.version" "1.0.0";
+  opentelemetry_resource_attr "deployment.environment.name" "production";
 
   server {
     listen 80;
@@ -102,6 +104,14 @@ Service name for the nginx instance (default: `uknown:nginx`).
 
 - **required**: `false`
 - **syntax**: `opentelemetry_service_name <name>`
+- **block**: `http`
+
+### `opentelemetry_resource_attr`
+
+Adds a custom resource attribute to the trace provider. Resource attributes represent the entity producing telemetry data, e.g. `opentelemetry_resource_attr "service.version" "1.0.0"` or `opentelemetry_resource_attr "deployment.environment.name" "production"`.
+
+- **required**: `false`
+- **syntax**: `opentelemetry_resource_attr <key> <value>`
 - **block**: `http`
 
 ### `opentelemetry_span_processor`
