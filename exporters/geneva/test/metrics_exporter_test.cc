@@ -399,4 +399,78 @@ TEST(GenevaExporterTest, GetAggregationTemporalityTest) {
             AggregationTemporality::kDelta);
 }
 
+// Builds a ResourceMetrics carrying a single Sum (long) point whose attributes
+// are supplied by the caller. Used by the buffer-overflow regression tests.
+static inline opentelemetry::sdk::metrics::ResourceMetrics
+MakeSumLongMetricsWithAttributes(
+    const opentelemetry::sdk::metrics::PointAttributes &attributes) {
+  opentelemetry::sdk::metrics::SumPointData sum_point_data{};
+  sum_point_data.value_ = static_cast<int64_t>(42);
+  sum_point_data.is_monotonic_ = true;
+
+  static opentelemetry::sdk::resource::Resource resource =
+      opentelemetry::sdk::resource::Resource::Create(
+          opentelemetry::sdk::resource::ResourceAttributes{});
+  static auto scope =
+      opentelemetry::sdk::instrumentationscope::InstrumentationScope::Create(
+          "overflow_test_lib", "1.0.0");
+
+  opentelemetry::sdk::metrics::MetricData metric_data{
+      opentelemetry::sdk::metrics::InstrumentDescriptor{
+          "overflow_metric", "desc", "unit",
+          opentelemetry::sdk::metrics::InstrumentType::kCounter,
+          opentelemetry::sdk::metrics::InstrumentValueType::kLong},
+      opentelemetry::sdk::metrics::AggregationTemporality::kDelta,
+      opentelemetry::common::SystemTimestamp{std::chrono::system_clock::now()},
+      opentelemetry::common::SystemTimestamp{std::chrono::system_clock::now()},
+      std::vector<opentelemetry::sdk::metrics::PointDataAttributes>{
+          {attributes, sum_point_data}}};
+
+  opentelemetry::sdk::metrics::ResourceMetrics data;
+  data.resource_ = &resource;
+  data.scope_metric_data_ =
+      std::vector<opentelemetry::sdk::metrics::ScopeMetrics>{
+          {scope.get(),
+           std::vector<opentelemetry::sdk::metrics::MetricData>{metric_data}}};
+  return data;
+}
+
+// Regression test: attribute values whose total serialized size exceeds
+// kBufferSize (65360) must NOT overflow buffer_. Before the fix this PoC
+// (90 x 1024-byte values ~= 92 KB) triggered an AddressSanitizer
+// global-buffer-overflow inside SerializeString. The fix drops the oversized
+// metric instead of overflowing; Export must still complete cleanly.
+TEST(GenevaExporterTest, OversizedAttributesDoNotOverflowBuffer) {
+  ExporterOptions options{
+      "Endpoint=unix:///tmp/geneva_overflow_test;Account=test;Namespace=test"};
+  Exporter exporter(options);
+
+  PointAttributes attributes;
+  for (int i = 0; i < 90; i++) {
+    attributes.emplace("attr_" + std::to_string(i),
+                       std::string(kMaxDimensionValueSize, 'A'));
+  }
+
+  // Must not overflow buffer_ (validated under ASan/UBSan) and must return
+  // success rather than crashing.
+  EXPECT_EQ(exporter.Export(MakeSumLongMetricsWithAttributes(attributes)),
+            opentelemetry::sdk::common::ExportResult::kSuccess);
+}
+
+// Regression test: a single attribute value larger than kMaxDimensionValueSize
+// (but small enough that the metric still fits) is clamped, not rejected, and
+// serialization stays within bounds.
+TEST(GenevaExporterTest, SingleOversizedValueIsClampedNotOverflowed) {
+  ExporterOptions options{
+      "Endpoint=unix:///tmp/geneva_clamp_test;Account=test;Namespace=test"};
+  Exporter exporter(options);
+
+  PointAttributes attributes;
+  attributes.emplace("big_value",
+                     std::string(kMaxDimensionValueSize * 4, 'B'));
+
+  EXPECT_EQ(exporter.Export(MakeSumLongMetricsWithAttributes(attributes)),
+            opentelemetry::sdk::common::ExportResult::kSuccess);
+}
+
 #endif
