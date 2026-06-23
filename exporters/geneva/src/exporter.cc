@@ -295,7 +295,11 @@ size_t Exporter::SerializeNonHistogramMetrics(
     }
   }
   // length zero for auto-pilot
-  SerializeInt<uint16_t>(buffer_, bufferIndex, 0);
+  if (!SerializeInt<uint16_t>(buffer_, bufferIndex, 0)) {
+    LOG_WARN("Metric payload exceeds buffer size, dropping metric: %s",
+             metric_name.c_str());
+    return 0;
+  }
 
   // get final size of payload to be added in front of buffer
   uint16_t body_length = bufferIndex - kBinaryHeaderSize;
@@ -332,9 +336,13 @@ size_t Exporter::SerializeNonHistogramMetrics(
     SerializeInt<uint64_t>(buffer_, bufferIndex,
                            static_cast<uint64_t>(nostd::get<int64_t>(value)));
   } else if (event_type == MetricsEventType::DoubleMetric) {
-    SerializeInt<uint64_t>(
-        buffer_, bufferIndex,
-        *(reinterpret_cast<const uint64_t *>(&(nostd::get<double>(value)))));
+    // Reinterpret the double's bit pattern as uint64_t via memcpy to avoid
+    // strict-aliasing UB (a reinterpret_cast read would alias double as
+    // uint64_t).
+    double double_value = nostd::get<double>(value);
+    uint64_t double_bits;
+    memcpy(&double_bits, &double_value, sizeof(double_bits));
+    SerializeInt<uint64_t>(buffer_, bufferIndex, double_bits);
   } else {
     // Won't reach here.
   }
@@ -460,20 +468,24 @@ size_t Exporter::SerializeHistogramMetrics(
     }
   }
 
-  // two bytes padding for auto-pilot
-  SerializeInt<uint16_t>(buffer_, bufferIndex, 0);
-
-  // version - set as 0
-  SerializeInt<uint8_t>(buffer_, bufferIndex, 0);
-
-  // Meta-data
+  // two bytes padding for auto-pilot, version, and distribution_type.
   // Value-count pairs is associated with the constant value of 2 in the
   // distribution_type enum.
-  SerializeInt<uint8_t>(buffer_, bufferIndex, 2);
+  if (!SerializeInt<uint16_t>(buffer_, bufferIndex, 0) || // padding
+      !SerializeInt<uint8_t>(buffer_, bufferIndex, 0) ||  // version
+      !SerializeInt<uint8_t>(buffer_, bufferIndex, 2)) {  // distribution_type
+    LOG_WARN("Metric payload exceeds buffer size, dropping metric: %s",
+             metric_name.c_str());
+    return 0;
+  }
 
   // Keep a position to record how many buckets are added
   auto itemsWrittenIndex = bufferIndex;
-  SerializeInt<uint16_t>(buffer_, bufferIndex, 0);
+  if (!SerializeInt<uint16_t>(buffer_, bufferIndex, 0)) {
+    LOG_WARN("Metric payload exceeds buffer size, dropping metric: %s",
+             metric_name.c_str());
+    return 0;
+  }
 
   // bucket values
   size_t index = 0;
@@ -481,11 +493,15 @@ size_t Exporter::SerializeHistogramMetrics(
   if (event_type ==
       MetricsEventType::ExternallyAggregatedUlongDistributionMetric) {
     for (auto boundary : boundaries) {
-      if (counts[index] > 0) {
-        SerializeInt<uint64_t>(buffer_, bufferIndex,
-                               static_cast<uint64_t>(boundary));
-        SerializeInt<uint32_t>(buffer_, bufferIndex,
-                               (uint32_t)(counts[index]));
+      if (index < counts.size() && counts[index] > 0) {
+        if (!SerializeInt<uint64_t>(buffer_, bufferIndex,
+                                    static_cast<uint64_t>(boundary)) ||
+            !SerializeInt<uint32_t>(buffer_, bufferIndex,
+                                    (uint32_t)(counts[index]))) {
+          LOG_WARN("Metric payload exceeds buffer size, dropping metric: %s",
+                   metric_name.c_str());
+          return 0;
+        }
         bucket_count++;
       }
       index++;
