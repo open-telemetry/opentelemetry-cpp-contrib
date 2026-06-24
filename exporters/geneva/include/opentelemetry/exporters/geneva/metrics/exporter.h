@@ -87,20 +87,36 @@ private:
       const std::string &, const sdk::metrics::PointAttributes &);
 };
 
+// Serializes an integer into buffer at index, advancing index by sizeof(T).
+// Returns false (and writes nothing) if the value would not fit within
+// kBufferSize, so callers can abort instead of overflowing buffer_.
 template <class T>
-static void SerializeInt(char *buffer, size_t &index, T value) {
-  *(reinterpret_cast<T *>(buffer + index)) = value;
+static bool SerializeInt(char *buffer, size_t &index, T value) {
+  if (index + sizeof(T) > kBufferSize) {
+    return false;
+  }
+  // buffer is a char array and (buffer + index) may be unaligned for T; use
+  // memcpy for an alignment-safe store (avoids UB from misaligned writes).
+  memcpy(buffer + index, &value, sizeof(T));
   index += sizeof(T);
+  return true;
 }
 
-static void SerializeString(char *buffer, size_t &index,
+// Serializes a length-prefixed string into buffer at index. Returns false
+// (and writes nothing) if the 2-byte length prefix plus the string would not
+// fit within kBufferSize, preventing buffer overflow.
+static bool SerializeString(char *buffer, size_t &index,
                             const std::string &str) {
   auto size = str.size();
+  if (index + sizeof(uint16_t) + size > kBufferSize) {
+    return false;
+  }
   SerializeInt<uint16_t>(buffer, index, static_cast<uint16_t>(size));
   if (size > 0) {
     memcpy(buffer + index, str.c_str(), size);
   }
   index += size;
+  return true;
 }
 
 static std::string AttributeValueToString(

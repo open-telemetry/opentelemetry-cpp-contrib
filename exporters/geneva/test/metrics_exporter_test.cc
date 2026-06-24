@@ -399,4 +399,149 @@ TEST(GenevaExporterTest, GetAggregationTemporalityTest) {
             AggregationTemporality::kDelta);
 }
 
+// Builds a ResourceMetrics carrying a single Sum (long) point whose attributes
+// are supplied by the caller. Used by the buffer-overflow regression tests.
+static inline opentelemetry::sdk::metrics::ResourceMetrics
+MakeSumLongMetricsWithAttributes(
+    const opentelemetry::sdk::metrics::PointAttributes &attributes) {
+  opentelemetry::sdk::metrics::SumPointData sum_point_data{};
+  sum_point_data.value_ = static_cast<int64_t>(42);
+  sum_point_data.is_monotonic_ = true;
+
+  static opentelemetry::sdk::resource::Resource resource =
+      opentelemetry::sdk::resource::Resource::Create(
+          opentelemetry::sdk::resource::ResourceAttributes{});
+  static auto scope =
+      opentelemetry::sdk::instrumentationscope::InstrumentationScope::Create(
+          "overflow_test_lib", "1.0.0");
+
+  opentelemetry::sdk::metrics::MetricData metric_data{
+      opentelemetry::sdk::metrics::InstrumentDescriptor{
+          "overflow_metric", "desc", "unit",
+          opentelemetry::sdk::metrics::InstrumentType::kCounter,
+          opentelemetry::sdk::metrics::InstrumentValueType::kLong},
+      opentelemetry::sdk::metrics::AggregationTemporality::kDelta,
+      opentelemetry::common::SystemTimestamp{std::chrono::system_clock::now()},
+      opentelemetry::common::SystemTimestamp{std::chrono::system_clock::now()},
+      std::vector<opentelemetry::sdk::metrics::PointDataAttributes>{
+          {attributes, sum_point_data}}};
+
+  opentelemetry::sdk::metrics::ResourceMetrics data;
+  data.resource_ = &resource;
+  data.scope_metric_data_ =
+      std::vector<opentelemetry::sdk::metrics::ScopeMetrics>{
+          {scope.get(),
+           std::vector<opentelemetry::sdk::metrics::MetricData>{metric_data}}};
+  return data;
+}
+
+// Regression test: attribute values whose total serialized size exceeds
+// kBufferSize (65360) must NOT overflow buffer_. Before the fix this PoC
+// (90 x 1024-byte values ~= 92 KB) triggered an AddressSanitizer
+// global-buffer-overflow inside SerializeString. The fix drops the oversized
+// metric instead of overflowing; Export must still complete cleanly.
+TEST(GenevaExporterTest, OversizedAttributesDoNotOverflowBuffer) {
+  ExporterOptions options{
+      "Endpoint=unix:///tmp/geneva_overflow_test;Account=test;Namespace=test"};
+  Exporter exporter(options);
+
+  PointAttributes attributes;
+  for (int i = 0; i < 90; i++) {
+    attributes.emplace("attr_" + std::to_string(i),
+                       std::string(kMaxDimensionValueSize, 'A'));
+  }
+
+  // Must not overflow buffer_ (validated under ASan/UBSan) and must return
+  // success rather than crashing.
+  EXPECT_EQ(exporter.Export(MakeSumLongMetricsWithAttributes(attributes)),
+            opentelemetry::sdk::common::ExportResult::kSuccess);
+}
+
+// Regression test: a single attribute value larger than kMaxDimensionValueSize
+// (but small enough that the metric still fits) is clamped, not rejected, and
+// serialization stays within bounds.
+TEST(GenevaExporterTest, SingleOversizedValueIsClampedNotOverflowed) {
+  ExporterOptions options{
+      "Endpoint=unix:///tmp/geneva_clamp_test;Account=test;Namespace=test"};
+  Exporter exporter(options);
+
+  PointAttributes attributes;
+  attributes.emplace("big_value",
+                     std::string(kMaxDimensionValueSize * 4, 'B'));
+
+  EXPECT_EQ(exporter.Export(MakeSumLongMetricsWithAttributes(attributes)),
+            opentelemetry::sdk::common::ExportResult::kSuccess);
+}
+
+static inline opentelemetry::sdk::metrics::ResourceMetrics
+MakeHistogramLongMetrics(const std::vector<double> &boundaries,
+                         const std::vector<uint64_t> &counts) {
+  opentelemetry::sdk::metrics::HistogramPointData histogram_point_data{};
+  histogram_point_data.boundaries_ = boundaries;
+  histogram_point_data.counts_ = counts;
+  histogram_point_data.count_ = counts.size();
+  histogram_point_data.sum_ = static_cast<int64_t>(0);
+  histogram_point_data.min_ = static_cast<int64_t>(0);
+  histogram_point_data.max_ = static_cast<int64_t>(boundaries.size());
+
+  static opentelemetry::sdk::resource::Resource resource =
+      opentelemetry::sdk::resource::Resource::Create(
+          opentelemetry::sdk::resource::ResourceAttributes{});
+  static auto scope =
+      opentelemetry::sdk::instrumentationscope::InstrumentationScope::Create(
+          "overflow_test_lib", "1.0.0");
+
+  opentelemetry::sdk::metrics::MetricData metric_data{
+      opentelemetry::sdk::metrics::InstrumentDescriptor{
+          "overflow_histogram", "desc", "unit",
+          opentelemetry::sdk::metrics::InstrumentType::kHistogram,
+          opentelemetry::sdk::metrics::InstrumentValueType::kLong},
+      opentelemetry::sdk::metrics::AggregationTemporality::kDelta,
+      opentelemetry::common::SystemTimestamp{std::chrono::system_clock::now()},
+      opentelemetry::common::SystemTimestamp{std::chrono::system_clock::now()},
+      std::vector<opentelemetry::sdk::metrics::PointDataAttributes>{
+          {opentelemetry::sdk::metrics::PointAttributes{}, histogram_point_data}}};
+
+  opentelemetry::sdk::metrics::ResourceMetrics data;
+  data.resource_ = &resource;
+  data.scope_metric_data_ =
+      std::vector<opentelemetry::sdk::metrics::ScopeMetrics>{
+          {scope.get(),
+           std::vector<opentelemetry::sdk::metrics::MetricData>{metric_data}}};
+  return data;
+}
+
+TEST(GenevaExporterTest, HistogramManyBucketsDoNotOverflowBuffer) {
+  ExporterOptions options{
+      "Endpoint=unix:///tmp/geneva_hist_test;Account=test;Namespace=test"};
+  Exporter exporter(options);
+
+  const size_t kNumBuckets = 6000;
+  std::vector<double> boundaries(kNumBuckets);
+  for (size_t i = 0; i < kNumBuckets; i++) {
+    boundaries[i] = static_cast<double>(i);
+  }
+  // All buckets non-empty so every one is serialized.
+  std::vector<uint64_t> counts(kNumBuckets + 1, 1);
+
+  EXPECT_EQ(exporter.Export(MakeHistogramLongMetrics(boundaries, counts)),
+            opentelemetry::sdk::common::ExportResult::kSuccess);
+}
+
+TEST(GenevaExporterTest, HistogramMismatchedCountsDoesNotReadOutOfBounds) {
+  ExporterOptions options{
+      "Endpoint=unix:///tmp/geneva_hist_mismatch_test;Account=test;Namespace=test"};
+  Exporter exporter(options);
+
+  std::vector<double> boundaries(8);
+  for (size_t i = 0; i < boundaries.size(); i++) {
+    boundaries[i] = static_cast<double>(i);
+  }
+  // Deliberately shorter than boundaries (SDK normally guarantees size + 1).
+  std::vector<uint64_t> counts(2, 1);
+
+  EXPECT_EQ(exporter.Export(MakeHistogramLongMetrics(boundaries, counts)),
+            opentelemetry::sdk::common::ExportResult::kSuccess);
+}
+
 #endif
