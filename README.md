@@ -41,6 +41,22 @@ For more information about the maintainer role, see the [community repository](h
 
 For more information about the approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver).
 
+### Emeritus
+
+* [Aryan Ishan](https://github.com/aryanishan1001), Approver
+* [DEBAJIT DAS](https://github.com/DebajitDas), Approver
+* [Ehsan Saei](https://github.com/esigo), Maintainer
+* [Johannes Tax](https://github.com/pyohannes), Approver
+* [Josh Suereth](https://github.com/jsuereth), Approver
+* [Kumar Pratyush](https://github.com/kpratyus), Approver
+* [Max Golovanov](https://github.com/maxgolov), Approver
+* [Siim Kallas](https://github.com/seemk), Approver
+* [Tobias Stadler](https://github.com/tobiasstadler), Approver
+* [Tomasz Rojek](https://github.com/TomRoSystems), Approver
+
+For more information about the emeritus role, see the
+[community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#emeritus-maintainerapprovertriager).
+
 ### Thanks to all the people who have contributed
 
 [![contributors](https://contributors-img.web.app/image?repo=open-telemetry/opentelemetry-cpp-contrib)](https://github.com/open-telemetry/opentelemetry-cpp-contrib/graphs/contributors)
@@ -62,19 +78,3 @@ This repository is great for community supported components. Vendor specific
 code that requires a higher supportability guarantees needs to be placed in
 vendor's repository. Packages in vendor repositories would be prefixed with the
 vendor name to signify the difference from community-supported components.
-
-### Emeritus
-
-* [Aryan Ishan](https://github.com/aryanishan1001), Approver
-* [DEBAJIT DAS](https://github.com/DebajitDas), Approver
-* [Ehsan Saei](https://github.com/esigo), Maintainer
-* [Johannes Tax](https://github.com/pyohannes), Approver
-* [Josh Suereth](https://github.com/jsuereth), Approver
-* [Kumar Pratyush](https://github.com/kpratyus), Approver
-* [Max Golovanov](https://github.com/maxgolov), Approver
-* [Siim Kallas](https://github.com/seemk), Approver
-* [Tobias Stadler](https://github.com/tobiasstadler), Approver
-* [Tomasz Rojek](https://github.com/TomRoSystems), Approver
-
-For more information about the emeritus role, see the
-[community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#emeritus-maintainerapprovertriager).
