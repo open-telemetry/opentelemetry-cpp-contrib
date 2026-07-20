@@ -37,7 +37,7 @@ void OpenTelemetrySink<Mutex>::sink_it_(const spdlog::details::log_msg &msg)
       log_record->SetAttribute(kCodeFilePath, msg.source.filename);
       log_record->SetAttribute(kCodeLineNumber, msg.source.line);
     }
-    log_record->SetAttribute(kThreadId, msg.thread_id);
+    log_record->SetAttribute(kThreadId, static_cast<uint32_t>(msg.thread_id));
     logger->EmitLogRecord(std::move(log_record));
   }
 }
