@@ -1,8 +1,9 @@
 name: httpd instrumentation CI
 
 on:
+  workflow_dispatch:
   push:
-    branches: "*"
+    branches: [main]
     paths:
       - 'instrumentation/httpd/**'
       - '.github/workflows/httpd.yml'
@@ -22,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04]
+        os: [ubuntu-22.04, ubuntu-24.04]
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v7.0.1
@@ -46,7 +47,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04]
+        os: [ubuntu-22.04, ubuntu-24.04]
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v7.0.1
@@ -96,7 +97,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04]
+        os: [ubuntu-22.04, ubuntu-24.04]
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v7.0.1
