@@ -1,0 +1,64 @@
+name: Codeql
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "exporters/**"
+      - "instrumentation/**"
+      - ".github/workflows/codeql.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "exporters/**"
+      - "instrumentation/**"
+      - ".github/workflows/codeql.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  Codeql-build:
+    permissions:
+      security-events: write # for github/codeql-action/analyze to upload SARIF results
+    name: static-analysis
+    runs-on: ubuntu-24.04
+    steps:
+      - name: checkout otel contrib
+        uses: actions/checkout@v7.0.1
+        with:
+          submodules: "recursive"
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4.36.3
+        with:
+          languages: cpp
+      - name: Install and setup Conan
+        uses: conan-io/setup-conan@v1
+        with:
+          cache_packages: true
+      - name: setup dependencies
+        run: |
+          sudo apt update -y
+          sudo apt install -y --no-install-recommends --no-install-suggests \
+            build-essential \
+            cmake \
+            ninja-build \
+            libssl-dev \
+            libcurl4-openssl-dev \
+            libprotobuf-dev \
+            protobuf-compiler \
+            libgmock-dev \
+            libgtest-dev
+      - name: Build and upload package
+        run: |
+          for conan_file in $(find exporters instrumentation -name conanfile.txt); do
+            dir=$(dirname "$conan_file")
+            echo "Building $dir"
+            cd "${GITHUB_WORKSPACE}/$dir"
+            conan install . --output-folder=build --build=missing
+            cd build
+            cmake .. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DWITH_EXAMPLES=OFF
+            cmake --build . -j4
+          done
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4.36.3
