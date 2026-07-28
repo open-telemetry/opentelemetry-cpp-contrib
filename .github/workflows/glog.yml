@@ -1,9 +1,9 @@
 name: glog
 
 on:
+  workflow_dispatch:
   push:
-    branches:
-      - '*'
+    branches: [main]
     path:
       - 'instrumentation/glog/**'
       - '.github/workflows/glog.yml'

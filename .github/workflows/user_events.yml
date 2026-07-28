@@ -1,9 +1,9 @@
 name: user_events 
 
 on:
+  workflow_dispatch:
   push:
-    branches:
-      - '*'
+    branches: [main]
     path:
       - 'exporters/user_events/**'
       - '.github/workflows/user_events.yml'

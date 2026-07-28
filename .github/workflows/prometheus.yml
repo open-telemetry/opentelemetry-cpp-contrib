@@ -1,8 +1,9 @@
 name: prometheus instrumentation CI
 
 on:
+  workflow_dispatch:
   push:
-    branches: "*"
+    branches: [main]
     paths:
       - "exporters/prometheus/**"
       - ".github/workflows/prometheus.yml"

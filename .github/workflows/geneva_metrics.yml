@@ -1,8 +1,9 @@
 name: Geneva Metrics CI
 
 on:
+  workflow_dispatch:
   push:
-    branches: "*"
+    branches: [main]
     paths:
       - "exporters/geneva/**"
       - ".github/workflows/geneva_metrics.yml"
