@@ -118,16 +118,6 @@ When local changes are made, you need to restart the `httpd` server to load new 
 
 On Ubuntu you need packages listed here: [setup-environment.sh](./setup-environment.sh) which are prerequisites to compile opentelemetry-cpp and here: [setup-buildtools.sh](./setup-buildtools.sh) for apache development stuff. Then just execute [bulid.sh](./build.sh).
 
-### Run formatting check
-
-Please make sure that code is well formatted with this command:
-
-```bash
-./tools/check-formatting.sh
-```
-
-when contributing.
-
 ### Testing
 
 Integration tests exists in `tests` directory. Please run `run-all.sh` to check functionality.
