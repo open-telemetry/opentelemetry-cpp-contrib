@@ -24,7 +24,7 @@
       schedule: ["before 8am Monday"],
     },
     {
-      matchUpdateTypes: ["minor"],
+      matchUpdateTypes: ["major"],
       matchManagers: ["github-actions"],
       schedule: ["before 8am Monday"],
     },
