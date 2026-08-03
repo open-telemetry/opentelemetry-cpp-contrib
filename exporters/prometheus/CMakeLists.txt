@@ -37,12 +37,8 @@ endif()
 
 link_directories(${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 
-find_package(opentelemetry-cpp REQUIRED)
 find_package(ZLIB REQUIRED)
-
-if(TARGET ZLIB::zlib AND NOT TARGET ZLIB::ZLIB)
-  add_library(ZLIB::ZLIB ALIAS ZLIB::zlib)
-endif()
+find_package(opentelemetry-cpp REQUIRED)
 
 find_package(prometheus-cpp CONFIG REQUIRED)
 
