@@ -21,13 +21,13 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/nginx')
     permissions:
       contents: write # required for creating releases
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Release
         uses: softprops/action-gh-release@v3
   upload-release-artifacts:
     if: startsWith(github.ref, 'refs/tags/nginx')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [nginx-build-test, create-release]
     permissions:
       contents: write # required for uploading release artifacts
