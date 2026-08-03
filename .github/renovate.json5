@@ -7,26 +7,41 @@
   ],
   packageRules: [
     {
-      dependencyDashboardApproval: true,
-      matchManagers: ["!github-actions"],
-    },
-    {
+      description: "Bundles all patches into 1 easy to review pr",
       groupName: "all patching",
       matchUpdateTypes: ["patch", "digest"],
-      matchManagers: ["github-actions"],
       schedule: ["before 6am every weekday"],
     },
     {
+      description: "Bundle all minor infra updates into 1 update",
       groupName: "infra updates",
-      matchCategories: ["ci"],
+      matchCategories: ["ci", "docker"],
       matchUpdateTypes: ["minor"],
-      matchManagers: ["github-actions"],
-      schedule: ["before 8am Monday"],
+      schedule: ["before 8am on Monday"],
     },
     {
-      matchUpdateTypes: ["major"],
-      matchManagers: ["github-actions"],
-      schedule: ["before 8am Monday"],
+      description: "Allow minor updates to be raised each Monday without approval",
+      matchUpdateTypes: ["minor"],
+      matchDepNames: ["!opentelemetry**"],
+      schedule: ["before 8am on Monday"],
     },
+    {
+      description: "Allow major ci updates to be raised each Monday without approval",
+      matchCategories: ["ci"],
+      matchUpdateTypes: ["major"],
+      schedule: ["before 8am on Monday"],
+    },
+    {
+      description: "Require approval for all major updates except ci",
+      dependencyDashboardApproval: true,
+      matchCategories: ["!ci"],
+      matchUpdateTypes: ["major"],
+    },
+    {
+      description: "Ensure otel is as up to date as possible with individual pr's per minor",
+      matchDepNames: ["opentelemetry**"],
+      separateMultipleMinor: true,
+      schedule: ["before 6am every weekday"],
+    }
   ],
 }
