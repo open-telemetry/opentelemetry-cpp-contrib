@@ -21,6 +21,7 @@
     },
     {
       description: "Allow minor updates to be raised each Monday without approval",
+      dependencyDashboardApproval: true,
       matchUpdateTypes: ["minor"],
       matchDepNames: ["!opentelemetry**"],
       schedule: ["before 8am on Monday"],
@@ -28,7 +29,7 @@
     {
       description: "Allow major ci updates to be raised each Monday without approval",
       matchCategories: ["ci"],
-      matchUpdateTypes: ["major"],
+      matchUpdateTypes: ["major", "minor"],
       schedule: ["before 8am on Monday"],
     },
     {
@@ -39,6 +40,7 @@
     },
     {
       description: "Ensure otel is as up to date as possible with individual pr's per minor",
+      dependencyDashboardApproval: true,
       matchDepNames: ["opentelemetry**"],
       separateMultipleMinor: true,
       schedule: ["before 6am every weekday"],
