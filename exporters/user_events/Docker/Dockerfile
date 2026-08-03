@@ -1,7 +1,7 @@
 # Copyright The OpenTelemetry Authors
 # SPDX-License-Identifier: Apache-2.0
 
-FROM ubuntu:latest
+FROM ubuntu:26.10
 ENV DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /work
