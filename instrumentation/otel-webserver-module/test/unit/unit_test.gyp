@@ -6,12 +6,18 @@
     'include_dirs': [
       '../../include/core/',
       '../../include/util/',
+      '../../include/apache/',
+      '../../src/apache/',
+      '$(APACHE24_INCLUDE_DIR)',
+      '$(APACHE24_INCLUDE_DIR)/../os/unix',
       '$(ANSDK_DIR)/googletest/1.10.0/include',
       '$(ANSDK_DIR)/googletest/1.10.0/include',
       '$(ANSDK_DIR)/opentelemetry/$(CPP_SDK_VERSION)/include/',
       '$(ANSDK_DIR)/apache-log4cxx/0.11.0/include',
       '$(ANSDK_DIR)/apr/1.7.0/include',
       '$(ANSDK_DIR)/apr-util/1.6.1/include',
+      '$(ANSDK_DIR)/apr/1.7.0/include/apr-1',
+      '$(ANSDK_DIR)/apr-util/1.6.1/include/apr-1',
       '$(BOOST_INCLUDE)'
     ],
 
@@ -27,6 +33,8 @@
       'RequestProcessingEngine_test.cpp',
       'SpanNamer_test.cpp',
       'integration_test.cpp',
+      'ApacheConfig_test.cpp',
+      '../../src/apache/ApacheConfig.cpp',
     ],
 
 
