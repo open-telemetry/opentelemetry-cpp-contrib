@@ -1,3 +1,5 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
@@ -25,6 +27,28 @@ cc_library(
 )
 
 cc_library(
+    name = "prometheus_file_exporter",
+    srcs = [
+        "src/file_exporter.cc",
+        "src/file_exporter_factory.cc",
+    ],
+    hdrs = [
+        "include/opentelemetry/exporters/prometheus/file_exporter.h",
+        "include/opentelemetry/exporters/prometheus/file_exporter_factory.h",
+        "include/opentelemetry/exporters/prometheus/file_exporter_options.h",
+    ],
+    strip_include_prefix = "include",
+    tags = ["prometheus"],
+    deps = [
+        "@com_github_jupp0r_prometheus_cpp//core",
+        "@io_opentelemetry_cpp//api",
+        "@io_opentelemetry_cpp//exporters/prometheus:prometheus_exporter_utils",
+        "@io_opentelemetry_cpp//sdk:headers",
+        "@io_opentelemetry_cpp//sdk/src/metrics",
+    ],
+)
+
+cc_library(
     name = "prometheus_test_helper",
     hdrs = [
         "test/prometheus_test_helper.h",
@@ -42,6 +66,7 @@ cc_test(
     srcs = [
         "test/push_exporter_test.cc",
     ],
+    linkstatic = True,
     tags = [
         "prometheus",
         "test",
