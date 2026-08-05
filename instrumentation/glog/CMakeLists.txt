@@ -14,6 +14,7 @@ add_library(${this_target} src/sink.cc)
 
 target_compile_options(${this_target} PUBLIC
   -Wall -Wextra -Werror -Wpedantic -fPIC
+  -Wno-error=deprecated-declarations
 )
 
 set_target_properties(${this_target} PROPERTIES EXPORT_NAME ${this_target})

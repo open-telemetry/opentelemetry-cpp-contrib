@@ -1,0 +1,7 @@
+[requires]
+opentelemetry-cpp/1.21.0
+boost/1.73.0
+
+[generators]
+CMakeDeps
+CMakeToolchain
