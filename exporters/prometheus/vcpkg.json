@@ -1,0 +1,31 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "opentelemetry-cpp-contrib-prometheus",
+  "version-string": "1.28.0",
+  "description": "Prometheus Push Exporter for OpenTelemetry C++",
+  "homepage": "https://github.com/open-telemetry/opentelemetry-cpp-contrib/tree/main/exporters/prometheus",
+  "license": "Apache-2.0",
+  "dependencies": [
+    {
+      "name": "opentelemetry-cpp",
+      "features": [
+        "prometheus"
+      ]
+    },
+    {
+      "name": "prometheus-cpp",
+      "features": [
+        "pull",
+        "push"
+      ]
+    },
+    "gtest"
+  ],
+  "overrides": [
+    {
+      "name": "opentelemetry-cpp",
+      "version": "1.28.0"
+    }
+  ],
+  "builtin-baseline": "b4ae67c6051bb665f9414fca5c66f66cacc71970"
+}
