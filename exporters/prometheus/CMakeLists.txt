@@ -37,7 +37,9 @@ endif()
 
 link_directories(${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 
+find_package(ZLIB REQUIRED)
 find_package(opentelemetry-cpp REQUIRED)
+
 find_package(prometheus-cpp CONFIG REQUIRED)
 
 get_target_property(OPENTELEMETRY_CPP_API_DEFINITIONS opentelemetry-cpp::api

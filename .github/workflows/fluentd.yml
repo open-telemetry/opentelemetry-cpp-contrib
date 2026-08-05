@@ -4,8 +4,9 @@
 name: Fluentd exporter CI
 
 on:
+  workflow_dispatch:
   push:
-    branches: "*"
+    branches: [main]
     paths:
       - "exporters/fluentd/**"
       - ".github/workflows/fluentd.yml"

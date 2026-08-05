@@ -1,9 +1,9 @@
 name: boost_log
 
 on:
+  workflow_dispatch:
   push:
-    branches:
-      - '*'
+    branches: [main]
     path:
       - 'instrumentation/boost_log/**'
       - '.github/workflows/boost_log.yml'
