@@ -8,8 +8,17 @@ module(
     repo_name = "io_opentelemetry_cpp_contrib",
 )
 
-bazel_dep(name = "abseil-cpp", version = "20240116.1", repo_name = "com_google_absl")
+bazel_dep(name = "abseil-cpp", version = "20260107.1", repo_name = "com_google_absl")
 bazel_dep(name = "opentelemetry-cpp", version = "1.28.0", repo_name = "io_opentelemetry_cpp")
-bazel_dep(name = "prometheus-cpp", version = "1.3.0", repo_name = "com_github_jupp0r_prometheus_cpp")
+bazel_dep(name = "prometheus-cpp", version = "1.3.0.bcr.2", repo_name = "com_github_jupp0r_prometheus_cpp")
 
-bazel_dep(name = "googletest", version = "1.14.0.bcr.1", dev_dependency = True, repo_name = "com_google_googletest")
+bazel_dep(name = "googletest", version = "1.17.0", dev_dependency = True, repo_name = "com_google_googletest")
+
+# Pull opentelemetry-cpp directly from GitHub instead of the Bazel Central
+# Registry, which may not yet be updated to the required version.
+archive_override(
+    module_name = "opentelemetry-cpp",
+    integrity = "sha256-jDWZGRddd8UCUV9aeDkH0DHMahcuREJtvpvuPBUyIB4=",
+    strip_prefix = "opentelemetry-cpp-1.28.0",
+    urls = ["https://github.com/open-telemetry/opentelemetry-cpp/archive/refs/tags/v1.28.0.tar.gz"],
+)
