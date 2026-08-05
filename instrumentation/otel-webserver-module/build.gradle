@@ -189,6 +189,8 @@ task stageLibrary(type: Copy) {
     from("${modDepDir}/opentelemetry/${cppSDKVersion}/lib/libopentelemetry_otlp_recordable.so") { it.into "sdk_lib/lib" }
     from("${modDepDir}/opentelemetry/${cppSDKVersion}/lib/libopentelemetry_exporter_ostream_span.so") { it.into "sdk_lib/lib" }
     from("${modDepDir}/opentelemetry/${cppSDKVersion}/lib/libopentelemetry_exporter_otlp_grpc.so") { it.into "sdk_lib/lib" }
+    from("${modDepDir}/opentelemetry/${cppSDKVersion}/lib/libopentelemetry_exporter_otlp_http.so") { it.into "sdk_lib/lib" }
+    from("${modDepDir}/opentelemetry/${cppSDKVersion}/lib/libopentelemetry_http_client_curl.so") { it.into "sdk_lib/lib" }
     from("dist/opentelemetry_sdk_log4cxx.xml.template") { it.into "conf" }
     from("dist/install.${scriptExt}") { it.fileMode 0700 }
 
