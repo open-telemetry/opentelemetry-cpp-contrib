@@ -1,11 +1,11 @@
-// Copyright 2023, OpenTelemetry Authors
+// Copyright The OpenTelemetry Authors
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
 
 #include <memory>
 
-#include "opentelemetry/exporters/prometheus/push_exporter_options.h"
+#include "opentelemetry/exporters/prometheus/file_exporter_options.h"
 #include "opentelemetry/sdk/metrics/push_metric_exporter.h"
 #include "opentelemetry/version.h"
 
@@ -16,17 +16,17 @@ namespace metrics
 {
 
 /**
- * Factory class for PrometheusExporter.
+ * Factory class for PrometheusFileExporter.
  */
-class PrometheusPushExporterFactory
+class PrometheusFileExporterFactory
 {
 public:
   /**
-   * Create a PrometheusExporter using the given options.
+   * Create a PrometheusFileExporter using the given options.
    */
-  OPENTELEMETRY_CONTRIB_PROMETHEUS_PUSH_API static std::unique_ptr<
+  OPENTELEMETRY_CONTRIB_PROMETHEUS_FILE_API static std::unique_ptr<
       opentelemetry::sdk::metrics::PushMetricExporter>
-  Create(const PrometheusPushExporterOptions &options);
+  Create(const PrometheusFileExporterOptions &options);
 };
 
 }  // namespace metrics
