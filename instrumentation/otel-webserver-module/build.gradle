@@ -490,6 +490,7 @@ task assembleWebServerModule(type: Tar) {
 
 task gypUnitTest(type: Exec) {
     dependsOn stageLibrary
+    dependsOn configureApache24
 
     inputs.file 'test/unit/unit_test.gyp'
     outputs.file "${platBuildDir}/unit_test/Makefile"
@@ -497,6 +498,7 @@ task gypUnitTest(type: Exec) {
     ext.testBuildEnvironment = [
         OTEL_SDK_LIB_DIR: "${libraryStageDir}/sdk_lib",
         ANSDK_DIR: modDepDir,
+        APACHE24_INCLUDE_DIR: "${platBuildDir}/httpd-${apache24Version}/include",
         BOOST_LIB: BOOST_LIB,
         BOOST_INCLUDE: BOOST_INCLUDE,
         GTEST_LIB_DIR: target_system == "ubuntu" ?
@@ -514,6 +516,10 @@ task makeUnitTest(type: Exec) {
     dependsOn gypUnitTest
 
     inputs.dir 'test/unit'
+    // The unit test target also compiles src/apache/ApacheConfig.cpp. Without these,
+    // gradle reports UP-TO-DATE on an apache-only edit and silently re-runs a stale binary.
+    inputs.dir 'src/apache'
+    inputs.dir 'include/apache'
 
     outputs.file "${platBuildDir}/unit_test/out/Default/unit_test"
 
