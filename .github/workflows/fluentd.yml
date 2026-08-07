@@ -21,7 +21,7 @@ permissions:
 jobs:
   cmake_linux:
     name: CMake Linux
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: checkout opentelemetry-cpp-contrib
         uses: actions/checkout@v7.0.1
