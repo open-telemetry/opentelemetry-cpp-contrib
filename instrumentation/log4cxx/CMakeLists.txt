@@ -24,8 +24,6 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(opentelemetry-cpp)
 FetchContent_MakeAvailable(log4cxx)
 
-find_package(log4cxx QUIET)
-
 add_library(${this_target} src/appender.cc)
 
 target_compile_options(${this_target}
