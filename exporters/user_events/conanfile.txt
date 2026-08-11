@@ -1,7 +1,0 @@
-[requires]
-opentelemetry-cpp/1.24.0
-nlohmann_json/3.11.3
-
-[generators]
-CMakeDeps
-CMakeToolchain

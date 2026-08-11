@@ -7,22 +7,24 @@ set(this_target opentelemetry_log4cxx_appender)
 
 project(${this_target})
 
-find_package(opentelemetry-cpp QUIET)
+include(FetchContent)
 
-if (opentelemetry-cpp_FOUND)
-  message(STATUS "Found opentelemetry-cpp version: ${opentelemetry-cpp_VERSION}")
-else()
-  message(FATAL_ERROR "Could not find opentelemetry-cpp")
-endif()
+FetchContent_Declare(
+  opentelemetry-cpp
+  GIT_REPOSITORY https://github.com/open-telemetry/opentelemetry-cpp.git
+  GIT_TAG ced79860f8c8a091a2eabfee6d47783f828a9b59 # v1.19.0
+)
+
+FetchContent_Declare(
+  log4cxx
+  GIT_REPOSITORY https://github.com/apache/logging-log4cxx.git
+  GIT_TAG 1a40100f76e5718e9b1a6a98eb28d9c165029bde # v1.2.0
+)
+
+FetchContent_MakeAvailable(opentelemetry-cpp)
+FetchContent_MakeAvailable(log4cxx)
 
 find_package(log4cxx QUIET)
-
-if (log4cxx_FOUND)
-  message(STATUS "Found log4cxx version: ${log4cxx_VERSION}")
-else()
-  find_package(PkgConfig REQUIRED)
-  pkg_check_modules(LOG4CXX REQUIRED liblog4cxx)
-endif()
 
 add_library(${this_target} src/appender.cc)
 

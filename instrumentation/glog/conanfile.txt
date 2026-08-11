@@ -1,7 +1,0 @@
-[requires]
-opentelemetry-cpp/1.21.0
-glog/0.7.1
-
-[generators]
-CMakeDeps
-CMakeToolchain

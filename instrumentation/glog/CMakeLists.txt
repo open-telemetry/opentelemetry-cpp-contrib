@@ -7,8 +7,22 @@ set(this_target opentelemetry_glog_sink)
 
 project(${this_target})
 
-find_package(opentelemetry-cpp REQUIRED)
-find_package(glog 0.7.0 REQUIRED)
+include(FetchContent)
+
+FetchContent_Declare(
+  opentelemetry-cpp
+  GIT_REPOSITORY https://github.com/open-telemetry/opentelemetry-cpp.git
+  GIT_TAG ced79860f8c8a091a2eabfee6d47783f828a9b59 # v1.19.0
+)
+
+FetchContent_Declare(
+  glog
+  GIT_REPOSITORY https://github.com/google/glog.git
+  GIT_TAG v0.7.0
+)
+
+FetchContent_MakeAvailable(opentelemetry-cpp)
+FetchContent_MakeAvailable(glog)
 
 add_library(${this_target} src/sink.cc)
 

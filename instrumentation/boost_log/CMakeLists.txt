@@ -7,7 +7,16 @@ set(this_target opentelemetry_boost_log_sink)
 
 project(${this_target})
 
-find_package(opentelemetry-cpp REQUIRED)
+include(FetchContent)
+
+FetchContent_Declare(
+  opentelemetry-cpp
+  GIT_REPOSITORY https://github.com/open-telemetry/opentelemetry-cpp.git
+  GIT_TAG ced79860f8c8a091a2eabfee6d47783f828a9b59 # v1.19.0
+)
+
+FetchContent_MakeAvailable(opentelemetry-cpp)
+
 find_package(Boost 1.73 COMPONENTS log REQUIRED)
 
 add_library(${this_target} src/sink.cc)
