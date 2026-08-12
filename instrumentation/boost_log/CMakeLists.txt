@@ -12,7 +12,7 @@ include(FetchContent)
 FetchContent_Declare(
   opentelemetry-cpp
   GIT_REPOSITORY https://github.com/open-telemetry/opentelemetry-cpp.git
-  GIT_TAG 6f65c3eded2bb4656c8d675cad43bbe694c531c7 # v1.28.0
+  GIT_TAG ced79860f8c8a091a2eabfee6d47783f828a9b59 # v1.19.0
 )
 
 FetchContent_MakeAvailable(opentelemetry-cpp)
@@ -31,7 +31,6 @@ set_target_properties(${this_target} PROPERTIES EXPORT_NAME ${this_target})
 target_include_directories(${this_target} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-  ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
 )
 
 target_link_libraries(${this_target} PUBLIC
@@ -128,7 +127,6 @@ if(WITH_EXAMPLES)
 
   target_include_directories(${example_exe} PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/include
-    ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
   )
 
   target_link_libraries(${this_target} PUBLIC
