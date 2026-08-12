@@ -12,13 +12,13 @@ include(FetchContent)
 FetchContent_Declare(
   opentelemetry-cpp
   GIT_REPOSITORY https://github.com/open-telemetry/opentelemetry-cpp.git
-  GIT_TAG ced79860f8c8a091a2eabfee6d47783f828a9b59 # v1.19.0
+  GIT_TAG b9cf499ff5715433848b316059714b5c59af1f2c # v1.21.0
 )
 
 FetchContent_Declare(
   log4cxx
   GIT_REPOSITORY https://github.com/apache/logging-log4cxx.git
-  GIT_TAG 1a40100f76e5718e9b1a6a98eb28d9c165029bde # v1.2.0
+  GIT_TAG b63993f82346e0db103ef7d210d95478e729cfc0 # rel/v1.8.0
 )
 
 FetchContent_MakeAvailable(opentelemetry-cpp)
