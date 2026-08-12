@@ -36,11 +36,11 @@ set_target_properties(${this_target} PROPERTIES EXPORT_NAME ${this_target})
 target_include_directories(${this_target} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-  ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
 )
 
 target_link_libraries(${this_target} PRIVATE
   glog::glog
+  opentelemetry-cpp::api
 )
 
 if(OPENTELEMETRY_INSTALL)

@@ -91,7 +91,6 @@ if(BUILD_TESTING)
 
   target_include_directories(${testname} PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/include
-    ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
   )
 
   target_link_libraries(${testname} PRIVATE
@@ -99,6 +98,7 @@ if(BUILD_TESTING)
     GTest::gtest
     GTest::gtest_main
     Boost::log
+    opentelemetry-cpp::api
     opentelemetry-cpp::ostream_log_record_exporter
     ${this_target}
   )

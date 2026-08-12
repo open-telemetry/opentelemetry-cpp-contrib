@@ -125,10 +125,10 @@ if(WITH_EXAMPLES)
   target_include_directories(${example_exe} PUBLIC
     $<TARGET_PROPERTY:log4cxx,INTERFACE_INCLUDE_DIRECTORIES>
     ${CMAKE_CURRENT_LIST_DIR}/include
-    ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
   )
 
   target_link_libraries(${example_exe} PRIVATE
+    opentelemetry-cpp::api
     opentelemetry-cpp::logs
     opentelemetry-cpp::trace
     opentelemetry-cpp::ostream_log_record_exporter
