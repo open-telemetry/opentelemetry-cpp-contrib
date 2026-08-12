@@ -38,6 +38,11 @@ target_include_directories(${this_target} PUBLIC
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
+target_link_libraries(${this_target} PUBLIC
+  glog::glog
+  opentelemetry-cpp::api
+)
+
 target_link_libraries(${this_target} PRIVATE
   glog::glog
   opentelemetry-cpp::api
@@ -99,10 +104,16 @@ if(BUILD_TESTING)
     ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
   )
 
+  target_link_libraries(${this_target} PUBLIC
+    glog::glog
+    opentelemetry-cpp::api
+  )
+
   target_link_libraries(${testname} PRIVATE
     GTest::gmock
     GTest::gtest
     glog::glog
+    opentelemetry-cpp::api
     opentelemetry-cpp::ostream_log_record_exporter
     ${this_target}
   )
@@ -124,7 +135,13 @@ if(WITH_EXAMPLES)
     ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
   )
 
+  target_link_libraries(${this_target} PUBLIC
+    glog::glog
+    opentelemetry-cpp::api
+  )
+
   target_link_libraries(${example_exe} PRIVATE
+    opentelemetry-cpp::api
     opentelemetry-cpp::logs
     opentelemetry-cpp::trace
     opentelemetry-cpp::ostream_log_record_exporter

@@ -34,8 +34,14 @@ target_include_directories(${this_target} PUBLIC
   ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
 )
 
+target_link_libraries(${this_target} PUBLIC
+  Boost::log
+  opentelemetry-cpp::api
+)
+
 target_link_libraries(${this_target} PRIVATE
   Boost::log
+  opentelemetry-cpp::api
 )
 
 if(OPENTELEMETRY_INSTALL)
@@ -93,6 +99,11 @@ if(BUILD_TESTING)
     ${CMAKE_CURRENT_LIST_DIR}/include
   )
 
+  target_link_libraries(${this_target} PUBLIC
+    opentelemetry-cpp::api
+    Boost::log
+  )
+
   target_link_libraries(${testname} PRIVATE
     GTest::gmock
     GTest::gtest
@@ -120,7 +131,13 @@ if(WITH_EXAMPLES)
     ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
   )
 
+  target_link_libraries(${this_target} PUBLIC
+    opentelemetry-cpp::api
+    Boost::log
+  )
+
   target_link_libraries(${example_exe} PRIVATE
+    opentelemetry-cpp::api
     opentelemetry-cpp::logs
     opentelemetry-cpp::trace
     opentelemetry-cpp::ostream_log_record_exporter
