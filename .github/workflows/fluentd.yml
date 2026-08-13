@@ -36,17 +36,10 @@ jobs:
           path: "opentelemetry-cpp"
           submodules: "recursive"
       - name: setup dependencies
+        working-directory: opentelemetry-cpp-contrib/exporters/fluentd
         run: |
           sudo apt update -y
-          sudo apt install -y --no-install-recommends --no-install-suggests \
-            build-essential \
-            cmake \
-            ninja-build \
-            libssl-dev \
-            libcurl4-openssl-dev \
-            libgmock-dev \
-            libgtest-dev \
-            libbenchmark-dev
+          xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
 
       - name: build and test
         run: |
