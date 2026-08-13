@@ -16,6 +16,8 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   message(STATUS "${PROJECT_NAME} is main project")
 endif()
 
+include(FetchContent)
+
 if(MAIN_PROJECT)
   # TODO: cleanup the dependent packages
   find_package(Protobuf REQUIRED)
@@ -100,20 +102,14 @@ if(WITH_EXAMPLES)
 endif()
 
 if(BUILD_TESTING)
-  if(EXISTS ${CMAKE_BINARY_DIR}/lib/libgtest.a)
-    # Prefer GTest from build tree. GTest is not always working with
-    # CMAKE_PREFIX_PATH
-    set(GTEST_INCLUDE_DIRS
-        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googletest/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googlemock/include)
-    set(GTEST_BOTH_LIBRARIES
-        ${CMAKE_BINARY_DIR}/lib/libgtest.a
-        ${CMAKE_BINARY_DIR}/lib/libgtest_main.a
-        ${CMAKE_BINARY_DIR}/lib/libgmock.a)
-  else()
-    find_package(GTest REQUIRED)
-  endif()
-  include_directories(SYSTEM ${GTEST_INCLUDE_DIRS})
+  FetchContent_Declare(
+    GTest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG 15460959cbbfa20e66ef0b5ab497367e47fc0a04 # v1.12.0
+  )
+
+  FetchContent_MakeAvailable(GTest)
+
   include_directories(SYSTEM test/decoder)
   enable_testing()
   include(GoogleTest)

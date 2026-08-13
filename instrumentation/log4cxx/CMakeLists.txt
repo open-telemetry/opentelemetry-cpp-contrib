@@ -7,6 +7,8 @@ set(this_target opentelemetry_log4cxx_appender)
 
 project(${this_target})
 
+include(FetchContent)
+
 find_package(opentelemetry-cpp QUIET)
 
 if (opentelemetry-cpp_FOUND)
@@ -84,8 +86,6 @@ if(OPENTELEMETRY_INSTALL)
 endif() # OPENTELEMETRY_INSTALL
 
 if(BUILD_TESTING)
-  include(FetchContent)
-
   FetchContent_Declare(
     GTest
     GIT_REPOSITORY https://github.com/google/googletest.git

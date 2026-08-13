@@ -7,6 +7,8 @@ set(this_target opentelemetry_boost_log_sink)
 
 project(${this_target})
 
+include(FetchContent)
+
 find_package(opentelemetry-cpp REQUIRED)
 find_package(Boost 1.73 COMPONENTS log REQUIRED)
 
@@ -69,8 +71,6 @@ if(OPENTELEMETRY_INSTALL)
 endif() # OPENTELEMETRY_INSTALL
 
 if(BUILD_TESTING)
-  include(FetchContent)
-
   FetchContent_Declare(
     GTest
     GIT_REPOSITORY https://github.com/google/googletest.git

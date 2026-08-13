@@ -23,6 +23,8 @@ if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   set(MAIN_PROJECT ON)
 endif()
 
+include(FetchContent)
+
 if (MAIN_PROJECT)
   find_package(opentelemetry-cpp CONFIG QUIET)
   if(opentelemetry-cpp_FOUND)
@@ -161,7 +163,13 @@ endif()
 
 if(BUILD_TESTING)
   if(MAIN_PROJECT)
-    find_package(GTest CONFIG REQUIRED)
+    FetchContent_Declare(
+      GTest
+      GIT_REPOSITORY https://github.com/google/googletest.git
+      GIT_TAG 15460959cbbfa20e66ef0b5ab497367e47fc0a04 # v1.12.0
+    )
+
+    FetchContent_MakeAvailable(GTest)
   else()
     if (NOT DEFINED GTEST_BOTH_LIBRARIES)
       message(STATUS_FATAL, "Test is not enable.")
