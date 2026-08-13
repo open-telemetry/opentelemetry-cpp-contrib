@@ -21,12 +21,6 @@ jobs:
     name: CMake Linux
     runs-on: ubuntu-24.04
     steps:
-      - name: checkout googletest
-        uses: actions/checkout@v7.0.1
-        with:
-          repository: "google/googletest"
-          ref: "release-1.12.1"
-          path: "googletest"
       - name: checkout logging-log4cxx
         uses: actions/checkout@v7.0.1
         with:
@@ -49,16 +43,6 @@ jobs:
         run: |
           sudo apt update -y
           xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-
-      # This is needed because libgmock-dev libgtest-dev installs 1.11,
-      # and v1.12 is required
-      - name: build googletest 1.12
-        run: |
-          mkdir -p "${GITHUB_WORKSPACE}/googletest/build"
-          cd "${GITHUB_WORKSPACE}/googletest/build"
-          cmake .. -G Ninja
-          cmake --build . -j$(nproc)
-          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
 
       # This is needed because liblog4cxx-dev installs 0.12.1-4,
       # and v1.0.0 is required
