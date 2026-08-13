@@ -69,7 +69,15 @@ if(OPENTELEMETRY_INSTALL)
 endif() # OPENTELEMETRY_INSTALL
 
 if(BUILD_TESTING)
-  find_package(GTest 1.12 REQUIRED)
+  include(FetchContent)
+
+  FetchContent_Declare(
+    GTest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG 15460959cbbfa20e66ef0b5ab497367e47fc0a04 # v1.12.0
+  )
+
+  FetchContent_MakeAvailable(GTest)
 
   enable_testing()
 
