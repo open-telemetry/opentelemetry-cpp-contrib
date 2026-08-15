@@ -1,7 +1,7 @@
 # Copyright The OpenTelemetry Authors
 # SPDX-License-Identifier: Apache-2.0
 
-FROM ubuntu:latest
+FROM ubuntu:26.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /work
@@ -14,11 +14,6 @@ RUN apt update && apt install -y \
     protobuf-compiler \
     libcurl4-openssl-dev \
     libgtest-dev
-
-RUN cd /work && git clone --recursive --depth=1 https://github.com/google/googletest.git && \
-    cd googletest && mkdir build && cd build && \
-    cmake -G Ninja -D CMAKE_BUILD_TYPE=Debug .. && \
-    ninja && ninja install
 
 RUN cd /work && \
     git clone --recursive --depth=1 https://github.com/google/benchmark.git && \
