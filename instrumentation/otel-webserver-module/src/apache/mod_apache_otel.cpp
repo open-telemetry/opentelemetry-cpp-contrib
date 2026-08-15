@@ -69,7 +69,7 @@ static const command_rec otel_cmds[] =
             (CMD_HAND_TYPE)ApacheConfigHandlers::otel_set_otelExporterOtlpHeaders,
             NULL,
             OR_ALL,
-            "AppDynamics Otel export Headers key value pairs"),
+            "OpenTelemetry exporter header key-value pairs"),
     AP_INIT_TAKE1(
             "apacheModuleOtelSslEnabled",
             (CMD_HAND_TYPE)ApacheConfigHandlers::otel_set_otelSslEnabled,

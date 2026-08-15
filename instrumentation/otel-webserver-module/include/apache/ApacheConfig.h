@@ -126,7 +126,7 @@ private:
     const char *otelExporterEndpoint;   // REQUIRED: Collector endpoint where the OpenTelemetry Exporter inside OTel SDK sends traces
     int otelExporterEndpoint_initialized;
 
-    const char *otelExporterOtlpHeaders;   // OPTIONAL: AppDynamics  Custom metadata for OTEL Exporter EX: OTEL_EXPORTER_OTLP_HEADERS="api-key=key,other-config-value=value"
+    const char *otelExporterOtlpHeaders;   // OPTIONAL: Custom metadata for the OTLP exporter, for example: OTEL_EXPORTER_OTLP_HEADERS="api-key=key,other-config-value=value"
     int otelExporterOtlpHeaders_initialized;
 
     int otelSslEnabled;      // OPTIONAL: Decision whether connection to the Exporter endpoint is secured
