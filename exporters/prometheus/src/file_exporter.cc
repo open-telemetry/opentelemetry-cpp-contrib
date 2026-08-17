@@ -677,10 +677,10 @@ public:
   {
     file_ = std::make_shared<FileStats>();
     file_->is_shutdown.store(false);
-    file_->rotate_index       = 0;
-    file_->written_size       = 0;
+    file_->rotate_index = 0;
+    file_->written_size.store(0);
     file_->left_flush_metrics = 0;
-    file_->last_checkpoint    = 0;
+    file_->last_checkpoint.store(0);
     file_->metric_family_count.store(0);
     file_->flushed_metric_family_count.store(0);
   }
@@ -719,7 +719,8 @@ public:
         ::opentelemetry::exporter::metrics::PrometheusExporterUtils::TranslateToPrometheus(
             data, options_.populate_target_info, options_.without_otel_scope);
 
-    if (file_->written_size > 0 && file_->written_size >= options_.file_size)
+    std::size_t current_written_size = file_->written_size.load(std::memory_order_relaxed);
+    if (current_written_size > 0 && current_written_size >= options_.file_size)
     {
       RotateLog();
     }
@@ -742,7 +743,8 @@ public:
       auto written_size = out->tellp();
       if (written_size >= 0)
       {
-        file_->written_size = static_cast<std::size_t>(written_size);
+        file_->written_size.store(static_cast<std::size_t>(written_size),
+                                  std::memory_order_relaxed);
       }
 
       if (options_.flush_count > 0)
@@ -960,10 +962,12 @@ private:
     }
 
     of->seekp(0, std::ios_base::end);
-    file_->written_size = static_cast<size_t>(of->tellp());
+    file_->written_size.store(static_cast<size_t>(of->tellp()), std::memory_order_relaxed);
 
-    file_->current_file    = of;
-    file_->last_checkpoint = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    file_->current_file = of;
+    file_->last_checkpoint.store(
+        std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()),
+        std::memory_order_relaxed);
     file_->file_path.assign(file_path, file_path_size);
 
     // Hard link alias
@@ -1046,12 +1050,12 @@ private:
     std::time_t current_checkpoint =
         std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     if (current_checkpoint / check_file_path_interval_ ==
-        file_->last_checkpoint / check_file_path_interval_)
+        file_->last_checkpoint.load(std::memory_order_relaxed) / check_file_path_interval_)
     {
       return;
     }
     // Refresh checkpoint
-    file_->last_checkpoint = current_checkpoint;
+    file_->last_checkpoint.store(current_checkpoint, std::memory_order_relaxed);
 
     char file_path[FileSystemUtil::kMaxPathSize + 1];
     size_t file_path_len =
@@ -1094,8 +1098,8 @@ private:
     // ResetLogFile is called in lock, do not lock again
 
     file_->current_file.reset();
-    file_->last_checkpoint = 0;
-    file_->written_size    = 0;
+    file_->last_checkpoint.store(0, std::memory_order_relaxed);
+    file_->written_size.store(0, std::memory_order_relaxed);
   }
 
   void SpawnBackgroundWorkThread()
@@ -1202,11 +1206,11 @@ private:
   {
     std::atomic<bool> is_shutdown;
     std::size_t rotate_index;
-    std::size_t written_size;
+    std::atomic<std::size_t> written_size;
     std::size_t left_flush_metrics;
     std::shared_ptr<std::ofstream> current_file;
     std::mutex file_lock;
-    std::time_t last_checkpoint;
+    std::atomic<std::time_t> last_checkpoint;
     std::string file_path;
     std::atomic<std::size_t> metric_family_count;
     std::atomic<std::size_t> flushed_metric_family_count;
