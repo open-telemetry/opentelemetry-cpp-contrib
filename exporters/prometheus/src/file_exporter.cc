@@ -689,7 +689,14 @@ public:
   {
     if (file_)
     {
-      file_->is_shutdown.store(true, std::memory_order_release);
+      {
+#if defined(__cpp_lib_scoped_lock) && __cpp_lib_scoped_lock >= 201703L
+        std::scoped_lock<std::mutex> waker_guard{file_->background_thread_waker_lock};
+#else
+        std::lock_guard<std::mutex> waker_guard{file_->background_thread_waker_lock};
+#endif
+        file_->is_shutdown.store(true, std::memory_order_release);
+      }
       file_->background_thread_waker_cv.notify_all();
       std::unique_ptr<std::thread> background_flush_thread;
       {
