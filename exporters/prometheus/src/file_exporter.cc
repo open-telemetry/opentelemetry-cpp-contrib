@@ -111,12 +111,12 @@ namespace
 static std::tm GetLocalTime()
 {
   std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L) || defined(__STDC_LIB_EXT1__)
+#if defined(_MSC_VER) && _MSC_VER >= 1300
   std::tm ret;
   localtime_s(&ret, &now);
-#elif defined(_MSC_VER) && _MSC_VER >= 1300
+#elif (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L) || defined(__STDC_LIB_EXT1__)
   std::tm ret;
-  localtime_s(&ret, &now);
+  localtime_s(&now, &ret);
 #elif defined(_XOPEN_SOURCE) || defined(_BSD_SOURCE) || defined(_SVID_SOURCE) || \
     defined(_POSIX_SOURCE)
   std::tm ret;
