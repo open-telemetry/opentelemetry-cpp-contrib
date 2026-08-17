@@ -81,3 +81,22 @@ cc_test(
         "@io_opentelemetry_cpp//sdk:headers",
     ],
 )
+
+cc_test(
+    name = "prometheus_file_exporter_test",
+    srcs = [
+        "test/file_exporter_test.cc",
+    ],
+    linkstatic = True,
+    tags = [
+        "prometheus",
+        "test",
+    ],
+    deps = [
+        ":prometheus_file_exporter",
+        ":prometheus_test_helper",
+        "@com_google_googletest//:gtest_main",
+        "@io_opentelemetry_cpp//api",
+        "@io_opentelemetry_cpp//sdk:headers",
+    ],
+)

@@ -689,6 +689,7 @@ public:
   {
     if (file_)
     {
+      file_->is_shutdown.store(true, std::memory_order_release);
       file_->background_thread_waker_cv.notify_all();
       std::unique_ptr<std::thread> background_flush_thread;
       {
