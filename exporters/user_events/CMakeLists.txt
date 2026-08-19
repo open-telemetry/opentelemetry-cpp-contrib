@@ -6,7 +6,6 @@ endif()
 
 option(WITH_EXAMPLES "Build example" ON)
 option(BUILD_TESTING "Build tests" ON)
-option(BUILD_TRACEPOINTS "Build tracepoints library" ON)
 
 set(MAIN_PROJECT OFF)
 
