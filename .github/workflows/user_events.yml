@@ -1,6 +1,7 @@
 name: user_events 
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - '*'
