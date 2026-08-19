@@ -1,14 +1,16 @@
 name: spdlog
 
 on:
+  workflow_dispatch:
   push:
     branches:
-      - '*'
+      - 'main'
     path:
       - 'instrumentation/spdlog/**'
       - '.github/workflows/spdlog.yml'
   pull_request:
-    branches: [main]
+    branches:
+      - 'main'
     paths:
       - 'instrumentation/spdlog/**'
       - '.github/workflows/spdlog.yml'

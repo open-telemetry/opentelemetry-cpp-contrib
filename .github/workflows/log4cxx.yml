@@ -1,14 +1,16 @@
 name: log4cxx
 
 on:
+  workflow_dispatch:
   push:
     branches:
-      - '*'
+      - 'main'
     path:
       - 'instrumentation/log4cxx/**'
       - '.github/workflows/log4cxx.yml'
   pull_request:
-    branches: [main]
+    branches:
+      - 'main'
     paths:
       - 'instrumentation/log4cxx/**'
       - '.github/workflows/log4cxx.yml'
