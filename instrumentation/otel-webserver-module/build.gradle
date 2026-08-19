@@ -539,6 +539,25 @@ task runApacheServer(type: Exec) {
     commandLine './ApacheTesting.sh', "${target_system}"
 }
 
+task runNginxIssue474Test(type: Exec) {
+    group = 'verification'
+    description = 'Run the NGINX issue #474 User-Agent regression test'
+
+    dependsOn assembleNginxModule
+
+    workingDir 'test/nginx'
+    commandLine './issue_474_user_agent_regression_test.sh',
+        "${buildDir}/opentelemetry-webserver-sdk-${osArch}-${osName}.tgz",
+        '1.26.0'
+}
+
+task runTests {
+    group = 'verification'
+    description = 'Run all webserver module tests'
+
+    dependsOn runUnitTest, runNginxIssue474Test
+}
+
 // Code Coverage
 
 task lcovCapture(type: Exec) {
