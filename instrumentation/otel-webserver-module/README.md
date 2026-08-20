@@ -201,10 +201,10 @@ Currently, Nginx Webserver module monitores some fixed set of modules, which get
 We will use Docker to run the Module. First, it is to be made sure that the Docker is up and running.
 Then execute the following commands -:
 ```
-docker-compose --profile nginx_almalinix8 build
-docker-compose --profile nginx_almalinix8 up
+docker-compose --profile almalinux8_nginx build
+docker-compose --profile almalinux8_nginx up
 ```
-Alternatively, replace the value of *centos_nginx* from **'centos_nginx'** to **'centos7_nginx'** or **'ubuntu20.04_nginx'** to build in respective supported platforms.
+Alternatively, replace **'almalinux8_nginx'** with **'centos_nginx'**, **'centos7_nginx'** or **'ubuntu20.04_nginx'** to build in respective supported platforms.
 
 This would start the container alongwith the Opentelemetry Collector and Zipkin. You can check the traces on Zipkin dashboard by checking the port number of Zipkin using ```docker ps``` command. Multiple requests can be sent using the browser.
 
@@ -262,6 +262,25 @@ The downloaded artifact from [Release/Tag](https://github.com/open-telemetry/ope
 
 Currently, artifact is generated on x86-64 is published.
 **Therefore, the artifact should work on any linux distribution running on x86-64 plarform and having glibc version >= 2.17.**
+
+## Running Tests
+### Unit tests
+```
+docker build --platform linux/amd64 -t otel-webserver-module -f docker/almalinux8/Dockerfile .
+docker run --rm --platform linux/amd64 -w /otel-webserver-module otel-webserver-module ./gradlew runUnitTest
+```
+
+The other supported images work the same way — swap the ```-f``` path. Only ubuntu20.04 needs
+an extra gradle flag:
+
+- Almalinux8 - ```docker/almalinux8/Dockerfile```, no extra flag
+- Centos7 - ```docker/centos7/Dockerfile```, no extra flag
+- ubuntu20.04 - ```docker/ubuntu20.04/Dockerfile```, needs ```-DtargetSystem=ubuntu```
+
+```
+docker build --platform linux/amd64 -t otel-webserver-module-ubuntu -f docker/ubuntu20.04/Dockerfile .
+docker run --rm --platform linux/amd64 -w /otel-webserver-module otel-webserver-module-ubuntu ./gradlew runUnitTest -DtargetSystem=ubuntu
+```
 
 ### Maintainers
 * [Aryan Ishan](https://github.com/aryanishan1001), Cisco

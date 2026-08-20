@@ -19,14 +19,8 @@ permissions:
 jobs:
   cmake_linux:
     name: CMake Linux
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - name: checkout googletest
-        uses: actions/checkout@v7.0.1
-        with:
-          repository: "google/googletest"
-          ref: "release-1.12.1"
-          path: "googletest"
       - name: checkout opentelemetry-cpp-contrib
         uses: actions/checkout@v7.0.1
         with:
@@ -53,16 +47,6 @@ jobs:
             libgtest-dev \
             libbenchmark-dev \
             libspdlog-dev
-
-      # This is needed because libgmock-dev libgtest-dev installs 1.11,
-      # and 1.11 breaks the build.
-      - name: build googletest 1.12
-        run: |
-          mkdir -p "${GITHUB_WORKSPACE}/googletest/build"
-          cd "${GITHUB_WORKSPACE}/googletest/build"
-          cmake .. -G Ninja
-          cmake --build . -j$(nproc)
-          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
 
       - name: build opentelemetry-cpp
         run: |

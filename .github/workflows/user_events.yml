@@ -1,6 +1,7 @@
 name: user_events 
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - '*'
@@ -19,7 +20,7 @@ permissions:
 jobs:
   cmake_linux:
     name: CMake Linux
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: checkout opentelemetry-cpp-contrib
         uses: actions/checkout@v7.0.1
@@ -45,14 +46,10 @@ jobs:
             libprotobuf-dev \
             protobuf-compiler \
             libgmock-dev \
-            libgtest-dev \
-            libbenchmark-dev
+            libgtest-dev
 
       - name: run tests
         run: |
-          pushd "$GITHUB_WORKSPACE/opentelemetry-cpp"
-          sudo ./ci/install_thirdparty.sh --install-dir /usr/local --tags-file third_party_release --packages "googletest;benchmark"
-          popd
           mkdir -p "$GITHUB_WORKSPACE/opentelemetry-cpp/build"
           cd "$GITHUB_WORKSPACE/opentelemetry-cpp/build"
           cmake .. -G Ninja -D OPENTELEMETRY_EXTERNAL_COMPONENT_PATH=$GITHUB_WORKSPACE/opentelemetry-cpp-contrib/exporters/user_events -D WITH_OTLP_HTTP=ON

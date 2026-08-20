@@ -21,7 +21,7 @@ permissions:
 jobs:
   geneva-trace-nuget-generation:
     name: Geneva Trace
-    runs-on: windows-latest
+    runs-on: windows-2025
     steps:
     - name: github config
       run: git config --system core.longpaths true
