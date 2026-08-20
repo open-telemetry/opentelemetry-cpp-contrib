@@ -25,14 +25,6 @@ jobs:
       - name: checkout opentelemetry-cpp-contrib
         uses: actions/checkout@v7.0.1
         with:
-          path: opentelemetry-cpp-contrib
-          submodules: "recursive"
-      - name: checkout opentelemetry-cpp
-        uses: actions/checkout@v7.0.1
-        with:
-          repository: "open-telemetry/opentelemetry-cpp"
-          ref: "v1.23.0"
-          path: "opentelemetry-cpp"
           submodules: "recursive"
       - name: setup dependencies
         run: |
@@ -46,12 +38,13 @@ jobs:
             libprotobuf-dev \
             protobuf-compiler \
             libgmock-dev \
-            libgtest-dev
-
-      - name: run tests
+            libgtest-dev \
+            nlohmann-json3-dev
+      - name: build and test exporter/user_events
+        working-directory: exporters/user_events
         run: |
-          mkdir -p "$GITHUB_WORKSPACE/opentelemetry-cpp/build"
-          cd "$GITHUB_WORKSPACE/opentelemetry-cpp/build"
-          cmake .. -G Ninja -D OPENTELEMETRY_EXTERNAL_COMPONENT_PATH=$GITHUB_WORKSPACE/opentelemetry-cpp-contrib/exporters/user_events -D WITH_OTLP_HTTP=ON
+          mkdir -p "build"
+          cd "build"
+          cmake .. -G Ninja -D OPENTELEMETRY_EXTERNAL_COMPONENT_PATH=$GITHUB_WORKSPACE/exporters/user_events -D WITH_OTLP_HTTP=ON
           cmake --build . -j$(nproc)
           ctest -j1 --output-on-failure

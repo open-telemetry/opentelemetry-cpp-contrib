@@ -23,15 +23,6 @@ jobs:
     steps:
       - name: checkout opentelemetry-cpp-contrib
         uses: actions/checkout@v7.0.1
-        with:
-          path: opentelemetry-cpp-contrib
-      - name: checkout opentelemetry-cpp
-        uses: actions/checkout@v7.0.1
-        with:
-          repository: "open-telemetry/opentelemetry-cpp"
-          ref: "v1.24.0"
-          path: "opentelemetry-cpp"
-          submodules: "recursive"
       - name: setup dependencies
         run: |
           sudo apt update -y
@@ -47,20 +38,12 @@ jobs:
             libgtest-dev \
             libbenchmark-dev \
             libspdlog-dev
-
       - name: build opentelemetry-cpp
+        working-directory: instrumentation/spdlog
         run: |
-          mkdir -p "${GITHUB_WORKSPACE}/opentelemetry-cpp/build"
-          cd "${GITHUB_WORKSPACE}/opentelemetry-cpp/build"
-          cmake .. -G Ninja -DBUILD_TESTING=OFF -DWITH_BENCHMARK=OFF -DOPENTELEMETRY_INSTALL=ON
-          cmake --build . -j$(nproc)
-          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
-
-      - name: build instrumentation/spdlog contrib
-        run: |
-          mkdir -p "${GITHUB_WORKSPACE}/instrumentation-spdlog/build"
-          cd "${GITHUB_WORKSPACE}/instrumentation-spdlog/build"
-          cmake ../../opentelemetry-cpp-contrib/instrumentation/spdlog \
+          mkdir -p "build"
+          cd "build"
+          cmake .. \
             -G Ninja \
             -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/sandbox" \
             -DBUILD_TESTING=ON \
