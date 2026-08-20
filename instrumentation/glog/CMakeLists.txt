@@ -10,13 +10,17 @@ project(${this_target})
 include(FetchContent)
 
 find_package(opentelemetry-cpp REQUIRED)
-FetchContent_Declare(
-  glog
-  GIT_REPOSITORY https://github.com/google/glog.git
-  GIT_TAG 34b8da6496aec6a98277808701cfa834fae9801f # v0.7.0
-)
+find_package(glog QUIET)
 
-FetchContent_MakeAvailable(glog)
+if(NOT glog_FOUND)
+  FetchContent_Declare(
+    glog
+    GIT_REPOSITORY https://github.com/google/glog.git
+    GIT_TAG 34b8da6496aec6a98277808701cfa834fae9801f # v0.7.0
+  )
+
+  FetchContent_MakeAvailable(glog)
+endif()
 
 add_library(${this_target} src/sink.cc)
 
