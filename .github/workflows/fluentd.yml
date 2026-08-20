@@ -50,7 +50,6 @@ jobs:
             libgmock-dev \
             libgtest-dev \
             libbenchmark-dev
-
       - name: build and test
         run: |
           sudo $GITHUB_WORKSPACE/opentelemetry-cpp/ci/setup_googletest.sh

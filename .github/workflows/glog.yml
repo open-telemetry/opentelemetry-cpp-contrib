@@ -54,7 +54,6 @@ jobs:
             libgmock-dev \
             libgtest-dev \
             libbenchmark-dev
-
       - name: build glog
         run: |
           mkdir -p "${GITHUB_WORKSPACE}/glog/build"
@@ -62,7 +61,6 @@ jobs:
           cmake .. -G Ninja
           cmake --build . -j$(nproc)
           cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
-
       - name: build opentelemetry-cpp
         run: |
           mkdir -p "${GITHUB_WORKSPACE}/opentelemetry-cpp/build"
@@ -70,7 +68,6 @@ jobs:
           cmake .. -G Ninja -DBUILD_TESTING=OFF -DWITH_BENCHMARK=OFF -DOPENTELEMETRY_INSTALL=ON
           cmake --build . -j$(nproc)
           cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
-
       - name: build instrumentation/glog contrib
         run: |
           mkdir -p "${GITHUB_WORKSPACE}/instrumentation-glog/build"
@@ -84,4 +81,3 @@ jobs:
           cmake --build . -j$(nproc)
           ctest -j1 --output-on-failure
           cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
-

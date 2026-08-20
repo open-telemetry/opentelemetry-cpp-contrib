@@ -48,7 +48,6 @@ jobs:
             protobuf-compiler \
             libgmock-dev \
             libgtest-dev
-
       - name: run tests
         run: |
           mkdir -p "$GITHUB_WORKSPACE/opentelemetry-cpp/build"
