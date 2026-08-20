@@ -37,11 +37,6 @@ jobs:
       - name: Build package
         run: |
           sudo apt update -y
-
-          for conan_file in $(find exporters instrumentation -name apt-packages.txt); do
-            dir=$(dirname "$conan_file")
-            echo "Building $dir"
-            cd "$dir"
             xargs -a apt-packages.txt sudo apt install -y
             mkdir -p "build"
             cd "build"
@@ -54,6 +49,5 @@ jobs:
               -DWITH_EXAMPLES=OFF \
               -DOPENTELEMETRY_INSTALL=ON
             cmake --build . -j4
-          done
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
