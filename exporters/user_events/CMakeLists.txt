@@ -80,8 +80,6 @@ add_library(opentelemetry_exporter_user_events_metrics src/metrics_exporter.cc)
 target_compile_features(opentelemetry_exporter_user_events_metrics
                         PRIVATE cxx_std_17)
 
-add_subdirectory(benchmark)
-
 if(MAIN_PROJECT)
   target_link_libraries(
     opentelemetry_exporter_user_events_metrics
@@ -166,4 +164,8 @@ else()
     FILES_MATCHING
     PATTERN
     "*.h")
+endif()
+
+if(WITH_BENCHMARK)
+  add_subdirectory(benchmark)
 endif()
