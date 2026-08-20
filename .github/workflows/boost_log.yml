@@ -5,7 +5,7 @@ on:
   push:
     branches:
       - 'main'
-    path:
+    paths:
       - 'instrumentation/boost_log/**'
       - '.github/workflows/boost_log.yml'
   pull_request:

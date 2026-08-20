@@ -5,7 +5,7 @@ on:
   push:
     branches:
       - 'main'
-    path:
+    paths:
       - 'instrumentation/glog/**'
       - '.github/workflows/glog.yml'
   pull_request:

@@ -5,7 +5,7 @@ on:
   push:
     branches:
       - 'main'
-    path:
+    paths:
       - 'exporters/user_events/**'
       - '.github/workflows/user_events.yml'
   pull_request:
