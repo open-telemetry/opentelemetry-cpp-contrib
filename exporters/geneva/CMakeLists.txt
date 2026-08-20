@@ -74,6 +74,8 @@ if(BUILD_TESTING)
 
   FetchContent_MakeAvailable(googletest)
 
+  include_directories(SYSTEM test/decoder)
+
   enable_testing()
 
   set(testname geneva_metrics_exporter_test)
@@ -83,8 +85,13 @@ if(BUILD_TESTING)
   # build geneva metrics tests
   add_compile_definitions(KS_STR_ENCODING_NONE)
   add_executable(${testname}
-    test/metrics_exporter_test.cc test/decoder/ifx_metrics_bin.cpp
+    test/metrics_exporter_test.cc
+    test/decoder/ifx_metrics_bin.cpp
     test/decoder/kaitai/kaitaistream.cpp)
+
+  target_include_directories(${testname} PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}/test/decoder/kaitai
+  )
 
   target_include_directories(${testname} PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/include
@@ -94,12 +101,12 @@ if(BUILD_TESTING)
   target_link_libraries(${testname} PRIVATE
     GTest::gmock
     GTest::gtest
+    GTest::gtest_main
     opentelemetry_exporter_geneva_metrics)
 
   gtest_add_tests(
     TARGET ${testname}
     TEST_PREFIX exporter.
-    TEST_LIST ${testname}
   )
 endif()
 
