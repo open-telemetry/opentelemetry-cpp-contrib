@@ -10,7 +10,13 @@ project(${this_target})
 include(FetchContent)
 
 find_package(opentelemetry-cpp REQUIRED)
-find_package(glog 0.7.0 REQUIRED)
+FetchContent_Declare(
+  glog
+  GIT_REPOSITORY https://github.com/google/glog.git
+  GIT_TAG 34b8da6496aec6a98277808701cfa834fae9801f # v0.7.0
+)
+
+FetchContent_MakeAvailable(glog)
 
 add_library(${this_target} src/sink.cc)
 
@@ -71,8 +77,6 @@ if(OPENTELEMETRY_INSTALL)
 endif() # OPENTELEMETRY_INSTALL
 
 if(BUILD_TESTING)
-  include(FetchContent)
-
   FetchContent_Declare(
     googletest
     GIT_REPOSITORY https://github.com/google/googletest.git

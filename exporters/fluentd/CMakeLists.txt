@@ -55,11 +55,6 @@ else()
   endif()
 endif()
 
-if(MAIN_PROJECT)
-  find_package(CURL REQUIRED)
-  find_package(Threads REQUIRED)
-endif()
-
 include_directories(include)
 
 if(OPENTELEMETRY_ENABLE_FLUENT_RESOURCE_PUBLISH_EXPERIMENTAL)
