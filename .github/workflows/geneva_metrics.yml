@@ -36,9 +36,6 @@ jobs:
             ca-certificates wget git valgrind lcov
       - name: run tests
         run: |
-          pushd "$GITHUB_WORKSPACE/otel_cpp"
-          sudo ./ci/install_thirdparty.sh --install-dir /usr/local --tags-file third_party_release --packages "googletest;benchmark"
-          popd
           mkdir -p "$GITHUB_WORKSPACE/otel_cpp/build"
           cd "$GITHUB_WORKSPACE/otel_cpp/build"
           cmake .. -DOPENTELEMETRY_INSTALL=ON
