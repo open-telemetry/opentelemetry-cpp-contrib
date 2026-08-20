@@ -80,6 +80,8 @@ add_library(opentelemetry_exporter_user_events_metrics src/metrics_exporter.cc)
 target_compile_features(opentelemetry_exporter_user_events_metrics
                         PRIVATE cxx_std_17)
 
+add_subdirectory(benchmark)
+
 if(MAIN_PROJECT)
   target_link_libraries(
     opentelemetry_exporter_user_events_metrics
@@ -127,8 +129,6 @@ if(BUILD_TESTING)
     TEST_PREFIX exporter.
     TEST_LIST user_events_logs_exporter_test)
 endif()
-
-add_subdirectory(benchmark)
 
 set_target_properties(
   opentelemetry_exporter_user_events_logs
