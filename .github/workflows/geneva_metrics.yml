@@ -1,18 +1,23 @@
 name: Geneva Metrics CI
 
 on:
+  workflow_dispatch:
   push:
-    branches: "*"
+    branches:
+      - '*'
     paths:
-      - "exporters/geneva/**"
-      - ".github/workflows/geneva_metrics.yml"
+      - 'exporters/geneva/**'
+      - '.github/workflows/geneva_metrics.yml'
   pull_request:
-    branches: [main]
+    branches:
+      - 'main'
     paths:
-      - "exporters/geneva/**"
-      - ".github/workflows/geneva_metrics.yml"
+      - 'exporters/geneva/**'
+      - '.github/workflows/geneva_metrics.yml'
+
 permissions:
   contents: read
+
 jobs:
   cmake_linux:
     name: CMake on Linux
