@@ -4,16 +4,19 @@
 name: Geneva Trace Nuget Generation
 
 on:
+  workflow_dispatch:
   push:
-    branches: "*"
+    branches:
+      - '*'
     paths:
-      - "exporters/geneva-trace/**"
-      - ".github/workflows/geneva_trace.yml"
+      - 'exporters/geneva-trace/**'
+      - '.github/workflows/geneva_trace.yml'
   pull_request:
-    branches: [main]
+    branches:
+      - 'main'
     paths:
-      - "exporters/geneva-trace/**"
-      - ".github/workflows/geneva_trace.yml"
+      - 'exporters/geneva-trace/**'
+      - '.github/workflows/geneva_trace.yml'
 
 permissions:
   contents: read

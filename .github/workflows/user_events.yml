@@ -4,12 +4,13 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - '*'
-    path:
+      - 'main'
+    paths:
       - 'exporters/user_events/**'
       - '.github/workflows/user_events.yml'
   pull_request:
-    branches: [main]
+    branches:
+      - 'main'
     paths:
       - 'exporters/user_events/**'
       - '.github/workflows/user_events.yml'
@@ -47,7 +48,6 @@ jobs:
             protobuf-compiler \
             libgmock-dev \
             libgtest-dev
-
       - name: run tests
         run: |
           mkdir -p "$GITHUB_WORKSPACE/opentelemetry-cpp/build"
