@@ -2060,9 +2060,8 @@ static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t*
     if (user_agent == NULL) {
         req_payload->user_agent = "";
     } else {
-        char *temp_user_agent = ngx_pcalloc(r->pool, r->headers_in.user_agent->value.len+1);
-        strcpy(temp_user_agent, (const char*)(r->headers_in.user_agent->value.data));
-        temp_user_agent[r->headers_in.user_agent->value.len]='\0';
+        char *temp_user_agent = ngx_pcalloc(r->pool, user_agent->value.len + 1);
+        ngx_memcpy(temp_user_agent, user_agent->value.data, user_agent->value.len);
         req_payload->user_agent = temp_user_agent;
     }
 
