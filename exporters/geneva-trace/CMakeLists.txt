@@ -8,9 +8,19 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   set(MAIN_PROJECT ON)
 endif()
 
+include(FetchContent)
+
 if(MAIN_PROJECT)
   option(WITH_EXAMPLES "Build examples" ON)
 endif()
+
+FetchContent_Declare(
+  opentelemetry-cpp
+  GIT_REPOSITORY https://github.com/open-telemetry/opentelemetry-cpp.git
+  GIT_TAG b9cf499ff5715433848b316059714b5c59af1f2c # v1.21.0
+)
+
+FetchContent_MakeAvailable(opentelemetry-cpp)
 
 add_library(opentelemetry_exporter_geneva_trace INTERFACE)
 target_include_directories(
@@ -30,6 +40,8 @@ set_target_properties(
   opentelemetry_exporter_geneva_logs
   PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_logs)
 
+target_link_libraries(opentelemetry_exporter_geneva_logs
+                      PUBLIC opentelemetry-cpp::api)
 
 if(WITH_EXAMPLES)
   include_directories(include)
