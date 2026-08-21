@@ -29,10 +29,6 @@ jobs:
           repository: "apache/logging-log4cxx"
           ref: "rel/v1.2.0"
           path: "logging-log4cxx"
-      - name: checkout opentelemetry-cpp-contrib
-        uses: actions/checkout@v7.0.1
-        with:
-          path: opentelemetry-cpp-contrib
       - name: setup dependencies
         working-directory: opentelemetry-cpp-contrib/instrumentation/log4cxx
         run: |

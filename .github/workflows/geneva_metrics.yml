@@ -25,32 +25,16 @@ jobs:
     steps:
       - name: checkout otel contrib geneva metrics
         uses: actions/checkout@v7.0.1
-        with:
-          path: "otel_cpp_contrib"
-      - name: checkout otel cpp
-        uses: actions/checkout@v7.0.1
-        with:
-          repository: "open-telemetry/opentelemetry-cpp"
-          ref: "v1.23.0"
-          path: "otel_cpp"
-          submodules: "recursive"
       - name: setup
         working-directory: exporters/geneva
         run: |
           sudo apt update -y 
           xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
       - name: run tests
+        working-directory: exporters/geneva
         run: |
-          pushd "$GITHUB_WORKSPACE/otel_cpp"
-          sudo ./ci/install_thirdparty.sh --install-dir /usr/local --tags-file third_party_release --packages "googletest;benchmark"
-          popd
-          mkdir -p "$GITHUB_WORKSPACE/otel_cpp/build"
-          cd "$GITHUB_WORKSPACE/otel_cpp/build"
-          cmake .. -DOPENTELEMETRY_INSTALL=ON
-          cmake --build . -j$(nproc)
-          cmake --install . --prefix "$HOME/prebuilt-otel"
-          mkdir -p "$GITHUB_WORKSPACE/otel_cpp_contrib/exporters/geneva/build"
-          cd "$GITHUB_WORKSPACE/otel_cpp_contrib/exporters/geneva/build"
+          mkdir -p "build"
+          cd "build"
           cmake .. "-DCMAKE_PREFIX_PATH=$HOME/prebuilt-otel" \
             -DBUILD_TESTING=ON -DWITH_EXAMPLES=ON
           cmake --build . -j$(nproc)

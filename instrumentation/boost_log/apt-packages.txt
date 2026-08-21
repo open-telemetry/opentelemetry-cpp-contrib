@@ -6,3 +6,5 @@ libcurl4-openssl-dev
 libprotobuf-dev
 protobuf-compiler
 libboost-log-dev
+libgmock-dev
+libgtest-dev
