@@ -1,14 +1,16 @@
 name: boost_log
 
 on:
+  workflow_dispatch:
   push:
     branches:
-      - '*'
-    path:
+      - 'main'
+    paths:
       - 'instrumentation/boost_log/**'
       - '.github/workflows/boost_log.yml'
   pull_request:
-    branches: [main]
+    branches:
+      - 'main'
     paths:
       - 'instrumentation/boost_log/**'
       - '.github/workflows/boost_log.yml'
@@ -19,15 +21,8 @@ permissions:
 jobs:
   cmake_linux:
     name: CMake Linux
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - name: checkout googletest
-        uses: actions/checkout@v7.0.1
-        with:
-          repository: "google/googletest"
-          ref: "release-1.12.1"
-          path: "googletest"
-          submodules: "recursive"
       - name: checkout opentelemetry-cpp-contrib
         uses: actions/checkout@v7.0.1
         with:
@@ -55,17 +50,6 @@ jobs:
             libgtest-dev \
             libbenchmark-dev \
             libboost-log-dev
-
-      # This is needed because libgmock-dev libgtest-dev installs 1.11,
-      # and 1.11 breaks the build.
-      - name: build googletest 1.12
-        run: |
-          mkdir -p "${GITHUB_WORKSPACE}/googletest/build"
-          cd "${GITHUB_WORKSPACE}/googletest/build"
-          cmake .. -G Ninja
-          cmake --build . -j$(nproc)
-          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
-
       - name: build opentelemetry-cpp
         run: |
           mkdir -p "${GITHUB_WORKSPACE}/opentelemetry-cpp/build"
@@ -73,7 +57,6 @@ jobs:
           cmake .. -G Ninja -DBUILD_TESTING=OFF -DWITH_BENCHMARK=OFF -DOPENTELEMETRY_INSTALL=ON
           cmake --build . -j$(nproc)
           cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
-
       - name: build boost_log contrib
         run: |
           mkdir -p "${GITHUB_WORKSPACE}/boost_log/build"
@@ -87,4 +70,3 @@ jobs:
           cmake --build . -j$(nproc)
           ctest -j1 --output-on-failure
           cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
-

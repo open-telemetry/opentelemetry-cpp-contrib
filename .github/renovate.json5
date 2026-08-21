@@ -21,7 +21,6 @@
     },
     {
       description: "Allow minor updates to be raised each Monday without approval",
-      dependencyDashboardApproval: true,
       matchUpdateTypes: ["minor"],
       matchDepNames: ["!opentelemetry**"],
       schedule: ["before 8am on Monday"],
@@ -29,7 +28,7 @@
     {
       description: "Allow major ci updates to be raised each Monday without approval",
       matchCategories: ["ci"],
-      matchUpdateTypes: ["major", "minor"],
+      matchUpdateTypes: ["major"],
       schedule: ["before 8am on Monday"],
     },
     {
