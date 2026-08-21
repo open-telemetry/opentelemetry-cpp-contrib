@@ -3,11 +3,11 @@
     <xsl:template match="/">
         <html>
             <head>
-                <title>AppDynamics Java CheckStyle Report</title>
+                <title>OpenTelemetry Checkstyle Report</title>
             </head>
             <body bgcolor="#FFFFFF">
                 <p>
-                    <h1>AppDynamics Java CheckStyle Report</h1>
+                    <h1>OpenTelemetry Checkstyle Report</h1>
                 </p>
                 <table border="1" cellspacing="0" cellpadding="2">
                     <tr bgcolor="#e24912">
@@ -41,10 +41,7 @@
                     </tr>
                 </table>
                 <hr align="left" width="95%" size="1"/>
-                <p>The following are violations of the
-                    <a href="https://singularity.jira.com/wiki/display/CORE/AppDynamics+Java+Coding+Style+Guide">
-                        AppDynamics Java Coding Style Guide</a>:
-                </p>
+                <p>The following Checkstyle violations were found:</p>
                 <p/>
                 <xsl:apply-templates/>
             </body>
