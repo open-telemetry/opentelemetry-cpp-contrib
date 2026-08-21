@@ -32,7 +32,7 @@ jobs:
         run: |
           sudo apt update -y
           xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-      - name: build and test exporter/user_events
+      - name: run tests
         working-directory: exporters/user_events
         run: |
           mkdir -p "build"

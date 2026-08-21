@@ -30,7 +30,7 @@ jobs:
         run: |
           sudo apt update -y
           xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-      - name: build opentelemetry-cpp
+      - name: build boost_log contrib
         working-directory: instrumentation/boost_log
         run: |
           mkdir -p "build"

@@ -45,7 +45,7 @@ jobs:
           cmake .. -G Ninja
           cmake --build . -j$(nproc)
           cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
-      - name: build and test instrumentation/glog
+      - name: build instrumentation/glog contrib
         working-directory: opentelemetry-cpp-contrib/instrumentation/glog
         run: |
           mkdir -p "build"
