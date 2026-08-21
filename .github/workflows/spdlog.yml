@@ -26,7 +26,7 @@ jobs:
       - name: checkout opentelemetry-cpp-contrib
         uses: actions/checkout@v7.0.1
       - name: setup dependencies
-        working-directory: opentelemetry-cpp-contrib/instrumentation/spdlog
+        working-directory: instrumentation/spdlog
         run: |
           sudo apt update -y
           xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests

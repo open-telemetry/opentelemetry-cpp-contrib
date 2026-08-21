@@ -28,7 +28,7 @@ jobs:
         with:
           submodules: "recursive"
       - name: setup dependencies
-        working-directory: opentelemetry-cpp-contrib/exporters/user_events
+        working-directory: exporters/user_events
         run: |
           sudo apt update -y
           xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests

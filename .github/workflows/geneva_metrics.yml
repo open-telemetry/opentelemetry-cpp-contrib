@@ -35,7 +35,7 @@ jobs:
           path: "otel_cpp"
           submodules: "recursive"
       - name: setup
-        working-directory: otel_cpp_contrib/exporters/geneva
+        working-directory: exporters/geneva
         run: |
           sudo apt update -y 
           xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
