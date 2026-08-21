@@ -37,10 +37,10 @@ jobs:
           path: "otel_cpp"
           submodules: "recursive"
       - name: setup
+        working-directory: otel_cpp_contrib/exporters/geneva
         run: |
           sudo apt update -y 
-          sudo apt install -y --no-install-recommends --no-install-suggests build-essential\
-            ca-certificates wget git valgrind lcov
+          xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
       - name: run tests
         run: |
           pushd "$GITHUB_WORKSPACE/otel_cpp"
