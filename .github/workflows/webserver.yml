@@ -21,14 +21,16 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: checkout otel webserver
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: setup buildx
         id: buildx
-        uses: docker/setup-buildx-action@master
+        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
         with:
           install: true
       - name: cache docker layers
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: /tmp/buildx-cache/
           key: apache-ubuntu-20.04-${{ github.sha }}
@@ -65,10 +67,12 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: checkout otel webserver
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: setup buildx
         id: buildx
-        uses: docker/setup-buildx-action@master
+        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
         with:
           install: true
       # - name: cache docker layers
@@ -134,10 +138,12 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: checkout otel webserver
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: setup buildx
         id: buildx
-        uses: docker/setup-buildx-action@master
+        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
         with:
           install: true
       # - name: cache docker layers
@@ -182,7 +188,7 @@ jobs:
           docker cp apache_almalinux8_container:/otel-webserver-module/build/opentelemetry-webserver-sdk-x64-linux.tgz \
             /tmp/apache_almalinux8/
       - name: upload artifacts
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: opentelemetry-webserver-sdk-x64-linux.tgz
           path: /tmp/apache_almalinux8/opentelemetry-webserver-sdk-x64-linux.tgz
@@ -205,14 +211,16 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: checkout otel webserver
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: setup environment
         run: |
           cd ..
           cp opentelemetry-cpp-contrib/instrumentation/otel-webserver-module/codeql-env.sh .
           sudo ./codeql-env.sh
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4.37.6
+        uses: github/codeql-action/init@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
         with:
           languages: cpp
       - name: build
@@ -222,5 +230,5 @@ jobs:
           cp -r /build-dependencies ../otel-webserver-module/
           ./gradlew assembleWebserverModule -DtargetSystem=ubuntu --info
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v4.37.6
+        uses: github/codeql-action/analyze@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
 
