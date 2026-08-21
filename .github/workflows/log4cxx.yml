@@ -1,14 +1,16 @@
 name: log4cxx
 
 on:
+  workflow_dispatch:
   push:
     branches:
-      - '*'
-    path:
+      - 'main'
+    paths:
       - 'instrumentation/log4cxx/**'
       - '.github/workflows/log4cxx.yml'
   pull_request:
-    branches: [main]
+    branches:
+      - 'main'
     paths:
       - 'instrumentation/log4cxx/**'
       - '.github/workflows/log4cxx.yml'
@@ -70,4 +72,3 @@ jobs:
           cmake --build . -j$(nproc)
           ctest -j1 --output-on-failure
           cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
-

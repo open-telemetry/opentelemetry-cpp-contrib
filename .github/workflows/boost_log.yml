@@ -1,14 +1,16 @@
 name: boost_log
 
 on:
+  workflow_dispatch:
   push:
     branches:
-      - '*'
-    path:
+      - 'main'
+    paths:
       - 'instrumentation/boost_log/**'
       - '.github/workflows/boost_log.yml'
   pull_request:
-    branches: [main]
+    branches:
+      - 'main'
     paths:
       - 'instrumentation/boost_log/**'
       - '.github/workflows/boost_log.yml'
@@ -52,4 +54,3 @@ jobs:
           cmake --build . -j$(nproc)
           ctest -j1 --output-on-failure
           cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
-

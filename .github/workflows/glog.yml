@@ -1,14 +1,16 @@
 name: glog
 
 on:
+  workflow_dispatch:
   push:
     branches:
-      - '*'
-    path:
+      - 'main'
+    paths:
       - 'instrumentation/glog/**'
       - '.github/workflows/glog.yml'
   pull_request:
-    branches: [main]
+    branches:
+      - 'main'
     paths:
       - 'instrumentation/glog/**'
       - '.github/workflows/glog.yml'
@@ -66,4 +68,3 @@ jobs:
           cmake --build . -j$(nproc)
           ctest -j1 --output-on-failure
           cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
-

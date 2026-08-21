@@ -4,12 +4,13 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - '*'
-    path:
+      - 'main'
+    paths:
       - 'exporters/user_events/**'
       - '.github/workflows/user_events.yml'
   pull_request:
-    branches: [main]
+    branches:
+      - 'main'
     paths:
       - 'exporters/user_events/**'
       - '.github/workflows/user_events.yml'
