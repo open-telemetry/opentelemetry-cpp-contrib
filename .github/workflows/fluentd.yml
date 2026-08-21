@@ -4,16 +4,19 @@
 name: Fluentd exporter CI
 
 on:
+  workflow_dispatch:
   push:
-    branches: "*"
+    branches:
+      - '*'
     paths:
-      - "exporters/fluentd/**"
-      - ".github/workflows/fluentd.yml"
+      - 'exporters/fluentd/**'
+      - '.github/workflows/fluentd.yml'
   pull_request:
-    branches: [main]
+    branches:
+      - 'main'
     paths:
-      - "exporters/fluentd/**"
-      - ".github/workflows/fluentd.yml"
+      - 'exporters/fluentd/**'
+      - '.github/workflows/fluentd.yml'
 
 permissions:
   contents: read
@@ -40,7 +43,6 @@ jobs:
         run: |
           sudo apt update -y
           xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-
       - name: build and test
         run: |
           sudo $GITHUB_WORKSPACE/opentelemetry-cpp/ci/setup_googletest.sh
