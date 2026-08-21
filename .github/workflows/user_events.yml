@@ -28,19 +28,10 @@ jobs:
         with:
           submodules: "recursive"
       - name: setup dependencies
+        working-directory: opentelemetry-cpp-contrib/exporters/user_events
         run: |
           sudo apt update -y
-          sudo apt install -y --no-install-recommends --no-install-suggests \
-            build-essential \
-            cmake \
-            ninja-build \
-            libssl-dev \
-            libcurl4-openssl-dev \
-            libprotobuf-dev \
-            protobuf-compiler \
-            libgmock-dev \
-            libgtest-dev \
-            nlohmann-json3-dev
+          xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
       - name: build and test exporter/user_events
         working-directory: exporters/user_events
         run: |

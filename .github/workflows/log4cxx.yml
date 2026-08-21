@@ -34,20 +34,10 @@ jobs:
         with:
           path: opentelemetry-cpp-contrib
       - name: setup dependencies
+        working-directory: opentelemetry-cpp-contrib/instrumentation/log4cxx
         run: |
           sudo apt update -y
-          sudo apt install -y --no-install-recommends --no-install-suggests \
-            build-essential \
-            cmake \
-            ninja-build \
-            libssl-dev \
-            libcurl4-openssl-dev \
-            libprotobuf-dev \
-            protobuf-compiler \
-            libgmock-dev \
-            libgtest-dev \
-            libbenchmark-dev \
-            liblog4cxx-dev
+          xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
 
       # This is needed because liblog4cxx-dev installs 0.12.1-4,
       # and v1.0.0 is required
