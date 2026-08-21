@@ -1,14 +1,16 @@
 name: log4cxx
 
 on:
+  workflow_dispatch:
   push:
     branches:
-      - '*'
-    path:
+      - 'main'
+    paths:
       - 'instrumentation/log4cxx/**'
       - '.github/workflows/log4cxx.yml'
   pull_request:
-    branches: [main]
+    branches:
+      - 'main'
     paths:
       - 'instrumentation/log4cxx/**'
       - '.github/workflows/log4cxx.yml'
@@ -21,12 +23,6 @@ jobs:
     name: CMake Linux
     runs-on: ubuntu-24.04
     steps:
-      - name: checkout googletest
-        uses: actions/checkout@v7.0.1
-        with:
-          repository: "google/googletest"
-          ref: "release-1.12.1"
-          path: "googletest"
       - name: checkout logging-log4cxx
         uses: actions/checkout@v7.0.1
         with:
@@ -45,30 +41,10 @@ jobs:
           path: "opentelemetry-cpp"
           submodules: "recursive"
       - name: setup dependencies
+        working-directory: opentelemetry-cpp-contrib/instrumentation/log4cxx
         run: |
           sudo apt update -y
-          sudo apt install -y --no-install-recommends --no-install-suggests \
-            build-essential \
-            cmake \
-            ninja-build \
-            libssl-dev \
-            libcurl4-openssl-dev \
-            libprotobuf-dev \
-            protobuf-compiler \
-            libgmock-dev \
-            libgtest-dev \
-            libbenchmark-dev \
-            liblog4cxx-dev
-
-      # This is needed because libgmock-dev libgtest-dev installs 1.11,
-      # and v1.12 is required
-      - name: build googletest 1.12
-        run: |
-          mkdir -p "${GITHUB_WORKSPACE}/googletest/build"
-          cd "${GITHUB_WORKSPACE}/googletest/build"
-          cmake .. -G Ninja
-          cmake --build . -j$(nproc)
-          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
+          xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
 
       # This is needed because liblog4cxx-dev installs 0.12.1-4,
       # and v1.0.0 is required
@@ -79,7 +55,6 @@ jobs:
           cmake .. -G Ninja
           cmake --build . -j$(nproc)
           cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
-
       - name: build opentelemetry-cpp
         run: |
           mkdir -p "${GITHUB_WORKSPACE}/opentelemetry-cpp/build"
@@ -87,7 +62,6 @@ jobs:
           cmake .. -G Ninja -DBUILD_TESTING=OFF -DWITH_BENCHMARK=OFF -DOPENTELEMETRY_INSTALL=ON
           cmake --build . -j$(nproc)
           cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
-
       - name: build instrumentation/log4cxx contrib
         run: |
           mkdir -p "${GITHUB_WORKSPACE}/instrumentation-log4cxx/build"
@@ -101,4 +75,3 @@ jobs:
           cmake --build . -j$(nproc)
           ctest -j1 --output-on-failure
           cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
-

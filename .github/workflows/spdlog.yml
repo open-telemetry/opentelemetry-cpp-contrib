@@ -1,14 +1,16 @@
 name: spdlog
 
 on:
+  workflow_dispatch:
   push:
     branches:
-      - '*'
-    path:
+      - 'main'
+    paths:
       - 'instrumentation/spdlog/**'
       - '.github/workflows/spdlog.yml'
   pull_request:
-    branches: [main]
+    branches:
+      - 'main'
     paths:
       - 'instrumentation/spdlog/**'
       - '.github/workflows/spdlog.yml'
@@ -21,12 +23,6 @@ jobs:
     name: CMake Linux
     runs-on: ubuntu-24.04
     steps:
-      - name: checkout googletest
-        uses: actions/checkout@v7.0.1
-        with:
-          repository: "google/googletest"
-          ref: "release-1.12.1"
-          path: "googletest"
       - name: checkout opentelemetry-cpp-contrib
         uses: actions/checkout@v7.0.1
         with:
@@ -39,31 +35,10 @@ jobs:
           path: "opentelemetry-cpp"
           submodules: "recursive"
       - name: setup dependencies
+        working-directory: opentelemetry-cpp-contrib/instrumentation/spdlog
         run: |
           sudo apt update -y
-          sudo apt install -y --no-install-recommends --no-install-suggests \
-            build-essential \
-            cmake \
-            ninja-build \
-            libssl-dev \
-            libcurl4-openssl-dev \
-            libprotobuf-dev \
-            protobuf-compiler \
-            libgmock-dev \
-            libgtest-dev \
-            libbenchmark-dev \
-            libspdlog-dev
-
-      # This is needed because libgmock-dev libgtest-dev installs 1.11,
-      # and 1.11 breaks the build.
-      - name: build googletest 1.12
-        run: |
-          mkdir -p "${GITHUB_WORKSPACE}/googletest/build"
-          cd "${GITHUB_WORKSPACE}/googletest/build"
-          cmake .. -G Ninja
-          cmake --build . -j$(nproc)
-          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
-
+          xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
       - name: build opentelemetry-cpp
         run: |
           mkdir -p "${GITHUB_WORKSPACE}/opentelemetry-cpp/build"
@@ -71,7 +46,6 @@ jobs:
           cmake .. -G Ninja -DBUILD_TESTING=OFF -DWITH_BENCHMARK=OFF -DOPENTELEMETRY_INSTALL=ON
           cmake --build . -j$(nproc)
           cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
-
       - name: build instrumentation/spdlog contrib
         run: |
           mkdir -p "${GITHUB_WORKSPACE}/instrumentation-spdlog/build"
@@ -85,4 +59,3 @@ jobs:
           cmake --build . -j$(nproc)
           ctest -j1 --output-on-failure
           cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
-
