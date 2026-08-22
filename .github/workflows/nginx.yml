@@ -3,14 +3,16 @@ name: nginx instrumentation CI
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches:
+      - 'main'
     paths:
       - 'instrumentation/nginx/**'
       - '.github/workflows/nginx.yml'
     tags:
       - 'nginx/*'
   pull_request:
-    branches: [main]
+    branches:
+      - 'main'
     paths:
       - 'instrumentation/nginx/**'
       - '.github/workflows/nginx.yml'
