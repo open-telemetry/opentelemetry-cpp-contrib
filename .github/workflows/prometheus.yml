@@ -3,12 +3,14 @@ name: prometheus instrumentation CI
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches:
+      - 'main'
     paths:
       - "exporters/prometheus/**"
       - ".github/workflows/prometheus.yml"
   pull_request:
-    branches: [main]
+    branches:
+      - 'main'
     paths:
       - "exporters/prometheus/**"
       - ".github/workflows/prometheus.yml"
