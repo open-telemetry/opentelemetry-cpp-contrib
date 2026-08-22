@@ -27,7 +27,8 @@ jobs:
     steps:
       - name: checkout otel contrib
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - id: find codeql projects
+      - id: find
+        name: find codeql config
         run: |
           # Find all codeql-config.yml files
           dirs=$(find . -type f -name "codeql-config.yml" -exec dirname {} \;)
@@ -57,6 +58,7 @@ jobs:
         uses: github/codeql-action/init@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
         with:
           config-file: "${{ matrix.working-directory }}/codeql-config.yml"
+          category: "${{ matrix.working-directory }}"
       - name: Build package
         working-directory: "${{ matrix.working-directory }}"
         run: |
@@ -77,3 +79,4 @@ jobs:
         uses: github/codeql-action/analyze@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
         with:
           config-file: "${{ matrix.working-directory }}/codeql-config.yml"
+          category: "${{ matrix.working-directory }}"
