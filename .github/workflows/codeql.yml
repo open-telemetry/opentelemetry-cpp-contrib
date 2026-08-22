@@ -35,8 +35,11 @@ jobs:
 
           # Convert to JSON array
           json=$(printf '%s\n' "$dirs" | jq -R . | jq -s .)
-
-          echo "configs=$json" >> "$GITHUB_OUTPUT"
+          {
+            echo "dirs<<EOF"
+            echo "$json"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
   Codeql-build:
     permissions:
       security-events: write # for github/codeql-action/analyze to upload SARIF results
