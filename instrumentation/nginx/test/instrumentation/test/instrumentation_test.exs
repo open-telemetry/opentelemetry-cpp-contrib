@@ -43,7 +43,7 @@ defmodule InstrumentationTest do
     poll_collector(30)
   end
 
-  def wait_until_ready(_port) do
+  def wait_until_ready() do
     wait_nginx()
     wait_collector()
     :ready
@@ -122,13 +122,13 @@ defmodule InstrumentationTest do
 
   setup_all do
     File.chmod!(@traces_path, 0o666)
-    port = Port.open({:spawn, "docker compose up"}, [:binary])
+    System.cmd("docker", ["compose", "up", "-d", "--wait"])
 
     on_exit(fn ->
       System.cmd("docker", ["compose", "down"])
     end)
 
-    wait_until_ready(port)
+    wait_until_ready()
 
     trace_file = File.open!(@traces_path, [:read])
 
@@ -284,7 +284,7 @@ defmodule InstrumentationTest do
     [span] = collect_spans(trace)
 
     assert status == 200
-    assert span["parentSpanId"] == ""
+    assert span["parentSpanId"] == nil
     assert attrib(span, "http.status_code") == 200
   end
 
@@ -307,7 +307,7 @@ defmodule InstrumentationTest do
     assert attrib(span, "http.scheme") == "http"
     assert attrib(span, "http.status_code") == 200
 
-    assert span["parentSpanId"] == ""
+    assert span["parentSpanId"] == nil
     assert span["kind"] == TraceProto.SpanKind.server()
     assert span["name"] == "php_fpm_backend"
   end
@@ -326,7 +326,7 @@ defmodule InstrumentationTest do
     [span] = collect_spans(trace)
 
     assert status == 200
-    assert span["parentSpanId"] == ""
+    assert span["parentSpanId"] == nil
     assert span["traceId"] == trace_id
     assert span["spanId"] == span_id
     assert span["name"] == "test_b3"
@@ -481,7 +481,7 @@ defmodule InstrumentationTest do
     assert attrib(span, "http.scheme") == "http"
     assert attrib(span, "http.status_code") == 200
 
-    assert span["parentSpanId"] == ""
+    assert span["parentSpanId"] == nil
     assert span["kind"] == TraceProto.SpanKind.server()
     assert span["name"] == "file_access"
   end
@@ -524,7 +524,7 @@ defmodule InstrumentationTest do
 
     assert status == 200
     assert span["traceId"] != input_trace_id
-    assert span["parentSpanId"] == ""
+    assert span["parentSpanId"] == nil
   end
 
   test "Spans with custom attributes are produced", %{

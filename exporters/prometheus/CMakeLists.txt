@@ -20,25 +20,24 @@ project(
   HOMEPAGE_URL "https://github.com/open-telemetry/opentelemetry-cpp-contrib"
   LANGUAGES CXX)
 
-if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
-  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
-      "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}")
-endif()
+include(FetchContent)
 
-if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
-  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY
-      "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}")
-endif()
-
-if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
-  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
-      "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}")
-endif()
-
-link_directories(${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
+set(ENABLE_TESTING OFF CACHE BOOL "")
+set(BUILD_TESTING OFF CACHE BOOL "")
 
 find_package(opentelemetry-cpp REQUIRED)
-find_package(prometheus-cpp CONFIG REQUIRED)
+find_package(ZLIB REQUIRED)
+
+FetchContent_Declare(
+  prometheus-cpp
+  GIT_REPOSITORY https://github.com/jupp0r/prometheus-cpp.git
+  GIT_TAG e5fada43131d251e9c4786b04263ce98b6767ba5 # v1.3.0
+  CMAKE_CACHE_ARGS
+     -DENABLE_TESTING:BOOL=OFF
+     -DBUILD_TESTING:BOOL=OFF
+)
+
+FetchContent_MakeAvailable(prometheus-cpp)
 
 get_target_property(OPENTELEMETRY_CPP_API_DEFINITIONS opentelemetry-cpp::api
                     INTERFACE_COMPILE_DEFINITIONS)
@@ -59,7 +58,14 @@ cmake_dependent_option(BUILD_TESTING "Enable tests" ON
 if(BUILD_TESTING)
   enable_testing()
   add_definitions(-DENABLE_TEST)
-  find_package(GTest)
+  FetchContent_Declare(
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG 15460959cbbfa20e66ef0b5ab497367e47fc0a04 # v1.12.0
+  )
+
+  FetchContent_MakeAvailable(googletest)
+
   include(GoogleTest)
 
   if(TARGET GTest::gtest)
@@ -161,7 +167,6 @@ endif()
 
 install(
   TARGETS opentelemetry_prometheus_push_exporter
-  EXPORT "${PROJECT_NAME}-target"
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
@@ -175,33 +180,3 @@ install(
 if(BUILD_TESTING)
   add_subdirectory(test)
 endif()
-
-include(CMakePackageConfigHelpers)
-file(MAKE_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/${PROJECT_NAME}")
-
-configure_package_config_file(
-  "${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}-config.cmake.in"
-  "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake"
-  INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
-  NO_CHECK_REQUIRED_COMPONENTS_MACRO)
-
-write_basic_package_version_file(
-  "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config-version.cmake"
-  VERSION "${PROJECT_VERSION}${OPENTELEMETRY_CPP_ECOSYSTEM_VERSION_TWEAK}"
-  COMPATIBILITY SameMajorVersion)
-
-install(
-  FILES
-    "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake"
-    "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config-version.cmake"
-  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
-
-export(
-  EXPORT "${PROJECT_NAME}-target"
-  NAMESPACE ${PROJECT_NAME}::
-  FILE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-target.cmake"
-)
-install(
-  EXPORT "${PROJECT_NAME}-target"
-  NAMESPACE ${PROJECT_NAME}::
-  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")

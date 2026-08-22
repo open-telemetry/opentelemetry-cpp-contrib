@@ -3,14 +3,16 @@ name: nginx instrumentation CI
 on:
   workflow_dispatch:
   push:
-    branches: "*"
+    branches:
+      - 'main'
     paths:
       - 'instrumentation/nginx/**'
       - '.github/workflows/nginx.yml'
     tags:
       - 'nginx/*'
   pull_request:
-    branches: [main]
+    branches:
+      - 'main'
     paths:
       - 'instrumentation/nginx/**'
       - '.github/workflows/nginx.yml'
@@ -21,13 +23,13 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/nginx')
     permissions:
       contents: write # required for creating releases
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Release
         uses: softprops/action-gh-release@v3
   upload-release-artifacts:
     if: startsWith(github.ref, 'refs/tags/nginx')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [nginx-build-test, create-release]
     permissions:
       contents: write # required for uploading release artifacts
@@ -67,7 +69,7 @@ jobs:
       - name: build express backend docker
         run: |
           cd instrumentation/nginx
-          docker build -t otel-nginx-test/express-backend \
+          docker buildx build -t otel-nginx-test/express-backend \
             -f test/backend/simple_express/Dockerfile \
             --cache-from type=local,src=/tmp/buildx-cache/express \
             --cache-to type=local,dest=/tmp/buildx-cache/express-new \
@@ -85,7 +87,7 @@ jobs:
       - name: build nginx docker
         run: |
           cd instrumentation/nginx
-          docker build -t otel-nginx-test/nginx \
+          docker buildx build -t otel-nginx-test/nginx \
             --build-arg image=${{ matrix.image }} \
             --build-arg nginx_version=${{ matrix.nginx }} \
             -f test/${{ env.dockerfile }} \
@@ -111,7 +113,7 @@ jobs:
         run: |
           cd instrumentation/nginx
           mkdir -p /tmp/otel_ngx/
-          docker build -f test/${{ env.dockerfile }} \
+          docker buildx build -f test/${{ env.dockerfile }} \
           --build-arg image=${{ matrix.image }} \
           --build-arg nginx_version=${{ matrix.nginx }} \
           --target export \
