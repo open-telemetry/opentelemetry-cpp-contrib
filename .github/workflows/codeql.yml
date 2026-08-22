@@ -23,7 +23,7 @@ jobs:
   discover-configs:
     runs-on: ubuntu-24.04
     outputs:
-      configs: ${{ steps.find.outputs.configs }}
+      dirs: ${{ steps.find.outputs.dirs }}
     steps:
       - name: checkout otel contrib
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -49,7 +49,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        working-directory: ${{ fromJson(needs.discover-configs.outputs.configs) }}
+        working-directory: ${{ fromJson(needs.discover-configs.outputs.dirs) }}
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
