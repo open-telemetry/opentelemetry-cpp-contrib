@@ -35,9 +35,9 @@ jobs:
         uses: actions/cache@v6
         with:
           path: /tmp/buildx-cache/
-          key: apache-ubuntu-20.04-${{ github.sha }}
+          key: apache-ubuntu-22.04-${{ github.sha }}
           restore-keys: |
-            apache-ubuntu-20.04
+            apache-ubuntu-22.04
       - name: setup docker image
         run: |
           cd instrumentation/otel-webserver-module
