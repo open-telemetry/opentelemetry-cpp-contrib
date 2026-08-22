@@ -1,0 +1,35 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  extends: [
+    "config:best-practices",
+    "helpers:pinGitHubActionDigestsToSemver",
+    ":separateMultipleMajorReleases",
+  ],
+  packageRules: [
+    {
+      dependencyDashboardApproval: true,
+      matchManagers: ["!github-actions"],
+    },
+    {
+      description: "Bundles all patches into 1 easy to review pr",
+      groupName: "all patching",
+      matchUpdateTypes: ["patch", "digest"],
+      matchManagers: ["github-actions"],
+      schedule: ["before 6am every weekday"],
+    },
+    {
+      description: "Bundle all minor infra updates into 1 update",
+      groupName: "infra updates",
+      matchCategories: ["ci"],
+      matchUpdateTypes: ["minor"],
+      matchManagers: ["github-actions"],
+      schedule: ["before 8am on Monday"],
+    },
+    {
+      description: "Allow major ci updates to be raised each Monday without approval",
+      matchCategories: ["ci"],
+      matchUpdateTypes: ["major"],
+      schedule: ["before 8am on Monday"],
+    },
+  ],
+}

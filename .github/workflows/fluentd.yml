@@ -6,15 +6,17 @@ name: Fluentd exporter CI
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches:
+      - '*'
     paths:
-      - "exporters/fluentd/**"
-      - ".github/workflows/fluentd.yml"
+      - 'exporters/fluentd/**'
+      - '.github/workflows/fluentd.yml'
   pull_request:
-    branches: [main]
+    branches:
+      - 'main'
     paths:
-      - "exporters/fluentd/**"
-      - ".github/workflows/fluentd.yml"
+      - 'exporters/fluentd/**'
+      - '.github/workflows/fluentd.yml'
 
 permissions:
   contents: read
@@ -22,7 +24,7 @@ permissions:
 jobs:
   cmake_linux:
     name: CMake Linux
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: checkout opentelemetry-cpp-contrib
         uses: actions/checkout@v7.0.1
@@ -37,18 +39,10 @@ jobs:
           path: "opentelemetry-cpp"
           submodules: "recursive"
       - name: setup dependencies
+        working-directory: opentelemetry-cpp-contrib/exporters/fluentd
         run: |
           sudo apt update -y
-          sudo apt install -y --no-install-recommends --no-install-suggests \
-            build-essential \
-            cmake \
-            ninja-build \
-            libssl-dev \
-            libcurl4-openssl-dev \
-            libgmock-dev \
-            libgtest-dev \
-            libbenchmark-dev
-
+          xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
       - name: build and test
         run: |
           sudo $GITHUB_WORKSPACE/opentelemetry-cpp/ci/setup_googletest.sh

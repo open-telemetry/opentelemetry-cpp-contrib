@@ -3,21 +3,25 @@ name: Geneva Metrics CI
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches:
+      - '*'
     paths:
-      - "exporters/geneva/**"
-      - ".github/workflows/geneva_metrics.yml"
+      - 'exporters/geneva/**'
+      - '.github/workflows/geneva_metrics.yml'
   pull_request:
-    branches: [main]
+    branches:
+      - 'main'
     paths:
-      - "exporters/geneva/**"
-      - ".github/workflows/geneva_metrics.yml"
+      - 'exporters/geneva/**'
+      - '.github/workflows/geneva_metrics.yml'
+
 permissions:
   contents: read
+
 jobs:
   cmake_linux:
     name: CMake on Linux
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: checkout otel contrib geneva metrics
         uses: actions/checkout@v7.0.1
@@ -31,10 +35,10 @@ jobs:
           path: "otel_cpp"
           submodules: "recursive"
       - name: setup
+        working-directory: otel_cpp_contrib/exporters/geneva
         run: |
           sudo apt update -y 
-          sudo apt install -y --no-install-recommends --no-install-suggests build-essential\
-            ca-certificates wget git valgrind lcov
+          xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
       - name: run tests
         run: |
           pushd "$GITHUB_WORKSPACE/otel_cpp"

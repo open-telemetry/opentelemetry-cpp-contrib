@@ -6,15 +6,17 @@ name: Geneva Trace Nuget Generation
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches:
+      - '*'
     paths:
-      - "exporters/geneva-trace/**"
-      - ".github/workflows/geneva_trace.yml"
+      - 'exporters/geneva-trace/**'
+      - '.github/workflows/geneva_trace.yml'
   pull_request:
-    branches: [main]
+    branches:
+      - 'main'
     paths:
-      - "exporters/geneva-trace/**"
-      - ".github/workflows/geneva_trace.yml"
+      - 'exporters/geneva-trace/**'
+      - '.github/workflows/geneva_trace.yml'
 
 permissions:
   contents: read
@@ -22,7 +24,7 @@ permissions:
 jobs:
   geneva-trace-nuget-generation:
     name: Geneva Trace
-    runs-on: windows-latest
+    runs-on: windows-2025
     steps:
     - name: github config
       run: git config --system core.longpaths true
