@@ -190,7 +190,7 @@ RUN echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
     | tee /etc/apt/sources.list.d/nginx.list \
     && echo "Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900\n" \
     | tee /etc/apt/preferences.d/99nginx \
-    && apt update -y && apt install nginx -y
+    && apt update -y && apt install "nginx=${NGINX_VERSION}-1~focal" -y
 
 # Build Webserver Module
 COPY . /otel-webserver-module

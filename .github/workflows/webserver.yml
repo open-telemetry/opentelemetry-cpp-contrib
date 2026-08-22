@@ -35,9 +35,9 @@ jobs:
         uses: actions/cache@v6
         with:
           path: /tmp/buildx-cache/
-          key: apache-ubuntu-20.04-${{ github.sha }}
+          key: apache-ubuntu-22.04-${{ github.sha }}
           restore-keys: |
-            apache-ubuntu-20.04
+            apache-ubuntu-22.04
       - name: setup docker image
         run: |
           cd instrumentation/otel-webserver-module
@@ -58,6 +58,12 @@ jobs:
             cp -r /build-dependencies /otel-webserver-module/;     \
 
             ./gradlew assembleWebServerModule -DtargetSystem=ubuntu'
+
+      - name: unit test
+        run: |
+          docker exec --workdir /otel-webserver-module apache_ubuntu_container \
+            ./gradlew runTests -DtargetSystem=ubuntu
+
       - name: update cache
         run: |
           rm -rf /tmp/buildx-cache/apache_ubuntu
@@ -102,8 +108,8 @@ jobs:
             ./gradlew assembleWebServerModule'
       - name: unit test
         run: |
-          docker exec apache_centos7_container bash -c \
-            'cd /otel-webserver-module; ./gradlew runUnitTest'
+          docker exec --workdir /otel-webserver-module apache_centos7_container \
+            ./gradlew runTests
       # - name: update cache
       #   run: |
       #     rm -rf /tmp/buildx-cache/apache_centos7
@@ -170,8 +176,8 @@ jobs:
             ./gradlew assembleWebServerModule'
       - name: unit test
         run: |
-          docker exec apache_almalinux8_container bash -c \
-            'cd /otel-webserver-module; ./gradlew runUnitTest'
+          docker exec --workdir /otel-webserver-module apache_almalinux8_container \
+            ./gradlew runTests
       # - name: update cache
       #   run: |
       #     rm -rf /tmp/buildx-cache/apache_almalinux8

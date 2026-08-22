@@ -185,14 +185,14 @@ RUN wget --no-check-certificate https://ftp.gnu.org/gnu/automake/automake-${AUTO
     && cd .. && rm -rf automake-${AUTOMAKE_VERSION}.tar.gz
 
 # install libtool
-RUN wget --no-check-certificate https://ftpmirror.gnu.org/libtool/libtool-${LIBTOOL_VERSION}.tar.gz \
+RUN wget --no-check-certificate https://ftp.gnu.org/gnu/libtool/libtool-${LIBTOOL_VERSION}.tar.gz \
     && tar xzf libtool-${LIBTOOL_VERSION}.tar.gz \
     && cd libtool-${LIBTOOL_VERSION} \
     && ./configure --prefix=/usr \
     && make -j 6 \
     && make install \
     && libtool --version \
-    && cd .. && rm -rf libtool--${LIBTOOL_VERSION}.tar.gz
+    && cd .. && rm -rf libtool-${LIBTOOL_VERSION}.tar.gz
 
 #install log4cxx
 RUN mkdir -p dependencies/apache-log4cxx/${LOG4CXX_VERSION} \
