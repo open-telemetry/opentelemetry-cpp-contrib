@@ -20,6 +20,8 @@ project(
   HOMEPAGE_URL "https://github.com/open-telemetry/opentelemetry-cpp-contrib"
   LANGUAGES CXX)
 
+include(FetchContent)
+
 if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
   set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
       "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}")
@@ -46,6 +48,14 @@ endif()
 
 find_package(prometheus-cpp CONFIG REQUIRED)
 
+FetchContent_Declare(
+  prometheus-cpp
+  GIT_REPOSITORY https://github.com/jupp0r/prometheus-cpp.git
+  GIT_TAG e5fada43131d251e9c4786b04263ce98b6767ba5 # v1.3.0
+)
+
+FetchContent_MakeAvailable(prometheus-cpp)
+
 get_target_property(OPENTELEMETRY_CPP_API_DEFINITIONS opentelemetry-cpp::api
                     INTERFACE_COMPILE_DEFINITIONS)
 if(HAVE_ABSEIL IN_LIST OPENTELEMETRY_CPP_API_DEFINITIONS)
@@ -65,7 +75,14 @@ cmake_dependent_option(BUILD_TESTING "Enable tests" ON
 if(BUILD_TESTING)
   enable_testing()
   add_definitions(-DENABLE_TEST)
-  find_package(GTest)
+  FetchContent_Declare(
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG 15460959cbbfa20e66ef0b5ab497367e47fc0a04 # v1.12.0
+  )
+
+  FetchContent_MakeAvailable(googletest)
+
   include(GoogleTest)
 
   if(TARGET GTest::gtest)
