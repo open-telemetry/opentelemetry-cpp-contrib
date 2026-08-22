@@ -1,13 +1,17 @@
 name: webserver instrumentation CI
 
 on:
+  workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: 
+      - 'main'
     paths:
       - 'instrumentation/otel-webserver-module/**'
       - '.github/workflows/webserver.yml'
   pull_request:
-    branches: [ main, webserver-dev ]
+    branches:
+      - 'main'
+      - 'webserver-dev'
     paths:
       - 'instrumentation/otel-webserver-module/**'
       - '.github/workflows/webserver.yml'
@@ -18,7 +22,7 @@ permissions:
 jobs:
   webserver-build-test-ubuntu:
     name: webserver-ubuntu-build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: checkout otel webserver
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -56,7 +60,6 @@ jobs:
             cp -r /build-dependencies /otel-webserver-module/;     \
 
             ./gradlew assembleWebServerModule -DtargetSystem=ubuntu'
-
       - name: update cache
         run: |
           rm -rf /tmp/buildx-cache/apache_ubuntu
@@ -64,7 +67,7 @@ jobs:
 
   webserver-build-test-centos7:
     name: webserver-centos7-build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: checkout otel webserver
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -132,10 +135,9 @@ jobs:
       #     ./gradlew :test:integration:integrationTests -i
       #     curl http://localhost:9411/api/v2/spans?serviceName=demoservice
 
-
   webserver-build-test-almalinux8:
     name: webserver-almalinux8-build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: checkout otel webserver
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
