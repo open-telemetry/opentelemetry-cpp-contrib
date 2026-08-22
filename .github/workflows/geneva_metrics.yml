@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - '*'
+      - 'main'
     paths:
       - 'exporters/geneva/**'
       - '.github/workflows/geneva_metrics.yml'
@@ -41,9 +41,6 @@ jobs:
           xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
       - name: run tests
         run: |
-          pushd "$GITHUB_WORKSPACE/otel_cpp"
-          sudo ./ci/install_thirdparty.sh --install-dir /usr/local --tags-file third_party_release --packages "googletest;benchmark"
-          popd
           mkdir -p "$GITHUB_WORKSPACE/otel_cpp/build"
           cd "$GITHUB_WORKSPACE/otel_cpp/build"
           cmake .. -DOPENTELEMETRY_INSTALL=ON

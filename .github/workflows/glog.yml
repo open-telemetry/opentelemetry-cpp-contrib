@@ -23,12 +23,6 @@ jobs:
     name: CMake Linux
     runs-on: ubuntu-24.04
     steps:
-      - name: checkout glog
-        uses: actions/checkout@v7.0.1
-        with:
-          repository: "google/glog"
-          ref: "v0.7.0"
-          path: "glog"
       - name: checkout opentelemetry-cpp-contrib
         uses: actions/checkout@v7.0.1
         with:
@@ -45,13 +39,6 @@ jobs:
         run: |
           sudo apt update -y
           xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-      - name: build glog
-        run: |
-          mkdir -p "${GITHUB_WORKSPACE}/glog/build"
-          cd "${GITHUB_WORKSPACE}/glog/build"
-          cmake .. -G Ninja
-          cmake --build . -j$(nproc)
-          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
       - name: build opentelemetry-cpp
         run: |
           mkdir -p "${GITHUB_WORKSPACE}/opentelemetry-cpp/build"
