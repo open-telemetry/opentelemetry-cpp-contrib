@@ -34,7 +34,7 @@ jobs:
           dirs=$(find . -type f -name "codeql-config.yml" -exec dirname {} \;)
 
           # Convert to JSON array
-          json=$(printf '%s\n' "$files" | jq -R . | jq -s .)
+          json=$(printf '%s\n' "$dirs" | jq -R . | jq -s .)
 
           echo "configs=$json" >> "$GITHUB_OUTPUT"
   Codeql-build:
