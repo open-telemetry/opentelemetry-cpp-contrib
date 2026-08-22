@@ -10,7 +10,7 @@ project(${this_target})
 include(FetchContent)
 
 find_package(opentelemetry-cpp REQUIRED)
-find_package(glog QUIET)
+find_package(glog 0.7.0 QUIET)
 
 if(NOT glog_FOUND)
   FetchContent_Declare(
