@@ -43,7 +43,7 @@ jobs:
   Codeql-build:
     permissions:
       security-events: write # for github/codeql-action/analyze to upload SARIF results
-    name: "static-analysis ${{ matrix.working-directory }}"
+    name: "static-analysis / ${{ matrix.working-directory }}"
     needs: discover-configs
     runs-on: ubuntu-24.04
     strategy:
@@ -61,7 +61,6 @@ jobs:
         uses: github/codeql-action/init@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
         with:
           config-file: "${{ matrix.working-directory }}/codeql-config.yml"
-          category: "${{ matrix.working-directory }}"
       - name: Build package
         working-directory: "${{ matrix.working-directory }}"
         run: |
