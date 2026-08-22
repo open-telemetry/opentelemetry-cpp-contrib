@@ -43,6 +43,7 @@ endif()
 link_directories(${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 
 find_package(opentelemetry-cpp REQUIRED)
+find_package(ZLIB REQUIRED)
 
 FetchContent_Declare(
   prometheus-cpp
