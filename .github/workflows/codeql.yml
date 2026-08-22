@@ -2,27 +2,50 @@ name: Codeql
 
 on:
   push:
-    branches: [main]
+    branches:
+      - 'main'
     paths:
-      - "exporters/**"
-      - "instrumentation/**"
-      - ".github/workflows/codeql.yml"
+      - 'exporters/**'
+      - 'instrumentation/**'
+      - '.github/workflows/codeql.yml'
   pull_request:
-    branches: [main]
+    branches:
+      - 'main'
     paths:
-      - "exporters/**"
-      - "instrumentation/**"
-      - ".github/workflows/codeql.yml"
+      - 'exporters/**'
+      - 'instrumentation/**'
+      - '.github/workflows/codeql.yml'
 
 permissions:
   contents: read
 
 jobs:
+  discover-configs:
+    runs-on: ubuntu-24.04
+    outputs:
+      configs: ${{ steps.find.outputs.configs }}
+    steps:
+      - name: checkout otel contrib
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: find codeql projects
+        run: |
+          # Find all codeql-config.yml files
+          dirs=$(find . -type f -name "codeql-config.yml" -exec dirname {} \;)
+
+          # Convert to JSON array
+          json=$(printf '%s\n' "$files" | jq -R . | jq -s .)
+
+          echo "configs=$json" >> "$GITHUB_OUTPUT"
   Codeql-build:
     permissions:
       security-events: write # for github/codeql-action/analyze to upload SARIF results
-    name: static-analysis
+    name: "static-analysis ${{ matrix.working-directory }}"
+    needs: discover-configs
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        working-directory: ${{ fromJson(needs.discover-configs.outputs.configs) }}
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
@@ -33,8 +56,9 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
         with:
-          languages: cpp
+          config-file: "${{ matrix.working-directory }}/codeql-config.yml"
       - name: Build package
+        working-directory: "${{ matrix.working-directory }}"
         run: |
           sudo apt update -y
             xargs -a apt-packages.txt sudo apt install -y
@@ -51,3 +75,5 @@ jobs:
             cmake --build . -j4
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
+        with:
+          config-file: "${{ matrix.working-directory }}/codeql-config.yml"
