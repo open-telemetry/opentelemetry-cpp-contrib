@@ -99,10 +99,10 @@ jobs:
           path: "otel_cpp"
           submodules: "recursive"
       - name: setup
+        working-directory: otel_cpp_contrib/exporters/prometheus
         run: |
           sudo apt update -y 
-          sudo apt install -y --no-install-recommends --no-install-suggests build-essential\
-            ca-certificates wget git valgrind lcov
+          xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
       - name: run tests
         run: |
           mkdir -p "$GITHUB_WORKSPACE/otel_cpp/build_jobs_ci"
