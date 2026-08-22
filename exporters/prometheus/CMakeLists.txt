@@ -49,8 +49,6 @@ if(TARGET ZLIB::zlib AND NOT TARGET ZLIB::ZLIB)
   add_library(ZLIB::ZLIB ALIAS ZLIB::zlib)
 endif()
 
-find_package(prometheus-cpp CONFIG REQUIRED)
-
 FetchContent_Declare(
   prometheus-cpp
   GIT_REPOSITORY https://github.com/jupp0r/prometheus-cpp.git
