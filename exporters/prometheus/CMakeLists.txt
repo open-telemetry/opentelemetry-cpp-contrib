@@ -22,9 +22,6 @@ project(
 
 include(FetchContent)
 
-set(ENABLE_TESTING OFF CACHE BOOL "")
-set(BUILD_TESTING OFF CACHE BOOL "")
-
 if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
   set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
       "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}")
@@ -43,11 +40,6 @@ endif()
 link_directories(${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 
 find_package(opentelemetry-cpp REQUIRED)
-find_package(ZLIB REQUIRED)
-
-if(TARGET ZLIB::zlib AND NOT TARGET ZLIB::ZLIB)
-  add_library(ZLIB::ZLIB ALIAS ZLIB::zlib)
-endif()
 
 FetchContent_Declare(
   prometheus-cpp
