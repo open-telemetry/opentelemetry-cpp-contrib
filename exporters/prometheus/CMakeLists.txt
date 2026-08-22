@@ -22,6 +22,9 @@ project(
 
 include(FetchContent)
 
+set(ENABLE_TESTING OFF CACHE BOOL "")
+set(BUILD_TESTING OFF CACHE BOOL "")
+
 if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
   set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
       "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}")
@@ -53,10 +56,8 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/jupp0r/prometheus-cpp.git
   GIT_TAG e5fada43131d251e9c4786b04263ce98b6767ba5 # v1.3.0
   CMAKE_CACHE_ARGS
-     -DENABLE_PULL=ON
-     -DENABLE_PUSH=ON
-     -DENABLE_TESTING=OFF
-     -DBUILD_TESTING=OFF
+     -DENABLE_TESTING:BOOL=OFF
+     -DBUILD_TESTING:BOOL=OFF
 )
 
 FetchContent_MakeAvailable(prometheus-cpp)

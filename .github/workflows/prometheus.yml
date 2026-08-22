@@ -109,7 +109,6 @@ jobs:
           cd "$GITHUB_WORKSPACE/otel_cpp/build_jobs_ci"
           cmake .. \
             -G Ninja \
-            -DWITH_PROMETHEUS=ON \
             -DWITH_METRICS_PREVIEW=OFF \
             -DBUILD_TESTING=OFF -DWITH_EXAMPLES=OFF  -DOPENTELEMETRY_INSTALL=ON "-DWITH_FUNC_TESTS=OFF"
           cmake --build . -j$(nproc)
