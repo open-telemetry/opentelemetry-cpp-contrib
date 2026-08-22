@@ -3,12 +3,15 @@ name: webserver instrumentation CI
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: 
+      - 'main'
     paths:
       - 'instrumentation/otel-webserver-module/**'
       - '.github/workflows/webserver.yml'
   pull_request:
-    branches: [ main, webserver-dev ]
+    branches:
+      - 'main'
+      - 'webserver-dev'
     paths:
       - 'instrumentation/otel-webserver-module/**'
       - '.github/workflows/webserver.yml'
@@ -133,6 +136,7 @@ jobs:
       #     sleep 30
       #     ./gradlew :test:integration:integrationTests -i
       #     curl http://localhost:9411/api/v2/spans?serviceName=demoservice
+
   webserver-build-test-almalinux8:
     name: webserver-almalinux8-build
     runs-on: ubuntu-22.04
