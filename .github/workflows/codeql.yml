@@ -1,0 +1,84 @@
+name: Codeql
+
+on:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - 'exporters/**'
+      - 'instrumentation/**'
+      - '.github/workflows/codeql.yml'
+  pull_request:
+    branches:
+      - 'main'
+    paths:
+      - 'exporters/**'
+      - 'instrumentation/**'
+      - '.github/workflows/codeql.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  discover-configs:
+    runs-on: ubuntu-24.04
+    outputs:
+      dirs: ${{ steps.find.outputs.dirs }}
+    steps:
+      - name: checkout otel contrib
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: find
+        name: find codeql config
+        run: |
+          # Find all codeql-config.yml files
+          dirs=$(find . -type f -name "codeql-config.yml" -exec dirname {} \;)
+
+          # Convert to JSON array
+          json=$(printf '%s\n' "$dirs" | jq -R . | jq -s .)
+          {
+            echo "dirs<<EOF"
+            echo "$json"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+  Codeql-build:
+    permissions:
+      security-events: write # for github/codeql-action/analyze to upload SARIF results
+    name: "static-analysis / ${{ matrix.working-directory }}"
+    needs: discover-configs
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        working-directory: ${{ fromJson(needs.discover-configs.outputs.dirs) }}
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+      - name: checkout otel contrib
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
+        with:
+          config-file: "${{ matrix.working-directory }}/codeql-config.yml"
+      - name: Build package
+        working-directory: "${{ matrix.working-directory }}"
+        run: |
+          sudo apt update -y
+            xargs -a apt-packages.txt sudo apt install -y
+            mkdir -p "build"
+            cd "build"
+            cmake .. \
+              -G Ninja \
+              -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/sandbox" \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DBUILD_TESTING=OFF \
+              -DWITH_BENCHMARK=OFF \
+              -DWITH_EXAMPLES=OFF \
+              -DOPENTELEMETRY_INSTALL=ON
+            cmake --build . -j4
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
+        with:
+          config-file: "${{ matrix.working-directory }}/codeql-config.yml"
+          category: "${{ matrix.working-directory }}"
