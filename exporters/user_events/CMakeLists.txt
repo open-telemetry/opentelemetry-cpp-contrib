@@ -23,7 +23,14 @@ if(MAIN_PROJECT)
   find_package(Protobuf REQUIRED)
   find_package(CURL REQUIRED)
   find_package(nlohmann_json REQUIRED)
-  find_package(opentelemetry-cpp REQUIRED)
+
+  FetchContent_Declare(
+    opentelemetry-cpp
+    GIT_REPOSITORY https://github.com/open-telemetry/opentelemetry-cpp.git
+    GIT_TAG ea1f0d61ce5baa5584b097266bf133d1f31e3607 # v1.23.0
+  )
+
+  FetchContent_MakeAvailable(opentelemetry-cpp)
 endif()
 
 if(BUILD_TRACEPOINTS)
@@ -54,10 +61,8 @@ target_compile_definitions(opentelemetry_exporter_user_events_logs
                            PUBLIC HAVE_CONSOLE_LOG HAVE_LOGS_PREVIEW)
 
 if(MAIN_PROJECT)
-  target_include_directories(opentelemetry_exporter_user_events_logs
-                             PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
   target_link_libraries(opentelemetry_exporter_user_events_logs
-                        PUBLIC ${OPENTELEMETRY_CPP_LIBRARIES})
+                        PUBLIC opentelemetry-cpp::api)
 else()
   target_link_libraries(
     opentelemetry_exporter_user_events_logs
@@ -76,11 +81,9 @@ target_compile_features(opentelemetry_exporter_user_events_metrics
                         PRIVATE cxx_std_17)
 
 if(MAIN_PROJECT)
-  target_include_directories(opentelemetry_exporter_user_events_metrics
-                             PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
   target_link_libraries(
     opentelemetry_exporter_user_events_metrics
-    PUBLIC ${OPENTELEMETRY_CPP_LIBRARIES} tracepoint protobuf::libprotobuf)
+    PUBLIC opentelemetry-cpp::api tracepoint protobuf::libprotobuf)
   # TODO: link to opentelemetry_otlp_recordable
 else()
   target_link_libraries(
@@ -131,9 +134,10 @@ if(WITH_BENCHMARK)
     GIT_REPOSITORY https://github.com/google/benchmark.git
     GIT_TAG 192ef10025eb2c4cdd392bc502f0c852196baa48 # v1.9.5
   )
+  FetchContent_MakeAvailable(benchmark)
   add_executable(user_events_logger_benchmark benchmark/logger_benchmark.cc)
   target_link_libraries(
-    user_events_logger_benchmark benchmark::benchmark ${CMAKE_THREAD_LIBS_INIT}
+    user_events_logger_benchmark benchmark::benchmark
     ${CMAKE_THREAD_LIBS_INIT} opentelemetry_logs
     opentelemetry_exporter_user_events_logs)
 endif()

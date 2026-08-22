@@ -9,13 +9,13 @@ project(${this_target})
 
 include(FetchContent)
 
-find_package(opentelemetry-cpp QUIET)
+FetchContent_Declare(
+  opentelemetry-cpp
+  GIT_REPOSITORY https://github.com/open-telemetry/opentelemetry-cpp.git
+  GIT_TAG b9cf499ff5715433848b316059714b5c59af1f2c # v1.21.0
+)
 
-if (opentelemetry-cpp_FOUND)
-  message(STATUS "Found opentelemetry-cpp version: ${opentelemetry-cpp_VERSION}")
-else()
-  message(FATAL_ERROR "Could not find opentelemetry-cpp")
-endif()
+FetchContent_MakeAvailable(opentelemetry-cpp)
 
 find_package(log4cxx QUIET)
 
@@ -28,17 +28,19 @@ endif()
 
 add_library(${this_target} src/appender.cc)
 
-target_compile_options(${this_target}
-  PUBLIC -Wall -Wextra -Werror -Wpedantic -fPIC
+target_compile_options(${this_target} PUBLIC
+  -Wall -Wextra -Werror -Wpedantic -fPIC
+  -Wno-error=deprecated-declarations
 )
-
-set_target_properties(${this_target} PROPERTIES EXPORT_NAME ${this_target})
 
 target_include_directories(${this_target} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   $<TARGET_PROPERTY:log4cxx,INTERFACE_INCLUDE_DIRECTORIES>
-  ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
+)
+
+target_link_libraries(${this_target} PUBLIC 
+  opentelemetry-cpp::api
 )
 
 target_link_libraries(${this_target} PRIVATE
@@ -47,11 +49,9 @@ target_link_libraries(${this_target} PRIVATE
 
 if(OPENTELEMETRY_INSTALL)
   include(GNUInstallDirs)
-  include(CMakePackageConfigHelpers)
 
   install(
     TARGETS ${this_target}
-    EXPORT "${PROJECT_NAME}-target"
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -62,27 +62,6 @@ if(OPENTELEMETRY_INSTALL)
     DESTINATION include/opentelemetry/instrumentation
     FILES_MATCHING
     PATTERN "*.h")
-
-  configure_package_config_file(
-    "${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}-config.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake"
-    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
-    NO_CHECK_REQUIRED_COMPONENTS_MACRO)
-
-  install(
-    FILES
-      "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake"
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
-
-  export(
-    EXPORT "${PROJECT_NAME}-target"
-    NAMESPACE ${PROJECT_NAME}::
-    FILE "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-target.cmake")
-
-  install(
-    EXPORT "${PROJECT_NAME}-target"
-    NAMESPACE ${PROJECT_NAME}::
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 endif() # OPENTELEMETRY_INSTALL
 
 if(BUILD_TESTING)
@@ -105,7 +84,10 @@ if(BUILD_TESTING)
   target_include_directories(${testname} PUBLIC
     $<TARGET_PROPERTY:log4cxx,INTERFACE_INCLUDE_DIRECTORIES>
     ${CMAKE_CURRENT_LIST_DIR}/include
-    ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
+  )
+
+  target_link_libraries(${this_target} PUBLIC 
+    opentelemetry-cpp::api
   )
 
   target_link_libraries(${testname} PRIVATE
@@ -113,6 +95,7 @@ if(BUILD_TESTING)
     GTest::gtest
     GTest::gtest_main
     log4cxx
+    opentelemetry-cpp::api
     opentelemetry-cpp::ostream_log_record_exporter
     ${this_target}
   )
@@ -132,10 +115,14 @@ if(WITH_EXAMPLES)
   target_include_directories(${example_exe} PUBLIC
     $<TARGET_PROPERTY:log4cxx,INTERFACE_INCLUDE_DIRECTORIES>
     ${CMAKE_CURRENT_LIST_DIR}/include
-    ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
+  )
+
+  target_link_libraries(${this_target} PUBLIC
+    opentelemetry-cpp::api
   )
 
   target_link_libraries(${example_exe} PRIVATE
+    opentelemetry-cpp::api
     opentelemetry-cpp::logs
     opentelemetry-cpp::trace
     opentelemetry-cpp::ostream_log_record_exporter
