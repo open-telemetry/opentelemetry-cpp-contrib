@@ -23,8 +23,8 @@ static bool ToTimestampDefault(const boost::log::record_view &record,
                                std::chrono::system_clock::time_point &value) noexcept
 {
   using namespace std::chrono;
-  static const boost::posix_time::ptime kEpochTime(boost::gregorian::date(1970, 1, 1));
-  static const boost::posix_time::ptime kInvalid{};
+  static constexpr boost::posix_time::ptime kEpochTime(boost::gregorian::date(1970, 1, 1));
+  static constexpr boost::posix_time::ptime kInvalid{};
 
   auto timestamp =
       boost::log::extract_or_default<boost::posix_time::ptime>(record["TimeStamp"], kInvalid);
@@ -34,7 +34,7 @@ static bool ToTimestampDefault(const boost::log::record_view &record,
 
 static bool ToThreadIdDefault(const boost::log::record_view &record, std::string &value) noexcept
 {
-  static const boost::log::aux::thread::id kInvalid{};
+  static constexpr boost::log::aux::thread::id kInvalid{};
 
   auto thread_id =
       boost::log::extract_or_default<boost::log::aux::thread::id>(record["ThreadID"], kInvalid);

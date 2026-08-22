@@ -9,21 +9,13 @@ project(${this_target})
 
 include(FetchContent)
 
-FetchContent_Declare(
-  opentelemetry-cpp
-  GIT_REPOSITORY https://github.com/open-telemetry/opentelemetry-cpp.git
-  GIT_TAG b9cf499ff5715433848b316059714b5c59af1f2c # v1.21.0
-)
-
-FetchContent_MakeAvailable(opentelemetry-cpp)
-
+find_package(opentelemetry-cpp REQUIRED)
 find_package(Boost 1.73 COMPONENTS log REQUIRED)
 
 add_library(${this_target} src/sink.cc)
 
 target_compile_options(${this_target} PUBLIC
   -Wall -Wextra -Werror -Wpedantic -fPIC
-  -Wno-error=deprecated-declarations
 )
 
 set_target_properties(${this_target} PROPERTIES EXPORT_NAME ${this_target})
@@ -31,16 +23,11 @@ set_target_properties(${this_target} PROPERTIES EXPORT_NAME ${this_target})
 target_include_directories(${this_target} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-)
-
-target_link_libraries(${this_target} PUBLIC
-  Boost::log
-  opentelemetry-cpp::api
+  ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
 )
 
 target_link_libraries(${this_target} PRIVATE
   Boost::log
-  opentelemetry-cpp::api
 )
 
 if(OPENTELEMETRY_INSTALL)
@@ -102,11 +89,7 @@ if(BUILD_TESTING)
 
   target_include_directories(${testname} PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/include
-  )
-
-  target_link_libraries(${this_target} PUBLIC
-    opentelemetry-cpp::api
-    Boost::log
+    ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
   )
 
   target_link_libraries(${testname} PRIVATE
@@ -114,7 +97,6 @@ if(BUILD_TESTING)
     GTest::gtest
     GTest::gtest_main
     Boost::log
-    opentelemetry-cpp::api
     opentelemetry-cpp::ostream_log_record_exporter
     ${this_target}
   )
@@ -133,15 +115,10 @@ if(WITH_EXAMPLES)
 
   target_include_directories(${example_exe} PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/include
-  )
-
-  target_link_libraries(${this_target} PUBLIC
-    opentelemetry-cpp::api
-    Boost::log
+    ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
   )
 
   target_link_libraries(${example_exe} PRIVATE
-    opentelemetry-cpp::api
     opentelemetry-cpp::logs
     opentelemetry-cpp::trace
     opentelemetry-cpp::ostream_log_record_exporter

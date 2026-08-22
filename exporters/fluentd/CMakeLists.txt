@@ -222,7 +222,7 @@ if(BUILD_TESTING)
     TEST_LIST fluentd_recordable_logs_test)
 endif() # BUILD_TESTING
 
-if (MAIN_PROJECT AND OPENTELEMETRY_INSTALL)
+if (MAIN_PROJECT)
   # config file for find_packages(opentelemetry-cpp-fluentd CONFIG)
   include(GNUInstallDirs)
   include(CMakePackageConfigHelpers)

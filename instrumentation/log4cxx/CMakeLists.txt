@@ -9,26 +9,27 @@ project(${this_target})
 
 include(FetchContent)
 
-FetchContent_Declare(
-  opentelemetry-cpp
-  GIT_REPOSITORY https://github.com/open-telemetry/opentelemetry-cpp.git
-  GIT_TAG b9cf499ff5715433848b316059714b5c59af1f2c # v1.21.0
-)
+find_package(opentelemetry-cpp QUIET)
 
-FetchContent_Declare(
-  log4cxx
-  GIT_REPOSITORY https://github.com/apache/logging-log4cxx.git
-  GIT_TAG b63993f82346e0db103ef7d210d95478e729cfc0 # rel/v1.8.0
-)
+if (opentelemetry-cpp_FOUND)
+  message(STATUS "Found opentelemetry-cpp version: ${opentelemetry-cpp_VERSION}")
+else()
+  message(FATAL_ERROR "Could not find opentelemetry-cpp")
+endif()
 
-FetchContent_MakeAvailable(opentelemetry-cpp)
-FetchContent_MakeAvailable(log4cxx)
+find_package(log4cxx QUIET)
+
+if (log4cxx_FOUND)
+  message(STATUS "Found log4cxx version: ${log4cxx_VERSION}")
+else()
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(LOG4CXX REQUIRED liblog4cxx)
+endif()
 
 add_library(${this_target} src/appender.cc)
 
 target_compile_options(${this_target}
   PUBLIC -Wall -Wextra -Werror -Wpedantic -fPIC
-  -Wno-error=deprecated-declarations
 )
 
 set_target_properties(${this_target} PROPERTIES EXPORT_NAME ${this_target})
@@ -131,10 +132,10 @@ if(WITH_EXAMPLES)
   target_include_directories(${example_exe} PUBLIC
     $<TARGET_PROPERTY:log4cxx,INTERFACE_INCLUDE_DIRECTORIES>
     ${CMAKE_CURRENT_LIST_DIR}/include
+    ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
   )
 
   target_link_libraries(${example_exe} PRIVATE
-    opentelemetry-cpp::api
     opentelemetry-cpp::logs
     opentelemetry-cpp::trace
     opentelemetry-cpp::ostream_log_record_exporter
