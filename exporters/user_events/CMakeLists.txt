@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.24)
 
 if(WIN32)
   message(FATAL_ERROR "user_events exporter is Linux only for now")
