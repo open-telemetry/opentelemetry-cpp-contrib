@@ -106,7 +106,6 @@ if(BUILD_TESTING)
     googletest
     GIT_REPOSITORY https://github.com/google/googletest.git
     GIT_TAG 15460959cbbfa20e66ef0b5ab497367e47fc0a04 # v1.12.0
-    FIND_PACKAGE_ARGS 1
   )
 
   FetchContent_MakeAvailable(googletest)
@@ -131,7 +130,6 @@ if(WITH_BENCHMARK)
     benchmark
     GIT_REPOSITORY https://github.com/google/benchmark.git
     GIT_TAG 192ef10025eb2c4cdd392bc502f0c852196baa48 # v1.9.5
-    FIND_PACKAGE_ARGS 1
   )
   add_executable(user_events_logger_benchmark benchmark/logger_benchmark.cc)
   target_link_libraries(
