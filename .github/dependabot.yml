@@ -6,3 +6,5 @@ updates:
       interval: "daily"
     labels:
       - "GHA"
+    cooldown:
+      default-days: 7

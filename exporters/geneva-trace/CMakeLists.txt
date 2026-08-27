@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.16)
 
 # MAIN_PROJECT CHECK
 # determine if this project is built as a subproject (using add_subdirectory) or if this is the main project

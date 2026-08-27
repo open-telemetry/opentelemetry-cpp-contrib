@@ -23,19 +23,15 @@ jobs:
     name: CMake Linux
     runs-on: ubuntu-24.04
     steps:
-      - name: checkout logging-log4cxx
-        uses: actions/checkout@v7.0.1
-        with:
-          repository: "apache/logging-log4cxx"
-          ref: "rel/v1.2.0"
-          path: "logging-log4cxx"
       - name: checkout opentelemetry-cpp-contrib
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           path: opentelemetry-cpp-contrib
       - name: checkout opentelemetry-cpp
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           repository: "open-telemetry/opentelemetry-cpp"
           ref: "v1.19.0"
           path: "opentelemetry-cpp"
@@ -45,16 +41,6 @@ jobs:
         run: |
           sudo apt update -y
           xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-
-      # This is needed because liblog4cxx-dev installs 0.12.1-4,
-      # and v1.0.0 is required
-      - name: build logging-log4cxx
-        run: |
-          mkdir -p "${GITHUB_WORKSPACE}/logging-log4cxx/build"
-          cd "${GITHUB_WORKSPACE}/logging-log4cxx/build"
-          cmake .. -G Ninja
-          cmake --build . -j$(nproc)
-          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
       - name: build opentelemetry-cpp
         run: |
           mkdir -p "${GITHUB_WORKSPACE}/opentelemetry-cpp/build"

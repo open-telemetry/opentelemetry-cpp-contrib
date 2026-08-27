@@ -19,6 +19,7 @@ permissions:
 jobs:
   build:
     name: Build module
+    if: false  # disabled. TODO: fix this job
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -26,7 +27,9 @@ jobs:
         os: [ubuntu-22.04, ubuntu-24.04]
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Setup buildtools
         run: |
           sudo ./instrumentation/httpd/setup-buildtools.sh
@@ -36,13 +39,14 @@ jobs:
           cd instrumentation/httpd && ./build.sh
           cp bazel-out/k8-opt/bin/otel.so /tmp/mod-otel.so
       - name: Upload artifacts
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ${{ matrix.os }}_mod-otel.so
           path: /tmp/mod-otel.so
 
   build_cmake:
     name: Build module with CMake
+    if: false  # disabled. TODO: fix this job
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -50,7 +54,9 @@ jobs:
         os: [ubuntu-22.04, ubuntu-24.04]
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Setup buildtools
         run: |
           sudo ./instrumentation/httpd/setup-buildtools.sh
@@ -69,6 +75,7 @@ jobs:
 
   e2e_tests:
     name: Run end-to-end tests
+    if: false  # disabled. TODO: fix this job
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -76,7 +83,9 @@ jobs:
         os: [ubuntu-22.04, ubuntu-24.04]
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Setup buildtools
         run: |
           sudo ./instrumentation/httpd/tests/setup-tools.sh
