@@ -7,7 +7,7 @@ apply from: 'common.gradle'
 apply plugin: 'de.undercouch.download'
 
 def coverageEnabled = System.getenv('enableCoverage')
-def target_system = System.getProperty('targetSystem') ?: 'centos6'
+def target_system = System.getProperty('targetSystem') ?: 'almalinux8'
 def buildType = System.getProperty('buildType') ?: 'release'
 
 project.ext {

@@ -68,7 +68,11 @@ A sample configuration is mentioned in [opentelemetry_module.conf](https://githu
 
 #### Platform Supported
 - The build is supported for **x86-64** platforms.
-- OS support: **Centos7, Almalinux8, ubuntu20.04**.
+- OS support: **Almalinux8, ubuntu20.04**.
+
+> **Note:** CentOS 7 support was removed; CentOS 7 reached end-of-life and CentOS Linux is
+> discontinued. Use the **Almalinux8** image, which produces the same
+> `opentelemetry-webserver-sdk-x64-linux.tgz` artifact.
 
 #### Automatic build and Installation
 
@@ -78,7 +82,7 @@ Then execute the following commands -:
 docker-compose --profile default build
 docker-compose --profile default up
 ```
-Alternatively, replace the value of *profile* from **'default'** to **'centos7'** or **'almalinux8'** or **'ubuntu20.04'** to build in respective supported platforms.
+Alternatively, replace the value of *profile* from **'default'** to **'almalinux8'** or **'ubuntu20.04'** to build in respective supported platforms.
 
 This would start the container alongwith the Opentelemetry Collector and Zipkin. You can check the traces on Zipkin dashboard by checking the port number of Zipkin using ```docker ps``` command. Multiple requests can be sent using the browser.
 
@@ -194,7 +198,11 @@ Currently, Nginx Webserver module monitores some fixed set of modules, which get
 - Supports both stable(1.26.0) and mainline(1.25.5).
 - Earlier support of v1.18.0 is deprecated.
 - The build is supported for **x86-64** platforms.
-- OS support: **Centos7, Almalinux8, ubuntu20.04**.
+- OS support: **Almalinux8, ubuntu20.04**.
+
+> **Note:** CentOS 7 support was removed; CentOS 7 reached end-of-life and CentOS Linux is
+> discontinued. Use the **Almalinux8** image, which produces the same
+> `opentelemetry-webserver-sdk-x64-linux.tgz` artifact.
 
 #### Automatic build and Installation
 
@@ -204,7 +212,7 @@ Then execute the following commands -:
 docker-compose --profile almalinux8_nginx build
 docker-compose --profile almalinux8_nginx up
 ```
-Alternatively, replace **'almalinux8_nginx'** with **'centos_nginx'**, **'centos7_nginx'** or **'ubuntu20.04_nginx'** to build in respective supported platforms.
+Alternatively, replace **'almalinux8_nginx'** with **'ubuntu20.04_nginx'** to build in respective supported platforms.
 
 This would start the container alongwith the Opentelemetry Collector and Zipkin. You can check the traces on Zipkin dashboard by checking the port number of Zipkin using ```docker ps``` command. Multiple requests can be sent using the browser.
 
@@ -216,8 +224,8 @@ The artifact can be either downloaded or built manually.
 We will use Docker to build the artifact. First, it is to be made sure that the Docker is up and running.
 Then execute the following commands -:
 ```
-docker-compose --profile centos7_nginx build
-docker-compose --profile centos7_nginx up
+docker-compose --profile almalinux8_nginx build
+docker-compose --profile almalinux8_nginx up
 ```
 Next, login into the Docker container.
 After going inside the container run the following commands
@@ -274,7 +282,6 @@ The other supported images work the same way — swap the ```-f``` path. Only ub
 an extra gradle flag:
 
 - Almalinux8 - ```docker/almalinux8/Dockerfile```, no extra flag
-- Centos7 - ```docker/centos7/Dockerfile```, no extra flag
 - ubuntu20.04 - ```docker/ubuntu20.04/Dockerfile```, needs ```-DtargetSystem=ubuntu```
 
 ```

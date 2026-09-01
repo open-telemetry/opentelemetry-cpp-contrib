@@ -2,7 +2,7 @@ FROM almalinux:8.10
 
 ARG BUILD_NUMBER
 
-LABEL NAME=apm/build-image-webserver-agent-centos6-x64 VERSION=$BUILD_NUMBER
+LABEL NAME=apm/build-image-webserver-agent-almalinux8-x64 VERSION=$BUILD_NUMBER
 
 ENV GOSU_ARCH amd64
 ENV JDK_ARCH x64
