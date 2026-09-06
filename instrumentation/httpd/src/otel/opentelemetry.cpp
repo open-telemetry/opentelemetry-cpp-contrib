@@ -29,8 +29,6 @@
 namespace httpd_otel
 {
 
-// Previously pulled in implicitly by opentelemetry/exporters/ostream/span_exporter.h,
-// which declared these at global scope until otel-cpp v1.x.
 namespace nostd    = opentelemetry::nostd;
 namespace sdktrace = opentelemetry::sdk::trace;
 
