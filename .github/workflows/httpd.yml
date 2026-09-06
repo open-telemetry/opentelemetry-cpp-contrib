@@ -59,17 +59,11 @@ jobs:
         run: |
           sudo ./instrumentation/httpd/setup-buildtools.sh
           sudo ./instrumentation/httpd/setup-environment.sh
-      - name: Compile prerequisites
-        run: |
-          cd instrumentation/httpd
-          sudo ./setup-cmake.sh
       - name: Compile
         run: |
           cd instrumentation/httpd
-          mkdir -p build
-          cd build
-          cmake ..
-          make -j2
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --parallel "$(nproc)"
 
   e2e_tests:
     name: Run end-to-end tests

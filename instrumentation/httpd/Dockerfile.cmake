@@ -16,18 +16,11 @@ RUN /setup/setup-environment.sh
 
 WORKDIR /root
 
-# build with CMake
-COPY setup-cmake.sh .
-# RUN ls
-RUN /root/setup-cmake.sh
-
 COPY CMakeLists.txt /root
 COPY src /root/src
 
-RUN mkdir -p build \
-  && cd build \
-  && cmake .. \
-  && make -j2
+RUN cmake -B build -DCMAKE_BUILD_TYPE=Release \
+  && cmake --build build --parallel "$(nproc)"
 
 COPY create-otel-load.sh /root
 COPY opentelemetry.conf /root

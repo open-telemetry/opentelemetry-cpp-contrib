@@ -1,17 +1,39 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.16)
 
 project(opentelemetry-httpd)
 
 if(NOT DEFINED CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD 17)
 endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(opentelemetry-cpp REQUIRED)
+# The module is a shared object, so every dependency linked into it must be PIC.
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 find_package(Threads REQUIRED)
-find_package(Protobuf REQUIRED)
-find_package(gRPC REQUIRED)
-find_package(CURL REQUIRED)
+
+# Use an installed opentelemetry-cpp when one is available, otherwise build it as part of
+# this project.
+find_package(opentelemetry-cpp CONFIG QUIET)
+if(NOT opentelemetry-cpp_FOUND)
+  include(FetchContent)
+
+  set(OPENTELEMETRY_CPP_TAG
+      "v1.28.0"
+      CACHE STRING "opentelemetry-cpp git tag to build when none is installed")
+
+  set(WITH_OTLP_GRPC ON CACHE BOOL "" FORCE)
+  set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
+  set(WITH_EXAMPLES OFF CACHE BOOL "" FORCE)
+  set(WITH_BENCHMARK OFF CACHE BOOL "" FORCE)
+
+  FetchContent_Declare(
+    opentelemetry-cpp
+    GIT_REPOSITORY https://github.com/open-telemetry/opentelemetry-cpp.git
+    GIT_TAG ${OPENTELEMETRY_CPP_TAG}
+    GIT_SHALLOW TRUE)
+  FetchContent_MakeAvailable(opentelemetry-cpp)
+endif()
 
 find_path(APR_INCLUDE_DIR
   NAMES apr.h
@@ -54,13 +76,14 @@ set_target_properties(otel_httpd_module PROPERTIES
 
 target_include_directories(otel_httpd_module
   PRIVATE
-  ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
   ${APACHE_INCLUDE_DIR}
   ${APR_INCLUDE_DIR}
 )
 
 target_link_libraries(otel_httpd_module
   PRIVATE
-  ${OPENTELEMETRY_CPP_LIBRARIES}
-  gRPC::grpc++
+  opentelemetry-cpp::api
+  opentelemetry-cpp::trace
+  opentelemetry-cpp::ostream_span_exporter
+  opentelemetry-cpp::otlp_grpc_exporter
 )

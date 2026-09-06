@@ -91,12 +91,10 @@ List of configuration options can be found in [provided configuration file](./op
 
 ### Requirements
 
-- C++14 (the minimum required by gRPC 1.47 and later)
-- [OpenTelemetry-Cpp](https://github.com/open-telemetry/opentelemetry-cpp) 1.22.0
+- C++17
+- [OpenTelemetry-Cpp](https://github.com/open-telemetry/opentelemetry-cpp) 1.28.0
 - Bazel 8.x (see `.bazelversion`; `setup-buildtools.sh` installs bazelisk, which reads it)
-- gRPC 1.66 for the CMake build (installed by [setup-cmake.sh](./setup-cmake.sh))
-
-Bazel dependencies are resolved with Bzlmod via [`MODULE.bazel`](./MODULE.bazel)
+- CMake 3.16 or later
 
 ### Build
 Build can be done within docker or alternatively check Development section for Ubuntu below.  Execute: `make build` to start build process.
