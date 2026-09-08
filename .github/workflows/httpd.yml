@@ -39,6 +39,7 @@ jobs:
         with:
           module-root: instrumentation/httpd
           bazelisk-cache: true
+          repository-cache: true
       - name: Compile
         run: |
           cd instrumentation/httpd && ./build.sh
@@ -95,6 +96,7 @@ jobs:
         with:
           module-root: instrumentation/httpd
           bazelisk-cache: true
+          repository-cache: true
       - name: Compile
         run: cd instrumentation/httpd && ./build.sh
       - name: Run tests
