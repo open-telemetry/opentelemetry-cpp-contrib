@@ -119,7 +119,14 @@ When local changes are made, you need to restart the `httpd` server to load new 
 
 Ubuntu LTS 22.04 and 24.04 are the versions built and tested in CI.
 
-On Ubuntu you need packages listed here: [setup-environment.sh](./setup-environment.sh) which are prerequisites to compile opentelemetry-cpp and here: [setup-buildtools.sh](./setup-buildtools.sh) for apache development stuff. Then just execute [bulid.sh](./build.sh).
+On Ubuntu the required packages are listed in [apt-packages.txt](./apt-packages.txt). Install them with:
+
+```bash
+sudo apt update -y
+xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
+```
+
+For a Bazel build also run [setup-buildtools.sh](./setup-buildtools.sh), which installs bazelisk. Then just execute [build.sh](./build.sh).
 
 ### Testing
 

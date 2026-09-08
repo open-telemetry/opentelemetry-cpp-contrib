@@ -1,18 +1,18 @@
 FROM ubuntu:24.04
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 #########################################
 # copy setup stuff from opentelemetry-cpp
 #########################################
 
 WORKDIR /setup-ci
 
-ADD setup-buildtools.sh /setup-ci/setup-buildtools.sh
+COPY apt-packages.txt /setup-ci/apt-packages.txt
 
-RUN /setup-ci/setup-buildtools.sh
-
-ADD setup-environment.sh /setup/setup-environment.sh
-
-RUN /setup/setup-environment.sh
+RUN apt-get update -y \
+  && xargs -a apt-packages.txt apt-get install -y --no-install-recommends --no-install-suggests \
+  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /root
 

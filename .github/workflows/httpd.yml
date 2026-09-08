@@ -29,10 +29,14 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Setup buildtools
+      - name: Setup dependencies
+        working-directory: instrumentation/httpd
         run: |
-          sudo ./instrumentation/httpd/setup-buildtools.sh
-          sudo ./instrumentation/httpd/setup-environment.sh
+          sudo apt update -y
+          xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
+      - name: Setup bazel
+        working-directory: instrumentation/httpd
+        run: sudo ./setup-buildtools.sh
       - name: Compile
         run: |
           cd instrumentation/httpd && ./build.sh
@@ -55,10 +59,11 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Setup buildtools
+      - name: Setup dependencies
+        working-directory: instrumentation/httpd
         run: |
-          sudo ./instrumentation/httpd/setup-buildtools.sh
-          sudo ./instrumentation/httpd/setup-environment.sh
+          sudo apt update -y
+          xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
       - name: Compile
         run: |
           cd instrumentation/httpd
@@ -77,11 +82,15 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Setup buildtools
+      - name: Setup dependencies
+        working-directory: instrumentation/httpd
         run: |
-          sudo ./instrumentation/httpd/tests/setup-tools.sh
-          sudo ./instrumentation/httpd/setup-buildtools.sh
-          sudo ./instrumentation/httpd/setup-environment.sh
+          sudo apt update -y
+          xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
+          xargs -a tests/apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
+      - name: Setup bazel
+        working-directory: instrumentation/httpd
+        run: sudo ./setup-buildtools.sh
       - name: Compile
         run: cd instrumentation/httpd && ./build.sh
       - name: Run tests
