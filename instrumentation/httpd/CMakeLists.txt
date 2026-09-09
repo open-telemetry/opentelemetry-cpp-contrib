@@ -12,28 +12,10 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 find_package(Threads REQUIRED)
 
-# Use an installed opentelemetry-cpp when one is available, otherwise build it as part of
-# this project.
-find_package(opentelemetry-cpp CONFIG QUIET)
-if(NOT opentelemetry-cpp_FOUND)
-  include(FetchContent)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
 
-  set(OPENTELEMETRY_CPP_TAG
-      "v1.28.0"
-      CACHE STRING "opentelemetry-cpp git tag to build when none is installed")
-
-  set(WITH_OTLP_GRPC ON CACHE BOOL "" FORCE)
-  set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
-  set(WITH_EXAMPLES OFF CACHE BOOL "" FORCE)
-  set(WITH_BENCHMARK OFF CACHE BOOL "" FORCE)
-
-  FetchContent_Declare(
-    opentelemetry-cpp
-    GIT_REPOSITORY https://github.com/open-telemetry/opentelemetry-cpp.git
-    GIT_TAG ${OPENTELEMETRY_CPP_TAG}
-    GIT_SHALLOW TRUE)
-  FetchContent_MakeAvailable(opentelemetry-cpp)
-endif()
+set(WITH_OTLP_GRPC ON CACHE BOOL "" FORCE)
+include(opentelemetry-cpp)
 
 find_path(APR_INCLUDE_DIR
   NAMES apr.h
