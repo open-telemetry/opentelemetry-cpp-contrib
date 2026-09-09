@@ -36,4 +36,4 @@ if(NOT TARGET opentelemetry-cpp::api)
   message(FATAL_ERROR "A required opentelemetry-cpp target (opentelemetry-cpp::api) was not imported")
 endif()
 
-message(STATUS "opentelemetry-cpp: ${opentelemetry-cpp_VERSION} (${opentelemetry-cpp_PROVIDER})")
+message(STATUS "opentelemetry-cpp: ${OPENTELEMETRY_VERSION} abi=${OPENTELEMETRY_ABI_VERSION_NO} (${opentelemetry-cpp_PROVIDER})")
