@@ -1,0 +1,43 @@
+name: Linter
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+jobs:
+  clang:
+    name: C++
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout otel contrib
+        uses: actions/checkout@v7.0.1
+      - uses: cpp-linter/cpp-linter-action@v2.20.0
+        id: linter
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          style: 'file'  # Use .clang-format config file.
+          files-changed-only: true # TODO: switch this when codebase ready
+          tidy-checks: '-*' # disable clang-tidy checks.
+      - name: Fail fast?!
+        if: steps.linter.outputs.clang-format-checks-failed > 0
+        run: exit 1
+  buildifier:
+    name: Bazel
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout otel contrib
+        uses: actions/checkout@v7.0.1
+      - name: Install Buildifier
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -qq curl
+          BUILDIFIER_VERSION=4.0.0
+          curl -L "https://github.com/bazelbuild/buildtools/releases/download/${BUILDIFIER_VERSION}/buildifier-linux-amd64" -o /usr/local/bin/buildifier
+          chmod +x /usr/local/bin/buildifier
+          buildifier --version
+      - name: Lint Bazel files
+        run: |
+          # Check all BUILD and .bzl files recursively
+          # TODO: Add WORKSPACE
+          buildifier -mode=check $(find . -type f \( -name "BUILD" -o -name "*.bzl"\))
