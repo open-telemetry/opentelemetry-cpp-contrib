@@ -49,8 +49,8 @@ if(NOT prometheus-cpp_FOUND)
 endif()
 
 if(NOT TARGET prometheus-cpp::core OR
-   NOT TARGET prometheus-cpp::pull)
-  message(FATAL_ERROR "A required prometheus-cpp target (prometheus-cpp::core or prometheus-cpp::pull) was not imported")
+   NOT TARGET prometheus-cpp::push)
+  message(FATAL_ERROR "A required prometheus-cpp target (prometheus-cpp::core or prometheus-cpp::push) was not imported")
 endif()
 
 get_target_property(OPENTELEMETRY_CPP_API_DEFINITIONS opentelemetry-cpp::api
