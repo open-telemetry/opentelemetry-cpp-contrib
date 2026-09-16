@@ -178,7 +178,6 @@ if(BUILD_TESTING)
     GTest::gmock
     GTest::gtest
     GTest::gtest_main
-    ${CMAKE_THREAD_LIBS_INIT}
     opentelemetry_exporter_geneva_trace)
 
   if(nlohmann_json_clone)
@@ -199,7 +198,6 @@ if(BUILD_TESTING)
     GTest::gmock
     GTest::gtest
     GTest::gtest_main
-    ${CMAKE_THREAD_LIBS_INIT}
     opentelemetry_exporter_geneva_logs)
 
   if(nlohmann_json_clone)
