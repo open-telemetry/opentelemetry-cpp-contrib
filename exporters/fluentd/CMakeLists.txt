@@ -170,7 +170,8 @@ if(BUILD_TESTING)
       message(STATUS_FATAL, "Test is not enable.")
     endif()
   endif()
-  # include(GoogleTest)
+  enable_testing()
+  include(GoogleTest)
   # build trace exporter tests
   add_executable(
     fluentd_recordable_trace_test test/trace/fluentd_recordable_test.cc
@@ -178,7 +179,9 @@ if(BUILD_TESTING)
 
   target_link_libraries(
     fluentd_recordable_trace_test
-    ${GTEST_BOTH_LIBRARIES}
+    GTest::gmock
+    GTest::gtest
+    GTest::gtest_main
     ${CMAKE_THREAD_LIBS_INIT}
     opentelemetry_common
     opentelemetry_trace
@@ -200,7 +203,9 @@ if(BUILD_TESTING)
 
   target_link_libraries(
     fluentd_recordable_logs_test
-    ${GTEST_BOTH_LIBRARIES}
+    GTest::gmock
+    GTest::gtest
+    GTest::gtest_main
     ${CMAKE_THREAD_LIBS_INIT}
     opentelemetry_common
     opentelemetry_logs
