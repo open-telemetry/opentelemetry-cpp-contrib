@@ -69,11 +69,9 @@ set_target_properties(
   PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_trace)
 
 if(MAIN_PROJECT)
-  target_include_directories(opentelemetry_exporter_geneva_trace
-                           PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
   target_link_libraries(
     opentelemetry_exporter_geneva_trace
-    PUBLIC ${OPENTELEMETRY_CPP_LIBRARIES}
+    PUBLIC opentelemetry-cpp::trace opentelemetry-cpp::resources opentelemetry-cpp::common
     INTERFACE nlohmann_json::nlohmann_json)
   set_target_properties(opentelemetry_exporter_geneva_trace
                         PROPERTIES EXPORT_NAME trace)
@@ -93,11 +91,9 @@ set_target_properties(
   PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_logs)
 
 if(MAIN_PROJECT)
-  target_include_directories(opentelemetry_exporter_geneva_logs
-                           PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
   target_link_libraries(
     opentelemetry_exporter_geneva_logs
-    PUBLIC ${OPENTELEMETRY_CPP_LIBRARIES}
+    PUBLIC opentelemetry-cpp::logs opentelemetry-cpp::resources opentelemetry-cpp::common
     INTERFACE nlohmann_json::nlohmann_json)
 
   set_target_properties(opentelemetry_exporter_geneva_logs
@@ -183,9 +179,6 @@ if(BUILD_TESTING)
     GTest::gtest
     GTest::gtest_main
     ${CMAKE_THREAD_LIBS_INIT}
-    opentelemetry_common
-    opentelemetry_trace
-    opentelemetry_resources
     opentelemetry_exporter_geneva_trace)
 
   if(nlohmann_json_clone)
@@ -207,9 +200,6 @@ if(BUILD_TESTING)
     GTest::gtest
     GTest::gtest_main
     ${CMAKE_THREAD_LIBS_INIT}
-    opentelemetry_common
-    opentelemetry_logs
-    opentelemetry_resources
     opentelemetry_exporter_geneva_logs)
 
   if(nlohmann_json_clone)
