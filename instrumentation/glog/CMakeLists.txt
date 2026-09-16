@@ -35,8 +35,9 @@ target_include_directories(${this_target} PUBLIC
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-target_link_libraries(${this_target} PRIVATE
+target_link_libraries(${this_target} PUBLIC
   glog::glog
+  opentelemetry-cpp::logs
   opentelemetry-cpp::ostream_log_record_exporter
 )
 
