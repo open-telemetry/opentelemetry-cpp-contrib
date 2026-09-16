@@ -33,11 +33,11 @@ set_target_properties(${this_target} PROPERTIES EXPORT_NAME ${this_target})
 target_include_directories(${this_target} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-  ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
 )
 
 target_link_libraries(${this_target} PRIVATE
   glog::glog
+  opentelemetry-cpp::ostream_log_record_exporter
 )
 
 if(OPENTELEMETRY_INSTALL)
@@ -99,14 +99,11 @@ if(BUILD_TESTING)
 
   target_include_directories(${testname} PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/include
-    ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
   )
 
   target_link_libraries(${testname} PRIVATE
     GTest::gmock
     GTest::gtest
-    glog::glog
-    opentelemetry-cpp::ostream_log_record_exporter
     ${this_target}
   )
 
@@ -124,15 +121,12 @@ if(WITH_EXAMPLES)
 
   target_include_directories(${example_exe} PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/include
-    ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
   )
 
   target_link_libraries(${example_exe} PRIVATE
     opentelemetry-cpp::logs
     opentelemetry-cpp::trace
-    opentelemetry-cpp::ostream_log_record_exporter
     opentelemetry-cpp::ostream_span_exporter
-    glog::glog
     ${this_target}
   )
 endif() # WITH_EXAMPLES
