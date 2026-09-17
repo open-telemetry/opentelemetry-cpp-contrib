@@ -6,7 +6,6 @@
 #include <opentelemetry/instrumentation/glog/sink.h>
 
 #include <opentelemetry/logs/provider.h>
-#include <opentelemetry/trace/semantic_conventions.h>
 #include <opentelemetry/version.h>
 
 #include <chrono>
@@ -38,8 +37,8 @@ void OpenTelemetrySink::send(google::LogSeverity severity,
     log_record->SetSeverity(levelToSeverity(severity));
     log_record->SetBody(opentelemetry::nostd::string_view(message, message_len));
     log_record->SetTimestamp(logmsgtime.when());
-    log_record->SetAttribute(kCodeFilepath, full_filename);
-    log_record->SetAttribute(kCodeLineno, line);
+    log_record->SetAttribute("code.filepath", full_filename);
+    log_record->SetAttribute("code.lineno", line);
     logger->EmitLogRecord(std::move(log_record));
   }
 }

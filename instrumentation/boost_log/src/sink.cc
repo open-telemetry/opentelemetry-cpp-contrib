@@ -6,7 +6,7 @@
 #include <opentelemetry/instrumentation/boost_log/sink.h>
 
 #include <opentelemetry/logs/provider.h>
-#include <opentelemetry/trace/semantic_conventions.h>
+#include <opentelemetry/semconv/incubating/thread_attributes.h>
 
 #include <boost/log/attributes/value_extraction.hpp>
 #include <boost/log/utility/setup/common_attributes.hpp>
@@ -94,17 +94,17 @@ OpenTelemetrySinkBackend::OpenTelemetrySinkBackend(const ValueMappers &mappers) 
 
   set_file_path_if_valid_ = {[](LogRecord *, const std::string &) {},
                              [](LogRecord *log_record, const std::string &file_name) {
-                               log_record->SetAttribute(kCodeFilepath, file_name);
+                               log_record->SetAttribute("code.filepath", file_name);
                              }};
 
   set_func_name_if_valid_ = {[](LogRecord *, const std::string &) {},
                              [](LogRecord *log_record, const std::string &func_name) {
-                               log_record->SetAttribute(kCodeFunction, func_name);
+                               log_record->SetAttribute("code.function", func_name);
                              }};
 
   set_code_line_if_valid_ = {[](LogRecord *, int) {},
                              [](LogRecord *log_record, int code_line) {
-                               log_record->SetAttribute(kCodeLineno, code_line);
+                               log_record->SetAttribute("code.lineno", code_line);
                              }};
 }
 
