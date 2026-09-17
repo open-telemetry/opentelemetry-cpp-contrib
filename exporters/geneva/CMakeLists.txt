@@ -19,9 +19,13 @@ endif()
     
 add_definitions(-DHAVE_CONSOLE_LOG)
 if(MAIN_PROJECT)
-  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
+  FetchContent_Declare(
+    opentelemetry-cpp
+    GIT_REPOSITORY https://github.com/open-telemetry/opentelemetry-cpp.git
+    GIT_TAG ea1f0d61ce5baa5584b097266bf133d1f31e3607 # v1.23.0
+  )
 
-  include(opentelemetry-cpp)
+  FetchContent_MakeAvailable(opentelemetry-cpp)
 endif()
 
 include_directories(include)
@@ -52,13 +56,8 @@ set_target_properties(
   opentelemetry_exporter_geneva_metrics
   PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_metrics)
 
-if(MAIN_PROJECT)
-   target_link_libraries(opentelemetry_exporter_geneva_metrics
-                      PUBLIC opentelemetry-cpp::api)
-else()
-   target_link_libraries(opentelemetry_exporter_geneva_metrics
-                      PUBLIC opentelemetry_metrics opentelemetry_resources opentelemetry_common)
-endif()
+target_link_libraries(opentelemetry_exporter_geneva_metrics
+                      PUBLIC opentelemetry-cpp::metrics opentelemetry-cpp::resources opentelemetry-cpp::common)
 
 set_target_version(opentelemetry_exporter_geneva_metrics)
 

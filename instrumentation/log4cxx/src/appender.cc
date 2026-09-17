@@ -6,7 +6,8 @@
 #include <opentelemetry/instrumentation/log4cxx/appender.h>
 
 #include <opentelemetry/logs/provider.h>
-#include <opentelemetry/trace/semantic_conventions.h>
+#include <opentelemetry/semconv/code_attributes.h>
+#include <opentelemetry/semconv/incubating/thread_attributes.h>
 
 namespace log4cxx
 {
@@ -23,7 +24,8 @@ void OpenTelemetryAppender::append(const spi::LoggingEventPtr &event, helpers::P
 
   if (log_record)
   {
-    using namespace opentelemetry::trace::SemanticConventions;
+    using namespace opentelemetry::semconv::code;
+    using namespace opentelemetry::semconv::thread;
 
     log_record->SetSeverity(levelToSeverity(event->getLevel()->toInt()));
     log_record->SetBody(event->getMessage());
