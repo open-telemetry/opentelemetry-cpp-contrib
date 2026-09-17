@@ -43,7 +43,7 @@ jobs:
           persist-credentials: false
       - name: setup buildx
         id: buildx
-        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
         with:
           install: true
       - name: cache docker layers
@@ -94,7 +94,7 @@ jobs:
           persist-credentials: false
       - name: setup buildx
         id: buildx
-        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
         with:
           install: true
       # - name: cache docker layers
@@ -171,7 +171,7 @@ jobs:
           cp opentelemetry-cpp-contrib/instrumentation/otel-webserver-module/codeql-env.sh .
           sudo ./codeql-env.sh
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
+        uses: github/codeql-action/init@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
         with:
           languages: cpp
       - name: build
@@ -181,4 +181,4 @@ jobs:
           cp -r /build-dependencies ../otel-webserver-module/
           ./gradlew assembleWebserverModule -DtargetSystem=ubuntu --info
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
+        uses: github/codeql-action/analyze@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
