@@ -55,17 +55,9 @@ target_compile_features(opentelemetry_exporter_user_events_logs
 target_compile_definitions(opentelemetry_exporter_user_events_logs
                            PUBLIC HAVE_CONSOLE_LOG HAVE_LOGS_PREVIEW)
 
-if(MAIN_PROJECT)
-  target_link_libraries(opentelemetry_exporter_user_events_logs
-                        PUBLIC opentelemetry-cpp::api)
-else()
-  target_link_libraries(
-    opentelemetry_exporter_user_events_logs
-    PUBLIC opentelemetry_logs opentelemetry_resources opentelemetry_common)
-endif()
-
 target_link_libraries(opentelemetry_exporter_user_events_logs
-                      PUBLIC eventheader-tracepoint eventheader-headers tracepoint)
+                      PUBLIC opentelemetry-cpp::metrics opentelemetry-cpp::resources opentelemetry-cpp::common
+                        eventheader-tracepoint eventheader-headers tracepoint)
 
 set_target_properties(opentelemetry_exporter_user_events_logs
                       PROPERTIES EXPORT_NAME logs)

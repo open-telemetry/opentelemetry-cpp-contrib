@@ -31,7 +31,6 @@ void OpenTelemetrySink::send(google::LogSeverity severity,
 
   if (log_record)
   {
-    using namespace opentelemetry::trace::SemanticConventions;
     using namespace std::chrono;
 
     log_record->SetSeverity(levelToSeverity(severity));

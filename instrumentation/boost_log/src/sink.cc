@@ -78,7 +78,7 @@ OpenTelemetrySinkBackend::OpenTelemetrySinkBackend(const ValueMappers &mappers) 
   mappers_.ToCodeFunc  = mappers.ToCodeFunc ? mappers.ToCodeFunc : ToFuncNameDefault;
   mappers_.ToCodeLine  = mappers.ToCodeLine ? mappers.ToCodeLine : ToLineNumberDefault;
 
-  using namespace opentelemetry::trace::SemanticConventions;
+  using namespace opentelemetry::semconv::thread;
   using opentelemetry::logs::LogRecord;
   using timestamp_t = std::chrono::system_clock::time_point;
 
