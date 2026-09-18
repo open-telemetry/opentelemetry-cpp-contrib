@@ -19,10 +19,10 @@ def io_opentelemetry_cpp_contrib_deps():
     maybe(
         http_archive,
         name = "io_opentelemetry_cpp",
-        sha256 = "69b0fef380658e15be9d817bfcb32e3f5de96da652bcdce77b4e750ed8beddee",
-        strip_prefix = "opentelemetry-cpp-1.15.0",
+        sha256 = "63effc2b0aaef32c9543bd95c8c227f1c80da8248392a6d97e8a2c3ffbcf7ea1",
+        strip_prefix = "opentelemetry-cpp-1.29.0",
         urls = [
-            "https://github.com/open-telemetry/opentelemetry-cpp/archive/v1.15.0.tar.gz",
+            "https://github.com/open-telemetry/opentelemetry-cpp/archive/v1.29.0.tar.gz",
         ],
     )
 
