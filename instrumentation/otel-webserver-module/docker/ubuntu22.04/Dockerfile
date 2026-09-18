@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:22.04@sha256:829f6df217bcbae2b371026e81711d1a787c61b2967ad09d015063663ebafbf7
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get -y update && apt-get -y upgrade && apt-get -y dist-upgrade
