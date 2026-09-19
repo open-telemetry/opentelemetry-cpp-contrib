@@ -36,11 +36,9 @@ target_include_directories(${this_target} PUBLIC
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-if(MAIN_PROJECT)
-  target_link_libraries(${this_target} PUBLIC 
-    opentelemetry-cpp::api
-  )
-endif()
+target_link_libraries(${this_target} PUBLIC 
+  opentelemetry-cpp::api
+)
 
 target_link_libraries(${this_target} PRIVATE
   glog::glog

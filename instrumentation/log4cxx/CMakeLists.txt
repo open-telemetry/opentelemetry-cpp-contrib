@@ -45,7 +45,7 @@ target_include_directories(${this_target} PUBLIC
 )
 
 target_link_libraries(${this_target} PUBLIC 
-  opentelemetry-cpp::logs
+  opentelemetry-cpp::api
 )
 
 target_link_libraries(${this_target} PRIVATE
