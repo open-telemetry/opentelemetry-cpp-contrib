@@ -37,8 +37,7 @@ target_include_directories(${this_target} PUBLIC
 
 target_link_libraries(${this_target} PUBLIC
   glog::glog
-  opentelemetry-cpp::logs
-  opentelemetry-cpp::ostream_log_record_exporter
+  opentelemetry-cpp::api
 )
 
 if(OPENTELEMETRY_INSTALL)
@@ -105,6 +104,7 @@ if(BUILD_TESTING)
   target_link_libraries(${testname} PRIVATE
     GTest::gmock
     GTest::gtest
+    opentelemetry-cpp::ostream_log_record_exporter
     ${this_target}
   )
 
@@ -127,6 +127,7 @@ if(WITH_EXAMPLES)
   target_link_libraries(${example_exe} PRIVATE
     opentelemetry-cpp::logs
     opentelemetry-cpp::trace
+    opentelemetry-cpp::ostream_log_record_exporter
     opentelemetry-cpp::ostream_span_exporter
     ${this_target}
   )
