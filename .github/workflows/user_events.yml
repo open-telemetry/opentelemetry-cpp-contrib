@@ -27,24 +27,22 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          path: opentelemetry-cpp-contrib
-      - name: checkout opentelemetry-cpp
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-          repository: "open-telemetry/opentelemetry-cpp"
-          ref: "v1.23.0"
-          path: "opentelemetry-cpp"
           submodules: "recursive"
       - name: setup dependencies
-        working-directory: opentelemetry-cpp-contrib/exporters/user_events
+        working-directory: exporters/user_events
         run: |
           sudo apt update -y
           xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
       - name: run tests
+        working-directory: exporters/user_events
         run: |
-          mkdir -p "$GITHUB_WORKSPACE/opentelemetry-cpp/build"
-          cd "$GITHUB_WORKSPACE/opentelemetry-cpp/build"
-          cmake .. -G Ninja -D OPENTELEMETRY_EXTERNAL_COMPONENT_PATH=$GITHUB_WORKSPACE/opentelemetry-cpp-contrib/exporters/user_events -D WITH_OTLP_HTTP=ON
+          mkdir -p "build"
+          cd "build"
+          cmake .. \
+            -G Ninja \
+            -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/sandbox" \
+            -DBUILD_TESTING=ON \
+            -DWITH_EXAMPLES=ON \
+            -DOPENTELEMETRY_INSTALL=ON
           cmake --build . -j$(nproc)
           ctest -j1 --output-on-failure

@@ -5,6 +5,8 @@ cmake_minimum_required(VERSION 3.16)
 #
 set(MAIN_PROJECT OFF)
 
+include(FetchContent)
+
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   project(opentelemetry-geneva-metrics)
   set(MAIN_PROJECT ON)
@@ -17,7 +19,13 @@ endif()
     
 add_definitions(-DHAVE_CONSOLE_LOG)
 if(MAIN_PROJECT)
-  find_package(opentelemetry-cpp REQUIRED)
+  FetchContent_Declare(
+    opentelemetry-cpp
+    GIT_REPOSITORY https://github.com/open-telemetry/opentelemetry-cpp.git
+    GIT_TAG ea1f0d61ce5baa5584b097266bf133d1f31e3607 # v1.23.0
+  )
+
+  FetchContent_MakeAvailable(opentelemetry-cpp)
 endif()
 
 include_directories(include)
@@ -48,15 +56,8 @@ set_target_properties(
   opentelemetry_exporter_geneva_metrics
   PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_metrics)
 
-if(MAIN_PROJECT)
-   target_include_directories(opentelemetry_exporter_geneva_metrics
-                      PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
-   target_link_libraries(opentelemetry_exporter_geneva_metrics
-                      PUBLIC ${OPENTELEMETRY_CPP_LIBRARIES})
-else()
-   target_link_libraries(opentelemetry_exporter_geneva_metrics
-                      PUBLIC opentelemetry_metrics opentelemetry_resources opentelemetry_common)
-endif()
+target_link_libraries(opentelemetry_exporter_geneva_metrics
+                      PUBLIC opentelemetry-cpp::metrics opentelemetry-cpp::resources opentelemetry-cpp::common)
 
 set_target_version(opentelemetry_exporter_geneva_metrics)
 

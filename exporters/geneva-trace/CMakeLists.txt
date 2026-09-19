@@ -8,8 +8,14 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   set(MAIN_PROJECT ON)
 endif()
 
+include(FetchContent)
+
 if(MAIN_PROJECT)
   option(WITH_EXAMPLES "Build examples" ON)
+
+  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
+
+  include(opentelemetry-cpp)
 endif()
 
 add_library(opentelemetry_exporter_geneva_trace INTERFACE)
@@ -30,6 +36,8 @@ set_target_properties(
   opentelemetry_exporter_geneva_logs
   PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_logs)
 
+target_link_libraries(opentelemetry_exporter_geneva_logs
+                      PUBLIC opentelemetry-cpp::trace opentelemetry-cpp::resources opentelemetry-cpp::common)
 
 if(WITH_EXAMPLES)
   include_directories(include)

@@ -23,7 +23,9 @@ if(MAIN_PROJECT)
   find_package(Protobuf REQUIRED)
   find_package(CURL REQUIRED)
   find_package(nlohmann_json REQUIRED)
-  find_package(opentelemetry-cpp REQUIRED)
+
+  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
+  include(opentelemetry-cpp)
 endif()
 
 
@@ -60,41 +62,23 @@ target_compile_features(opentelemetry_exporter_user_events_logs
 target_compile_definitions(opentelemetry_exporter_user_events_logs
                            PUBLIC HAVE_CONSOLE_LOG HAVE_LOGS_PREVIEW)
 
-if(MAIN_PROJECT)
-  target_include_directories(opentelemetry_exporter_user_events_logs
-                             PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
-  target_link_libraries(opentelemetry_exporter_user_events_logs
-                        PUBLIC ${OPENTELEMETRY_CPP_LIBRARIES})
-else()
-  target_link_libraries(
-    opentelemetry_exporter_user_events_logs
-    PUBLIC opentelemetry_logs opentelemetry_resources opentelemetry_common)
-endif()
-
 target_link_libraries(opentelemetry_exporter_user_events_logs
-                      PUBLIC eventheader-tracepoint eventheader-headers tracepoint)
+                      PUBLIC opentelemetry-cpp::metrics opentelemetry-cpp::resources opentelemetry-cpp::common
+                        eventheader-tracepoint eventheader-headers tracepoint)
 
 set_target_properties(opentelemetry_exporter_user_events_logs
                       PROPERTIES EXPORT_NAME logs)
 
-add_library(opentelemetry_exporter_user_events_metrics src/metrics_exporter.cc)
+add_library(opentelemetry_exporter_user_events_metrics
+            src/metrics_exporter.cc)
 
 target_compile_features(opentelemetry_exporter_user_events_metrics
                         PRIVATE cxx_std_17)
 
-if(MAIN_PROJECT)
-  target_include_directories(opentelemetry_exporter_user_events_metrics
-                             PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
-  target_link_libraries(
-    opentelemetry_exporter_user_events_metrics
-    PUBLIC ${OPENTELEMETRY_CPP_LIBRARIES} tracepoint protobuf::libprotobuf)
+target_link_libraries(
+  opentelemetry_exporter_user_events_metrics
+  PUBLIC opentelemetry-cpp::metrics opentelemetry-cpp::resources opentelemetry-cpp::common tracepoint protobuf::libprotobuf)
   # TODO: link to opentelemetry_otlp_recordable
-else()
-  target_link_libraries(
-    opentelemetry_exporter_user_events_metrics
-    PUBLIC opentelemetry_metrics opentelemetry_resources opentelemetry_common
-           opentelemetry_otlp_recordable tracepoint)
-endif()
 
 if(WITH_EXAMPLES)
   add_executable(user_events_logs example/logs/main.cc
@@ -138,9 +122,10 @@ if(WITH_BENCHMARK)
     GIT_REPOSITORY https://github.com/google/benchmark.git
     GIT_TAG 192ef10025eb2c4cdd392bc502f0c852196baa48 # v1.9.5
   )
+  FetchContent_MakeAvailable(benchmark)
   add_executable(user_events_logger_benchmark benchmark/logger_benchmark.cc)
   target_link_libraries(
-    user_events_logger_benchmark benchmark::benchmark ${CMAKE_THREAD_LIBS_INIT}
+    user_events_logger_benchmark benchmark::benchmark
     ${CMAKE_THREAD_LIBS_INIT} opentelemetry_logs
     opentelemetry_exporter_user_events_logs)
 endif()
@@ -169,16 +154,10 @@ if(MAIN_PROJECT)
     PATTERN "*.h")
 else()
   otel_add_component(
-    COMPONENT
-    exporters_user_events
-    TARGETS
-    opentelemetry_exporter_user_events_logs
-    opentelemetry_exporter_user_events_metrics
-    FILES_DIRECTORY
-    "include/opentelemetry/exporters/user_events"
-    FILES_DESTINATION
-    "include/opentelemetry/exporters"
+    COMPONENT exporters_user_events
+    TARGETS opentelemetry_exporter_user_events_logs opentelemetry_exporter_user_events_metrics
+    FILES_DIRECTORY "include/opentelemetry/exporters/user_events"
+    FILES_DESTINATION "include/opentelemetry/exporters"
     FILES_MATCHING
-    PATTERN
-    "*.h")
+    PATTERN "*.h")
 endif()
