@@ -44,11 +44,9 @@ target_include_directories(${this_target} PUBLIC
   $<TARGET_PROPERTY:log4cxx,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
-if(MAIN_PROJECT)
-  target_link_libraries(${this_target} PUBLIC 
-    opentelemetry-cpp::api
-  )
-endif()
+target_link_libraries(${this_target} PUBLIC 
+  opentelemetry-cpp::logs
+)
 
 target_link_libraries(${this_target} PRIVATE
   log4cxx
