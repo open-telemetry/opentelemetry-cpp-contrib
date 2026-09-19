@@ -53,10 +53,8 @@ endif()
 
 include_directories(include)
 
-if(MAIN_PROJECT)
-  add_library(opentelemetry_exporter_user_events_logs
-              src/logs_exporter.cc src/recordable.cc src/utils.cc)
-endif()
+add_library(opentelemetry_exporter_user_events_logs
+            src/logs_exporter.cc src/recordable.cc src/utils.cc)
 
 target_compile_features(opentelemetry_exporter_user_events_logs
                         PRIVATE cxx_std_17)
@@ -71,10 +69,8 @@ target_link_libraries(opentelemetry_exporter_user_events_logs
 set_target_properties(opentelemetry_exporter_user_events_logs
                       PROPERTIES EXPORT_NAME logs)
 
-if(MAIN_PROJECT)
-  add_library(opentelemetry_exporter_user_events_metrics
-               src/metrics_exporter.cc)
-endif()
+add_library(opentelemetry_exporter_user_events_metrics
+            src/metrics_exporter.cc)
 
 target_compile_features(opentelemetry_exporter_user_events_metrics
                         PRIVATE cxx_std_17)
