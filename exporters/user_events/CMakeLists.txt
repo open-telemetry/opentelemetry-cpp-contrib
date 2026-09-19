@@ -28,6 +28,7 @@ if(MAIN_PROJECT)
   include(opentelemetry-cpp)
 endif()
 
+
 if(BUILD_TRACEPOINTS)
   set(ORIGINAL_BUILD_SAMPLES ${BUILD_SAMPLES})
   set(ORIGINAL_BUILD_TOOLS ${BUILD_TOOLS})
@@ -35,7 +36,13 @@ if(BUILD_TRACEPOINTS)
   # don't build samples and tools from LinuxTracepoints.
   set(BUILD_SAMPLES OFF)
   set(BUILD_TOOLS OFF)
-  add_subdirectory(third_party/LinuxTracepoints)
+
+  FetchContent_Declare(
+    tracepoints
+    GIT_REPOSITORY https://github.com/microsoft/LinuxTracepoints.git
+    GIT_TAG ebc5eaaa21382a48c5883d111626c4dc46684ca2 # v1.4.0
+  )
+  FetchContent_MakeAvailable(tracepoints)
 
   # Restore original values
   set(BUILD_SAMPLES ${ORIGINAL_BUILD_SAMPLES})
