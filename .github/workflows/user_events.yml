@@ -38,6 +38,11 @@ jobs:
         run: |
           mkdir -p "build"
           cd "build"
-          cmake .. -G Ninja -D OPENTELEMETRY_EXTERNAL_COMPONENT_PATH=$GITHUB_WORKSPACE/exporters/user_events -D WITH_OTLP_HTTP=ON
+          cmake .. \
+            -G Ninja \
+            -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/sandbox" \
+            -DBUILD_TESTING=ON \
+            -DWITH_EXAMPLES=ON \
+            -DOPENTELEMETRY_INSTALL=ON
           cmake --build . -j$(nproc)
           ctest -j1 --output-on-failure
