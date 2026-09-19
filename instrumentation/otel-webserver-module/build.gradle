@@ -21,8 +21,6 @@ project.ext {
         debug = true;
     }
 
-    ansdkOsName = osName
-    ansdkArch = (osArch == 'x86' ? 'i686' : osArch)
     gccArchFlag = (osArch == 'x86' ? '-m32' : '-m64')
     headSHA1 = "<dev>"
 
@@ -44,8 +42,7 @@ project.ext {
     buildType = "Release Build"
     fullVersion = "${moduleName} ${moduleVersion} ${moduleRelease} ${headSHA1}: ${buildType}"
 
-    gypPath = "$projectDir/scripts/gyp/r1919/gyp"
-    gypType = 'make'
+    cmakeBuildDir = "${platBuildDir}/cmake"
 
     scriptExt = 'sh'
     sharedLibraryExt = 'so'
@@ -62,19 +59,14 @@ project.ext {
     apacheStageDir = "${libraryStageDir}/WebServerModule/Apache"
     nginxStageDir = "${libraryStageDir}/WebServerModule/Nginx"
 
-    coverageCompilerFlags = '-g -fprofile-arcs -ftest-coverage'
-    coverageLinkerFlags = '-lgcov --coverage'
-    libraryFlags = '-lrt -lpthread -ldl -lz -lcrypt'
 
     COVERAGE_DIR = "${platBuildDir}/coverage"
     LCOV_RAW_INFO = "${COVERAGE_DIR}/lcov-raw.info"
     LCOV_INFO = "${COVERAGE_DIR}/lcov.info"
 
-    BOOST_INCLUDE = "${modDepDir}/boost/1.75.0/include"
-    BOOST_LIB = "${modDepDir}/boost/1.75.0/lib/libboost_filesystem.a ${modDepDir}/boost/1.75.0/lib/libboost_system.a"
 }
 
-task extractANSDK(type: Copy) {
+task extractDependencies(type: Copy) {
     from "dependencies"
     into modDepDir
 }
@@ -131,52 +123,54 @@ task generateSources {
     //delete 'scripts/VERSION.txt'
 // }
 
-task gypLibrary(type: Exec) {
-    group = 'SDK Library'
-    description = 'Run gyp to generate the platform-specific build scripts'
+task cmakeConfigure(type: Exec) {
+    group = 'CMake'
+    description = 'Configure the CMake build tree'
 
-    dependsOn extractANSDK, generateSources
+    dependsOn extractDependencies, generateSources
+    dependsOn 'configureApache22', 'configureApache24'
 
-    inputs.file "src/build.gyp"
+    inputs.file 'CMakeLists.txt'
+    inputs.dir 'cmake'
+    outputs.file "${cmakeBuildDir}/CMakeCache.txt"
 
-    outputs.file "${platBuildDir}/Makefile"
-
-    ext.libraryBuildEnvironment = [
-        ARCH_FLAG: gccArchFlag,
-        ANSDK_DIR: modDepDir,
-        COMPILER_FLAGS: (coverageEnabled) ? coverageCompilerFlags : '',
-        LINKER_FLAGS: (coverageEnabled) ? coverageLinkerFlags : '',
-        BOOST_LIB: BOOST_LIB,
-        BOOST_INCLUDE: BOOST_INCLUDE,
-        LIBRARY_FLAGS: libraryFlags,
-        CPP_SDK_VERSION: cppSDKVersion,
-    ]
-
-    environment libraryBuildEnvironment
-    workingDir 'src'
-    commandLine gypPath, "--generator-output=${platBuildDir}", '--toplevel-dir=.', '--depth=./', '-f', gypType, 'build.gyp'
+    commandLine 'cmake',
+        '-S', projectDir,
+        '-B', cmakeBuildDir,
+        "-DOTEL_DEPS_DIR=${modDepDir}",
+        "-DOTEL_CPP_SDK_VERSION=${cppSDKVersion}",
+        "-DOTEL_GTEST_VERSION=${gtestVersion}",
+        "-DOTEL_ARCH_FLAG=${gccArchFlag}",
+        "-DOTEL_APACHE22_INCLUDE_DIR=${platBuildDir}/httpd-${apache22Version}/include",
+        "-DOTEL_APACHE24_INCLUDE_DIR=${platBuildDir}/httpd-${apache24Version}/include",
+        "-DOTEL_ENABLE_COVERAGE=${coverageEnabled ? 'ON' : 'OFF'}",
+        "-DCMAKE_BUILD_TYPE=${debug ? 'Debug' : 'Release'}"
 }
 
-task buildLibrary(type: Exec) {
-    group = 'SDK Library'
-    description = 'Compile the SDK library'
+task cmakeBuild(type: Exec) {
+    group = 'CMake'
+    description = 'Build all targets via CMake'
 
-    dependsOn gypLibrary
-    inputs.property "buildType", buildType
-    inputs.dir 'src/util'
+    dependsOn cmakeConfigure
 
-    outputs.file "${platBuildDir}/out/Default/lib.target/libopentelemetry_webserver_sdk.so"
+    inputs.dir 'src'
+    inputs.dir 'include'
+    inputs.dir 'test/unit'
 
-    args = ['make', 'V=1', '-j', Runtime.runtime.availableProcessors()]
+    outputs.file "${cmakeBuildDir}/lib/libopentelemetry_webserver_sdk.${sharedLibraryExt}"
+    outputs.file "${cmakeBuildDir}/apache/libmod_apache_otel.${sharedLibraryExt}"
+    outputs.file "${cmakeBuildDir}/apache/libmod_apache_otel22.${sharedLibraryExt}"
+    outputs.file "${cmakeBuildDir}/test/unit_test"
 
-    environment gypLibrary.libraryBuildEnvironment
-    workingDir "${platBuildDir}"
-    commandLine args
+    commandLine 'cmake', '--build', cmakeBuildDir,
+        '--parallel', Runtime.runtime.availableProcessors()
 }
 
 task stageLibrary(type: Copy) {
     group = 'SDK Library'
     description = 'Stage the SDK library distribution'
+
+    dependsOn cmakeBuild
 
     doLast {
         def logDir = file("${libraryStageDir}/logs")
@@ -186,7 +180,7 @@ task stageLibrary(type: Copy) {
 
     from("dist/runSDKProxy.sh") { it.fileMode 0770 }
 
-    from(buildLibrary) { it.into "sdk_lib/lib" }
+    from("${cmakeBuildDir}/lib/libopentelemetry_webserver_sdk.${sharedLibraryExt}") { it.into "sdk_lib/lib" }
     from("${modDepDir}/opentelemetry/${cppSDKVersion}/lib/libopentelemetry_common.so") { it.into "sdk_lib/lib" }
     from("${modDepDir}/opentelemetry/${cppSDKVersion}/lib/libopentelemetry_resources.so") { it.into "sdk_lib/lib" }
     from("${modDepDir}/opentelemetry/${cppSDKVersion}/lib/libopentelemetry_trace.so") { it.into "sdk_lib/lib" }
@@ -284,59 +278,14 @@ task configureApache24(type: Exec) {
     commandLine './configure', '--with-included-apr'
 }
 
-task gypApacheModule(type: Exec) {
-    group = 'Apache Web Server Module'
-    description = 'Run gyp to generate the build files for Apache Web Server Module'
-
-    dependsOn stageLibrary
-    dependsOn configureApache22
-    dependsOn configureApache24
-
-    inputs.file "src/apache/apache.gyp"
-    outputs.file "${platBuildDir}/apache/Makefile"
-
-    ext.apacheBuildEnvironment = [
-        ARCH_FLAG: gccArchFlag,
-        APACHE22_INCLUDE_DIR: "${platBuildDir}/httpd-${apache22Version}/include",
-        APACHE24_INCLUDE_DIR: "${platBuildDir}/httpd-${apache24Version}/include",
-        OTEL_SDK_LIB_DIR: "${libraryStageDir}/sdk_lib",
-        ANSDK_DIR: modDepDir,
-        COMPILER_FLAGS: (coverageEnabled) ? coverageCompilerFlags : '',
-        LINKER_FLAGS: (coverageEnabled) ? coverageLinkerFlags : '',
-        LIBRARY_FLAGS: libraryFlags,
-    ]
-
-    environment apacheBuildEnvironment
-    workingDir 'src/apache'
-    commandLine gypPath, "--generator-output=${platBuildDir}/apache", '--toplevel-dir=.', '--depth=./', '-f', gypType, 'apache.gyp'
-}
-
-task buildApacheModule(type: Exec) {
-    group = 'Apache Web Server Module'
-    description = 'Build the Apache Web Server Module'
-
-    dependsOn gypApacheModule
-    inputs.dir 'src/util'
-    inputs.dir 'src/apache'
-    inputs.dir 'src/core'
-
-    outputs.file "${platBuildDir}/apache/out/Default/lib.target/libmod_apache_otel.so"
-    outputs.file "${platBuildDir}/apache/out/Default/lib.target/libmod_apache_otel22.so"
-
-    args = ['make', 'V=1', '-j', Runtime.runtime.availableProcessors()]
-
-    environment gypApacheModule.apacheBuildEnvironment
-    workingDir "${platBuildDir}/apache"
-    commandLine args
-}
-
 task stageApacheModule(type: Copy) {
     group = 'Apache Web Server Module'
     description = 'Stage the Apache Web Server Module distribution directory'
 
-    dependsOn stageLibrary
+    dependsOn stageLibrary, cmakeBuild
 
-    from buildApacheModule
+    from "${cmakeBuildDir}/apache/libmod_apache_otel.${sharedLibraryExt}"
+    from "${cmakeBuildDir}/apache/libmod_apache_otel22.${sharedLibraryExt}"
     into apacheStageDir
 }
 
@@ -492,48 +441,15 @@ task assembleWebServerModule(type: Tar) {
 
 // Tests
 
-task gypUnitTest(type: Exec) {
-    dependsOn stageLibrary
-
-    inputs.file 'test/unit/unit_test.gyp'
-    outputs.file "${platBuildDir}/unit_test/Makefile"
-
-    ext.testBuildEnvironment = [
-        OTEL_SDK_LIB_DIR: "${libraryStageDir}/sdk_lib",
-        ANSDK_DIR: modDepDir,
-        BOOST_LIB: BOOST_LIB,
-        BOOST_INCLUDE: BOOST_INCLUDE,
-        GTEST_INCLUDE_DIR: "${modDepDir}/googletest/${gtestVersion}/include",
-        GTEST_LIB_DIR: target_system == "ubuntu" ?
-            "${modDepDir}/googletest/${gtestVersion}/lib" : "${modDepDir}/googletest/${gtestVersion}/lib64",
-        LIBRARY_FLAGS: libraryFlags,
-        CPP_SDK_VERSION: cppSDKVersion,
-    ]
-
-    environment testBuildEnvironment
-    workingDir 'test/unit'
-    commandLine gypPath, "--generator-output=${platBuildDir}/unit_test", '--toplevel-dir=.', '--depth=./', '-f', gypType, 'unit_test.gyp'
-}
-
-task makeUnitTest(type: Exec) {
-    dependsOn gypUnitTest
-
-    inputs.dir 'test/unit'
-
-    outputs.file "${platBuildDir}/unit_test/out/Default/unit_test"
-
-    environment gypUnitTest.testBuildEnvironment
-    workingDir "${platBuildDir}/unit_test"
-    commandLine 'make', 'V=1'
-}
-
 task runUnitTest(type: Exec) {
-    dependsOn makeUnitTest
-    environment gypUnitTest.testBuildEnvironment
+    group = 'verification'
+    description = 'Run the unit tests'
 
-    environment "LD_LIBRARY_PATH", "${libraryStageDir}/sdk_lib/lib/"
+    dependsOn cmakeBuild, stageLibrary
 
-    workingDir "${platBuildDir}/unit_test/out/Default"
+    environment 'LD_LIBRARY_PATH', "${libraryStageDir}/sdk_lib/lib"
+
+    workingDir "${cmakeBuildDir}/test"
     commandLine './unit_test'
 }
 
@@ -579,7 +495,7 @@ task lcovCapture(type: Exec) {
   executable 'lcov'
   args '--output-file', tracefile,                          // resulting tracefile
        '--capture',                                         // capture counts for a user space program
-       '--directory', "${platBuildDir}"                     // location where the program was compiled
+       '--directory', "${cmakeBuildDir}"                    // location where the program was compiled
        '--no-external'                                      // ignore data for external files
 }
 

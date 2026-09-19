@@ -9,7 +9,6 @@ apt-get install -qq -y --ignore-missing \
   pkg-config                            \
   protobuf-compiler                     \
   libprotobuf-dev                       \
-  python                                \
   sudo                                  \
   tar                                   \
   zip                                   \
