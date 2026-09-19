@@ -14,31 +14,44 @@
 
 cmake_minimum_required(VERSION 3.16)
 
-project(
-  opentelemetry-cpp-contrib
-  VERSION "1.19.0" # opentelemetry-cpp-contrib 1.19.0
-  HOMEPAGE_URL "https://github.com/open-telemetry/opentelemetry-cpp-contrib"
-  LANGUAGES CXX)
+set(this_target opentelemetry-cpp-contrib-prometheus-push-exporter)
 
-if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
-  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
-      "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}")
+project(${this_target})
+
+set(MAIN_PROJECT OFF)
+
+if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+  set(MAIN_PROJECT ON)
+  message(STATUS "${PROJECT_NAME} is main project")
 endif()
 
-if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
-  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY
-      "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}")
+set(ENABLE_TESTING OFF)
+
+include(FetchContent)
+
+if(MAIN_PROJECT)
+  find_package(opentelemetry-cpp REQUIRED)
 endif()
 
-if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
-  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
-      "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}")
+find_package(ZLIB REQUIRED)
+
+find_package(prometheus-cpp CONFIG QUIET)
+set(prometheus-cpp_PROVIDER "find_package")
+
+if(NOT prometheus-cpp_FOUND)
+  FetchContent_Declare(
+    prometheus-cpp
+    GIT_REPOSITORY https://github.com/jupp0r/prometheus-cpp.git
+    GIT_TAG e5fada43131d251e9c4786b04263ce98b6767ba5 # v1.3.0
+  )
+
+  FetchContent_MakeAvailable(prometheus-cpp)
 endif()
 
-link_directories(${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
-
-find_package(opentelemetry-cpp REQUIRED)
-find_package(prometheus-cpp CONFIG REQUIRED)
+if(NOT TARGET prometheus-cpp::core OR
+   NOT TARGET prometheus-cpp::push)
+  message(FATAL_ERROR "A required prometheus-cpp target (prometheus-cpp::core or prometheus-cpp::push) was not imported")
+endif()
 
 get_target_property(OPENTELEMETRY_CPP_API_DEFINITIONS opentelemetry-cpp::api
                     INTERFACE_COMPILE_DEFINITIONS)
@@ -59,7 +72,14 @@ cmake_dependent_option(BUILD_TESTING "Enable tests" ON
 if(BUILD_TESTING)
   enable_testing()
   add_definitions(-DENABLE_TEST)
-  find_package(GTest)
+  FetchContent_Declare(
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG 15460959cbbfa20e66ef0b5ab497367e47fc0a04 # v1.12.0
+  )
+
+  FetchContent_MakeAvailable(googletest)
+
   include(GoogleTest)
 
   if(TARGET GTest::gtest)
@@ -159,18 +179,28 @@ elseif(UNIX OR MINGW)
   endif()
 endif()
 
-install(
-  TARGETS opentelemetry_prometheus_push_exporter
-  EXPORT "${PROJECT_NAME}-target"
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+if(MAIN_PROJECT)
+  install(
+    TARGETS opentelemetry_prometheus_push_exporter
+    EXPORT "${PROJECT_NAME}-target"
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-install(
-  DIRECTORY include/opentelemetry/exporters/prometheus
-  DESTINATION include/opentelemetry/exporters/
-  FILES_MATCHING
-  PATTERN "*.h")
+  install(
+    DIRECTORY include/opentelemetry/exporters/prometheus
+    DESTINATION include/opentelemetry/exporters/
+    FILES_MATCHING
+    PATTERN "*.h")
+else()
+  otel_add_component(
+    COMPONENT exporters_prometheus_push
+    TARGETS opentelemetry_prometheus_push_exporter
+    FILES_DIRECTORY "include/opentelemetry/exporters/prometheus"
+    FILES_DESTINATION "include/opentelemetry/exporters"
+    FILES_MATCHING
+    PATTERN "*.h")
+endif()
 
 if(BUILD_TESTING)
   add_subdirectory(test)
