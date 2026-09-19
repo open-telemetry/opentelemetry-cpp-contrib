@@ -10,7 +10,17 @@ project(${this_target})
 include(FetchContent)
 
 find_package(opentelemetry-cpp REQUIRED)
-find_package(glog 0.7.0 REQUIRED)
+find_package(glog 0.7.0 QUIET)
+
+if(NOT glog_FOUND)
+  FetchContent_Declare(
+    glog
+    GIT_REPOSITORY https://github.com/google/glog.git
+    GIT_TAG 34b8da6496aec6a98277808701cfa834fae9801f # v0.7.0
+  )
+
+  FetchContent_MakeAvailable(glog)
+endif()
 
 add_library(${this_target} src/sink.cc)
 
@@ -23,11 +33,11 @@ set_target_properties(${this_target} PROPERTIES EXPORT_NAME ${this_target})
 target_include_directories(${this_target} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-  ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
 )
 
-target_link_libraries(${this_target} PRIVATE
+target_link_libraries(${this_target} PUBLIC
   glog::glog
+  opentelemetry-cpp::api
 )
 
 if(OPENTELEMETRY_INSTALL)
@@ -71,8 +81,6 @@ if(OPENTELEMETRY_INSTALL)
 endif() # OPENTELEMETRY_INSTALL
 
 if(BUILD_TESTING)
-  include(FetchContent)
-
   FetchContent_Declare(
     googletest
     GIT_REPOSITORY https://github.com/google/googletest.git
@@ -91,13 +99,11 @@ if(BUILD_TESTING)
 
   target_include_directories(${testname} PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/include
-    ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
   )
 
   target_link_libraries(${testname} PRIVATE
     GTest::gmock
     GTest::gtest
-    glog::glog
     opentelemetry-cpp::ostream_log_record_exporter
     ${this_target}
   )
@@ -116,7 +122,6 @@ if(WITH_EXAMPLES)
 
   target_include_directories(${example_exe} PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/include
-    ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
   )
 
   target_link_libraries(${example_exe} PRIVATE
@@ -124,7 +129,6 @@ if(WITH_EXAMPLES)
     opentelemetry-cpp::trace
     opentelemetry-cpp::ostream_log_record_exporter
     opentelemetry-cpp::ostream_span_exporter
-    glog::glog
     ${this_target}
   )
 endif() # WITH_EXAMPLES

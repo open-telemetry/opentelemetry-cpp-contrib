@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - '*'
+      - 'main'
     paths:
       - 'exporters/fluentd/**'
       - '.github/workflows/fluentd.yml'
@@ -53,3 +53,23 @@ jobs:
           cmake .. -G Ninja -D OPENTELEMETRY_EXTERNAL_COMPONENT_PATH=$GITHUB_WORKSPACE/opentelemetry-cpp-contrib/exporters/fluentd 
           cmake --build . -j$(nproc)
           ctest -j1 --output-on-failure
+      - name: build opentelemetry-cpp
+        run: |
+          mkdir -p "${GITHUB_WORKSPACE}/opentelemetry-cpp/build"
+          cd "${GITHUB_WORKSPACE}/opentelemetry-cpp/build"
+          cmake .. -G Ninja -DBUILD_TESTING=OFF -DWITH_BENCHMARK=OFF -DOPENTELEMETRY_INSTALL=ON
+          cmake --build . -j$(nproc)
+          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
+      - name: build exporters/fluentd contrib
+        run: |
+          mkdir -p "${GITHUB_WORKSPACE}/exporters-fluentd/build"
+          cd "${GITHUB_WORKSPACE}/exporters-fluentd/build"
+          cmake ../../opentelemetry-cpp-contrib/exporters/fluentd \
+            -G Ninja \
+            -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/sandbox" \
+            -DBUILD_TESTING=ON \
+            -DWITH_EXAMPLES=ON \
+            -DOPENTELEMETRY_INSTALL=ON
+          cmake --build . -j$(nproc)
+          ctest -j1 --output-on-failure
+          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
