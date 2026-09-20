@@ -13,7 +13,7 @@ cc_library(
     deps = [
         "@io_opentelemetry_cpp//api",
         "@io_opentelemetry_cpp//exporters/ostream:ostream_span_exporter",
-        "@io_opentelemetry_cpp//exporters/otlp:otlp_exporter",
+        "@io_opentelemetry_cpp//exporters/otlp:otlp_grpc_exporter",
         "@io_opentelemetry_cpp//sdk/src/trace",
     ],
     alwayslink = 1,

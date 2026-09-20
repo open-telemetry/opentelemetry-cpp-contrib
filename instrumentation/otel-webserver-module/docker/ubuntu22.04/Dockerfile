@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04@sha256:b8b6ee6aa931ecd9d0d952abc34dc0e5f7c6a30c6bb71b079fe399fde0329c02
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get -y update && apt-get -y upgrade && apt-get -y dist-upgrade
@@ -10,7 +10,7 @@ RUN apt-get install -qq -y --ignore-missing \
 	pkg-config		                        \
 	protobuf-compiler	                    \
 	libprotobuf-dev                         \
-	python			                        \
+	python2.7		                        \
 	sudo			                        \
 	tar			                            \
 	zip			                            \
@@ -27,7 +27,7 @@ RUN apt-get install -y \
     default-jre
 
 # The following arguments would be passed from docker-compose.yml
-ARG GRPC_VERSION="1.36.4"
+ARG GRPC_VERSION="1.47.5"
 ARG OPENTELEMETRY_VERSION="1.2.0"
 ARG BOOST_VERSION="1.75.0"
 ARG BOOST_FILENAME="boost_1_75_0"
@@ -36,7 +36,7 @@ ARG EXPAT_VERSION="2.3.0"
 ARG EXPAT_RVERSION="R_2_3_0"
 ARG APRUTIL_VERSION="1.6.1"
 ARG LOG4CXX_VERSION="0.11.0"
-ARG GTEST_VERSION="1.10.0"
+ARG GTEST_VERSION="1.12.1"
 ARG PCRE_VERSION="8.44"
 ARG NGINX_VERSION="1.26.0"
 
@@ -70,7 +70,7 @@ RUN mkdir -p dependencies/opentelemetry/${OPENTELEMETRY_VERSION}/lib \
     && git submodule update --init --recursive \
     && mkdir build \
     && cd build \
-    && cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=ON -DWITH_OTLP=ON -DCMAKE_INSTALL_PREFIX=/dependencies/opentelemetry/${OPENTELEMETRY_VERSION} \
+    && cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=ON -DWITH_OTLP=ON -DWITH_ABSEIL=ON -DCMAKE_INSTALL_PREFIX=/dependencies/opentelemetry/${OPENTELEMETRY_VERSION} \
     && cmake --build . --target all \
     && cd .. \
     && find . -name "*.so" -type f -exec cp {} /dependencies/opentelemetry/${OPENTELEMETRY_VERSION}/lib/ \; \
@@ -190,7 +190,7 @@ RUN echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
     | tee /etc/apt/sources.list.d/nginx.list \
     && echo "Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900\n" \
     | tee /etc/apt/preferences.d/99nginx \
-    && apt update -y && apt install nginx -y
+    && apt update -y && apt install "nginx=${NGINX_VERSION}-1~$(lsb_release -cs)" -y
 
 # Build Webserver Module
 COPY . /otel-webserver-module

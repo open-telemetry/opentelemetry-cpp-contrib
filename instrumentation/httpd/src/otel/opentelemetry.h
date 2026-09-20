@@ -87,7 +87,7 @@ struct HttpdEndSpanAttributes
 struct ExtraRequestData
 {  // context which we pass
   opentelemetry::nostd::unique_ptr<opentelemetry::context::Token> token;
-  opentelemetry::nostd::shared_ptr<opentelemetry::v0::trace::Span> span;
+  opentelemetry::nostd::shared_ptr<opentelemetry::trace::Span> span;
   HttpdStartSpanAttributes startAttrs;
   HttpdEndSpanAttributes endAttrs;
   // Sets attributes for HTTP request.

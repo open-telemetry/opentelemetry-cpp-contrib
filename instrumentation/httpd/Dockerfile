@@ -1,4 +1,6 @@
-FROM ubuntu:18.04
+FROM ubuntu:24.04@sha256:b3cc40b72b93588182b5410f723c7aaf142363311c2aa993d8a453ddcbb3ae15
+
+ENV DEBIAN_FRONTEND=noninteractive
 
 #########################################
 # copy setup stuff from opentelemetry-cpp
@@ -6,7 +8,13 @@ FROM ubuntu:18.04
 
 WORKDIR /setup-ci
 
-ADD setup-buildtools.sh /setup-ci/setup-buildtools.sh
+COPY apt-packages.txt /setup-ci/apt-packages.txt
+
+RUN apt-get update -y \
+  && xargs -a apt-packages.txt apt-get install -y --no-install-recommends --no-install-suggests \
+  && rm -rf /var/lib/apt/lists/*
+
+COPY setup-buildtools.sh /setup-ci/setup-buildtools.sh
 
 RUN /setup-ci/setup-buildtools.sh
 
@@ -14,17 +22,12 @@ RUN /setup-ci/setup-buildtools.sh
 # now build plugin itself
 #########################
 
-ADD setup-environment.sh /setup/setup-environment.sh
-
-RUN /setup/setup-environment.sh
-
 COPY src /root/src
-COPY .clang-format /root
-COPY tools /root/tools
 
 COPY .bazelversion /root
+COPY .bazelrc /root
 COPY BUILD /root
-COPY WORKSPACE /root
+COPY MODULE.bazel /root
 
 WORKDIR /root
 COPY create-otel-load.sh /root

@@ -20,6 +20,19 @@ permissions:
   contents: read
 
 jobs:
+  nginx-propagation-header-tests:
+    name: nginx propagation header regression tests
+    runs-on: ubuntu-22.04
+    steps:
+      - name: checkout otel webserver
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: run regression tests
+        run: make -C instrumentation/otel-webserver-module/test/nginx test
+      - name: run regression tests with ASan
+        run: make -C instrumentation/otel-webserver-module/test/nginx asan
+
   webserver-build-test-ubuntu:
     name: webserver-ubuntu-build
     runs-on: ubuntu-22.04
@@ -30,20 +43,20 @@ jobs:
           persist-credentials: false
       - name: setup buildx
         id: buildx
-        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
         with:
           install: true
       - name: cache docker layers
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: /tmp/buildx-cache/
-          key: apache-ubuntu-20.04-${{ github.sha }}
+          key: apache-ubuntu-22.04-${{ github.sha }}
           restore-keys: |
-            apache-ubuntu-20.04
+            apache-ubuntu-22.04
       - name: setup docker image
         run: |
           cd instrumentation/otel-webserver-module
-          docker buildx build -t apache_ubuntu -f docker/ubuntu20.04/Dockerfile \
+          docker buildx build -t apache_ubuntu -f docker/ubuntu22.04/Dockerfile \
             --cache-from type=local,src=/tmp/buildx-cache/apache_ubuntu \
             --cache-to type=local,dest=/tmp/buildx-cache/apache_ubuntu-new \
             --load .
@@ -60,81 +73,16 @@ jobs:
             cp -r /build-dependencies /otel-webserver-module/;     \
 
             ./gradlew assembleWebServerModule -DtargetSystem=ubuntu'
+
+      - name: unit test
+        run: |
+          docker exec --workdir /otel-webserver-module apache_ubuntu_container \
+            ./gradlew runTests -DtargetSystem=ubuntu
+
       - name: update cache
         run: |
           rm -rf /tmp/buildx-cache/apache_ubuntu
           mv /tmp/buildx-cache/apache_ubuntu-new /tmp/buildx-cache/apache_ubuntu
-
-  webserver-build-test-centos7:
-    name: webserver-centos7-build
-    if: false  # disabled. TODO: fix this job
-    runs-on: ubuntu-22.04
-    steps:
-      - name: checkout otel webserver
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: setup buildx
-        id: buildx
-        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
-        with:
-          install: true
-      # - name: cache docker layers
-      #   uses: actions/cache@v6
-      #   with:
-      #     path: /tmp/buildx-cache/
-      #     key: apache-centos7-${{ github.sha }}
-      #     restore-keys: |
-      #       apache-centos7
-      - name: setup docker image
-        run: |
-          cd instrumentation/otel-webserver-module
-          docker buildx build -t apache_centos7 -f docker/centos7/Dockerfile \
-            --load .
-      - name: build
-        run: |
-          cat /etc/os-release
-          java -version
-          docker run -idt --name apache_centos7_container apache_centos7 /bin/bash
-          cd instrumentation/otel-webserver-module
-          docker exec apache_centos7_container bash -c \
-            'cd /otel-webserver-module; rm -rf *;'
-          docker cp . $(docker inspect --format="{{.Id}}" apache_centos7_container):/otel-webserver-module/
-          docker exec apache_centos7_container bash -c \
-            'cd /otel-webserver-module; rm -rf build; \
-            cp -r /dependencies /otel-webserver-module/;           \
-            cp -r /build-dependencies /otel-webserver-module/;     \
-            ./gradlew assembleWebServerModule'
-      - name: unit test
-        run: |
-          docker exec apache_centos7_container bash -c \
-            'cd /otel-webserver-module; ./gradlew runUnitTest'
-      # - name: update cache
-      #   run: |
-      #     rm -rf /tmp/buildx-cache/apache_centos7
-      #     mv /tmp/buildx-cache/apache_centos7-new /tmp/buildx-cache/apache_centos7
-      # - name: copy artifacts
-      #   id: artifacts
-      #   run: |
-      #     cd instrumentation/otel-webserver-module
-      #     mkdir -p /tmp/apache_centos7/
-      #     docker cp apache_centos7_container:/otel-webserver-module/build/opentelemetry-webserver-sdk-x64-linux.tgz \
-      #       /tmp/apache_centos7/
-      # - name: upload artifacts
-      #   uses: actions/upload-artifact@v7.0.1
-      #   with:
-      #     name: opentelemetry-webserver-sdk-x64-linux.tgz
-      #     path: /tmp/apache_centos7/opentelemetry-webserver-sdk-x64-linux.tgz
-      # - name: run integrationtest
-      #   run: |
-      #     docker ps
-      #     docker rm -f apache_centos7_container
-      #     cd instrumentation/otel-webserver-module
-      #     docker-compose --profile centos7 up -d
-      #     docker ps -a
-      #     sleep 30
-      #     ./gradlew :test:integration:integrationTests -i
-      #     curl http://localhost:9411/api/v2/spans?serviceName=demoservice
 
   webserver-build-test-almalinux8:
     name: webserver-almalinux8-build
@@ -146,7 +94,7 @@ jobs:
           persist-credentials: false
       - name: setup buildx
         id: buildx
-        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
         with:
           install: true
       # - name: cache docker layers
@@ -177,8 +125,8 @@ jobs:
             ./gradlew assembleWebServerModule'
       - name: unit test
         run: |
-          docker exec apache_almalinux8_container bash -c \
-            'cd /otel-webserver-module; ./gradlew runUnitTest'
+          docker exec --workdir /otel-webserver-module apache_almalinux8_container \
+            ./gradlew runTests
       # - name: update cache
       #   run: |
       #     rm -rf /tmp/buildx-cache/apache_almalinux8
@@ -198,14 +146,13 @@ jobs:
       # - name: run integrationtest
       #   run: |
       #     docker ps
-      #     docker rm -f apache_centos7_container
+      #     docker rm -f apache_almalinux8_container
       #     cd instrumentation/otel-webserver-module
-      #     docker-compose --profile centos7 up -d
+      #     docker-compose --profile almalinux8 up -d
       #     docker ps -a
       #     sleep 30
       #     ./gradlew :test:integration:integrationTests -i
       #     curl http://localhost:9411/api/v2/spans?serviceName=demoservice
-
 
   Codeql-build:
     permissions:
@@ -224,7 +171,7 @@ jobs:
           cp opentelemetry-cpp-contrib/instrumentation/otel-webserver-module/codeql-env.sh .
           sudo ./codeql-env.sh
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd # v4.37.7
+        uses: github/codeql-action/init@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4.38.1
         with:
           languages: cpp
       - name: build
@@ -234,5 +181,4 @@ jobs:
           cp -r /build-dependencies ../otel-webserver-module/
           ./gradlew assembleWebserverModule -DtargetSystem=ubuntu --info
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd # v4.37.7
-
+        uses: github/codeql-action/analyze@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4.38.1

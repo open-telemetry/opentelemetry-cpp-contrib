@@ -3,11 +3,14 @@
     'target_name': 'unit_test',
     'type': 'executable',
 
+    # opentelemetry-cpp is built WITH_ABSEIL, so nostd::variant resolves to
+    # absl::variant here too. Must match the SDK library.
+    'defines': ['HAVE_ABSEIL'],
+
     'include_dirs': [
       '../../include/core/',
       '../../include/util/',
-      '$(ANSDK_DIR)/googletest/1.10.0/include',
-      '$(ANSDK_DIR)/googletest/1.10.0/include',
+      '$(GTEST_INCLUDE_DIR)',
       '$(ANSDK_DIR)/opentelemetry/$(CPP_SDK_VERSION)/include/',
       '$(ANSDK_DIR)/apache-log4cxx/0.11.0/include',
       '$(ANSDK_DIR)/apr/1.7.0/include',

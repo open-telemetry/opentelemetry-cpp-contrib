@@ -7,7 +7,7 @@ apply from: 'common.gradle'
 apply plugin: 'de.undercouch.download'
 
 def coverageEnabled = System.getenv('enableCoverage')
-def target_system = System.getProperty('targetSystem') ?: 'centos6'
+def target_system = System.getProperty('targetSystem') ?: 'almalinux8'
 def buildType = System.getProperty('buildType') ?: 'release'
 
 project.ext {
@@ -53,6 +53,10 @@ project.ext {
     apache22Version = "2.2.31"
     apache24Version = "2.4.23"
     nginxSupportedVersions=props.get("nginxSupportedVersions").split(',')
+
+    // Must match GTEST_VERSION in docker/ubuntu22.04/Dockerfile and
+    // docker/almalinux8/Dockerfile.
+    gtestVersion = "1.12.1"
 
     libraryStageDir = "${platBuildDir}/opentelemetry-webserver-sdk"
     apacheStageDir = "${libraryStageDir}/WebServerModule/Apache"
@@ -499,8 +503,9 @@ task gypUnitTest(type: Exec) {
         ANSDK_DIR: modDepDir,
         BOOST_LIB: BOOST_LIB,
         BOOST_INCLUDE: BOOST_INCLUDE,
+        GTEST_INCLUDE_DIR: "${modDepDir}/googletest/${gtestVersion}/include",
         GTEST_LIB_DIR: target_system == "ubuntu" ?
-            "${modDepDir}/googletest/1.10.0/lib" : "${modDepDir}/googletest/1.10.0/lib64",
+            "${modDepDir}/googletest/${gtestVersion}/lib" : "${modDepDir}/googletest/${gtestVersion}/lib64",
         LIBRARY_FLAGS: libraryFlags,
         CPP_SDK_VERSION: cppSDKVersion,
     ]
@@ -537,6 +542,25 @@ task runApacheServer(type: Exec) {
 
     workingDir 'test'
     commandLine './ApacheTesting.sh', "${target_system}"
+}
+
+task runNginxIssue474Test(type: Exec) {
+    group = 'verification'
+    description = 'Run the NGINX issue #474 User-Agent regression test'
+
+    dependsOn assembleNginxModule
+
+    workingDir 'test/nginx'
+    commandLine './issue_474_user_agent_regression_test.sh',
+        "${buildDir}/opentelemetry-webserver-sdk-${osArch}-${osName}.tgz",
+        '1.26.0'
+}
+
+task runTests {
+    group = 'verification'
+    description = 'Run all webserver module tests'
+
+    dependsOn runUnitTest, runNginxIssue474Test
 }
 
 // Code Coverage

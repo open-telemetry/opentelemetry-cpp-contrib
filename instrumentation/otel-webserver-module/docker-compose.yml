@@ -3,30 +3,16 @@ networks:
     default:
         name: webserver-network
 services:
-    webserver_centos7:
-        build:
-            context: .
-            dockerfile: docker/centos7/Dockerfile
-        image: apache_centos7
-        hostname: webserver
-        container_name: webserver_centos7
-        command: bash -c " httpd -k start && tail -f /dev/null "
-        profiles:
-            - centos7
-        ports:
-            - "9004:80"
-        depends_on:
-            - otel-collector
     webserver_ubuntu:
         build:
             context: .
-            dockerfile: docker/ubuntu20.04/Dockerfile
+            dockerfile: docker/ubuntu22.04/Dockerfile
         image: apache_ubuntu
         hostname: webserver
         container_name: webserver_ubuntu
         command: bash -c "apache2ctl -k start && tail -f /dev/null "
         profiles:
-            - ubuntu20.04
+            - ubuntu22.04
         ports:
             - "9000:80"
         depends_on:
@@ -46,44 +32,16 @@ services:
             - "9000:80"
         depends_on:
             - otel-collector
-    nginx_centos:
-        build:
-            context: .
-            dockerfile: Dockerfile
-        image: nginx_centos
-        hostname: webserver
-        container_name: nginx_centos
-        command: bash -c "export LD_LIBRARY_PATH=/opt/opentelemetry-webserver-sdk/sdk_lib/lib && nginx && tail -f /dev/null"
-        profiles:
-            - centos_nginx
-        ports:
-            - "8008:80"
-        depends_on:
-            - otel-collector
-    nginx_centos7:
-        build:
-            context: .
-            dockerfile: docker/centos7/Dockerfile
-        image: nginx_centos7
-        hostname: webserver
-        container_name: nginx_centos7
-        command: bash -c "export LD_LIBRARY_PATH=/opt/opentelemetry-webserver-sdk/sdk_lib/lib && nginx && tail -f /dev/null"
-        profiles:
-            - centos7_nginx
-        ports:
-            - "8012:80"
-        depends_on:
-            - otel-collector
     nginx_ubuntu:
         build:
             context: .
-            dockerfile: docker/ubuntu20.04/Dockerfile
+            dockerfile: docker/ubuntu22.04/Dockerfile
         image: nginx_ubuntu
         hostname: webserver
         container_name: nginx_ubuntu
         command: bash -c "export LD_LIBRARY_PATH=/opt/opentelemetry-webserver-sdk/sdk_lib/lib && nginx && tail -f /dev/null"
         profiles:
-            - ubuntu20.04_nginx
+            - ubuntu22.04_nginx
         ports:
             - "8016:80"
         depends_on:
@@ -106,15 +64,12 @@ services:
 
 # Collector
     otel-collector:
-        image: otel/opentelemetry-collector:latest
+        image: otel/opentelemetry-collector:latest@sha256:e495787f07dbe432ce763ebaf5bc3d113850e9eee2250ade7a3da6a882d0d69a
         container_name: collector
         profiles:
             - default
-            - ubuntu20.04
-            - centos7
-            - centos_nginx
-            - centos7_nginx
-            - ubuntu20.04_nginx
+            - ubuntu22.04
+            - ubuntu22.04_nginx
         command: ["--config=/etc/otel-config.yml"]
         volumes:
             - ./otel-config.yml:/etc/otel-config.yml
@@ -127,15 +82,12 @@ services:
 
 # Zipkin
     zipkin:
-        image: openzipkin/zipkin:latest
+        image: openzipkin/zipkin:latest@sha256:d17e856dcbba7ffeefbbfc252f89ab78a4ab6faed47e646d46daad78f91b5ee2
         container_name: zipkin
         profiles:
             - default
-            - ubuntu20.04
-            - centos7
-            - centos_nginx
-            - centos7_nginx
-            - ubuntu20.04_nginx
+            - ubuntu22.04
+            - ubuntu22.04_nginx
         ports:
             - "9411:9411"
             - "9410:9410"
