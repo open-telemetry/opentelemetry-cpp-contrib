@@ -7,12 +7,14 @@ on:
       - 'main'
     paths:
       - 'instrumentation/glog/**'
+      - 'cmake/**'
       - '.github/workflows/glog.yml'
   pull_request:
     branches:
       - 'main'
     paths:
       - 'instrumentation/glog/**'
+      - 'cmake/**'
       - '.github/workflows/glog.yml'
 
 permissions:

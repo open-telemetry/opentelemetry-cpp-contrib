@@ -7,12 +7,14 @@ on:
       - 'main'
     paths:
       - 'instrumentation/boost_log/**'
+      - 'cmake/**'
       - '.github/workflows/boost_log.yml'
   pull_request:
     branches:
       - 'main'
     paths:
       - 'instrumentation/boost_log/**'
+      - 'cmake/**'
       - '.github/workflows/boost_log.yml'
 
 permissions:

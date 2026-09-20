@@ -7,12 +7,14 @@ on:
       - 'main'
     paths:
       - 'instrumentation/log4cxx/**'
+      - 'cmake/**'
       - '.github/workflows/log4cxx.yml'
   pull_request:
     branches:
       - 'main'
     paths:
       - 'instrumentation/log4cxx/**'
+      - 'cmake/**'
       - '.github/workflows/log4cxx.yml'
 
 permissions:

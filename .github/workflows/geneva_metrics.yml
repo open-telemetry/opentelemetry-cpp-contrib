@@ -4,15 +4,17 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - '*'
+      - 'main'
     paths:
       - 'exporters/geneva/**'
+      - 'cmake/**'
       - '.github/workflows/geneva_metrics.yml'
   pull_request:
     branches:
       - 'main'
     paths:
       - 'exporters/geneva/**'
+      - 'cmake/**'
       - '.github/workflows/geneva_metrics.yml'
 
 permissions:

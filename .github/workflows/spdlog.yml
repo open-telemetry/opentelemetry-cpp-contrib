@@ -7,12 +7,14 @@ on:
       - 'main'
     paths:
       - 'instrumentation/spdlog/**'
+      - 'cmake/**'
       - '.github/workflows/spdlog.yml'
   pull_request:
     branches:
       - 'main'
     paths:
       - 'instrumentation/spdlog/**'
+      - 'cmake/**'
       - '.github/workflows/spdlog.yml'
 
 permissions:
