@@ -50,7 +50,7 @@ jobs:
         if: failure()
         run: |
           mkdir -p bazel-logs
-          find /home/runner/.cache/bazel -type f -path "*/testlogs/*/test.log" -exec cp --parents {} bazel-logs \; || true
+          find bazel-out -type f -path "*/testlogs/*/test.log" -exec cp --parents {} bazel-logs \; || true
       - name: Upload Bazel logs
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
