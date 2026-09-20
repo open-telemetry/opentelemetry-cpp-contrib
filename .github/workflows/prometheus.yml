@@ -49,7 +49,8 @@ jobs:
       - name: Collect Bazel test logs
         if: failure()
         run: |
-          mkdir -p bazel-logs
+          cd otel_cpp_contrib/exporters/prometheus
+          mkdir -p ../../bazel-logs
           find bazel-out -type f -path "*/testlogs/*/test.log" -exec cp --parents {} bazel-logs \; || true
       - name: Upload Bazel logs
         if: failure()
