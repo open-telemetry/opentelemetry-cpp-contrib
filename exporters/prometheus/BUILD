@@ -55,4 +55,8 @@ cc_test(
         "@io_opentelemetry_cpp//exporters/prometheus:prometheus_exporter_utils",
         "@io_opentelemetry_cpp//sdk:headers",
     ],
+    data = [
+        "@com_github_jupp0r_prometheus_cpp//core",
+        "@com_github_jupp0r_prometheus_cpp//push",
+    ],
 )
