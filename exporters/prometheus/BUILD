@@ -45,6 +45,7 @@ cc_test(
     tags = [
         "prometheus",
         "test",
+        "requires-network",
     ],
     deps = [
         ":prometheus_push_exporter",
