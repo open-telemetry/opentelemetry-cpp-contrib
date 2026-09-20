@@ -209,29 +209,29 @@ endif()
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
 
-file(MAKE_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/${PROJECT_NAME}")
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}")
 
 configure_package_config_file(
   "${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}-config.cmake.in"
-  "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake"
   INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
   NO_CHECK_REQUIRED_COMPONENTS_MACRO)
 
 write_basic_package_version_file(
-  "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config-version.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config-version.cmake"
   VERSION "${PROJECT_VERSION}${OPENTELEMETRY_CPP_ECOSYSTEM_VERSION_TWEAK}"
   COMPATIBILITY SameMajorVersion)
 
 install(
   FILES
-    "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake"
-    "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config-version.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config-version.cmake"
   DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 
 export(
   EXPORT "${PROJECT_NAME}-target"
   NAMESPACE ${PROJECT_NAME}::
-  FILE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-target.cmake"
+  FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-target.cmake"
 )
 install(
   EXPORT "${PROJECT_NAME}-target"
