@@ -85,4 +85,3 @@ def io_opentelemetry_cpp_contrib_deps():
         strip_prefix = "re2-03da4fc0857c285e3a26782f6bc8931c4c950df4",
         urls = ["https://github.com/google/re2/archive/03da4fc0857c285e3a26782f6bc8931c4c950df4.zip"],
     )
-    
