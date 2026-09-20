@@ -3,14 +3,18 @@ name: httpd instrumentation CI
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: 
+      - 'main'
     paths:
       - 'instrumentation/httpd/**'
+      - 'cmake/**'
       - '.github/workflows/httpd.yml'
   pull_request:
-    branches: [ main ]
+    branches:
+      - 'main'
     paths:
       - 'instrumentation/httpd/**'
+      - 'cmake/**'
       - '.github/workflows/httpd.yml'
 
 permissions:
