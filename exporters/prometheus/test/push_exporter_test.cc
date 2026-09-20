@@ -200,7 +200,7 @@ TEST(PrometheusPushExporterFactory, Create)
 {
   PrometheusPushExporterOptions options;
   options.host                 = "localhost";
-  options.port                 = "0";
+  options.port                 = "4138";
   options.jobname              = "jobname";
   options.labels["test_label"] = "test_value";
   options.username             = "user";

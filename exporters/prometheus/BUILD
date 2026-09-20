@@ -45,7 +45,6 @@ cc_test(
     tags = [
         "prometheus",
         "test",
-        "requires-network",
     ],
     deps = [
         ":prometheus_push_exporter",
@@ -55,9 +54,5 @@ cc_test(
         "@io_opentelemetry_cpp//exporters/prometheus:prometheus_collector",
         "@io_opentelemetry_cpp//exporters/prometheus:prometheus_exporter_utils",
         "@io_opentelemetry_cpp//sdk:headers",
-    ],
-    data = [
-        "@com_github_jupp0r_prometheus_cpp//core",
-        "@com_github_jupp0r_prometheus_cpp//push",
     ],
 )
