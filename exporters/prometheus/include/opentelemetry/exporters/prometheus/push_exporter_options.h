@@ -21,7 +21,7 @@ namespace metrics
 struct PrometheusPushExporterOptions
 {
   std::string host;
-  int port = 0;
+  std::string port = 0;
   std::string jobname;
   std::unordered_map<std::string, std::string> labels;
   std::string username;
