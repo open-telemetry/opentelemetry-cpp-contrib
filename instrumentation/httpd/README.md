@@ -8,7 +8,7 @@
 
 ## Requirements
 
-- httpd (Apache) ver. 2.4.x on Linux (Current release tested only with Ubuntu LTS 18.04 & 20.04)
+- httpd (Apache) ver. 2.4.x on Linux (built and tested on Ubuntu LTS 22.04 & 24.04)
 
 ### Usage
 
@@ -91,9 +91,10 @@ List of configuration options can be found in [provided configuration file](./op
 
 ### Requirements
 
-- C++11
-- [OpenTelemetry-Cpp](https://github.com/open-telemetry/opentelemetry-cpp)
-- Bazel 3.7.x
+- C++17
+- [OpenTelemetry-Cpp](https://github.com/open-telemetry/opentelemetry-cpp) 1.28.0
+- Bazel 8.x (see `.bazelversion`; `setup-buildtools.sh` installs bazelisk, which reads it)
+- CMake 3.16 or later
 
 ### Build
 Build can be done within docker or alternatively check Development section for Ubuntu below.  Execute: `make build` to start build process.
@@ -116,7 +117,16 @@ When local changes are made, you need to restart the `httpd` server to load new 
 
 ### Prerequisites (Ubuntu)
 
-On Ubuntu you need packages listed here: [setup-environment.sh](./setup-environment.sh) which are prerequisites to compile opentelemetry-cpp and here: [setup-buildtools.sh](./setup-buildtools.sh) for apache development stuff. Then just execute [bulid.sh](./build.sh).
+Ubuntu LTS 22.04 and 24.04 are the versions built and tested in CI.
+
+On Ubuntu the required packages are listed in [apt-packages.txt](./apt-packages.txt). Install them with:
+
+```bash
+sudo apt update -y
+xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
+```
+
+For a Bazel build also run [setup-buildtools.sh](./setup-buildtools.sh), which installs bazelisk. Then just execute [build.sh](./build.sh).
 
 ### Testing
 

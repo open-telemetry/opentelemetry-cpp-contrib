@@ -20,7 +20,7 @@
 #include <memory>
 
 #include "opentelemetry/exporters/ostream/span_exporter.h"
-#include "opentelemetry/exporters/otlp/otlp_exporter.h"
+#include "opentelemetry/exporters/otlp/otlp_grpc_exporter.h"
 #include "opentelemetry/sdk/trace/batch_span_processor.h"
 #include "opentelemetry/sdk/trace/simple_processor.h"
 #include "opentelemetry/sdk/trace/tracer_provider.h"
@@ -28,6 +28,9 @@
 
 namespace httpd_otel
 {
+
+namespace nostd    = opentelemetry::nostd;
+namespace sdktrace = opentelemetry::sdk::trace;
 
 // TODO: use semantic conventions  https://github.com/open-telemetry/opentelemetry-cpp/issues/566
 const nostd::string_view kAttrHTTPServerName         = "http.server_name";
@@ -66,10 +69,10 @@ void initTracer()
             config.fname.empty() ? std::cerr : config.output_file));
       break;
     case OtelExporterType::OTLP:
-      opentelemetry::exporter::otlp::OtlpExporterOptions opts;
+      opentelemetry::exporter::otlp::OtlpGrpcExporterOptions opts;
       opts.endpoint = config.endpoint;
       exporter      = std::unique_ptr<sdktrace::SpanExporter>(
-        new opentelemetry::exporter::otlp::OtlpExporter(opts));
+        new opentelemetry::exporter::otlp::OtlpGrpcExporter(opts));
       break;
   }
 
@@ -93,7 +96,7 @@ void initTracer()
     resAttrs[it.first] = it.second;
   }
 
-  auto provider = opentelemetry::v0::nostd::shared_ptr<opentelemetry::trace::TracerProvider>(
+  auto provider = opentelemetry::nostd::shared_ptr<opentelemetry::trace::TracerProvider>(
     new sdktrace::TracerProvider(std::move(processor),
     opentelemetry::sdk::resource::Resource::Create(resAttrs))
   );
@@ -102,7 +105,7 @@ void initTracer()
   opentelemetry::trace::Provider::SetTracerProvider(provider);
 }
 
-opentelemetry::v0::nostd::shared_ptr<opentelemetry::trace::Tracer> get_tracer()
+opentelemetry::nostd::shared_ptr<opentelemetry::trace::Tracer> get_tracer()
 {
   auto provider = opentelemetry::trace::Provider::GetTracerProvider();
   return provider->GetTracer(KHTTPDOTelTracerName);

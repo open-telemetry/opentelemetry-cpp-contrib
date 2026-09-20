@@ -6,8 +6,6 @@ docker-clean:
 	$(DOCKER_COMPOSE) down --rmi local -v
 	$(DOCKER_COMPOSE) rm -f -v
 
-LINUX_x64 := $(DOCKER_COMPOSE_LINUX) run -w /webserver_agent apache_agent_centos6-x64 
-
 setup-linux:
 	$(DOCKER_COMPOSE_LINUX) build
 

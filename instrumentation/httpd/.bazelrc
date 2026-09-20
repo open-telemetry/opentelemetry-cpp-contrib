@@ -1,0 +1,7 @@
+common --enable_platform_specific_config
+
+build:linux --host_cxxopt=-std=c++17 --cxxopt=-std=c++17
+build:macos --host_cxxopt=-std=c++17 --cxxopt=-std=c++17
+
+# Required by opentelemetry-cpp's OTLP gRPC exporter when built under Bazel.
+build --copt -DGRPC_BAZEL_BUILD

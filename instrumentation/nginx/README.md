@@ -31,6 +31,15 @@ cmake -DNGINX_VERSION=1.27.3 ..
 make
 ```
 
+### Build options
+
+#### `NGINX_VERSION`
+
+Selects the nginx release to compile the module against. 
+
+Pass this explicitly. When it is omitted, the build instead detects a locally installed nginx
+by running `nginx -v`, and aborts if none is on `PATH`
+
 ## Quick usage
 
 Download the .so file from the latest [GitHub Action run](https://github.com/open-telemetry/opentelemetry-cpp-contrib/actions/workflows/nginx.yml) or follow the instructions above to build. Then modify nginx.conf, or see the [example](test/conf/nginx.conf)

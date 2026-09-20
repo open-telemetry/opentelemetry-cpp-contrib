@@ -47,12 +47,12 @@ class HttpdCarrier : public opentelemetry::context::propagation::TextMapCarrier
 public:
   apr_table_t& hdrs;
   HttpdCarrier(apr_table_t& headers):hdrs(headers){}
-  virtual opentelemetry::v0::nostd::string_view Get(opentelemetry::v0::nostd::string_view key) const noexcept override
+  virtual opentelemetry::nostd::string_view Get(opentelemetry::nostd::string_view key) const noexcept override
   {
     auto fnd = apr_table_get(&hdrs, std::string(key).c_str());
     return fnd ? fnd : "";
   }
-  virtual void Set(opentelemetry::v0::nostd::string_view key, opentelemetry::v0::nostd::string_view value) noexcept override
+  virtual void Set(opentelemetry::nostd::string_view key, opentelemetry::nostd::string_view value) noexcept override
   {
     apr_table_set(&hdrs, std::string(key).c_str(),
               std::string(value).c_str());
@@ -154,7 +154,7 @@ static int opentel_handler(request_rec *r, int /* lookup_uri */ )
   if (!config.ignore_inbound && config.propagation != OtelPropagation::NONE)
   {
     HttpdCarrier car(*req->headers_in);
-    opentelemetry::v0::context::Context ctx_new,
+    opentelemetry::context::Context ctx_new,
         ctx_cur = opentelemetry::context::RuntimeContext::GetCurrent();
     switch (config.propagation)
     {

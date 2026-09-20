@@ -20,6 +20,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
+#include "ngx_http_opentelemetry_module_internal.h"
 
 ngx_http_opentelemetry_worker_conf_t *worker_conf;
 static contextNode contexts[5];
@@ -1657,6 +1658,7 @@ static void startMonitoringRequest(ngx_http_request_t* r){
     if(req_payload == NULL)
     {
         ngx_writeError(r->connection->log, __func__, "Not able to get memory for request payload");
+        return;
     }
     fillRequestPayload(req_payload, r);
 
@@ -2015,6 +2017,10 @@ static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t*
     ngx_table_elt_t  *header;
     ngx_uint_t       nelts;
     ngx_table_elt_t  *h;
+    size_t propagation_headers_capacity = 0;
+    size_t propagation_headers_allocation_size = 0;
+    size_t propagation_headers_count = 0;
+    size_t request_headers_allocation_size = 0;
 
     // creating a temporary uri for uri parsing 
     // (r->uri).data has an extra component "HTTP/1.1 connection" so to obtain the uri it
@@ -2056,10 +2062,14 @@ static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t*
     temp_request_method[(r->method_name).len]='\0';
     req_payload->request_method = temp_request_method;
 
-    char *temp_user_agent = ngx_pcalloc(r->pool, r->headers_in.user_agent->value.len +1);
-    strcpy(temp_user_agent,(const char*)(r->headers_in.user_agent->value.data));
-    temp_user_agent[r->headers_in.user_agent->value.len]='\0';
-    req_payload->user_agent = temp_user_agent;
+    ngx_table_elt_t *user_agent = r->headers_in.user_agent;
+    if (user_agent == NULL) {
+        req_payload->user_agent = "";
+    } else {
+        char *temp_user_agent = ngx_pcalloc(r->pool, user_agent->value.len + 1);
+        ngx_memcpy(temp_user_agent, user_agent->value.data, user_agent->value.len);
+        req_payload->user_agent = temp_user_agent;
+    }
 
     ngx_uint_t remote_port = 0;
     if (r->connection != NULL) {
@@ -2116,44 +2126,44 @@ static void fillRequestPayload(request_payload* req_payload, ngx_http_request_t*
     header = (ngx_table_elt_t*)part->elts;
     nelts = part->nelts;
 
-    req_payload->propagation_headers = ngx_pcalloc(r->pool, nelts * sizeof(http_headers));
-    req_payload->request_headers = ngx_pcalloc(r->pool, nelts * sizeof(http_headers));
+    if (conf->nginxModuleTrustIncomingSpans &&
+        ngx_http_otel_header_list_capacity(part,
+                                           &propagation_headers_capacity,
+                                           &propagation_headers_allocation_size) == NGX_OK &&
+        propagation_headers_capacity > 0) {
+        req_payload->propagation_headers =
+          ngx_pcalloc(r->pool, propagation_headers_allocation_size);
+    }
+    if (nelts > 0 &&
+        ngx_http_otel_header_allocation_size(
+          (size_t)nelts, &request_headers_allocation_size) == NGX_OK) {
+        req_payload->request_headers =
+          ngx_pcalloc(r->pool, request_headers_allocation_size);
+    }
     int request_headers_idx = 0;
-    int propagation_headers_idx = 0;
-    for (ngx_uint_t j = 0; j < nelts; j++) {
-        h = &header[j];
-        req_payload->request_headers[request_headers_idx].name = (char*)(h->key).data;
-        req_payload->request_headers[request_headers_idx].value = (char*)(h->value).data;
-        if (req_payload->request_headers[request_headers_idx].value == NULL) {
-            req_payload->request_headers[request_headers_idx].value = "";
+    if (req_payload->request_headers != NULL) {
+        for (ngx_uint_t j = 0; j < nelts; j++) {
+            h = &header[j];
+            req_payload->request_headers[request_headers_idx].name = (char*)(h->key).data;
+            req_payload->request_headers[request_headers_idx].value = (char*)(h->value).data;
+            if (req_payload->request_headers[request_headers_idx].value == NULL) {
+                req_payload->request_headers[request_headers_idx].value = "";
+            }
+            request_headers_idx++;
         }
-        request_headers_idx++;
     }
 
-    for (ngx_uint_t j = 0 ;; j++) {
-        if (j >= part->nelts) {
-            if (part->next == NULL) {
-                break;
-            }
-            part = part->next;
-            header = (ngx_table_elt_t*)part->elts;
-            j = 0;
-        }
-        h = &header[j];
-        for (int i = 0; i < headers_len && conf->nginxModuleTrustIncomingSpans ; i++) {
-            
-            if (strcmp(h->key.data, httpHeaders[i]) == 0) {
-                req_payload->propagation_headers[propagation_headers_idx].name = httpHeaders[i];
-                req_payload->propagation_headers[propagation_headers_idx].value = (const char*)(h->value).data;
-                if (req_payload->propagation_headers[propagation_headers_idx].value == NULL) {
-                    req_payload->propagation_headers[propagation_headers_idx].value = "";
-                }
-                propagation_headers_idx++;
-                break;
-            }
-        }
+    if (ngx_http_otel_fill_propagation_headers(
+          &r->headers_in.headers.part,
+          req_payload->propagation_headers,
+          propagation_headers_capacity,
+          conf->nginxModuleTrustIncomingSpans,
+          &propagation_headers_count) != NGX_OK) {
+        ngx_writeError(r->connection->log, __func__,
+                       "Propagation header capacity invariant violated");
+        propagation_headers_count = 0;
     }
-    req_payload->propagation_count = propagation_headers_idx;
+    req_payload->propagation_count = (int)propagation_headers_count;
     req_payload->request_headers_count = request_headers_idx;
 
 }

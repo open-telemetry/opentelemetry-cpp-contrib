@@ -28,7 +28,6 @@ jobs:
         with:
           persist-credentials: false
           path: opentelemetry-cpp-contrib
-          submodules: "recursive"
       - name: checkout opentelemetry-cpp
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

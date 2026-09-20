@@ -1,0 +1,15 @@
+# Copyright The OpenTelemetry Authors
+# SPDX-License-Identifier: Apache-2.0
+
+module(
+    name = "opentelemetry-httpd",
+    version = "0.0.0",
+)
+
+bazel_dep(
+    name = "opentelemetry-cpp",
+    version = "1.29.0",
+    repo_name = "io_opentelemetry_cpp",
+)
+
+bazel_dep(name = "rules_cc", version = "0.2.25")

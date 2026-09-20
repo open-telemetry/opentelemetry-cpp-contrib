@@ -1,13 +1,21 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.16)
 
 project(opentelemetry-httpd)
 
-find_package(opentelemetry-cpp REQUIRED)
+if(NOT DEFINED CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
+endif()
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# The module is a shared object, so every dependency linked into it must be PIC.
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 find_package(Threads REQUIRED)
-find_package(Protobuf REQUIRED)
-find_package(gRPC REQUIRED)
-find_package(CURL REQUIRED)
-find_package(Thrift REQUIRED)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
+
+set(WITH_OTLP_GRPC ON CACHE BOOL "" FORCE)
+include(opentelemetry-cpp)
 
 find_path(APR_INCLUDE_DIR
   NAMES apr.h
@@ -50,14 +58,14 @@ set_target_properties(otel_httpd_module PROPERTIES
 
 target_include_directories(otel_httpd_module
   PRIVATE
-  ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
   ${APACHE_INCLUDE_DIR}
   ${APR_INCLUDE_DIR}
 )
 
 target_link_libraries(otel_httpd_module
   PRIVATE
-  ${OPENTELEMETRY_CPP_LIBRARIES}
-  gRPC::grpc++
-#  Thrift::thrift
+  opentelemetry-cpp::api
+  opentelemetry-cpp::trace
+  opentelemetry-cpp::ostream_span_exporter
+  opentelemetry-cpp::otlp_grpc_exporter
 )

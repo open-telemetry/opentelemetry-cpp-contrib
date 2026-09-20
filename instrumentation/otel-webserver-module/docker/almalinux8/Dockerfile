@@ -1,8 +1,8 @@
-FROM almalinux:8.10
+FROM almalinux:8.10@sha256:9f355ae942d6a6c0561f0771dc053a2cfae9580fc45fa4252756db7c7e80c09f
 
 ARG BUILD_NUMBER
 
-LABEL NAME=apm/build-image-webserver-agent-centos6-x64 VERSION=$BUILD_NUMBER
+LABEL NAME=apm/build-image-webserver-agent-almalinux8-x64 VERSION=$BUILD_NUMBER
 
 ENV GOSU_ARCH amd64
 ENV JDK_ARCH x64
@@ -10,7 +10,7 @@ ENV JDK_ARCH x64
 ARG PYTHON_VERSION="2.7.18"
 ARG CMAKE_VERSION="3.20"
 ARG CMAKE_0VERSION="3.20.0"
-ARG GRPC_VERSION="1.36.4"
+ARG GRPC_VERSION="1.47.5"
 ARG OPENTELEMETRY_VERSION="1.2.0"
 ARG BOOST_VERSION="1.75.0"
 ARG BOOST_FILENAME="boost_1_75_0"
@@ -21,7 +21,7 @@ ARG APRUTIL_VERSION="1.6.1"
 ARG AUTOCONF_VERSION="2.68"
 ARG LIBTOOL_VERSION="2.4.6"
 ARG LOG4CXX_VERSION="0.11.0"
-ARG GTEST_VERSION="1.10.0"
+ARG GTEST_VERSION="1.12.1"
 ARG AUTOMAKE_VERSION="1.16.3"
 ARG PERL_VERSION="5.20.2"
 ARG PERL_CPANVERSION="5.0"
@@ -144,14 +144,14 @@ RUN wget --no-check-certificate https://ftp.gnu.org/gnu/automake/automake-${AUTO
     && cd .. && rm -rf automake-${AUTOMAKE_VERSION}.tar.gz
 
 # install libtool
-RUN wget --no-check-certificate https://ftpmirror.gnu.org/libtool/libtool-${LIBTOOL_VERSION}.tar.gz \
+RUN wget --no-check-certificate https://ftp.gnu.org/gnu/libtool/libtool-${LIBTOOL_VERSION}.tar.gz \
     && tar xzf libtool-${LIBTOOL_VERSION}.tar.gz \
     && cd libtool-${LIBTOOL_VERSION} \
     && ./configure --prefix=/usr \
     && make -j 6 \
     && make install \
     && libtool --version \
-    && cd .. && rm -rf libtool--${LIBTOOL_VERSION}.tar.gz
+    && cd .. && rm -rf libtool-${LIBTOOL_VERSION}.tar.gz
 
 #install log4cxx
 RUN mkdir -p dependencies/apache-log4cxx/${LOG4CXX_VERSION} \
@@ -173,7 +173,7 @@ RUN mkdir -p dependencies/opentelemetry/${OPENTELEMETRY_VERSION}/lib \
     && git submodule update --init --recursive \
     && mkdir build \
     && cd build \
-    && cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=ON -DWITH_OTLP=ON -DCMAKE_INSTALL_PREFIX=/dependencies/opentelemetry/${OPENTELEMETRY_VERSION} \
+    && cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=ON -DWITH_OTLP=ON -DWITH_ABSEIL=ON -DCMAKE_INSTALL_PREFIX=/dependencies/opentelemetry/${OPENTELEMETRY_VERSION} \
     && cmake --build . --target all \
     && cd .. \
     && find . -name "*.so" -type f -exec cp {} /dependencies/opentelemetry/${OPENTELEMETRY_VERSION}/lib/ \; \
@@ -254,7 +254,7 @@ RUN cd /otel-webserver-module/build \
 
 
 RUN cp /otel-webserver-module/conf/nginx/opentelemetry_module.conf /opt/ \
-    && sed -i '8i load_module /opt/opentelemetry-webserver-sdk/WebServerModule/Nginx/1.26.2/ngx_http_opentelemetry_module.so;' /etc/nginx/nginx.conf \
+    && sed -i "8i load_module /opt/opentelemetry-webserver-sdk/WebServerModule/Nginx/${NGINX_VERSION}/ngx_http_opentelemetry_module.so;" /etc/nginx/nginx.conf \
     && sed -i '33i include /opt/opentelemetry_module.conf;' /etc/nginx/nginx.conf \ 
     && cd /
 
