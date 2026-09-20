@@ -16,7 +16,7 @@ cmake_minimum_required(VERSION 3.16)
 
 set(this_target opentelemetry-cpp-contrib-prometheus-push-exporter)
 
-project(${this_target})
+project(${this_target} VERSION "1.19.0")
 
 set(MAIN_PROJECT OFF)
 
