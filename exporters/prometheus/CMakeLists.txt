@@ -207,6 +207,8 @@ if(BUILD_TESTING)
 endif()
 
 include(CMakePackageConfigHelpers)
+include(GNUInstallDirs)
+
 file(MAKE_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/${PROJECT_NAME}")
 
 configure_package_config_file(
