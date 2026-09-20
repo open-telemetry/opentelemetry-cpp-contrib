@@ -46,6 +46,18 @@ jobs:
           cd otel_cpp_contrib/exporters/prometheus
           bazel --output_user_root=$HOME/.cache/bazel build --copt=-DENABLE_TEST --@io_opentelemetry_cpp//api:with_abseil //...
           bazel --output_user_root=$HOME/.cache/bazel test --copt=-DENABLE_TEST --@io_opentelemetry_cpp//api:with_abseil //...
+      - name: Collect Bazel test logs
+        if: failure()
+        run: |
+          mkdir -p bazel-logs
+          cp -r bazel-out/*/testlogs bazel-logs || true
+      - name: Upload Bazel logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bazel-test-logs
+          path: bazel-logs
+
   prometheus_cmake_window:
     name: CMake on Windows
     runs-on: windows-2025
