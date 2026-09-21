@@ -30,10 +30,10 @@ def io_opentelemetry_cpp_contrib_deps():
     maybe(
         http_archive,
         name = "com_github_jupp0r_prometheus_cpp",
-        sha256 = "48dbad454d314b836cc667ec4def93ec4a6e4255fc8387c20cacb3b8b6faee30",
-        strip_prefix = "prometheus-cpp-1.2.4",
+        sha256 = "ac6e958405a29fbbea9db70b00fa3c420e16ad32e1baf941ab233ba031dd72ee",
+        strip_prefix = "prometheus-cpp-1.3.0",
         urls = [
-            "https://github.com/jupp0r/prometheus-cpp/archive/refs/tags/v1.2.4.tar.gz",
+            "https://github.com/jupp0r/prometheus-cpp/archive/refs/tags/v1.3.0.tar.gz",
         ],
     )
 
@@ -41,10 +41,10 @@ def io_opentelemetry_cpp_contrib_deps():
     maybe(
         http_archive,
         name = "platforms",
-        sha256 = "29742e87275809b5e598dc2f04d86960cc7a55b3067d97221c9abbc9926bff0f",
+        sha256 = "dbad4a23abcca6171e47b79edc53bd6a41067a3b75f9e8b104656b459ff25046",
         urls = [
-            "https://mirror.bazel.build/github.com/bazelbuild/platforms/releases/download/0.0.11/platforms-0.0.11.tar.gz",
-            "https://github.com/bazelbuild/platforms/releases/download/0.0.11/platforms-0.0.11.tar.gz",
+            "https://mirror.bazel.build/github.com/bazelbuild/platforms/releases/download/1.1.0/platforms-1.1.0.tar.gz",
+            "https://github.com/bazelbuild/platforms/releases/download/1.1.0/platforms-1.1.0.tar.gz",
         ],
     )
 
@@ -53,10 +53,10 @@ def io_opentelemetry_cpp_contrib_deps():
     maybe(
         http_archive,
         name = "com_google_absl",
-        sha256 = "91ac87d30cc6d79f9ab974c51874a704de9c2647c40f6932597329a282217ba8",
-        strip_prefix = "abseil-cpp-20220623.1",
+        sha256 = "773652c0fc276bcd5c461668dc112d0e3b6cde499600bfe3499c5fdda4ed4a5b",
+        strip_prefix = "abseil-cpp-20220623.2",
         urls = [
-            "https://github.com/abseil/abseil-cpp/archive/20220623.1.tar.gz",
+            "https://github.com/abseil/abseil-cpp/archive/20220623.2.tar.gz",
             # "https://github.com/abseil/abseil-cpp/archive/20200225.3.tar.gz",
         ],
     )
@@ -67,12 +67,12 @@ def io_opentelemetry_cpp_contrib_deps():
     maybe(
         http_archive,
         name = "com_google_googletest",
-        sha256 = "81964fe578e9bd7c94dfdb09c8e4d6e6759e19967e397dbea48d1c10e45d0df2",
-        strip_prefix = "googletest-release-1.12.1",
+        sha256 = "6e3191c1455468b3fc35a417fb565c1c5071aee1b7e7f85e30cf48a98d37d8b5",
+        strip_prefix = "googletest-1.18.0",
         # sha256 = "9dc9157a9a1551ec7a7e43daea9a694a0bb5fb8bec81235d8a1e6ef64c716dcb",
         # strip_prefix = "googletest-release-1.10.0",
         urls = [
-            "https://github.com/google/googletest/archive/release-1.12.1.tar.gz",
+            "https://github.com/google/googletest/archive/v1.18.0.tar.gz",
             # "https://github.com/google/googletest/archive/release-1.10.0.tar.gz",
         ],
     )
@@ -81,7 +81,7 @@ def io_opentelemetry_cpp_contrib_deps():
     maybe(
         http_archive,
         name = "com_googlesource_code_re2",  # 2023-06-01
-        sha256 = "1726508efc93a50854c92e3f7ac66eb28f0e57652e413f11d7c1e28f97d997ba",
-        strip_prefix = "re2-03da4fc0857c285e3a26782f6bc8931c4c950df4",
-        urls = ["https://github.com/google/re2/archive/03da4fc0857c285e3a26782f6bc8931c4c950df4.zip"],
+        sha256 = "2254d2637bd0dc0e698a4121c3208cd91ba7bace3ab70cf44f832e22dea94d61",
+        strip_prefix = "re2-972a15cedd008d846f1a39b2e88ce48d7f166cbd",
+        urls = ["https://github.com/google/re2/archive/972a15cedd008d846f1a39b2e88ce48d7f166cbd.zip"],
     )
