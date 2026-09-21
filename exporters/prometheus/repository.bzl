@@ -53,10 +53,10 @@ def io_opentelemetry_cpp_contrib_deps():
     maybe(
         http_archive,
         name = "com_google_absl",
-        sha256 = "91ac87d30cc6d79f9ab974c51874a704de9c2647c40f6932597329a282217ba8",
-        strip_prefix = "abseil-cpp-20220623.1",
+        sha256 = "773652c0fc276bcd5c461668dc112d0e3b6cde499600bfe3499c5fdda4ed4a5b",
+        strip_prefix = "abseil-cpp-20220623.2",
         urls = [
-            "https://github.com/abseil/abseil-cpp/archive/20220623.1.tar.gz",
+            "https://github.com/abseil/abseil-cpp/archive/20220623.2.tar.gz",
             # "https://github.com/abseil/abseil-cpp/archive/20200225.3.tar.gz",
         ],
     )
