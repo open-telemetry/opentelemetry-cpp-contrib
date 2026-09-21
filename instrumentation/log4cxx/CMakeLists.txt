@@ -54,6 +54,7 @@ target_link_libraries(${this_target} PRIVATE
 
 if(OPENTELEMETRY_INSTALL)
   include(GNUInstallDirs)
+  include(CMakePackageConfigHelpers)
 
   install(
     TARGETS ${this_target}
