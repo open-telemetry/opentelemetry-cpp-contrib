@@ -192,14 +192,6 @@ if(MAIN_PROJECT)
     DESTINATION include/opentelemetry/exporters/
     FILES_MATCHING
     PATTERN "*.h")
-else()
-  otel_add_component(
-    COMPONENT exporters_prometheus_push
-    TARGETS opentelemetry_prometheus_push_exporter
-    FILES_DIRECTORY "include/opentelemetry/exporters/prometheus"
-    FILES_DESTINATION "include/opentelemetry/exporters"
-    FILES_MATCHING
-    PATTERN "*.h")
 endif()
 
 if(BUILD_TESTING)
