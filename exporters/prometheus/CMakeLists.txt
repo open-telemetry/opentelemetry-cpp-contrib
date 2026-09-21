@@ -179,20 +179,18 @@ elseif(UNIX OR MINGW)
   endif()
 endif()
 
-if(MAIN_PROJECT)
-  install(
-    TARGETS opentelemetry_prometheus_push_exporter
-    EXPORT "${PROJECT_NAME}-target"
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(
+  TARGETS opentelemetry_prometheus_push_exporter
+  EXPORT "${PROJECT_NAME}-target"
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-  install(
-    DIRECTORY include/opentelemetry/exporters/prometheus
-    DESTINATION include/opentelemetry/exporters/
-    FILES_MATCHING
-    PATTERN "*.h")
-endif()
+install(
+  DIRECTORY include/opentelemetry/exporters/prometheus
+  DESTINATION include/opentelemetry/exporters/
+  FILES_MATCHING
+  PATTERN "*.h")
 
 if(BUILD_TESTING)
   add_subdirectory(test)
