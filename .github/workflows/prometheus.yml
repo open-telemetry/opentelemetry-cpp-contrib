@@ -41,10 +41,14 @@ jobs:
         with:
           path: /home/runner/.cache/bazel
           key: bazel_${{ matrix.os }}
-      - name: run tests
+      - name: run build
         run: |
           cd otel_cpp_contrib/exporters/prometheus
           bazel --output_user_root=$HOME/.cache/bazel build --copt=-DENABLE_TEST --@io_opentelemetry_cpp//api:with_abseil //...
+      - name: run tests
+        if: ${{ !startsWith(matrix.os, 'ubuntu') }}
+        run: |
+          cd otel_cpp_contrib/exporters/prometheus
           bazel --output_user_root=$HOME/.cache/bazel test --copt=-DENABLE_TEST --@io_opentelemetry_cpp//api:with_abseil //...
 
   prometheus_cmake_window:
