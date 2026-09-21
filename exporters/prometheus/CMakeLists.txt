@@ -14,31 +14,44 @@
 
 cmake_minimum_required(VERSION 3.16)
 
-project(
-  opentelemetry-cpp-contrib
-  VERSION "1.19.0" # opentelemetry-cpp-contrib 1.19.0
-  HOMEPAGE_URL "https://github.com/open-telemetry/opentelemetry-cpp-contrib"
-  LANGUAGES CXX)
+set(this_target opentelemetry-cpp-contrib-prometheus-push-exporter)
 
-if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
-  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
-      "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}")
+project(${this_target} VERSION "1.19.0")
+
+set(MAIN_PROJECT OFF)
+
+if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+  set(MAIN_PROJECT ON)
+  message(STATUS "${PROJECT_NAME} is main project")
 endif()
 
-if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
-  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY
-      "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}")
+set(ENABLE_TESTING OFF)
+
+include(FetchContent)
+
+if(MAIN_PROJECT)
+  find_package(opentelemetry-cpp REQUIRED)
 endif()
 
-if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
-  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
-      "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}")
+find_package(ZLIB REQUIRED)
+
+find_package(prometheus-cpp CONFIG QUIET)
+set(prometheus-cpp_PROVIDER "find_package")
+
+if(NOT prometheus-cpp_FOUND)
+  FetchContent_Declare(
+    prometheus-cpp
+    GIT_REPOSITORY https://github.com/jupp0r/prometheus-cpp.git
+    GIT_TAG e5fada43131d251e9c4786b04263ce98b6767ba5 # v1.3.0
+  )
+
+  FetchContent_MakeAvailable(prometheus-cpp)
 endif()
 
-link_directories(${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
-
-find_package(opentelemetry-cpp REQUIRED)
-find_package(prometheus-cpp CONFIG REQUIRED)
+if(NOT TARGET prometheus-cpp::core OR
+   NOT TARGET prometheus-cpp::push)
+  message(FATAL_ERROR "A required prometheus-cpp target (prometheus-cpp::core or prometheus-cpp::push) was not imported")
+endif()
 
 get_target_property(OPENTELEMETRY_CPP_API_DEFINITIONS opentelemetry-cpp::api
                     INTERFACE_COMPILE_DEFINITIONS)
@@ -59,7 +72,14 @@ cmake_dependent_option(BUILD_TESTING "Enable tests" ON
 if(BUILD_TESTING)
   enable_testing()
   add_definitions(-DENABLE_TEST)
-  find_package(GTest)
+  FetchContent_Declare(
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG 15460959cbbfa20e66ef0b5ab497367e47fc0a04 # v1.12.0
+  )
+
+  FetchContent_MakeAvailable(googletest)
+
   include(GoogleTest)
 
   if(TARGET GTest::gtest)
@@ -177,29 +197,31 @@ if(BUILD_TESTING)
 endif()
 
 include(CMakePackageConfigHelpers)
-file(MAKE_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/${PROJECT_NAME}")
+include(GNUInstallDirs)
+
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}")
 
 configure_package_config_file(
   "${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}-config.cmake.in"
-  "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake"
   INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
   NO_CHECK_REQUIRED_COMPONENTS_MACRO)
 
 write_basic_package_version_file(
-  "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config-version.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config-version.cmake"
   VERSION "${PROJECT_VERSION}${OPENTELEMETRY_CPP_ECOSYSTEM_VERSION_TWEAK}"
   COMPATIBILITY SameMajorVersion)
 
 install(
   FILES
-    "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake"
-    "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config-version.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config-version.cmake"
   DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 
 export(
   EXPORT "${PROJECT_NAME}-target"
   NAMESPACE ${PROJECT_NAME}::
-  FILE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-target.cmake"
+  FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-target.cmake"
 )
 install(
   EXPORT "${PROJECT_NAME}-target"
