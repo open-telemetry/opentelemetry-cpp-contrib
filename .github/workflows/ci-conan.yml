@@ -1,0 +1,54 @@
+name: Conan
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-26.04
+          - Windows-2025
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install and setup Conan
+        uses: conan-io/setup-conan@ed3942a6883243f4af84e13e49c972f9440fa1c2 # v1.4.0
+        with:
+          cache_packages: true
+      - name: setup
+        working-directory: otel_cpp_contrib/exporters/prometheus
+        run: |
+          sudo apt update -y 
+          xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
+      - name: Install dependencies from manifest
+        working-directory: ${{ inputs.working-directory }}
+        shell: bash
+        run: |
+          conan install . --output-folder=build --build=missing
+      - name: Configure (CMake + Conan toolchain)
+        working-directory: ${{ inputs.working-directory }}
+        shell: bash
+        run: |
+          cmake -S . -B build \
+            -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DBUILD_TESTING=OFF \
+            -DWITH_EXAMPLES=OFF
+      - name: Build
+        working-directory: ${{ inputs.working-directory }}/build
+        run: cmake --build . -j"$(nproc)"
+      - name: Test
+        working-directory: ${{ inputs.working-directory }}/build
+        run: ctest -VV
