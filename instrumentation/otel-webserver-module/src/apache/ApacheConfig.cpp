@@ -647,6 +647,11 @@ void* ApacheConfigHandlers::otel_merge_dir_config(apr_pool_t* p, void* parent_co
             apr_pstrdup(p, nconf->otelExporterEndpoint) : apr_pstrdup(p, pconf->otelExporterEndpoint);
     merged_config->otelExporterEndpoint_initialized = 1;
 
+    // otelExporterOtlpHeaders       OPTIONAL: OTLP exporter headers as key value pairs
+    merged_config->otelExporterOtlpHeaders = nconf->otelExporterOtlpHeaders_initialized ?
+            apr_pstrdup(p, nconf->otelExporterOtlpHeaders) : apr_pstrdup(p, pconf->otelExporterOtlpHeaders);
+    merged_config->otelExporterOtlpHeaders_initialized = 1;
+
     // otelSslEnabled
     merged_config->otelSslEnabled = nconf->otelSslEnabled_initialized ?
             nconf->otelSslEnabled : pconf->otelSslEnabled;
@@ -858,6 +863,7 @@ void ApacheConfigHandlers::traceConfig(const request_rec* r, const otel_cfg* cfg
             "config{"
                 "(Enabled=\"%d\")"
                 "(OtelExporterEndpoint=\"%s\")"
+                "(OtelExporterHeadersSet=\"%d\")"
                 "(OtelSslEnabled=\"%d\")"
                 "(OtelSslCertificatePath=\"%s\")"
                 "(OtelSpanExporter=\"%s\")"
@@ -880,6 +886,8 @@ void ApacheConfigHandlers::traceConfig(const request_rec* r, const otel_cfg* cfg
             "}",
             cfg->otelEnabled,
             cfg->otelExporterEndpoint,
+            // Headers may carry credentials (e.g. api-key), so only report presence, never content.
+            (int)(cfg->otelExporterOtlpHeaders != NULL && strlen(cfg->otelExporterOtlpHeaders) > 0),
             cfg->otelSslEnabled,
             cfg->otelSslCertificatePath,
             cfg->otelExporterType,
