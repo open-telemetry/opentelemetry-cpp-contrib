@@ -20,37 +20,26 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }} # Ensure that only one instance of this workflow is running per Pull Request/branch/ref
+  cancel-in-progress: true # Cancel any previous runs of this workflow
+
 jobs:
   cmake_linux:
     name: CMake Linux
     runs-on: ubuntu-24.04
     steps:
-      - name: checkout glog
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-          repository: "google/glog"
-          ref: "v0.7.0"
-          path: "glog"
       - name: checkout opentelemetry-cpp-contrib
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          path: opentelemetry-cpp-contrib
       - name: setup dependencies
-        working-directory: opentelemetry-cpp-contrib/instrumentation/glog
+        working-directory: instrumentation/glog
         run: |
           sudo apt update -y
           xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-      - name: build glog
-        run: |
-          mkdir -p "${GITHUB_WORKSPACE}/glog/build"
-          cd "${GITHUB_WORKSPACE}/glog/build"
-          cmake .. -G Ninja
-          cmake --build . -j$(nproc)
-          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
       - name: build instrumentation/glog contrib
-        working-directory: opentelemetry-cpp-contrib/instrumentation/glog
+        working-directory: instrumentation/glog
         run: |
           mkdir -p "build"
           cd "build"

@@ -1,3 +1,6 @@
+# Copyright The OpenTelemetry Authors
+# SPDX-License-Identifier: Apache-2.0
+
 cmake_minimum_required(VERSION 3.16)
 
 # MAIN_PROJECT CHECK determine if fluentd exporter is built as a subproject
@@ -62,37 +65,43 @@ target_link_libraries(opentelemetry_exporter_geneva_metrics
 set_target_version(opentelemetry_exporter_geneva_metrics)
 
 if(BUILD_TESTING)
-  if(EXISTS ${CMAKE_BINARY_DIR}/lib/libgtest.a)
-    # Prefer GTest from build tree. GTest is not always working with
-    # CMAKE_PREFIX_PATH
-    set(GTEST_INCLUDE_DIRS
-        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googletest/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googlemock/include)
-    set(GTEST_BOTH_LIBRARIES
-        ${CMAKE_BINARY_DIR}/lib/libgtest.a
-        ${CMAKE_BINARY_DIR}/lib/libgtest_main.a
-        ${CMAKE_BINARY_DIR}/lib/libgmock.a)
-  else()
-    find_package(GTest REQUIRED)
-  endif()
-  include_directories(SYSTEM ${GTEST_INCLUDE_DIRS})
+  FetchContent_Declare(
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG 15460959cbbfa20e66ef0b5ab497367e47fc0a04 # v1.12.0
+  )
+
+  FetchContent_MakeAvailable(googletest)
+
   include_directories(SYSTEM test/decoder)
+
   enable_testing()
+
+  set(testname geneva_metrics_exporter_test)
+
   include(GoogleTest)
+
   # build geneva metrics tests
   add_compile_definitions(KS_STR_ENCODING_NONE)
-  add_executable(
-    geneva_metrics_exporter_test
-    test/metrics_exporter_test.cc test/decoder/ifx_metrics_bin.cpp
+  add_executable(${testname}
+    test/metrics_exporter_test.cc
+    test/decoder/ifx_metrics_bin.cpp
     test/decoder/kaitai/kaitaistream.cpp)
-  target_link_libraries(
-    geneva_metrics_exporter_test ${GTEST_BOTH_LIBRARIES}
-    ${CMAKE_THREAD_LIBS_INIT} opentelemetry_exporter_geneva_metrics)
+
+  target_include_directories(${testname} PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}/test/decoder/kaitai
+  )
+
+  target_link_libraries(${testname} PRIVATE
+    GTest::gmock
+    GTest::gtest
+    GTest::gtest_main
+    opentelemetry_exporter_geneva_metrics)
 
   gtest_add_tests(
-    TARGET geneva_metrics_exporter_test
+    TARGET ${testname}
     TEST_PREFIX exporter.
-    TEST_LIST geneva_metrics_exporter_test)
+  )
 endif()
 
 if(OPENTELEMETRY_INSTALL)
@@ -126,9 +135,11 @@ if(OPENTELEMETRY_INSTALL)
 endif()
 
 if(WITH_EXAMPLES)
-  add_executable(example_metrics example/example_metrics.cc
+  set(example_exe example_metrics)
+  add_executable(${example_exe} example/example_metrics.cc
                                  example/foo_library.cc)
-  target_link_libraries(example_metrics opentelemetry_exporter_geneva_metrics)
+
+  target_link_libraries(${example_exe} PRIVATE opentelemetry_exporter_geneva_metrics)
 
   if(NOT WIN32)
     add_executable(stress_test_linux example/stress_test_linux.cc)

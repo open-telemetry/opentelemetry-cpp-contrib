@@ -1,6 +1,6 @@
 services:
   collector:
-    image: otel/opentelemetry-collector:0.157.0
+    image: otel/opentelemetry-collector:0.161.0@sha256:b6d2b9a85b1029d05b5ad913150c1f014eed4ae99be81a1813ca5ade4a191913
     command: ["--config=/etc/otel/config.yml"]
     volumes:
       - ${TEST_ROOT:-.}/conf/collector.yml:/etc/otel/config.yml
@@ -40,6 +40,6 @@ services:
     ports:
       - "3500:3500"
   php-backend:
-    image: php:7.4.33-fpm
+    image: php:7.4.33-fpm@sha256:3ac7c8c74b2b047c7cb273469d74fc0d59b857aa44043e6ea6a0084372811d5b
     volumes:
       - ${TEST_ROOT:-.}/backend/php/:/var/www/html/php

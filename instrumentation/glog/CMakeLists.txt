@@ -20,7 +20,17 @@ if(MAIN_PROJECT)
   include(opentelemetry-cpp)
 endif()
 
-find_package(glog 0.7.0 REQUIRED)
+find_package(glog 0.7.0 QUIET)
+
+if(NOT glog_FOUND)
+  FetchContent_Declare(
+    glog
+    GIT_REPOSITORY https://github.com/google/glog.git
+    GIT_TAG 34b8da6496aec6a98277808701cfa834fae9801f # v0.7.0
+  )
+
+  FetchContent_MakeAvailable(glog)
+endif()
 
 add_library(${this_target} src/sink.cc)
 
@@ -36,12 +46,9 @@ target_include_directories(${this_target} PUBLIC
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-target_link_libraries(${this_target} PUBLIC 
-  opentelemetry-cpp::api
-)
-
-target_link_libraries(${this_target} PRIVATE
+target_link_libraries(${this_target} PUBLIC
   glog::glog
+  opentelemetry-cpp::api
 )
 
 if(OPENTELEMETRY_INSTALL)
@@ -108,7 +115,6 @@ if(BUILD_TESTING)
   target_link_libraries(${testname} PRIVATE
     GTest::gmock
     GTest::gtest
-    glog::glog
     opentelemetry-cpp::ostream_log_record_exporter
     ${this_target}
   )
@@ -134,7 +140,6 @@ if(WITH_EXAMPLES)
     opentelemetry-cpp::trace
     opentelemetry-cpp::ostream_log_record_exporter
     opentelemetry-cpp::ostream_span_exporter
-    glog::glog
     ${this_target}
   )
 endif() # WITH_EXAMPLES
