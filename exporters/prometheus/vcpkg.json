@@ -16,7 +16,6 @@
       "default-features": false,
       "features": [
         "compression",
-        "core",
         "pull",
         "push"
       ]
@@ -24,16 +23,7 @@
     "nlohmann-json",
     "gtest",
     "benchmark",
-    {
-      "name": "curl",
-      "default-features": false,
-      "features": [
-        "core",
-        "non-http",
-        "openssl",
-        "ssl"
-      ]
-    },
+    "curl",
     "openssl",
     "zlib"
   ]
