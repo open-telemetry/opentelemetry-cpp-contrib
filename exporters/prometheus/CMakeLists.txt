@@ -30,7 +30,8 @@ set(ENABLE_TESTING OFF)
 include(FetchContent)
 
 if(MAIN_PROJECT)
-  find_package(opentelemetry-cpp REQUIRED)
+  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
+  include(opentelemetry-cpp)
 endif()
 
 find_package(ZLIB REQUIRED)

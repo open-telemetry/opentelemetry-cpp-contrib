@@ -7,12 +7,14 @@ on:
       - 'main'
     paths:
       - "exporters/prometheus/**"
+      - 'cmake/**'
       - ".github/workflows/prometheus.yml"
   pull_request:
     branches:
       - 'main'
     paths:
       - "exporters/prometheus/**"
+      - 'cmake/**'
       - ".github/workflows/prometheus.yml"
 
 permissions:
@@ -33,7 +35,6 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          path: "otel_cpp_contrib"
       - name: Mount Bazel Cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         env:
@@ -42,12 +43,12 @@ jobs:
           path: /home/runner/.cache/bazel
           key: bazel_${{ matrix.os }}
       - name: run build
-        working-directory: otel_cpp_contrib/exporters/prometheus
+        working-directory: exporters/prometheus
         run: |
           bazel --output_user_root=$HOME/.cache/bazel build --copt=-DENABLE_TEST --@io_opentelemetry_cpp//api:with_abseil //...
       - name: run tests
         if: ${{ !startsWith(matrix.os, 'ubuntu') }}
-        working-directory: otel_cpp_contrib/exporters/prometheus
+        working-directory: exporters/prometheus
         run: |
           bazel --output_user_root=$HOME/.cache/bazel test --copt=-DENABLE_TEST --@io_opentelemetry_cpp//api:with_abseil //...
 
@@ -59,32 +60,14 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          path: "otel_cpp_contrib"
-      - name: checkout otel cpp
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-          repository: "open-telemetry/opentelemetry-cpp"
-          ref: "v1.19.0"
-          path: "otel_cpp"
-          submodules: "recursive"
       - name: run tests
         shell: pwsh
         run: |
           New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" `
             -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
           vcpkg install "prometheus-cpp[pull,push]" nlohmann-json gtest benchmark --triplet=x64-windows-static-md
-          New-Item -Path "$ENV:GITHUB_WORKSPACE/otel_cpp/build_jobs_ci" -ItemType "directory" -Force 
-          Set-Location "$ENV:GITHUB_WORKSPACE/otel_cpp/build_jobs_ci"
-          cmake .. -DWITH_PROMETHEUS=ON -DWITH_METRICS_PREVIEW=OFF -DCMAKE_BUILD_TYPE=Debug `
-            -DVCPKG_TARGET_TRIPLET=x64-windows-static-md `
-            "-DCMAKE_TOOLCHAIN_FILE=$ENV:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" `
-            "-DCMAKE_INSTALL_PREFIX=$HOME/prebuilt-otel" `
-            "-DBUILD_SHARED_LIBS=OFF" "-DBUILD_TESTING=OFF" "-DWITH_EXAMPLES=OFF" "-DWITH_FUNC_TESTS=OFF"
-          cmake --build . -j --config Debug || cmake --build . -j2 --config Debug || cmake --build . --config Debug
-          cmake --install . --prefix "$HOME/prebuilt-otel" --config Debug
-          New-Item -Path "$ENV:GITHUB_WORKSPACE/otel_cpp_contrib/exporters/prometheus/build_jobs_ci" -ItemType "directory" -Force
-          Set-Location "$ENV:GITHUB_WORKSPACE/otel_cpp_contrib/exporters/prometheus/build_jobs_ci"
+          New-Item -Path "$ENV:GITHUB_WORKSPACE/exporters/prometheus/build_jobs_ci" -ItemType "directory" -Force
+          Set-Location "$ENV:GITHUB_WORKSPACE/exporters/prometheus/build_jobs_ci"
           cmake .. "-DCMAKE_PREFIX_PATH=$HOME/prebuilt-otel" -DCMAKE_BUILD_TYPE=Debug `
             -DVCPKG_TARGET_TRIPLET=x64-windows-static-md `
             "-DCMAKE_TOOLCHAIN_FILE=$ENV:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" `
@@ -99,33 +82,16 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          path: "otel_cpp_contrib"
-      - name: checkout otel cpp
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-          repository: "open-telemetry/opentelemetry-cpp"
-          ref: "v1.19.0"
-          path: "otel_cpp"
-          submodules: "recursive"
       - name: setup
-        working-directory: otel_cpp_contrib/exporters/prometheus
+        working-directory: exporters/prometheus
         run: |
           sudo apt update -y 
           xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
       - name: run tests
+        working-directory: exporters/prometheus
         run: |
-          mkdir -p "$GITHUB_WORKSPACE/otel_cpp/build_jobs_ci"
-          cd "$GITHUB_WORKSPACE/otel_cpp/build_jobs_ci"
-          cmake .. \
-            -G Ninja \
-            -DWITH_PROMETHEUS=ON \
-            -DWITH_METRICS_PREVIEW=OFF \
-            -DBUILD_TESTING=OFF -DWITH_EXAMPLES=OFF  -DOPENTELEMETRY_INSTALL=ON "-DWITH_FUNC_TESTS=OFF"
-          cmake --build . -j$(nproc)
-          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
-          mkdir -p "$GITHUB_WORKSPACE/otel_cpp_contrib/exporters/prometheus/build_jobs_ci"
-          cd "$GITHUB_WORKSPACE/otel_cpp_contrib/exporters/prometheus/build_jobs_ci"
+          mkdir -p "build_jobs_ci"
+          cd "build_jobs_ci"
           cmake .. \
             -G Ninja \
             -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/sandbox" \
