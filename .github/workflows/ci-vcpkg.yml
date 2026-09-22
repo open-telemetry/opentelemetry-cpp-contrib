@@ -22,44 +22,52 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Install deps (Linux)
+      - name: Install deps [Linux]
         if: runner.os == 'Linux'
         run: |
           sudo apt update -y
           sudo apt install -y --no-install-recommends --no-install-suggests \
-            git cmake ninja-build pkg-config
-      - name: Install deps (Windows)
+            cmake ninja-build pkg-config
+      - name: Install deps [Windows]
         if: runner.os == 'Windows'
         run: |
-          choco install ninja -y
           choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
       - name: Clone vcpkg
+        shell: bash
         run: |
           git clone https://github.com/microsoft/vcpkg.git "${GITHUB_WORKSPACE}/vcpkg"
-      - name: Bootstrap vcpkg (Linux)
+      - name: Bootstrap vcpkg [Linux]
         if: runner.os == 'Linux'
         run: |
           cd "${GITHUB_WORKSPACE}/vcpkg"
           ./bootstrap-vcpkg.sh
-      - name: Bootstrap vcpkg (Windows)
+      - name: Bootstrap vcpkg [Windows]
         if: runner.os == 'Windows'
         run: |
           cd "${{ github.workspace }}\\vcpkg"
           .\\bootstrap-vcpkg.bat
       - name: Install dependencies from manifest
         working-directory: ${{ inputs.working-directory }}
+        shell: bash
         run: |
-          "${GITHUB_WORKSPACE}/vcpkg/vcpkg" install --triplet=x64-linux
-      - name: Configure (CMake + vcpkg toolchain)
+          "${GITHUB_WORKSPACE}/vcpkg/vcpkg" install
+      - name: Configure (CMake + vcpkg toolchain) [Linux]
+        if: runner.os == 'Linux'
         working-directory: ${{ inputs.working-directory }}
+        shell: pwsh
         run: |
-          cmake -S . -B build \
-            -G Ninja \
-            "-DCMAKE_TOOLCHAIN_FILE=${GITHUB_WORKSPACE}/vcpkg/scripts/buildsystems/vcpkg.cmake" \
-            -DCMAKE_BUILD_TYPE=Debug
+          $toolchain = "$env:GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake"
+          cmake -S . -B .cmake-build -G Ninja "-DCMAKE_TOOLCHAIN_FILE=$toolchain" -DCMAKE_BUILD_TYPE=DebugDebug
+      - name: Configure (CMake + vcpkg toolchain) [Windows]
+        if: runner.os == 'Windows'
+        working-directory: ${{ inputs.working-directory }}
+        shell: pwsh
+        run: |
+          $toolchain = "$env:GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake"
+          cmake -S . -B .cmake-build "-DCMAKE_TOOLCHAIN_FILE=$toolchain" -DCMAKE_BUILD_TYPE=Debug
       - name: Build
-        working-directory: ${{ inputs.working-directory }}/build
+        working-directory: ${{ inputs.working-directory }}/.cmake-build
         run: cmake --build . -j"$(nproc)"
       - name: Test
-        working-directory: ${{ inputs.working-directory }}/build
+        working-directory: ${{ inputs.working-directory }}/.cmake-build
         run: ctest -VV

@@ -1,21 +1,16 @@
 {
   "name": "otel-prometheus-exporter",
-  "version-string": "0.1.0",
+  "version-string": "1.19.0",
   "dependencies": [
     {
       "name": "opentelemetry-cpp",
-      "default-features": false,
       "features": [
-        "prometheus",
-        "metrics",
-        "resources"
+        "prometheus"
       ]
     },
     {
       "name": "prometheus-cpp",
-      "default-features": false,
       "features": [
-        "compression",
         "pull",
         "push"
       ]
@@ -26,5 +21,12 @@
     "curl",
     "openssl",
     "zlib"
-  ]
+  ],
+  "overrides": [
+    {
+      "name": "opentelemetry-cpp",
+      "version": "1.28.0"
+    }
+  ],
+  "builtin-baseline": "b4ae67c6051bb665f9414fca5c66f66cacc71970"
 }

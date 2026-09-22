@@ -7,13 +7,14 @@ on:
       - 'main'
     paths:
       - "exporters/prometheus/**"
-      - '.github/workflows/ci-vcpkg.yml'
+      - '.github/workflows/ci-*.yml'
       - ".github/workflows/prometheus.yml"
   pull_request:
     branches:
       - 'main'
     paths:
       - "exporters/prometheus/**"
+      - '.github/workflows/ci-*.yml'
       - ".github/workflows/prometheus.yml"
 
 permissions:
