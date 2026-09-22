@@ -11,6 +11,11 @@ This module provides two Prometheus metric exporters:
 
 ### CMake Install Instructions
 
++ Install prometheus-cpp with both pull and push support before building
+  opentelemetry-cpp (for example,
+  `vcpkg install "prometheus-cpp[pull,push]" --classic`). The prometheus-cpp
+  dependency built by opentelemetry-cpp 1.29 itself has push support disabled and
+  cannot be used by the push exporter.
 + Install opentelemetry-cpp with the stable metrics API and the prometheus exporter.
 
 ```bash
@@ -27,7 +32,7 @@ This builds two libraries: `opentelemetry_prometheus_push_exporter` and
 ### Bazel Install Instructions
 
 ```bash
-bazel build --copt=-DENABLE_TEST //...
+bazel build //...
 ```
 
 ## Usage

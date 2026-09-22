@@ -38,11 +38,10 @@ jobs:
           cache-name: bazel_cache
         with:
           path: /home/runner/.cache/bazel
-          key: bazel_${{ matrix.os }}
+          key: bazel_linux
       - name: run build
         working-directory: otel_cpp_contrib/exporters/prometheus
         run: |
-          cd otel_cpp_contrib/exporters/prometheus
           bazel --output_user_root=$HOME/.cache/bazel build --@io_opentelemetry_cpp//api:with_abseil //...
           bazel --output_user_root=$HOME/.cache/bazel test --@io_opentelemetry_cpp//api:with_abseil //...
   prometheus_bazel_osx:
@@ -62,10 +61,8 @@ jobs:
           path: /Users/runner/.cache/bazel
           key: bazel_osx
       - name: run tests
-        if: ${{ !startsWith(matrix.os, 'ubuntu') }}
         working-directory: otel_cpp_contrib/exporters/prometheus
         run: |
-          cd otel_cpp_contrib/exporters/prometheus
           bazel --output_user_root=$HOME/.cache/bazel build --@io_opentelemetry_cpp//api:with_abseil //...
           bazel --output_user_root=$HOME/.cache/bazel test --@io_opentelemetry_cpp//api:with_abseil //...
   prometheus_cmake_window:
@@ -131,6 +128,8 @@ jobs:
         run: |
           sudo apt update -y 
           xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
+          # Install both features before OpenTelemetry can build a pull-only dependency.
+          vcpkg install "prometheus-cpp[pull,push]" --triplet=x64-linux --classic
       - name: run tests
         run: |
           mkdir -p "$GITHUB_WORKSPACE/otel_cpp/build_jobs_ci"
