@@ -1,0 +1,40 @@
+{
+  "name": "otel-prometheus-exporter",
+  "version-string": "0.1.0",
+  "dependencies": [
+    {
+      "name": "opentelemetry-cpp",
+      "default-features": false,
+      "features": [
+        "prometheus",
+        "metrics",
+        "resources"
+      ]
+    },
+    {
+      "name": "prometheus-cpp",
+      "default-features": false,
+      "features": [
+        "compression",
+        "core",
+        "pull",
+        "push"
+      ]
+    },
+    "nlohmann-json",
+    "gtest",
+    "benchmark",
+    {
+      "name": "curl",
+      "default-features": false,
+      "features": [
+        "core",
+        "non-http",
+        "openssl",
+        "ssl"
+      ]
+    },
+    "openssl",
+    "zlib"
+  ]
+}
