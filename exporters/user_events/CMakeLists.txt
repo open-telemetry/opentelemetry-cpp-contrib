@@ -111,7 +111,7 @@ if(BUILD_TESTING)
     user_events_logs_exporter_test ${GTEST_BOTH_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT} opentelemetry_exporter_user_events_logs)
 
-  target_link_libraries(${testname} PRIVATE
+  target_link_libraries(user_events_logs_exporter_test PRIVATE
     GTest::gmock
     GTest::gtest
     GTest::gtest_main
