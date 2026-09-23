@@ -64,7 +64,7 @@ target_compile_definitions(opentelemetry_exporter_user_events_logs
                            PUBLIC HAVE_CONSOLE_LOG HAVE_LOGS_PREVIEW)
 
 target_link_libraries(opentelemetry_exporter_user_events_logs
-                      PUBLIC opentelemetry-cpp::metrics opentelemetry-cpp::resources opentelemetry-cpp::common
+                      PUBLIC opentelemetry-cpp::logs opentelemetry-cpp::resources opentelemetry-cpp::common
                         eventheader-tracepoint eventheader-headers tracepoint)
 
 set_target_properties(opentelemetry_exporter_user_events_logs
@@ -79,7 +79,6 @@ target_compile_features(opentelemetry_exporter_user_events_metrics
 target_link_libraries(
   opentelemetry_exporter_user_events_metrics
   PUBLIC opentelemetry-cpp::metrics opentelemetry-cpp::resources opentelemetry-cpp::common opentelemetry-cpp::otlp_recordable tracepoint protobuf::libprotobuf)
-  # TODO: link to opentelemetry_otlp_recordable
 
 if(WITH_EXAMPLES)
   add_executable(user_events_logs example/logs/main.cc
@@ -112,6 +111,7 @@ if(BUILD_TESTING)
     GTest::gmock
     GTest::gtest
     GTest::gtest_main
+    opentelemetry-cpp::metrics
     opentelemetry_exporter_user_events_logs)
 
   gtest_add_tests(
