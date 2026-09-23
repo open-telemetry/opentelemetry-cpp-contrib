@@ -50,6 +50,7 @@ if(NOT TARGET prometheus-cpp::core OR
 endif()
 
 if(MAIN_PROJECT)
+  set(WITH_PROMETHEUS ON CACHE BOOL "" FORCE)
   list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
   include(opentelemetry-cpp)
 endif()

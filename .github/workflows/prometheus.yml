@@ -117,7 +117,6 @@ jobs:
           cd "build_jobs_ci"
           cmake .. \
             -G Ninja \
-            -DWITH_PROMETHEUS=ON \
             -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/sandbox" \
             -DCMAKE_BUILD_TYPE=Debug
           cmake --build . -j$(nproc)
