@@ -29,11 +29,6 @@ set(ENABLE_TESTING OFF)
 
 include(FetchContent)
 
-if(MAIN_PROJECT)
-  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
-  include(opentelemetry-cpp)
-endif()
-
 find_package(ZLIB REQUIRED)
 
 find_package(prometheus-cpp CONFIG QUIET)
@@ -52,6 +47,11 @@ endif()
 if(NOT TARGET prometheus-cpp::core OR
    NOT TARGET prometheus-cpp::push)
   message(FATAL_ERROR "A required prometheus-cpp target (prometheus-cpp::core or prometheus-cpp::push) was not imported")
+endif()
+
+if(MAIN_PROJECT)
+  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
+  include(opentelemetry-cpp)
 endif()
 
 get_target_property(OPENTELEMETRY_CPP_API_DEFINITIONS opentelemetry-cpp::api
