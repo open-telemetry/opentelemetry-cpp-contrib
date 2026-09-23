@@ -24,6 +24,7 @@ if(MAIN_PROJECT)
   find_package(CURL REQUIRED)
   find_package(nlohmann_json REQUIRED)
 
+  set(WITH_OTLP ON CACHE BOOL "" FORCE)
   list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
   include(opentelemetry-cpp)
 endif()
