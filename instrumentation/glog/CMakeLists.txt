@@ -5,11 +5,21 @@ cmake_minimum_required(VERSION 3.16)
 
 set(this_target opentelemetry_glog_sink)
 
-project(${this_target})
+set(MAIN_PROJECT OFF)
+
+if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+  set(MAIN_PROJECT ON)
+  project(${this_target})
+  message(STATUS "${PROJECT_NAME} is main project")
+endif()
 
 include(FetchContent)
 
-find_package(opentelemetry-cpp REQUIRED)
+if(MAIN_PROJECT)
+  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
+  include(opentelemetry-cpp)
+endif()
+
 find_package(glog 0.7.0 QUIET)
 
 if(NOT glog_FOUND)
@@ -26,6 +36,7 @@ add_library(${this_target} src/sink.cc)
 
 target_compile_options(${this_target} PUBLIC
   -Wall -Wextra -Werror -Wpedantic -fPIC
+  -Wno-error=deprecated-declarations
 )
 
 set_target_properties(${this_target} PROPERTIES EXPORT_NAME ${this_target})
@@ -67,16 +78,6 @@ if(OPENTELEMETRY_INSTALL)
   install(
     FILES
       "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake"
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
-
-  export(
-    EXPORT "${PROJECT_NAME}-target"
-    NAMESPACE ${PROJECT_NAME}::
-    FILE "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-target.cmake")
-
-  install(
-    EXPORT "${PROJECT_NAME}-target"
-    NAMESPACE ${PROJECT_NAME}::
     DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 endif() # OPENTELEMETRY_INSTALL
 
