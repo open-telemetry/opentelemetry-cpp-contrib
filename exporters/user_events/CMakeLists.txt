@@ -73,7 +73,7 @@ target_compile_features(opentelemetry_exporter_user_events_metrics
 
 target_link_libraries(
   opentelemetry_exporter_user_events_metrics
-  PUBLIC opentelemetry-cpp::metrics opentelemetry-cpp::resources opentelemetry-cpp::common opentelemetry-cpp::exporters_otlp_common tracepoint protobuf::libprotobuf)
+  PUBLIC opentelemetry-cpp::metrics opentelemetry-cpp::resources opentelemetry-cpp::common opentelemetry-cpp::otlp_recordable tracepoint protobuf::libprotobuf)
   # TODO: link to opentelemetry_otlp_recordable
 
 if(WITH_EXAMPLES)
