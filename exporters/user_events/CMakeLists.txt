@@ -107,9 +107,6 @@ if(BUILD_TESTING)
   include(GoogleTest)
   # build tests for user_events logs
   add_executable(user_events_logs_exporter_test test/logs_exporter_test.cc)
-  target_link_libraries(
-    user_events_logs_exporter_test ${GTEST_BOTH_LIBRARIES}
-    ${CMAKE_THREAD_LIBS_INIT} opentelemetry_exporter_user_events_logs)
 
   target_link_libraries(user_events_logs_exporter_test PRIVATE
     GTest::gmock
