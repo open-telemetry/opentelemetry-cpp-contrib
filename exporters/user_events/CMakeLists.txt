@@ -111,6 +111,12 @@ if(BUILD_TESTING)
     user_events_logs_exporter_test ${GTEST_BOTH_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT} opentelemetry_exporter_user_events_logs)
 
+  target_link_libraries(${testname} PRIVATE
+    GTest::gmock
+    GTest::gtest
+    GTest::gtest_main
+    opentelemetry_exporter_user_events_logs)
+
   gtest_add_tests(
     TARGET user_events_logs_exporter_test
     TEST_PREFIX exporter.
