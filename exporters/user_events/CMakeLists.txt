@@ -19,11 +19,7 @@ endif()
 include(FetchContent)
 
 if(MAIN_PROJECT)
-  # TODO: cleanup the dependent packages
-  find_package(Protobuf REQUIRED)
-  find_package(CURL REQUIRED)
-  find_package(nlohmann_json REQUIRED)
-
+  set(WITH_OTLP_HTTP ON CACHE BOOL "" FORCE)
   list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
   include(opentelemetry-cpp)
 endif()
