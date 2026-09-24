@@ -43,6 +43,9 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
         shell: bash
         run: |
+          where cl
+          where devenv
+          where msbuild
           conan install . --output-folder=.cmake-build --build=missing  -s build_type=Debug -s:h compiler.cppstd=17 -s:b compiler.cppstd=17 -s:b compiler.version=193 -c tools.cmake.cmaketoolchain:generator=Ninja
       - name: Configure (CMake + Conan toolchain)
         working-directory: ${{ inputs.working-directory }}
