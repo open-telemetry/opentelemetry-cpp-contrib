@@ -42,6 +42,8 @@ find_package(prometheus-cpp CONFIG QUIET)
 set(prometheus-cpp_PROVIDER "find_package")
 
 if(NOT prometheus-cpp_FOUND)
+  set(PROMETHEUS_ENABLE_PULL ON)
+  set(PROMETHEUS_ENABLE_PUSH ON)
   FetchContent_Declare(
     prometheus-cpp
     GIT_REPOSITORY https://github.com/jupp0r/prometheus-cpp.git
@@ -51,12 +53,15 @@ if(NOT prometheus-cpp_FOUND)
   FetchContent_MakeAvailable(prometheus-cpp)
 endif()
 
-if(NOT TARGET prometheus-cpp::core OR NOT TARGET prometheus-cpp::push)
-  message(
-    FATAL_ERROR
-      "A required prometheus-cpp target (prometheus-cpp::core or prometheus-cpp::push) was not imported"
-  )
-endif()
+foreach(CHECK_PROMETHEUS_TARGET IN ITEMS prometheus-cpp::core
+                                         prometheus-cpp::push)
+  if(NOT TARGET ${CHECK_PROMETHEUS_TARGET})
+    message(
+      FATAL_ERROR
+        "A required prometheus-cpp target (${CHECK_PROMETHEUS_TARGET}) was not imported"
+    )
+  endif()
+endforeach()
 
 get_target_property(OPENTELEMETRY_CPP_API_DEFINITIONS opentelemetry-cpp::api
                     INTERFACE_COMPILE_DEFINITIONS)
