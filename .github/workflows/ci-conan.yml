@@ -29,7 +29,7 @@ jobs:
       - name: Setup msbuild
         if: runner.os == 'Windows'
         uses: microsoft/setup-msbuild@30375c66a4eea26614e0d39710365f22f8b0af57 # v3.0.0
-      - name: setup
+      - name: Install system deps [Linux]
         if: runner.os == 'Linux'
         working-directory: ${{ inputs.working-directory }}
         run: |
@@ -42,9 +42,10 @@ jobs:
           conan install . --output-folder=.cmake-build --build=missing  -s build_type=Debug -s:h compiler.cppstd=17 -s:b compiler.cppstd=17
       - name: Configure (CMake + Conan toolchain)
         working-directory: ${{ inputs.working-directory }}
+        shell: bash
         run: |
-          $toolchain = (Resolve-Path .cmake-build/conan_toolchain.cmake).Path
-          cmake -S . -B .cmake-build -G Ninja "-DCMAKE_TOOLCHAIN_FILE=$toolchain" -DCMAKE_BUILD_TYPE=Debug
+          $toolchain = "$(pwd)/.cmake-build/conan_toolchain.cmake"
+          cmake -S . -B .cmake-build -G Ninja -DCMAKE_TOOLCHAIN_FILE="$toolchain" -DCMAKE_BUILD_TYPE=Debug
       - name: Build
         working-directory: ${{ inputs.working-directory }}
         run: |
