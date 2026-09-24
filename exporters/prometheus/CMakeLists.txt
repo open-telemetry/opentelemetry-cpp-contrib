@@ -15,8 +15,11 @@
 cmake_minimum_required(VERSION 3.16)
 
 set(this_target opentelemetry-cpp-contrib-prometheus-push-exporter)
-
-project(${this_target} VERSION "1.19.0")
+project(
+  ${this_target}
+  VERSION "1.29.0"
+  HOMEPAGE_URL "https://github.com/open-telemetry/opentelemetry-cpp-contrib"
+  LANGUAGES CXX)
 
 set(MAIN_PROJECT OFF)
 
@@ -39,6 +42,8 @@ find_package(prometheus-cpp CONFIG QUIET)
 set(prometheus-cpp_PROVIDER "find_package")
 
 if(NOT prometheus-cpp_FOUND)
+  set(PROMETHEUS_ENABLE_PULL ON)
+  set(PROMETHEUS_ENABLE_PUSH ON)
   FetchContent_Declare(
     prometheus-cpp
     GIT_REPOSITORY https://github.com/jupp0r/prometheus-cpp.git
@@ -48,10 +53,15 @@ if(NOT prometheus-cpp_FOUND)
   FetchContent_MakeAvailable(prometheus-cpp)
 endif()
 
-if(NOT TARGET prometheus-cpp::core OR
-   NOT TARGET prometheus-cpp::push)
-  message(FATAL_ERROR "A required prometheus-cpp target (prometheus-cpp::core or prometheus-cpp::push) was not imported")
-endif()
+foreach(CHECK_PROMETHEUS_TARGET IN ITEMS prometheus-cpp::core
+                                         prometheus-cpp::push)
+  if(NOT TARGET ${CHECK_PROMETHEUS_TARGET})
+    message(
+      FATAL_ERROR
+        "A required prometheus-cpp target (${CHECK_PROMETHEUS_TARGET}) was not imported"
+    )
+  endif()
+endforeach()
 
 get_target_property(OPENTELEMETRY_CPP_API_DEFINITIONS opentelemetry-cpp::api
                     INTERFACE_COMPILE_DEFINITIONS)
@@ -65,13 +75,14 @@ endif()
 
 include_directories(include)
 include(CMakeDependentOption)
+include(tools.cmake)
 
 cmake_dependent_option(BUILD_TESTING "Enable tests" ON
                        "NOT CMAKE_CROSSCOMPILING" OFF)
 
 if(BUILD_TESTING)
   enable_testing()
-  add_definitions(-DENABLE_TEST)
+
   FetchContent_Declare(
     googletest
     GIT_REPOSITORY https://github.com/google/googletest.git
@@ -99,7 +110,20 @@ if(BUILD_TESTING)
   endif()
 endif()
 
-add_library(opentelemetry_prometheus_push_exporter src/push_exporter.cc src/push_exporter_factory.cc)
+add_library(opentelemetry_prometheus_push_exporter src/push_exporter.cc
+                                                   src/push_exporter_factory.cc)
+
+get_target_property(_lib_type opentelemetry_prometheus_push_exporter TYPE)
+if(_lib_type STREQUAL "SHARED_LIBRARY")
+  otelcpp_contrib_tools_set_shared_library_declaration(
+    OPENTELEMETRY_CONTRIB_PROMETHEUS_PUSH_API
+    opentelemetry_prometheus_push_exporter)
+else()
+  otelcpp_contrib_tools_set_static_library_declaration(
+    OPENTELEMETRY_CONTRIB_PROMETHEUS_PUSH_API
+    opentelemetry_prometheus_push_exporter)
+endif()
+
 set_target_properties(opentelemetry_prometheus_push_exporter
                       PROPERTIES EXPORT_NAME prometheus_push_exporter)
 
@@ -119,6 +143,38 @@ target_compile_definitions(
          "OPENTELEMTRY_CPP_MINOR_VERSION=${opentelemetry-cpp_VERSION_MINOR}"
          "OPENTELEMTRY_CPP_PATCH_VERSION=${opentelemetry-cpp_VERSION_PATCH}")
 
+add_library(opentelemetry_prometheus_file_exporter src/file_exporter.cc
+                                                   src/file_exporter_factory.cc)
+get_target_property(_lib_type opentelemetry_prometheus_file_exporter TYPE)
+if(_lib_type STREQUAL "SHARED_LIBRARY")
+  otelcpp_contrib_tools_set_shared_library_declaration(
+    OPENTELEMETRY_CONTRIB_PROMETHEUS_FILE_API
+    opentelemetry_prometheus_file_exporter)
+else()
+  otelcpp_contrib_tools_set_static_library_declaration(
+    OPENTELEMETRY_CONTRIB_PROMETHEUS_FILE_API
+    opentelemetry_prometheus_file_exporter)
+endif()
+
+set_target_properties(opentelemetry_prometheus_file_exporter
+                      PROPERTIES EXPORT_NAME prometheus_file_exporter)
+
+target_include_directories(
+  opentelemetry_prometheus_file_exporter
+  PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
+         "$<INSTALL_INTERFACE:include>")
+
+target_link_libraries(
+  opentelemetry_prometheus_file_exporter
+  PUBLIC opentelemetry-cpp::prometheus_exporter opentelemetry-cpp::metrics
+         opentelemetry-cpp::resources prometheus-cpp::core)
+
+target_compile_definitions(
+  opentelemetry_prometheus_file_exporter
+  PUBLIC "OPENTELEMTRY_CPP_MAJOR_VERSION=${opentelemetry-cpp_VERSION_MAJOR}"
+         "OPENTELEMTRY_CPP_MINOR_VERSION=${opentelemetry-cpp_VERSION_MINOR}"
+         "OPENTELEMTRY_CPP_PATCH_VERSION=${opentelemetry-cpp_VERSION_PATCH}")
+
 if(DEFINED VCPKG_CMAKE_SYSTEM_NAME AND VCPKG_CMAKE_SYSTEM_NAME STREQUAL
                                        "WindowsStore")
   set(OPENTELEMETRY_CPP_CONTRIB_TARGET_IS_WINDOWS ON)
@@ -130,6 +186,18 @@ endif()
 if(OPENTELEMETRY_CPP_CONTRIB_TARGET_IS_WINDOWS)
   target_link_libraries(
     opentelemetry_prometheus_push_exporter
+    PUBLIC advapi32
+           bcrypt
+           iphlpapi
+           psapi
+           user32
+           wsock32
+           userenv
+           Ws2_32
+           wldap32
+           crypt32)
+  target_link_libraries(
+    opentelemetry_prometheus_file_exporter
     PUBLIC advapi32
            bcrypt
            iphlpapi
@@ -176,11 +244,14 @@ elseif(UNIX OR MINGW)
   if(OPENTELEMETRY_CPP_CONTRIB_SYSTEM_LIBRARIES)
     target_link_libraries(opentelemetry_prometheus_push_exporter
                           PUBLIC ${OPENTELEMETRY_CPP_CONTRIB_SYSTEM_LIBRARIES})
+    target_link_libraries(opentelemetry_prometheus_file_exporter
+                          PUBLIC ${OPENTELEMETRY_CPP_CONTRIB_SYSTEM_LIBRARIES})
   endif()
 endif()
 
 install(
   TARGETS opentelemetry_prometheus_push_exporter
+          opentelemetry_prometheus_file_exporter
   EXPORT "${PROJECT_NAME}-target"
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
