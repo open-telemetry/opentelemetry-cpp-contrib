@@ -49,18 +49,16 @@ jobs:
           where.exe cl || true
           where.exe msbuild || true
           where.exe devenv || true
-          conan install . --output-folder=.cmake-build --build=missing  -s build_type=Debug -s:h compiler.cppstd=17 -s:b compiler.cppstd=17 -s:b compiler.version=195 -c tools.cmake.cmaketoolchain:generator=Ninja
+          conan install . --output-folder=.cmake-build --build=missing  -s build_type=Debug
       - name: Configure (CMake + Conan toolchain)
         working-directory: ${{ inputs.working-directory }}
-        shell: bash
         run: |
-          cmake -S . -B .cmake-build \
-            -G Ninja \
-            -DCMAKE_TOOLCHAIN_FILE=.cmake-build/conan_toolchain.cmake \
-            -DCMAKE_BUILD_TYPE=Debug
+          cmake -S . -B .cmake-build -G Ninja -DCMAKE_TOOLCHAIN_FILE=.cmake-build/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug
       - name: Build
         working-directory: ${{ inputs.working-directory }}
-        run: cmake --build .cmake-build -j"$(nproc)"
+        run: |
+          cmake --build .cmake-build -j"$(nproc)"
       - name: Test
         working-directory: ${{ inputs.working-directory }}
-        run: ctest --test-dir .cmake-build -VV
+        run: |
+          ctest --test-dir .cmake-build -VV
