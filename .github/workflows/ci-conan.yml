@@ -35,25 +35,16 @@ jobs:
         run: |
           sudo apt update -y 
           xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-      - name: Install dependencies from manifest [Linux]
-        if: runner.os == 'Linux'
+      - name: Install dependencies from manifest
         working-directory: ${{ inputs.working-directory }}
         shell: bash
         run: |
-          conan install . --output-folder=.cmake-build --build=missing -s build_type=Debug
-      - name: Install dependencies from manifest [Windows]
-        if: runner.os == 'Windows'
-        working-directory: ${{ inputs.working-directory }}
-        shell: bash
-        run: |
-          where.exe cl || true
-          where.exe msbuild || true
-          where.exe devenv || true
           conan install . --output-folder=.cmake-build --build=missing  -s build_type=Debug -s:h compiler.cppstd=17 -s:b compiler.cppstd=17
       - name: Configure (CMake + Conan toolchain)
         working-directory: ${{ inputs.working-directory }}
         run: |
-          cmake -S . -B .cmake-build -G Ninja -DCMAKE_TOOLCHAIN_FILE=.cmake-build/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug
+          $toolchain = (Resolve-Path .cmake-build/conan_toolchain.cmake).Path
+          cmake -S . -B .cmake-build -G Ninja "-DCMAKE_TOOLCHAIN_FILE=$toolchain" -DCMAKE_BUILD_TYPE=Debug
       - name: Build
         working-directory: ${{ inputs.working-directory }}
         run: |
