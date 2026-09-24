@@ -30,7 +30,16 @@ set(ENABLE_TESTING OFF)
 include(FetchContent)
 
 if(MAIN_PROJECT)
+  set(WITH_PROMETHEUS ON CACHE BOOL "" FORCE)
   find_package(opentelemetry-cpp REQUIRED)
+endif()
+
+if(TARGET opentelemetry-cpp::prometheus_exporter)
+    set(OTEL_PROM_TARGET opentelemetry-cpp::prometheus_exporter)
+elseif(TARGET opentelemetry-cpp::exporter_prometheus)
+    set(OTEL_PROM_TARGET opentelemetry-cpp::exporter_prometheus)
+else()
+    message(FATAL_ERROR "No Prometheus exporter target found")
 endif()
 
 find_package(ZLIB REQUIRED)
@@ -110,7 +119,7 @@ target_include_directories(
 
 target_link_libraries(
   opentelemetry_prometheus_push_exporter
-  PUBLIC opentelemetry-cpp::prometheus_exporter opentelemetry-cpp::metrics
+  PUBLIC ${OTEL_PROM_TARGET} opentelemetry-cpp::metrics
          opentelemetry-cpp::resources prometheus-cpp::push prometheus-cpp::core)
 
 target_compile_definitions(
