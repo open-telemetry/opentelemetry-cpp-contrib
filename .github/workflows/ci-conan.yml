@@ -40,11 +40,18 @@ jobs:
         shell: bash
         run: |
           conan install . --output-folder=.cmake-build --build=missing  -s build_type=Debug -s:h compiler.cppstd=17 -s:b compiler.cppstd=17
-      - name: Configure (CMake + Conan toolchain)
+      - name: Configure (CMake + Conan toolchain) [Linux]
+        if: runner.os == 'Linux'
         working-directory: ${{ inputs.working-directory }}
         shell: bash
         run: |
           cmake -S . -B .cmake-build -G Ninja -DCMAKE_TOOLCHAIN_FILE=.cmake-build/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug
+      - name: Configure (CMake + Conan toolchain) [Windows]
+        if: runner.os == 'Windows'
+        working-directory: ${{ inputs.working-directory }}
+        shell: bash
+        run: |
+          cmake -S . -B .cmake-build -DCMAKE_TOOLCHAIN_FILE=.cmake-build/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug
       - name: Build
         working-directory: ${{ inputs.working-directory }}
         run: |
