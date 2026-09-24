@@ -27,28 +27,34 @@ jobs:
         with:
           cache_packages: true
       - name: setup
-        working-directory: otel_cpp_contrib/exporters/prometheus
+        if: runner.os == 'Linux'
+        working-directory: ${{ inputs.working-directory }}
         run: |
           sudo apt update -y 
           xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-      - name: Install dependencies from manifest
+      - name: Install dependencies from manifest [Linux]
+        if: runner.os == 'Linux'
         working-directory: ${{ inputs.working-directory }}
         shell: bash
         run: |
-          conan install . --output-folder=build --build=missing
+          conan install . --output-folder=.cmake-build --build=missing -s build_type=Debug
+      - name: Install dependencies from manifest [Windows]
+        if: runner.os == 'Windows'
+        working-directory: ${{ inputs.working-directory }}
+        shell: bash
+        run: |
+          conan install . --output-folder=.cmake-build --build=missing  -s build_type=Debug -s:h compiler.cppstd=17 -s:b compiler.cppstd=17 -s:b compiler.version=193 -c tools.cmake.cmaketoolchain:generator=Ninja
       - name: Configure (CMake + Conan toolchain)
         working-directory: ${{ inputs.working-directory }}
         shell: bash
         run: |
-          cmake -S . -B build \
+          cmake -S . -B .cmake-build \
             -G Ninja \
-            -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
-            -DCMAKE_BUILD_TYPE=Debug \
-            -DBUILD_TESTING=OFF \
-            -DWITH_EXAMPLES=OFF
+            -DCMAKE_TOOLCHAIN_FILE=.cmake-build/conan_toolchain.cmake \
+            -DCMAKE_BUILD_TYPE=Debug
       - name: Build
-        working-directory: ${{ inputs.working-directory }}/build
-        run: cmake --build . -j"$(nproc)"
+        working-directory: ${{ inputs.working-directory }}
+        run: cmake --build .cmake-build -j"$(nproc)"
       - name: Test
-        working-directory: ${{ inputs.working-directory }}/build
-        run: ctest -VV
+        working-directory: ${{ inputs.working-directory }}
+        run: ctest --test-dir .cmake-build -VV
