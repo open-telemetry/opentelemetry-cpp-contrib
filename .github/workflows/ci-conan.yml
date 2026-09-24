@@ -1,0 +1,62 @@
+name: Conan
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-26.04
+          - Windows-2025
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install and setup Conan
+        uses: conan-io/setup-conan@ed3942a6883243f4af84e13e49c972f9440fa1c2 # v1.4.0
+        with:
+          cache_packages: true
+      - name: Setup msbuild
+        if: runner.os == 'Windows'
+        uses: microsoft/setup-msbuild@30375c66a4eea26614e0d39710365f22f8b0af57 # v3.0.0
+      - name: Install system deps [Linux]
+        if: runner.os == 'Linux'
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          sudo apt update -y 
+          xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
+      - name: Install dependencies from manifest
+        working-directory: ${{ inputs.working-directory }}
+        shell: bash
+        run: |
+          conan install . --output-folder=.cmake-build --build=missing  -s build_type=Debug -s:h compiler.cppstd=17 -s:b compiler.cppstd=17
+      - name: Configure (CMake + Conan toolchain) [Linux]
+        if: runner.os == 'Linux'
+        working-directory: ${{ inputs.working-directory }}
+        shell: bash
+        run: |
+          cmake -S . -B .cmake-build -G Ninja -DCMAKE_TOOLCHAIN_FILE=.cmake-build/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug
+      - name: Configure (CMake + Conan toolchain) [Windows]
+        if: runner.os == 'Windows'
+        working-directory: ${{ inputs.working-directory }}
+        shell: bash
+        run: |
+          cmake -S . -B .cmake-build -DCMAKE_TOOLCHAIN_FILE=.cmake-build/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug
+      - name: Build
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          cmake --build .cmake-build -j"$(nproc)"
+      - name: Test
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          ctest --test-dir .cmake-build -VV

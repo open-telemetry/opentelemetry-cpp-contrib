@@ -1,0 +1,10 @@
+[requires]
+opentelemetry-cpp/1.24.0
+prometheus-cpp/1.1.0
+
+[generators]
+CMakeDeps
+CMakeToolchain
+
+[options]
+opentelemetry-cpp/*:with_prometheus=True
