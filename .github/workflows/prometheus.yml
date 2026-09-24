@@ -7,12 +7,14 @@ on:
       - 'main'
     paths:
       - "exporters/prometheus/**"
+      - '.github/workflows/ci-*.yml'
       - ".github/workflows/prometheus.yml"
   pull_request:
     branches:
       - 'main'
     paths:
       - "exporters/prometheus/**"
+      - '.github/workflows/ci-*.yml'
       - ".github/workflows/prometheus.yml"
 
 permissions:
@@ -136,3 +138,8 @@ jobs:
             -DCMAKE_BUILD_TYPE=Debug
           cmake --build . -j$(nproc)
           ctest -VV -R "opentelemetry_cpp_ecosystem_test.*" .
+
+  vcpkg:
+    uses: $/.github/workflows/ci-vcpkg.yml
+    with:
+      working-directory: "exporters/prometheus"
