@@ -49,7 +49,7 @@ jobs:
           where.exe cl || true
           where.exe msbuild || true
           where.exe devenv || true
-          conan install . --output-folder=.cmake-build --build=missing  -s build_type=Debug
+          conan install . --output-folder=.cmake-build --build=missing  -s build_type=Debug -s:h compiler.cppstd=17 -s:b compiler.cppstd=17
       - name: Configure (CMake + Conan toolchain)
         working-directory: ${{ inputs.working-directory }}
         run: |
