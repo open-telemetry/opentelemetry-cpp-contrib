@@ -66,8 +66,7 @@ endif()
 include_directories(include)
 include(CMakeDependentOption)
 
-cmake_dependent_option(BUILD_TESTING "Enable tests" ON
-                       "NOT CMAKE_CROSSCOMPILING" OFF)
+cmake_dependent_option(BUILD_TESTING "Enable tests" ON)
 
 if(BUILD_TESTING)
   enable_testing()
