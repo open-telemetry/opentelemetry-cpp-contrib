@@ -61,22 +61,36 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
+          path: opentelemetry-cpp-contrib
+      - name: checkout opentelemetry-cpp
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          config-file: "${{ matrix.working-directory }}/codeql-config.yml"
-          languages: cpp
+          persist-credentials: false
+          repository: "open-telemetry/opentelemetry-cpp"
+          ref: "v1.28.0"
+          path: "opentelemetry-cpp"
       - name: Setup dependencies
         working-directory: "${{ matrix.working-directory }}"
         run: |
           sudo apt update -y
           xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-          xargs -a ../../apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
+      - name: build opentelemetry-cpp
+        working-directory: "opentelemetry-cpp"
+        run: |
+          cmake -S . -B .cmake-build -G Ninja -DBUILD_TESTING=OFF -DWITH_BENCHMARK=OFF -DOPENTELEMETRY_INSTALL=ON
+          cmake --build .cmake-build -j$(nproc)
+          cmake --install .cmake-build --prefix="${GITHUB_WORKSPACE}/sandbox"
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
+        with:
+          config-file: "opentelemetry-cpp-contrib/${{ matrix.working-directory }}/codeql-config.yml"
+          languages: cpp
       - name: Build package
-        working-directory: "${{ matrix.working-directory }}"
+        working-directory: "opentelemetry-cpp-contrib/${{ matrix.working-directory }}"
         run: |
           cmake -S . -B .cmake-build \
             -G Ninja \
+            -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/sandbox" \
             -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_TESTING=OFF \
             -DWITH_BENCHMARK=OFF \
