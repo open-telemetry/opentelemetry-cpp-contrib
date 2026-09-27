@@ -30,16 +30,8 @@ target_compile_options(${this_target} PUBLIC
 
 set_target_properties(${this_target} PROPERTIES EXPORT_NAME ${this_target})
 
-target_include_directories(${this_target} PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
-  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-)
-
 target_link_libraries(${this_target} PUBLIC 
   opentelemetry-cpp::api
-)
-
-target_link_libraries(${this_target} PRIVATE
   spdlog::spdlog
 )
 
@@ -90,10 +82,6 @@ if(BUILD_TESTING)
 
   add_executable(${testname} "test/${testname}.cc")
 
-  target_include_directories(${testname} PUBLIC
-    ${CMAKE_CURRENT_LIST_DIR}/include
-  )
-
   target_link_libraries(${testname} PRIVATE
     GTest::gmock
     GTest::gtest
@@ -114,10 +102,6 @@ if(WITH_EXAMPLES)
   set(example_exe otel_sink_example)
   add_executable(${example_exe} example/main.cc)
   set_target_properties(${example_exe} PROPERTIES EXPORT_NAME ${example_exe})
-
-  target_include_directories(${example_exe} PUBLIC
-    ${CMAKE_CURRENT_LIST_DIR}/include
-  )
 
   target_link_libraries(${example_exe} PRIVATE
     opentelemetry-cpp::logs
