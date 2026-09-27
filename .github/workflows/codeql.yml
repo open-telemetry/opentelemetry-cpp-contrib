@@ -33,7 +33,7 @@ jobs:
         name: find codeql config
         run: |
           # Find all codeql-config.yml files
-          dirs=$(find . -type f -name "codeql-config.yml" -printf '%P\n')
+          dirs=$(find . -type f -name "codeql-config.yml" -printf '%P\n' | xargs -r dirname)
 
           # Convert to JSON array
           json=$(printf '%s\n' "$dirs" | jq -R . | jq -s .)
