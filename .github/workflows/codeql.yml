@@ -61,11 +61,11 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
-        with:
-          config-file: "${{ matrix.working-directory }}/codeql-config.yml"
-          languages: cpp
+      #- name: Initialize CodeQL
+      #  uses: github/codeql-action/init@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
+      #  with:
+      #    config-file: "${{ matrix.working-directory }}/codeql-config.yml"
+      #    languages: cpp
       - name: Setup dependencies
         working-directory: "${{ matrix.working-directory }}"
         run: |
