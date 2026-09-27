@@ -70,7 +70,7 @@ jobs:
           ref: "v1.28.0"
           path: "opentelemetry-cpp"
       - name: Setup dependencies
-        working-directory: "${{ matrix.working-directory }}"
+        working-directory: "opentelemetry-cpp-contrib/${{ matrix.working-directory }}"
         run: |
           sudo apt update -y
           xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
