@@ -2,10 +2,12 @@ FROM almalinux:8.10@sha256:9f355ae942d6a6c0561f0771dc053a2cfae9580fc45fa4252756d
 
 ARG BUILD_NUMBER
 
-LABEL NAME=apm/build-image-webserver-agent-almalinux8-arm64 VERSION=$BUILD_NUMBER
+# Populated automatically by buildx/BuildKit from --platform (amd64 or arm64);
+# everything architecture-specific below derives from this single value, so
+# the same Dockerfile builds correctly for either target.
+ARG TARGETARCH
 
-ENV GOSU_ARCH arm64
-ENV JDK_ARCH aarch64
+LABEL NAME=apm/build-image-webserver-agent-almalinux8-$TARGETARCH VERSION=$BUILD_NUMBER
 
 ARG PYTHON_VERSION="2.7.18"
 ARG CMAKE_VERSION="3.28"
@@ -72,17 +74,27 @@ RUN wget http://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERS
 
 ENV GOSU_VERSION=1.10
 
-RUN curl -o /usr/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-arm64" \
+RUN case "$TARGETARCH" in \
+      amd64) GOSU_ARCH=amd64 ;; \
+      arm64) GOSU_ARCH=arm64 ;; \
+      *) echo "unsupported TARGETARCH: $TARGETARCH" >&2; exit 1 ;; \
+    esac \
+    && curl -o /usr/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-${GOSU_ARCH}" \
     && chmod +x /usr/bin/gosu \
     # Verify that the binary works
     && gosu nobody true
 
 # install cmake 3.20
-RUN wget https://cmake.org/files/v${CMAKE_VERSION}/cmake-${CMAKE_0VERSION}-linux-aarch64.tar.gz \
-    && tar -xvf cmake-${CMAKE_0VERSION}-linux-aarch64.tar.gz \
-    && cd cmake-${CMAKE_0VERSION}-linux-aarch64 \
+RUN case "$TARGETARCH" in \
+      amd64) CMAKE_ARCH=x86_64 ;; \
+      arm64) CMAKE_ARCH=aarch64 ;; \
+      *) echo "unsupported TARGETARCH: $TARGETARCH" >&2; exit 1 ;; \
+    esac \
+    && wget https://cmake.org/files/v${CMAKE_VERSION}/cmake-${CMAKE_0VERSION}-linux-${CMAKE_ARCH}.tar.gz \
+    && tar -xvf cmake-${CMAKE_0VERSION}-linux-${CMAKE_ARCH}.tar.gz \
+    && cd cmake-${CMAKE_0VERSION}-linux-${CMAKE_ARCH} \
     && cp -rf * /usr/local/ \
-    && cd .. && rm -rf cmake-${CMAKE_0VERSION}-linux-aarch64.tar.gz
+    && cd .. && rm -rf cmake-${CMAKE_0VERSION}-linux-${CMAKE_ARCH}.tar.gz
 
 
 # standalone c-ares, newer than gRPC's own vendored pin - see CARES_VERSION comment above.
@@ -296,12 +308,17 @@ RUN echo '[nginx-stable]' >> /etc/yum.repos.d/nginx.repo \
     && echo 'module_hotfixes=true' >> /etc/yum.repos.d/nginx.repo \
     && dnf install nginx-${NGINX_VERSION} -y
 
-# osArch resolves to the raw JVM os.arch value ("aarch64") on this platform -
-# common.gradle only remaps i386/i586/i686->x86 and x86_64/amd64->x64,
-# leaving aarch64 untouched - so the packaged tarball is named accordingly,
-# not "x64-linux" like the vendor's own x86_64 release asset.
-RUN cd /otel-webserver-module/build \
-    && tar -xf opentelemetry-webserver-sdk-aarch64-linux.tgz \
+# osArch resolves to the JVM's os.arch value at build time (matching whichever
+# platform this image is actually being built for) - common.gradle remaps
+# i386/i586/i686->x86 and x86_64/amd64->x64, leaving aarch64 untouched, so the
+# packaged tarball is x64-linux on amd64 but aarch64-linux on arm64.
+RUN case "$TARGETARCH" in \
+      amd64) SDK_ARCH=x64 ;; \
+      arm64) SDK_ARCH=aarch64 ;; \
+      *) echo "unsupported TARGETARCH: $TARGETARCH" >&2; exit 1 ;; \
+    esac \
+    && cd /otel-webserver-module/build \
+    && tar -xf opentelemetry-webserver-sdk-${SDK_ARCH}-linux.tgz \
     && mv -f opentelemetry-webserver-sdk /opt/ \
     && cd ../ \
     && cp opentelemetry_module.conf /etc/httpd/conf/ \
