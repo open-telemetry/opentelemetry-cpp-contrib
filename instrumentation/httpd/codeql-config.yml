@@ -2,7 +2,6 @@ name: "CodeQL config"
 
 paths-ignore:
   - .cmake-build
-  - vendor
   - third_party
   - _deps
   - build
