@@ -68,11 +68,12 @@ jobs:
             build-essential \
             cmake \
             ninja-build \
-            libgrpc-dev \
+            libgrpc++-dev \
             libssl-dev \
             libcurl4-openssl-dev \
             libprotobuf-dev \
-            protobuf-compiler
+            protobuf-compiler \
+            protobuf-compiler-grpc
       - name: build opentelemetry-cpp
         run: |
           cmake -S . -B .cmake-build \
