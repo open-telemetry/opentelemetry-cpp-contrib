@@ -86,7 +86,7 @@ jobs:
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: instrumentation/nginx/test/backend/simple_express
-          target: otel-nginx-test/express-backend
+          tags: otel-nginx-test/express-backend
           cache-from: type=local,src=/tmp/buildx-cache/express
           cache-to: type=local,dest=/tmp/buildx-cache/express-new
           load: true
@@ -103,7 +103,7 @@ jobs:
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: instrumentation/nginx
-          target: otel-nginx-test/nginx
+          tags: otel-nginx-test/nginx
           build-arg: |
             image=${{ matrix.image }}
             nginx_version=${{ matrix.nginx }}
