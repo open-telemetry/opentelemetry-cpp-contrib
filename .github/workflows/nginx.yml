@@ -107,7 +107,7 @@ jobs:
           build-args: |
             image=${{ matrix.image }}
             nginx_version=${{ matrix.nginx }}
-          file: test/${{env.dockerfile}}
+          file: instrumentation/nginx/test/${{env.dockerfile}}
           cache-from: type=local,src=/tmp/buildx-cache/nginx
           cache-to: type=local,dest=/tmp/buildx-cache/nginx-new
           load: true
@@ -135,7 +135,7 @@ jobs:
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: instrumentation/nginx
-          file: test/${{env.dockerfile}}
+          file: instrumentation/nginx/test/${{env.dockerfile}}
           build-args: |
             image=${{ matrix.image }}
             nginx_version=${{ matrix.nginx }}
