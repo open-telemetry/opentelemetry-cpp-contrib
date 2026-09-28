@@ -117,14 +117,10 @@ jobs:
         working-directory: "${{ matrix.working-directory }}"
         run: |
           sudo apt update -y
+          xargs -a ../../apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
           xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
           sudo apt install -y --no-install-recommends --no-install-suggests \
-            build-essential \
-            cmake \
-            ninja-build \
             libgrpc++-dev \
-            libssl-dev \
-            libcurl4-openssl-dev \
             libprotobuf-dev \
             protobuf-compiler \
             protobuf-compiler-grpc

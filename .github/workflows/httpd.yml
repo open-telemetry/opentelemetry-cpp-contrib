@@ -41,6 +41,7 @@ jobs:
         working-directory: instrumentation/httpd
         run: |
           sudo apt update -y
+          xargs -a ../../apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
           xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
       - name: Compile
         run: |
