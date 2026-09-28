@@ -63,17 +63,20 @@ jobs:
           persist-credentials: false
       - name: setup dependencies
         run: |
+          cat > otel-apt-packages.txt <<'EOF'
+          build-essential
+          cmake
+          ninja-build
+          libgrpc++-dev
+          libssl-dev
+          libcurl4-openssl-dev
+          libprotobuf-dev
+          protobuf-compiler
+          protobuf-compiler-grpc
+          EOF
+
           sudo apt update -y
-          sudo apt install -y --no-install-recommends --no-install-suggests \
-            build-essential \
-            cmake \
-            ninja-build \
-            libgrpc++-dev \
-            libssl-dev \
-            libcurl4-openssl-dev \
-            libprotobuf-dev \
-            protobuf-compiler \
-            protobuf-compiler-grpc
+          xargs -a otel-apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
       - name: build opentelemetry-cpp
         run: |
           cmake -S . -B .cmake-build \
@@ -90,7 +93,9 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: otel-install
-          path: sandbox/
+          path: |
+            sandbox/
+            otel-apt-packages.txt
 
   Codeql-build:
     permissions:
@@ -113,22 +118,18 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: download otel install
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: otel-install
+          path: .
       - name: Setup dependencies
         working-directory: "${{ matrix.working-directory }}"
         run: |
           sudo apt update -y
           xargs -a ../../apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
           xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-          sudo apt install -y --no-install-recommends --no-install-suggests \
-            libgrpc++-dev \
-            libprotobuf-dev \
-            protobuf-compiler \
-            protobuf-compiler-grpc
-      - name: download otel install
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: otel-install
-          path: sandbox
+          xargs -a ../../otel-apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
       - name: Initialize CodeQL
         uses: github/codeql-action/init@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
         with:
