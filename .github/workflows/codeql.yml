@@ -42,11 +42,65 @@ jobs:
             echo "$json"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
+
+jobs:
+  discover-configs:
+    runs-on: ubuntu-24.04
+    outputs:
+      dirs: ${{ steps.find.outputs.dirs }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - id: find
+        run: |
+          dirs=$(find . -type f -name "codeql-config.yml" -printf '%P\n' | xargs -r dirname)
+          json=$(printf '%s\n' "$dirs" | jq -R . | jq -s .)
+
+          {
+            echo "dirs<<EOF"
+            echo "$json"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+  build-otel:
+    name: "Pre-build otel"
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+      - name: checkout opentelemetry-cpp
+        uses: actions/checkout@v5
+        with:
+          repository: open-telemetry/opentelemetry-cpp
+          ref: v1.28.0
+          persist-credentials: false
+      - name: build opentelemetry-cpp
+        run: |
+          cmake -S . -B .cmake-build \
+            -G Ninja \
+            -DBUILD_TESTING=OFF \
+            -DWITH_BENCHMARK=OFF \
+            -DWITH_OTLP_GRPC=ON \
+            -DBUILD_SHARED_LIBS=ON \
+            -DOPENTELEMETRY_INSTALL=ON
+
+          cmake --build .cmake-build -j"$(nproc)"
+          cmake --install .cmake-build --prefix="${GITHUB_WORKSPACE}/sandbox"
+      - name: upload sandbox
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: otel-install
+          path: sandbox/
+
   Codeql-build:
     permissions:
       security-events: write # for github/codeql-action/analyze to upload SARIF results
     name: "static-analysis / ${{ matrix.working-directory }}"
-    needs: discover-configs
+    needs:
+      - discover-configs
+      - build-otel
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -61,32 +115,23 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          path: opentelemetry-cpp-contrib
-      - name: checkout opentelemetry-cpp
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-          repository: "open-telemetry/opentelemetry-cpp"
-          ref: "v1.28.0"
-          path: "opentelemetry-cpp"
       - name: Setup dependencies
-        working-directory: "opentelemetry-cpp-contrib/${{ matrix.working-directory }}"
+        working-directory: "${{ matrix.working-directory }}"
         run: |
           sudo apt update -y
           xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-      - name: build opentelemetry-cpp
-        working-directory: "opentelemetry-cpp"
-        run: |
-          cmake -S . -B .cmake-build -G Ninja -DBUILD_TESTING=OFF -DWITH_BENCHMARK=OFF -DWITH_OTLP_GRPC=ON -DBUILD_SHARED_LIBS=ON -DOPENTELEMETRY_INSTALL=ON
-          cmake --build .cmake-build -j$(nproc)
-          cmake --install .cmake-build --prefix="${GITHUB_WORKSPACE}/sandbox"
+      - name: download otel install
+        uses: actions/download-artifact@actions/download-artifact # v8.0.1
+        with:
+          name: otel-install
+          path: sandbox
       - name: Initialize CodeQL
         uses: github/codeql-action/init@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
         with:
-          config-file: "opentelemetry-cpp-contrib/${{ matrix.working-directory }}/codeql-config.yml"
+          config-file: "${{ matrix.working-directory }}/codeql-config.yml"
           languages: cpp
       - name: Build package
-        working-directory: "opentelemetry-cpp-contrib/${{ matrix.working-directory }}"
+        working-directory: "${{ matrix.working-directory }}"
         run: |
           cmake -S . -B .cmake-build \
             -G Ninja \
@@ -100,4 +145,3 @@ jobs:
         uses: github/codeql-action/analyze@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
         with:
           category: "${{ matrix.working-directory }}"
-          checkout_path: "opentelemetry-cpp-contrib"
