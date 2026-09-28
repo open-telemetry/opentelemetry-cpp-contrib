@@ -18,6 +18,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }} # Ensure that only one instance of this workflow is running per Pull Request/branch/ref
+  cancel-in-progress: true # Cancel any previous runs of this workflow
+
 jobs:
   cmake_linux:
     name: CMake Linux
