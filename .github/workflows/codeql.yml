@@ -43,25 +43,6 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-jobs:
-  discover-configs:
-    runs-on: ubuntu-24.04
-    outputs:
-      dirs: ${{ steps.find.outputs.dirs }}
-    steps:
-      - uses: actions/checkout@v5
-
-      - id: find
-        run: |
-          dirs=$(find . -type f -name "codeql-config.yml" -printf '%P\n' | xargs -r dirname)
-          json=$(printf '%s\n' "$dirs" | jq -R . | jq -s .)
-
-          {
-            echo "dirs<<EOF"
-            echo "$json"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-
   build-otel:
     name: "Pre-build otel"
     runs-on: ubuntu-24.04
