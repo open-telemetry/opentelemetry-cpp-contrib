@@ -104,7 +104,7 @@ jobs:
         with:
           context: instrumentation/nginx
           tags: otel-nginx-test/nginx
-          build-arg: |
+          build-args: |
             image=${{ matrix.image }}
             nginx_version=${{ matrix.nginx }}
           file: test/${dockerfile}
@@ -136,7 +136,7 @@ jobs:
         with:
           context: instrumentation/nginx
           file: test/${dockerfile}
-          build-arg: |
+          build-args: |
             image=${{ matrix.image }}
             nginx_version=${{ matrix.nginx }}
           target: export
