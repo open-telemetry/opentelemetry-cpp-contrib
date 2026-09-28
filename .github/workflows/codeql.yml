@@ -68,6 +68,7 @@ jobs:
             build-essential \
             cmake \
             ninja-build \
+            libgrpc-dev \
             libssl-dev \
             libcurl4-openssl-dev \
             libprotobuf-dev \
