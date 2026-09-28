@@ -3,6 +3,8 @@ cmake
 ninja-build
 automake
 libtool-bin
+libgrpc++-dev
+protobuf-compiler-grpc
 ca-certificates
 git
 wget
