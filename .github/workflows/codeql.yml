@@ -77,7 +77,7 @@ jobs:
       - name: build opentelemetry-cpp
         working-directory: "opentelemetry-cpp"
         run: |
-          cmake -S . -B .cmake-build -G Ninja -DBUILD_TESTING=OFF -DWITH_BENCHMARK=OFF -DWITH_OTLP_GRPC=ON -DOPENTELEMETRY_INSTALL=ON
+          cmake -S . -B .cmake-build -G Ninja -DBUILD_TESTING=OFF -DWITH_BENCHMARK=OFF -DWITH_OTLP_GRPC=ON -DBUILD_SHARED_LIBS=ON -DOPENTELEMETRY_INSTALL=ON
           cmake --build .cmake-build -j$(nproc)
           cmake --install .cmake-build --prefix="${GITHUB_WORKSPACE}/sandbox"
       - name: Initialize CodeQL
