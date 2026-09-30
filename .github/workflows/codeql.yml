@@ -7,14 +7,18 @@ on:
     paths:
       - 'exporters/**'
       - 'instrumentation/**'
+      - 'cmake/**'
       - '.github/workflows/codeql.yml'
+      - 'apt-package.txt'
   pull_request:
     branches:
       - 'main'
     paths:
       - 'exporters/**'
       - 'instrumentation/**'
+      - 'cmake/**'
       - '.github/workflows/codeql.yml'
+      - 'apt-package.txt'
 
 permissions:
   contents: read
