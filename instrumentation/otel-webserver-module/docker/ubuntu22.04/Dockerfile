@@ -54,7 +54,8 @@ ARG NGINX_VERSION="1.26.0"
 RUN wget https://cmake.org/files/v${CMAKE_VERSION}/cmake-${CMAKE_0VERSION}-linux-x86_64.tar.gz \
     && tar -xvf cmake-${CMAKE_0VERSION}-linux-x86_64.tar.gz \
     && cd cmake-${CMAKE_0VERSION}-linux-x86_64 \
-    && cp -rf * /usr/local/ \
+    && cp -rf bin/* /usr/local/bin/ \
+    && cp -rf share/* /usr/local/share/ \
     && cd .. && rm -rf cmake-${CMAKE_0VERSION}-linux-x86_64.tar.gz cmake-${CMAKE_0VERSION}-linux-x86_64
 
 # standalone c-ares, newer than gRPC's own vendored pin - see CARES_VERSION comment above.
