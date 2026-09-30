@@ -9,6 +9,7 @@ on:
       - 'instrumentation/httpd/**'
       - 'cmake/**'
       - '.github/workflows/httpd.yml'
+      - 'apt-package.txt'
   pull_request:
     branches:
       - 'main'
