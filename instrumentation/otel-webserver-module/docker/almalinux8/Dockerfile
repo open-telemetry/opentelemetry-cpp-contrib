@@ -117,7 +117,7 @@ RUN git clone https://github.com/grpc/grpc \
   && sed -i "s/target_link_libraries(bssl ssl crypto)/target_link_libraries(bssl ssl crypto rt)/g" third_party/boringssl-with-bazel/CMakeLists.txt \
   && mkdir -p cmake/build \
   && cd cmake/build \
-  && cmake ../.. -DgRPC_INSTALL=ON -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DgRPC_BUILD_TESTS=OFF -DgRPC_ABSL_PROVIDER=module -DgRPC_CARES_PROVIDER=package -DgRPC_PROTOBUF_PROVIDER=module -DgRPC_RE2_PROVIDER=module -DgRPC_SSL_PROVIDER=module -DgRPC_ZLIB_PROVIDER=module -DCMAKE_C_FLAGS=-Wno-error=attributes -DCMAKE_CXX_FLAGS=-Wno-error=attributes -DCMAKE_CXX_STANDARD=17 -DCMAKE_INSTALL_PREFIX=/usr/local -Dprotobuf_INSTALL=ON -DABSL_ENABLE_INSTALL=ON -Dutf8_range_ENABLE_INSTALL=ON -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+  && cmake ../.. -DgRPC_INSTALL=ON -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DgRPC_BUILD_TESTS=OFF -DCMAKE_INSTALL_LIBDIR=lib -DgRPC_ABSL_PROVIDER=module -DgRPC_CARES_PROVIDER=package -DgRPC_PROTOBUF_PROVIDER=module -DgRPC_RE2_PROVIDER=module -DgRPC_SSL_PROVIDER=module -DgRPC_ZLIB_PROVIDER=module -DCMAKE_C_FLAGS=-Wno-error=attributes -DCMAKE_CXX_FLAGS=-Wno-error=attributes -DCMAKE_CXX_STANDARD=17 -DCMAKE_INSTALL_PREFIX=/usr/local -Dprotobuf_INSTALL=ON -DABSL_ENABLE_INSTALL=ON -Dutf8_range_ENABLE_INSTALL=ON -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
   && make -j2 \
   && make install \
   && cd ../../..
