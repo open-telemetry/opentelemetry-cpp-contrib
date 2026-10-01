@@ -5,3 +5,7 @@ libssl-dev
 libcurl4-openssl-dev
 libprotobuf-dev
 protobuf-compiler
+nlohmann-json3-dev
+libbenchmark-dev
+libgmock-dev
+libgtest-dev
