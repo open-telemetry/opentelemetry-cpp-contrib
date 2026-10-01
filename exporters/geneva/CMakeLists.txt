@@ -22,7 +22,13 @@ endif()
     
 add_definitions(-DHAVE_CONSOLE_LOG)
 if(MAIN_PROJECT)
-  find_package(opentelemetry-cpp REQUIRED)
+  FetchContent_Declare(
+    opentelemetry-cpp
+    GIT_REPOSITORY https://github.com/open-telemetry/opentelemetry-cpp.git
+    GIT_TAG ea1f0d61ce5baa5584b097266bf133d1f31e3607 # v1.23.0
+  )
+
+  FetchContent_MakeAvailable(opentelemetry-cpp)
 endif()
 
 include_directories(include)

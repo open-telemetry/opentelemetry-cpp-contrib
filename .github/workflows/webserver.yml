@@ -157,32 +157,3 @@ jobs:
       #     sleep 30
       #     ./gradlew :test:integration:integrationTests -i
       #     curl http://localhost:9411/api/v2/spans?serviceName=demoservice
-
-  Codeql-build:
-    permissions:
-      security-events: write # for github/codeql-action/analyze to upload SARIF results
-    name: static-analysis
-    if: false  # disabled. TODO: fix this job 
-    runs-on: ubuntu-24.04
-    steps:
-      - name: checkout otel webserver
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: setup environment
-        run: |
-          cd ..
-          cp opentelemetry-cpp-contrib/instrumentation/otel-webserver-module/codeql-env.sh .
-          sudo ./codeql-env.sh
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4.38.1
-        with:
-          languages: cpp
-      - name: build
-        run: |
-          cd instrumentation/otel-webserver-module
-          cp -r /dependencies ../otel-webserver-module/
-          cp -r /build-dependencies ../otel-webserver-module/
-          ./gradlew assembleWebserverModule -DtargetSystem=ubuntu --info
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4.38.1
