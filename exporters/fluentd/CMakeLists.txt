@@ -26,25 +26,28 @@ endif()
 include(FetchContent)
 
 if (MAIN_PROJECT)
-  FetchContent_Declare(
-    opentelemetry-cpp
-    GIT_REPOSITORY https://github.com/open-telemetry/opentelemetry-cpp.git
-    GIT_TAG b9cf499ff5715433848b316059714b5c59af1f2c # v1.21.0
-  )
-
-  FetchContent_MakeAvailable(opentelemetry-cpp)
+  find_package(opentelemetry-cpp CONFIG QUIET)
+  if(opentelemetry-cpp_FOUND)
+    message("Using external opentelemetry-cpp")
+  else()
+    include(cmake/opentelemetry-cpp.cmake)
+    build_opentelemetry()
+    set(OPENTELEMETRY_CPP_INCLUDE_DIRS "")
+    set(OPENTELEMETRY_CPP_LIBRARIES "opentelemetry::libopentelemetry")
+    message("opentelemetry-cpp package was not found. Cloned from github")
+  endif()
 endif()
 
 find_package(nlohmann_json QUIET)
 
 if(NOT nlohmann_json_FOUND)
   FetchContent_Declare(
-    glog
+    nlohmann_json
     GIT_REPOSITORY https://github.com/nlohmann/json.git
     GIT_TAG db78ac1d7716f56fc9f1b030b715f872f93964e4 # v3.9.1
   )
 
-  FetchContent_MakeAvailable(glog)
+  FetchContent_MakeAvailable(nlohmann_json)
 endif()
 
 include_directories(include)
@@ -60,17 +63,14 @@ set_target_properties(
   opentelemetry_exporter_geneva_trace
   PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_trace)
 
+target_link_libraries(
+  opentelemetry_exporter_geneva_trace
+  PUBLIC opentelemetry-cpp::trace opentelemetry-cpp::resources opentelemetry-cpp::common
+  INTERFACE nlohmann_json::nlohmann_json)
+
 if(MAIN_PROJECT)
-  target_link_libraries(
-    opentelemetry_exporter_geneva_trace
-    PUBLIC opentelemetry-cpp::api)
   set_target_properties(opentelemetry_exporter_geneva_trace
                         PROPERTIES EXPORT_NAME trace)
-else()
-  target_link_libraries(
-    opentelemetry_exporter_geneva_trace
-    PUBLIC opentelemetry_trace opentelemetry_resources opentelemetry_common
-      opentelemetry_ext)
 endif()
 
 # create fluentd logs exporter
@@ -81,16 +81,9 @@ set_target_properties(
   opentelemetry_exporter_geneva_logs
   PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_logs)
 
-if(MAIN_PROJECT)
-  target_link_libraries(
-    opentelemetry_exporter_geneva_logs
-    PUBLIC opentelemetry-cpp::api)
-else()
-  target_link_libraries(
-    opentelemetry_exporter_geneva_logs
-    PUBLIC opentelemetry_logs opentelemetry_resources opentelemetry_common
-      opentelemetry_ext)
-endif()
+target_link_libraries(
+  opentelemetry_exporter_geneva_logs
+  PUBLIC opentelemetry-cpp::logs opentelemetry-cpp::resources opentelemetry-cpp::common)
 
 if(MAIN_PROJECT)
   option(WITH_EXAMPLES "Build examples" ON)
