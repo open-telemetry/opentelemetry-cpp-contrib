@@ -26,16 +26,8 @@ endif()
 include(FetchContent)
 
 if (MAIN_PROJECT)
-  find_package(opentelemetry-cpp CONFIG QUIET)
-  if(opentelemetry-cpp_FOUND)
-    message("Using external opentelemetry-cpp")
-  else()
-    include(cmake/opentelemetry-cpp.cmake)
-    build_opentelemetry()
-    set(OPENTELEMETRY_CPP_INCLUDE_DIRS "")
-    set(OPENTELEMETRY_CPP_LIBRARIES "opentelemetry::libopentelemetry")
-    message("opentelemetry-cpp package was not found. Cloned from github")
-  endif()
+  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
+  include(opentelemetry-cpp)
 endif()
 
 find_package(nlohmann_json QUIET)
@@ -167,3 +159,32 @@ if(BUILD_TESTING)
     TEST_PREFIX exporter.
     TEST_LIST fluentd_recordable_logs_test)
 endif() # BUILD_TESTING
+
+if (OPENTELEMETRY_INSTALL)
+  # config file for find_packages(opentelemetry-cpp-fluentd CONFIG)
+  include(GNUInstallDirs)
+  include(CMakePackageConfigHelpers)
+
+  set(OPENTELEMETRY_CPP_FLUENTD_VERSION "1.1.2")
+  set(INCLUDE_INSTALL_DIR "${CMAKE_INSTALL_INCLUDEDIR}")
+  configure_package_config_file(
+    "${CMAKE_CURRENT_LIST_DIR}/cmake/opentelemetry-cpp-fluentd-config.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake"
+    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
+    # PATH_VARS OPENTELEMETRY_CPP_FLUENTD_VERSION PROJECT_NAME INCLUDE_INSTALL_DIR
+    # CMAKE_INSTALL_LIBDIR
+    PATH_VARS PROJECT_NAME INCLUDE_INSTALL_DIR CMAKE_INSTALL_LIBDIR
+    NO_CHECK_REQUIRED_COMPONENTS_MACRO)
+
+  # Write version file for find_packages(opentelemetry-cpp-fluentd CONFIG)
+  write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config-version.cmake"
+    VERSION ${OPENTELEMETRY_CPP_FLUENTD_VERSION}
+    COMPATIBILITY ExactVersion)
+
+  install(
+    FILES
+      "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake"
+      "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config-version.cmake"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
+endif()
