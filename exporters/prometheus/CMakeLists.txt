@@ -29,19 +29,6 @@ set(ENABLE_TESTING OFF)
 
 include(FetchContent)
 
-if(MAIN_PROJECT)
-  set(WITH_PROMETHEUS ON CACHE BOOL "" FORCE)
-  find_package(opentelemetry-cpp REQUIRED)
-endif()
-
-if(TARGET opentelemetry-cpp::prometheus_exporter)
-    set(OTEL_PROM_TARGET opentelemetry-cpp::prometheus_exporter)
-elseif(TARGET opentelemetry-cpp::exporter_prometheus)
-    set(OTEL_PROM_TARGET opentelemetry-cpp::exporter_prometheus)
-else()
-    message(FATAL_ERROR "No Prometheus exporter target found")
-endif()
-
 find_package(ZLIB REQUIRED)
 
 find_package(prometheus-cpp CONFIG QUIET)
@@ -60,6 +47,20 @@ endif()
 if(NOT TARGET prometheus-cpp::core OR
    NOT TARGET prometheus-cpp::push)
   message(FATAL_ERROR "A required prometheus-cpp target (prometheus-cpp::core or prometheus-cpp::push) was not imported")
+endif()
+
+if(MAIN_PROJECT)
+  set(WITH_PROMETHEUS ON CACHE BOOL "" FORCE)
+  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
+  include(opentelemetry-cpp)
+endif()
+
+if(TARGET opentelemetry-cpp::prometheus_exporter)
+    set(OTEL_PROM_TARGET opentelemetry-cpp::prometheus_exporter)
+elseif(TARGET opentelemetry-cpp::exporter_prometheus)
+    set(OTEL_PROM_TARGET opentelemetry-cpp::exporter_prometheus)
+else()
+    message(FATAL_ERROR "No Prometheus exporter target found")
 endif()
 
 get_target_property(OPENTELEMETRY_CPP_API_DEFINITIONS opentelemetry-cpp::api
@@ -225,14 +226,4 @@ install(
   FILES
     "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config-version.cmake"
-  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
-
-export(
-  EXPORT "${PROJECT_NAME}-target"
-  NAMESPACE ${PROJECT_NAME}::
-  FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-target.cmake"
-)
-install(
-  EXPORT "${PROJECT_NAME}-target"
-  NAMESPACE ${PROJECT_NAME}::
   DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
