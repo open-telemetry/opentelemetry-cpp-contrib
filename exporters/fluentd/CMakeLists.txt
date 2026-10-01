@@ -47,11 +47,6 @@ if(NOT nlohmann_json_FOUND)
   FetchContent_MakeAvailable(glog)
 endif()
 
-if(MAIN_PROJECT)
-  find_package(CURL REQUIRED)
-  find_package(Threads REQUIRED)
-endif()
-
 include_directories(include)
 
 if(OPENTELEMETRY_ENABLE_FLUENT_RESOURCE_PUBLISH_EXPERIMENTAL)
@@ -69,6 +64,8 @@ if(MAIN_PROJECT)
   target_link_libraries(
     opentelemetry_exporter_geneva_trace
     PUBLIC opentelemetry-cpp::api)
+  set_target_properties(opentelemetry_exporter_geneva_trace
+                        PROPERTIES EXPORT_NAME trace)
 else()
   target_link_libraries(
     opentelemetry_exporter_geneva_trace
@@ -154,10 +151,6 @@ if(BUILD_TESTING)
     GTest::gmock
     GTest::gtest
     GTest::gtest_main
-    ${CMAKE_THREAD_LIBS_INIT}
-    opentelemetry_common
-    opentelemetry_trace
-    opentelemetry_resources
     opentelemetry_exporter_geneva_trace)
 
   gtest_add_tests(
@@ -174,10 +167,6 @@ if(BUILD_TESTING)
     GTest::gmock
     GTest::gtest
     GTest::gtest_main
-    ${CMAKE_THREAD_LIBS_INIT}
-    opentelemetry_common
-    opentelemetry_logs
-    opentelemetry_resources
     opentelemetry_exporter_geneva_logs)
 
   gtest_add_tests(

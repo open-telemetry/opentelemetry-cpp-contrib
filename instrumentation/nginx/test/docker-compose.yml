@@ -1,6 +1,6 @@
 services:
   collector:
-    image: otel/opentelemetry-collector:latest
+    image: otel/opentelemetry-collector:0.161.0@sha256:b6d2b9a85b1029d05b5ad913150c1f014eed4ae99be81a1813ca5ade4a191913
     command: ["--config=/etc/otel/config.yml"]
     volumes:
       - ${TEST_ROOT:-.}/conf/collector.yml:/etc/otel/config.yml
@@ -10,6 +10,12 @@ services:
       - "13133:13133" # health check
   nginx:
     image: otel-nginx-test/nginx:latest
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/up"]
+      interval: 1s
+      timeout: 1s
+      start_period: 10s
+      retries: 300
     volumes:
       - ${TEST_ROOT:-.}/conf/nginx.conf:/otel-nginx/nginx.conf
       - ${TEST_ROOT:-.}/conf/fastcgi_params:/etc/nginx/fastcgi_params
@@ -34,6 +40,6 @@ services:
     ports:
       - "3500:3500"
   php-backend:
-    image: bitnami/php-fpm:7.4-prod
+    image: php:7.4.33-fpm@sha256:3ac7c8c74b2b047c7cb273469d74fc0d59b857aa44043e6ea6a0084372811d5b
     volumes:
       - ${TEST_ROOT:-.}/backend/php/:/var/www/html/php

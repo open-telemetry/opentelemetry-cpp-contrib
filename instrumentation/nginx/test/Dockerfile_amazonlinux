@@ -1,4 +1,4 @@
-ARG image=amazonlinux:2
+ARG image=amazonlinux:2.0.20260831.0@sha256:f962447192b7321863c0c15ebe3b52896a0fc175b5bbcc103e12275c0304f343
 FROM $image AS build
 
 ARG otel_cpp_version=1.17.0

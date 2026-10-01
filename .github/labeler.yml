@@ -1,0 +1,61 @@
+"exporter:fluentd":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "exporters/fluentd/**"
+          - "cmake/**"
+"exporter:geneva":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "exporters/geneva/**"
+          - "cmake/**"
+"exporter:geneva-trace":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "exporters/geneva-trace/**"
+          - "cmake/**"
+"exporter:prometheus":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "exporters/prometheus/**"
+          - "cmake/**"
+"exporter:user_events":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "exporters/user_events/**"
+          - "cmake/**"
+
+"instrumentation:boost_log":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "instrumentation/boost_log/**"
+          - "cmake/**"
+"instrumentation:glog":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "instrumentation/glog/**"
+          - "cmake/**"
+"instrumentation:httpd":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "instrumentation/httpd/**"
+          - "cmake/**"
+"instrumentation:log4cxx":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "instrumentation/log4cxx/**"
+          - "cmake/**"
+"instrumentation:nginx":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "instrumentation/nginx/**"
+          - "cmake/**"
+"instrumentation:spdlog":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "instrumentation/spdlog/**"
+          - "cmake/**"
+
+"Webserver":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "instrumentation/otel-webserver-module/**"
