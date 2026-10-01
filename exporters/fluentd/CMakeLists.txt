@@ -49,37 +49,25 @@ if(OPENTELEMETRY_ENABLE_FLUENT_RESOURCE_PUBLISH_EXPERIMENTAL)
 endif()
 
 # create fluentd trace exporter
-add_library(opentelemetry_exporter_geneva_trace src/trace/fluentd_exporter.cc
-                                                src/trace/recordable.cc)
-set_target_properties(
-  opentelemetry_exporter_geneva_trace
+add_library(opentelemetry_exporter_fluentd_trace
+  src/trace/fluentd_exporter.cc src/trace/recordable.cc)
+
+set_target_properties(opentelemetry_exporter_fluentd_trace
   PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_trace)
 
-target_link_libraries(
-  opentelemetry_exporter_geneva_trace
+target_link_libraries(opentelemetry_exporter_fluentd_trace
   PUBLIC opentelemetry-cpp::trace opentelemetry-cpp::resources opentelemetry-cpp::common
   INTERFACE nlohmann_json::nlohmann_json)
 
-if(MAIN_PROJECT)
-  set_target_properties(opentelemetry_exporter_geneva_trace
-                        PROPERTIES EXPORT_NAME trace)
-endif()
-
 # create fluentd logs exporter
+add_library(opentelemetry_exporter_fluentd_logs
+  src/log/fluentd_exporter.cc src/log/recordable.cc)
 
-add_library(opentelemetry_exporter_geneva_logs src/log/fluentd_exporter.cc
-                                               src/log/recordable.cc)
-set_target_properties(
-  opentelemetry_exporter_geneva_logs
+set_target_properties(opentelemetry_exporter_fluentd_logs
   PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_logs)
 
-target_link_libraries(
-  opentelemetry_exporter_geneva_logs
+target_link_libraries(opentelemetry_exporter_fluentd_logs
   PUBLIC opentelemetry-cpp::logs opentelemetry-cpp::resources opentelemetry-cpp::common)
-
-if(MAIN_PROJECT)
-  option(WITH_EXAMPLES "Build examples" ON)
-endif()
 
 if (WITH_EXAMPLES)
   add_subdirectory(example)
@@ -90,9 +78,11 @@ if(OPENTELEMETRY_INSTALL)
     include(GNUInstallDirs)
     include(CMakePackageConfigHelpers)
 
+    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}")
+
     install(
-      TARGETS opentelemetry_exporter_geneva_logs
-              opentelemetry_exporter_geneva_trace
+      TARGETS opentelemetry_exporter_fluentd_logs
+              opentelemetry_exporter_fluentd_trace
       EXPORT "${PROJECT_NAME}-target"
       RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
       LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -128,8 +118,8 @@ if(OPENTELEMETRY_INSTALL)
       DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
   else()
     otel_add_component(
-      COMPONENT exporters_geneva_fluentd
-      TARGETS opentelemetry_exporter_geneva_logs opentelemetry_exporter_geneva_trace
+      COMPONENT exporters_fluentd
+      TARGETS opentelemetry_exporter_fluentd_logs opentelemetry_exporter_fluentd_trace
       FILES_DIRECTORY "include/opentelemetry/exporters/"
       FILES_DESTINATION "include/opentelemetry/exporters"
       FILES_MATCHING
@@ -151,16 +141,15 @@ if(BUILD_TESTING)
   include(GoogleTest)
 
   # build trace exporter tests
-  add_executable(
-    fluentd_recordable_trace_test test/trace/fluentd_recordable_test.cc
-                                  test/trace/fluentd_baseline_test.cc)
+  add_executable(fluentd_recordable_trace_test
+    test/trace/fluentd_recordable_test.cc
+    test/trace/fluentd_baseline_test.cc)
 
-  target_link_libraries(
-    fluentd_recordable_trace_test
+  target_link_libraries(fluentd_recordable_trace_test
     GTest::gmock
     GTest::gtest
     GTest::gtest_main
-    opentelemetry_exporter_geneva_trace)
+    opentelemetry_exporter_fluentd_trace)
 
   gtest_add_tests(
     TARGET fluentd_recordable_trace_test
@@ -171,8 +160,7 @@ if(BUILD_TESTING)
   add_executable(fluentd_recordable_logs_test
                  test/log/fluentd_recordable_test.cc)
 
-  target_link_libraries(
-    fluentd_recordable_logs_test
+  target_link_libraries(fluentd_recordable_logs_test
     GTest::gmock
     GTest::gtest
     GTest::gtest_main
