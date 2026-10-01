@@ -88,6 +88,7 @@ endif()
 if(OPENTELEMETRY_INSTALL)
   if(MAIN_PROJECT)
     include(GNUInstallDirs)
+    include(CMakePackageConfigHelpers)
 
     install(
       TARGETS opentelemetry_exporter_geneva_logs
@@ -102,6 +103,29 @@ if(OPENTELEMETRY_INSTALL)
       DESTINATION include/opentelemetry/exporters/
       FILES_MATCHING
       PATTERN "*.h")
+
+    set(OPENTELEMETRY_CPP_FLUENTD_VERSION "1.1.2")
+    set(INCLUDE_INSTALL_DIR "${CMAKE_INSTALL_INCLUDEDIR}")
+    configure_package_config_file(
+      "${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}-config.cmake.in"
+      "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake"
+      INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
+      # PATH_VARS OPENTELEMETRY_CPP_FLUENTD_VERSION PROJECT_NAME INCLUDE_INSTALL_DIR
+      # CMAKE_INSTALL_LIBDIR
+      PATH_VARS PROJECT_NAME INCLUDE_INSTALL_DIR CMAKE_INSTALL_LIBDIR
+      NO_CHECK_REQUIRED_COMPONENTS_MACRO)
+
+    # Write version file for find_packages(opentelemetry-cpp-fluentd CONFIG)
+    write_basic_package_version_file(
+      "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config-version.cmake"
+      VERSION ${OPENTELEMETRY_CPP_FLUENTD_VERSION}
+      COMPATIBILITY ExactVersion)
+
+    install(
+      FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config-version.cmake"
+      DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
   else()
     otel_add_component(
       COMPONENT exporters_geneva_fluentd
@@ -159,32 +183,3 @@ if(BUILD_TESTING)
     TEST_PREFIX exporter.
     TEST_LIST fluentd_recordable_logs_test)
 endif() # BUILD_TESTING
-
-if (OPENTELEMETRY_INSTALL)
-  # config file for find_packages(opentelemetry-cpp-fluentd CONFIG)
-  include(GNUInstallDirs)
-  include(CMakePackageConfigHelpers)
-
-  set(OPENTELEMETRY_CPP_FLUENTD_VERSION "1.1.2")
-  set(INCLUDE_INSTALL_DIR "${CMAKE_INSTALL_INCLUDEDIR}")
-  configure_package_config_file(
-    "${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}-config.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake"
-    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
-    # PATH_VARS OPENTELEMETRY_CPP_FLUENTD_VERSION PROJECT_NAME INCLUDE_INSTALL_DIR
-    # CMAKE_INSTALL_LIBDIR
-    PATH_VARS PROJECT_NAME INCLUDE_INSTALL_DIR CMAKE_INSTALL_LIBDIR
-    NO_CHECK_REQUIRED_COMPONENTS_MACRO)
-
-  # Write version file for find_packages(opentelemetry-cpp-fluentd CONFIG)
-  write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config-version.cmake"
-    VERSION ${OPENTELEMETRY_CPP_FLUENTD_VERSION}
-    COMPATIBILITY ExactVersion)
-
-  install(
-    FILES
-      "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake"
-      "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config-version.cmake"
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
-endif()
