@@ -55,6 +55,14 @@ if(MAIN_PROJECT)
   include(opentelemetry-cpp)
 endif()
 
+if(TARGET opentelemetry-cpp::prometheus_exporter)
+    set(OTEL_PROM_TARGET opentelemetry-cpp::prometheus_exporter)
+elseif(TARGET opentelemetry-cpp::exporter_prometheus)
+    set(OTEL_PROM_TARGET opentelemetry-cpp::exporter_prometheus)
+else()
+    message(FATAL_ERROR "No Prometheus exporter target found")
+endif()
+
 get_target_property(OPENTELEMETRY_CPP_API_DEFINITIONS opentelemetry-cpp::api
                     INTERFACE_COMPILE_DEFINITIONS)
 if(HAVE_ABSEIL IN_LIST OPENTELEMETRY_CPP_API_DEFINITIONS)
@@ -112,7 +120,7 @@ target_include_directories(
 
 target_link_libraries(
   opentelemetry_prometheus_push_exporter
-  PUBLIC opentelemetry-cpp::prometheus_exporter opentelemetry-cpp::metrics
+  PUBLIC ${OTEL_PROM_TARGET} opentelemetry-cpp::metrics
          opentelemetry-cpp::resources prometheus-cpp::push prometheus-cpp::core)
 
 target_compile_definitions(
