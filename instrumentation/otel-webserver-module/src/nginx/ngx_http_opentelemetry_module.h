@@ -23,7 +23,7 @@
 
 #define LOWEST_HTTP_ERROR_CODE 400
 #define STATUS_CODE_BYTE_COUNT 6
-static const int CONFIG_COUNT = 18; // Number of key value pairs in config
+static const int CONFIG_COUNT = 19; // Number of key value pairs in config
 static const int TRACE_ID_LEN = 32; // Length of trace_id
 static const int SPAN_ID_LEN = 16; // Length of span_id
 static const char NGINX_VARIABLE_IDENTIFIER = '$'; // Identifier for Nginx variables
@@ -107,6 +107,7 @@ typedef struct {
     ngx_str_t   nginxModuleRequestHeaders;
     ngx_str_t   nginxModuleResponseHeaders;
     ngx_str_t   nginxModuleOtelExporterOtlpHeaders;
+    ngx_str_t   nginxModuleOtelExporterOtlpProtocol;
     ngx_flag_t  nginxModuleTrustIncomingSpans;
     ngx_array_t  *nginxModuleAttributes;
     ngx_array_t  *nginxModuleIgnorePaths;
