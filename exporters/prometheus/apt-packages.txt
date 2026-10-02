@@ -2,3 +2,4 @@ build-essential
 ca-certificates
 cmake
 ninja-build
+libcurl4-openssl-dev
