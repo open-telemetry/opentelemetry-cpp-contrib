@@ -8,6 +8,7 @@ on:
     paths:
       - "exporters/prometheus/**"
       - 'cmake/**'
+      - '.github/workflows/ci-*.yml'
       - ".github/workflows/prometheus.yml"
   pull_request:
     branches:
@@ -15,6 +16,7 @@ on:
     paths:
       - "exporters/prometheus/**"
       - 'cmake/**'
+      - '.github/workflows/ci-*.yml'
       - ".github/workflows/prometheus.yml"
 
 permissions:
