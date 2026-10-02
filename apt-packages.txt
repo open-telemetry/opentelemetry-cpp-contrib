@@ -4,3 +4,4 @@ ninja-build
 automake
 libtool-bin
 ca-certificates
+libcurl4-openssl-dev
