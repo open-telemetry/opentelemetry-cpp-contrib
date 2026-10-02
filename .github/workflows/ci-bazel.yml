@@ -1,0 +1,39 @@
+name: Bazel
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-24.04
+          - macos-26
+    steps:
+      - name: checkout otel contrib prometheus
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Mount Bazel Cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        env:
+          cache-name: bazel_cache
+        with:
+          path: /home/runner/.cache/bazel
+          key: bazel_${{ matrix.os }}
+      - name: run build
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          bazel --output_user_root=$HOME/.cache/bazel build //...
+      - name: run tests
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          bazel --output_user_root=$HOME/.cache/bazel test //...
