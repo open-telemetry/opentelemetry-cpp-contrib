@@ -55,11 +55,6 @@ else()
   endif()
 endif()
 
-if(MAIN_PROJECT)
-  find_package(CURL REQUIRED)
-  find_package(Threads REQUIRED)
-endif()
-
 include_directories(include)
 
 if(OPENTELEMETRY_ENABLE_FLUENT_RESOURCE_PUBLISH_EXPERIMENTAL)
@@ -74,11 +69,9 @@ set_target_properties(
   PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_trace)
 
 if(MAIN_PROJECT)
-  target_include_directories(opentelemetry_exporter_geneva_trace
-                           PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
   target_link_libraries(
     opentelemetry_exporter_geneva_trace
-    PUBLIC ${OPENTELEMETRY_CPP_LIBRARIES}
+    PUBLIC opentelemetry-cpp::trace opentelemetry-cpp::resources opentelemetry-cpp::common
     INTERFACE nlohmann_json::nlohmann_json)
   set_target_properties(opentelemetry_exporter_geneva_trace
                         PROPERTIES EXPORT_NAME trace)
@@ -98,11 +91,9 @@ set_target_properties(
   PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_logs)
 
 if(MAIN_PROJECT)
-  target_include_directories(opentelemetry_exporter_geneva_logs
-                           PRIVATE ${OPENTELEMETRY_CPP_INCLUDE_DIRS})
   target_link_libraries(
     opentelemetry_exporter_geneva_logs
-    PUBLIC ${OPENTELEMETRY_CPP_LIBRARIES}
+    PUBLIC opentelemetry-cpp::logs opentelemetry-cpp::resources opentelemetry-cpp::common
     INTERFACE nlohmann_json::nlohmann_json)
 
   set_target_properties(opentelemetry_exporter_geneva_logs
@@ -175,7 +166,8 @@ if(BUILD_TESTING)
       message(STATUS_FATAL, "Test is not enable.")
     endif()
   endif()
-  # include(GoogleTest)
+  enable_testing()
+  include(GoogleTest)
   # build trace exporter tests
   add_executable(
     fluentd_recordable_trace_test test/trace/fluentd_recordable_test.cc
@@ -183,11 +175,9 @@ if(BUILD_TESTING)
 
   target_link_libraries(
     fluentd_recordable_trace_test
-    ${GTEST_BOTH_LIBRARIES}
-    ${CMAKE_THREAD_LIBS_INIT}
-    opentelemetry_common
-    opentelemetry_trace
-    opentelemetry_resources
+    GTest::gmock
+    GTest::gtest
+    GTest::gtest_main
     opentelemetry_exporter_geneva_trace)
 
   if(nlohmann_json_clone)
@@ -205,11 +195,9 @@ if(BUILD_TESTING)
 
   target_link_libraries(
     fluentd_recordable_logs_test
-    ${GTEST_BOTH_LIBRARIES}
-    ${CMAKE_THREAD_LIBS_INIT}
-    opentelemetry_common
-    opentelemetry_logs
-    opentelemetry_resources
+    GTest::gmock
+    GTest::gtest
+    GTest::gtest_main
     opentelemetry_exporter_geneva_logs)
 
   if(nlohmann_json_clone)

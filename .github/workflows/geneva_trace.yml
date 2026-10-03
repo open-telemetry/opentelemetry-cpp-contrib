@@ -7,15 +7,17 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - '*'
+      - 'main'
     paths:
       - 'exporters/geneva-trace/**'
+      - 'cmake/**'
       - '.github/workflows/geneva_trace.yml'
   pull_request:
     branches:
       - 'main'
     paths:
       - 'exporters/geneva-trace/**'
+      - 'cmake/**'
       - '.github/workflows/geneva_trace.yml'
 
 permissions:

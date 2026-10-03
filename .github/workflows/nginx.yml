@@ -70,23 +70,27 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: setup
-        run: |
-          sudo ./instrumentation/nginx/ci/setup_environment.sh
+      - name: Setup Elixir/Erlang
+        uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1
+        with:
+          otp-version: '29.1'
+          elixir-version: '1.20.4'
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
       - name: setup buildx
         id: buildx
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
         with:
+          driver: docker-container
           install: true
       - name: build express backend docker
-        run: |
-          cd instrumentation/nginx
-          docker buildx build -t otel-nginx-test/express-backend \
-            -f test/backend/simple_express/Dockerfile \
-            --cache-from type=local,src=/tmp/buildx-cache/express \
-            --cache-to type=local,dest=/tmp/buildx-cache/express-new \
-            --load \
-            test/backend/simple_express
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: instrumentation/nginx/test/backend/simple_express
+          tags: otel-nginx-test/express-backend
+          cache-from: type=local,src=/tmp/buildx-cache/express
+          cache-to: type=local,dest=/tmp/buildx-cache/express-new
+          load: true
       - name: Choose Dockerfile
         run: |
           if [[ "${{ matrix.image }}" == "alpine"* ]]; then
@@ -97,16 +101,17 @@ jobs:
             echo "dockerfile=Dockerfile" >> $GITHUB_ENV
           fi
       - name: build nginx docker
-        run: |
-          cd instrumentation/nginx
-          docker buildx build -t otel-nginx-test/nginx \
-            --build-arg image=${{ matrix.image }} \
-            --build-arg nginx_version=${{ matrix.nginx }} \
-            -f test/${dockerfile} \
-            --cache-from type=local,src=/tmp/buildx-cache/nginx \
-            --cache-to type=local,dest=/tmp/buildx-cache/nginx-new \
-            --load \
-            .
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: instrumentation/nginx
+          tags: otel-nginx-test/nginx
+          build-args: |
+            image=${{ matrix.image }}
+            nginx_version=${{ matrix.nginx }}
+          file: instrumentation/nginx/test/${{env.dockerfile}}
+          cache-from: type=local,src=/tmp/buildx-cache/nginx
+          cache-to: type=local,dest=/tmp/buildx-cache/nginx-new
+          load: true
       - name: update cache
         run: |
           rm -rf /tmp/buildx-cache/express
@@ -114,23 +119,30 @@ jobs:
           mv /tmp/buildx-cache/express-new /tmp/buildx-cache/express
           mv /tmp/buildx-cache/nginx-new /tmp/buildx-cache/nginx
       - name: run tests
+        working-directory: instrumentation/nginx
         run: |
-          cd instrumentation/nginx/test/instrumentation
+          cd test/instrumentation
           mix local.hex --force --if-missing
           mix local.rebar --force --if-missing
           mix deps.get
           mix test
-      - name: copy artifacts
+      - name: prepare artifacts
         id: artifacts
+        working-directory: instrumentation/nginx
         run: |
-          cd instrumentation/nginx
           mkdir -p /tmp/otel_ngx/
-          docker buildx build -f test/${dockerfile} \
-          --build-arg image=${{ matrix.image }} \
-          --build-arg nginx_version=${{ matrix.nginx }} \
-          --target export \
-          --output type=local,dest=/tmp/otel_ngx .
           echo "artifactName=otel_ngx_module-$(echo ${{ matrix.image }} | sed s/:/-/)-${{ matrix.nginx }}.so" >> $GITHUB_ENV
+      - name: Build Docker image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: instrumentation/nginx
+          file: instrumentation/nginx/test/${{env.dockerfile}}
+          build-args: |
+            image=${{ matrix.image }}
+            nginx_version=${{ matrix.nginx }}
+          target: export
+          outputs: |
+            type=local,dest=/tmp/otel_ngx
       - name: rename artifact
         run: |
           mv /tmp/otel_ngx/otel_ngx_module.so /tmp/otel_ngx/${artifactName}
