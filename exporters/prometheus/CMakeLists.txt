@@ -45,8 +45,6 @@ if(NOT ZLIB_FOUND)
   endif()
 endif()
 
-endif()
-
 find_package(prometheus-cpp CONFIG QUIET)
 set(prometheus-cpp_PROVIDER "find_package")
 
