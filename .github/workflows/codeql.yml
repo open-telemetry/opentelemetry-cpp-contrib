@@ -88,7 +88,6 @@ jobs:
             -DBUILD_TESTING=OFF \
             -DWITH_BENCHMARK=OFF \
             -DWITH_OTLP_GRPC=ON \
-            -DWITH_PROMETHEUS=ON \
             -DBUILD_SHARED_LIBS=ON \
             -DOPENTELEMETRY_INSTALL=ON
 
