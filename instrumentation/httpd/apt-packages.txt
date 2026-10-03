@@ -1,11 +1,3 @@
-build-essential
-cmake
-automake
-libtool-bin
-ca-certificates
-git
-wget
-curl
 libssl-dev
 libcurl4-openssl-dev
 zlib1g-dev
