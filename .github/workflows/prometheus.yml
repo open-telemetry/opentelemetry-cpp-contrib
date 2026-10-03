@@ -51,12 +51,11 @@ jobs:
       - name: run build
         working-directory: exporters/prometheus
         run: |
-          bazel --output_user_root=$HOME/.cache/bazel build --copt=-DENABLE_TEST --@io_opentelemetry_cpp//api:with_abseil //...
+          bazel --output_user_root=$HOME/.cache/bazel build --@io_opentelemetry_cpp//api:with_abseil //...
       - name: run tests
-        if: ${{ !startsWith(matrix.os, 'ubuntu') }}
         working-directory: exporters/prometheus
         run: |
-          bazel --output_user_root=$HOME/.cache/bazel test --copt=-DENABLE_TEST --@io_opentelemetry_cpp//api:with_abseil //...
+          bazel --output_user_root=$HOME/.cache/bazel test --@io_opentelemetry_cpp//api:with_abseil //...
 
   prometheus_cmake_window:
     name: VCPKG on Windows
@@ -103,3 +102,8 @@ jobs:
     uses: $/.github/workflows/ci-cmake.yml
     with:
       working-directory: exporters/prometheus
+
+  conan:
+    uses: $/.github/workflows/ci-conan.yml
+    with:
+      working-directory: "exporters/prometheus"
