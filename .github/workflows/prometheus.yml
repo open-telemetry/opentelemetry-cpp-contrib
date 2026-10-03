@@ -97,3 +97,8 @@ jobs:
     uses: $/.github/workflows/ci-bazel.yml
     with:
       working-directory: exporters/prometheus
+
+  conan:
+    uses: $/.github/workflows/ci-conan.yml
+    with:
+      working-directory: "exporters/prometheus"
