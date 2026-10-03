@@ -55,6 +55,7 @@ if(MAIN_PROJECT)
   include(opentelemetry-cpp)
 endif()
 
+# For opentelemetry-cpp 1.8.1 and newer prometheus_exporter is used.
 if(TARGET opentelemetry-cpp::prometheus_exporter)
     set(OTEL_PROM_TARGET opentelemetry-cpp::prometheus_exporter)
 elseif(TARGET opentelemetry-cpp::exporter_prometheus)
