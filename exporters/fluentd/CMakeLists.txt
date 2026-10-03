@@ -26,33 +26,20 @@ endif()
 include(FetchContent)
 
 if (MAIN_PROJECT)
-  find_package(opentelemetry-cpp CONFIG QUIET)
-  if(opentelemetry-cpp_FOUND)
-    message("Using external opentelemetry-cpp")
-  else()
-    include(cmake/opentelemetry-cpp.cmake)
-    build_opentelemetry()
-    set(OPENTELEMETRY_CPP_INCLUDE_DIRS "")
-    set(OPENTELEMETRY_CPP_LIBRARIES "opentelemetry::libopentelemetry")
-    message("opentelemetry-cpp package was not found. Cloned from github")
-  endif()
+  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
+  include(opentelemetry-cpp)
 endif()
 
 find_package(nlohmann_json QUIET)
-set(nlohmann_json_clone FALSE)
-if(nlohmann_json_FOUND)
-  message("Using external nlohmann::json")
-else()
-  if (MAIN_PROJECT)
-    include(cmake/nlohmann-json.cmake)
-    set(nlohmann_json_clone TRUE)
-    set(nlohmann_json_SOURCE_DIR
-        "${CMAKE_SOURCE_DIR}/nlohmann_json/single_include")
-    include_directories(${nlohmann_json_SOURCE_DIR})
-    message("nlohmann_json package was not found. Cloning from github")
-  else()
-    message(FATAL_ERROR "nlohmann_json package was not found which is required for opentelemetry-cpp-fluentd. Please install it")
-  endif()
+
+if(NOT nlohmann_json_FOUND)
+  FetchContent_Declare(
+    nlohmann_json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG db78ac1d7716f56fc9f1b030b715f872f93964e4 # v3.9.1
+  )
+
+  FetchContent_MakeAvailable(nlohmann_json)
 endif()
 
 include_directories(include)
@@ -62,60 +49,25 @@ if(OPENTELEMETRY_ENABLE_FLUENT_RESOURCE_PUBLISH_EXPERIMENTAL)
 endif()
 
 # create fluentd trace exporter
-add_library(opentelemetry_exporter_geneva_trace src/trace/fluentd_exporter.cc
-                                                src/trace/recordable.cc)
-set_target_properties(
-  opentelemetry_exporter_geneva_trace
+add_library(opentelemetry_exporter_fluentd_trace
+  src/trace/fluentd_exporter.cc src/trace/recordable.cc)
+
+set_target_properties(opentelemetry_exporter_fluentd_trace
   PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_trace)
 
-if(MAIN_PROJECT)
-  target_link_libraries(
-    opentelemetry_exporter_geneva_trace
-    PUBLIC opentelemetry-cpp::trace opentelemetry-cpp::resources opentelemetry-cpp::common
-    INTERFACE nlohmann_json::nlohmann_json)
-  set_target_properties(opentelemetry_exporter_geneva_trace
-                        PROPERTIES EXPORT_NAME trace)
-else()
-  target_link_libraries(
-    opentelemetry_exporter_geneva_trace
-    PUBLIC opentelemetry_trace opentelemetry_resources opentelemetry_common
-      opentelemetry_ext nlohmann_json::nlohmann_json)
-endif()
+target_link_libraries(opentelemetry_exporter_fluentd_trace
+  PUBLIC opentelemetry-cpp::trace opentelemetry-cpp::resources opentelemetry-cpp::common
+  INTERFACE nlohmann_json::nlohmann_json)
 
 # create fluentd logs exporter
+add_library(opentelemetry_exporter_fluentd_logs
+  src/log/fluentd_exporter.cc src/log/recordable.cc)
 
-add_library(opentelemetry_exporter_geneva_logs src/log/fluentd_exporter.cc
-                                               src/log/recordable.cc)
-set_target_properties(
-  opentelemetry_exporter_geneva_logs
+set_target_properties(opentelemetry_exporter_fluentd_logs
   PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_logs)
 
-if(MAIN_PROJECT)
-  target_link_libraries(
-    opentelemetry_exporter_geneva_logs
-    PUBLIC opentelemetry-cpp::logs opentelemetry-cpp::resources opentelemetry-cpp::common
-    INTERFACE nlohmann_json::nlohmann_json)
-
-  set_target_properties(opentelemetry_exporter_geneva_logs
-                        PROPERTIES EXPORT_NAME logs)
-else()
-    target_link_libraries(
-      opentelemetry_exporter_geneva_logs
-      PUBLIC opentelemetry_logs opentelemetry_resources opentelemetry_common
-        opentelemetry_ext nlohmann_json::nlohmann_json)
-endif()
-
-if(nlohmann_json_clone)
-  add_dependencies(opentelemetry_exporter_geneva_logs
-                   nlohmann_json::nlohmann_json)
-  add_dependencies(opentelemetry_exporter_geneva_logs
-                   nlohmann_json::nlohmann_json)
-  include_directories(${PROJECT_BINARY_DIR}/include)
-endif()
-
-if(MAIN_PROJECT)
-  option(WITH_EXAMPLES "Build examples" ON)
-endif()
+target_link_libraries(opentelemetry_exporter_fluentd_logs
+  PUBLIC opentelemetry-cpp::logs opentelemetry-cpp::resources opentelemetry-cpp::common)
 
 if (WITH_EXAMPLES)
   add_subdirectory(example)
@@ -123,9 +75,14 @@ endif()
 
 if(OPENTELEMETRY_INSTALL)
   if(MAIN_PROJECT)
+    include(GNUInstallDirs)
+    include(CMakePackageConfigHelpers)
+
+    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}")
+
     install(
-      TARGETS opentelemetry_exporter_geneva_logs
-              opentelemetry_exporter_geneva_trace
+      TARGETS opentelemetry_exporter_fluentd_logs
+              opentelemetry_exporter_fluentd_trace
       EXPORT "${PROJECT_NAME}-target"
       RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
       LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -136,53 +93,63 @@ if(OPENTELEMETRY_INSTALL)
       DESTINATION include/opentelemetry/exporters/
       FILES_MATCHING
       PATTERN "*.h")
+
+    set(OPENTELEMETRY_CPP_FLUENTD_VERSION "1.1.2")
+    set(INCLUDE_INSTALL_DIR "${CMAKE_INSTALL_INCLUDEDIR}")
+    configure_package_config_file(
+      "${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}-config.cmake.in"
+      "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake"
+      INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
+      # PATH_VARS OPENTELEMETRY_CPP_FLUENTD_VERSION PROJECT_NAME INCLUDE_INSTALL_DIR
+      # CMAKE_INSTALL_LIBDIR
+      PATH_VARS PROJECT_NAME INCLUDE_INSTALL_DIR CMAKE_INSTALL_LIBDIR
+      NO_CHECK_REQUIRED_COMPONENTS_MACRO)
+
+    # Write version file for find_packages(opentelemetry-cpp-fluentd CONFIG)
+    write_basic_package_version_file(
+      "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config-version.cmake"
+      VERSION ${OPENTELEMETRY_CPP_FLUENTD_VERSION}
+      COMPATIBILITY ExactVersion)
+
+    install(
+      FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config-version.cmake"
+      DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
   else()
     otel_add_component(
-      COMPONENT
-      exporters_geneva_fluentd
-      TARGETS
-      opentelemetry_exporter_geneva_logs
-      opentelemetry_exporter_geneva_trace
-      FILES_DIRECTORY
-      "include/opentelemetry/exporters/"
-      FILES_DESTINATION
-      "include/opentelemetry/exporters"
+      COMPONENT exporters_fluentd
+      TARGETS opentelemetry_exporter_fluentd_logs opentelemetry_exporter_fluentd_trace
+      FILES_DIRECTORY "include/opentelemetry/exporters/"
+      FILES_DESTINATION "include/opentelemetry/exporters"
       FILES_MATCHING
       PATTERN "*.h")
   endif()
 endif()
 
 if(BUILD_TESTING)
-  if(MAIN_PROJECT)
-    FetchContent_Declare(
-      googletest
-      GIT_REPOSITORY https://github.com/google/googletest.git
-      GIT_TAG 15460959cbbfa20e66ef0b5ab497367e47fc0a04 # v1.12.0
-    )
+  FetchContent_Declare(
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG 15460959cbbfa20e66ef0b5ab497367e47fc0a04 # v1.12.0
+  )
 
-    FetchContent_MakeAvailable(googletest)
-  else()
-    if (NOT DEFINED GTEST_BOTH_LIBRARIES)
-      message(STATUS_FATAL, "Test is not enable.")
-    endif()
-  endif()
+  FetchContent_MakeAvailable(googletest)
+
   enable_testing()
-  include(GoogleTest)
-  # build trace exporter tests
-  add_executable(
-    fluentd_recordable_trace_test test/trace/fluentd_recordable_test.cc
-                                  test/trace/fluentd_baseline_test.cc)
 
-  target_link_libraries(
-    fluentd_recordable_trace_test
+  include(GoogleTest)
+
+  # build trace exporter tests
+  add_executable(fluentd_recordable_trace_test
+    test/trace/fluentd_recordable_test.cc
+    test/trace/fluentd_baseline_test.cc)
+
+  target_link_libraries(fluentd_recordable_trace_test
     GTest::gmock
     GTest::gtest
     GTest::gtest_main
-    opentelemetry_exporter_geneva_trace)
-
-  if(nlohmann_json_clone)
-    add_dependencies(fluentd_recordable_trace_test nlohmann_json::nlohmann_json)
-  endif()
+    opentelemetry_exporter_fluentd_trace)
 
   gtest_add_tests(
     TARGET fluentd_recordable_trace_test
@@ -193,61 +160,14 @@ if(BUILD_TESTING)
   add_executable(fluentd_recordable_logs_test
                  test/log/fluentd_recordable_test.cc)
 
-  target_link_libraries(
-    fluentd_recordable_logs_test
+  target_link_libraries(fluentd_recordable_logs_test
     GTest::gmock
     GTest::gtest
     GTest::gtest_main
     opentelemetry_exporter_geneva_logs)
-
-  if(nlohmann_json_clone)
-    add_dependencies(fluentd_recordable_logs_test nlohmann_json::nlohmann_json)
-  endif()
 
   gtest_add_tests(
     TARGET fluentd_recordable_logs_test
     TEST_PREFIX exporter.
     TEST_LIST fluentd_recordable_logs_test)
 endif() # BUILD_TESTING
-
-if (MAIN_PROJECT)
-  # config file for find_packages(opentelemetry-cpp-fluentd CONFIG)
-  include(GNUInstallDirs)
-  include(CMakePackageConfigHelpers)
-
-  set(OPENTELEMETRY_CPP_FLUENTD_VERSION "1.1.2")
-  set(INCLUDE_INSTALL_DIR "${CMAKE_INSTALL_INCLUDEDIR}")
-  configure_package_config_file(
-    "${CMAKE_CURRENT_LIST_DIR}/cmake/opentelemetry-cpp-fluentd-config.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake"
-    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
-    # PATH_VARS OPENTELEMETRY_CPP_FLUENTD_VERSION PROJECT_NAME INCLUDE_INSTALL_DIR
-    # CMAKE_INSTALL_LIBDIR
-    PATH_VARS PROJECT_NAME INCLUDE_INSTALL_DIR CMAKE_INSTALL_LIBDIR
-    NO_CHECK_REQUIRED_COMPONENTS_MACRO)
-
-  # Write version file for find_packages(opentelemetry-cpp-fluentd CONFIG)
-  write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config-version.cmake"
-    VERSION ${OPENTELEMETRY_CPP_FLUENTD_VERSION}
-    COMPATIBILITY ExactVersion)
-
-  install(
-    FILES
-      "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake"
-      "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config-version.cmake"
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
-
-  # Export all components
-  export(
-    EXPORT "${PROJECT_NAME}-target"
-    NAMESPACE "${PROJECT_NAME}::"
-    FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-target.cmake"
-  )
-
-  install(
-    EXPORT "${PROJECT_NAME}-target"
-    NAMESPACE "${PROJECT_NAME}::"
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
-    
-endif()
