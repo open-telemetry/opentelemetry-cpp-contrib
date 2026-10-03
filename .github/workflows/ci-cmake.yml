@@ -37,6 +37,8 @@ jobs:
           cmake -S . -B .cmake-build -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/sandbox"
           cmake --build .cmake-build --config Release
           cmake --install .cmake-build --prefix="${GITHUB_WORKSPACE}/sandbox" --config Release
+
+          vcpkg install zlib
       - name: Configure (CMake + Conan toolchain) [Linux]
         if: runner.os == 'Linux'
         working-directory: ${{ inputs.working-directory }}
