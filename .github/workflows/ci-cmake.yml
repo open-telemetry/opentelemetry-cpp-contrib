@@ -40,7 +40,7 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
         shell: bash
         run: |
-          cmake -S . -B .cmake-build -DCMAKE_BUILD_TYPE=Debug
+          cmake -S . -B .cmake-build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/sandbox"
       - name: Build
         working-directory: ${{ inputs.working-directory }}
         run: |
