@@ -31,20 +31,6 @@ include(FetchContent)
 
 find_package(ZLIB QUIET)
 
-if(NOT ZLIB_FOUND)
-  FetchContent_Declare(
-    ZLIB
-    GIT_REPOSITORY https://github.com/madler/zlib.git
-    GIT_TAG da607da739fa6047df13e66a2af6b8bec7c2a498 # v1.3.2
-  )
-
-  FetchContent_MakeAvailable(ZLIB)
-
-  if(TARGET zlib)
-      add_library(ZLIB::ZLIB ALIAS zlib)
-  endif()
-endif()
-
 find_package(prometheus-cpp CONFIG QUIET)
 set(prometheus-cpp_PROVIDER "find_package")
 

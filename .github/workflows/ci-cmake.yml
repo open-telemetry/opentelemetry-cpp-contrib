@@ -28,6 +28,14 @@ jobs:
         run: |
           sudo apt update -y 
           xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
+      - name: Install zlib
+        run: |
+          git clone https://github.com/madler/zlib.git
+          cd zlib
+          
+          cmake -S . -B .cmake-build -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/sandbox"
+          cmake --build .cmake-build --config Release
+          cmake --install .cmake-build --prefix="${GITHUB_WORKSPACE}/sandbox" --config Release
       - name: Configure (CMake)
         working-directory: ${{ inputs.working-directory }}
         shell: bash
