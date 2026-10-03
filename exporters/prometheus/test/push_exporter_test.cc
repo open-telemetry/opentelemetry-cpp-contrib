@@ -30,8 +30,15 @@ class PrometheusPushExporterTest
 {  // : public ::testing::Test
 public:
   std::unique_ptr<PrometheusPushExporter> GetExporter() {
-    PrometheusPushExporterOptions opts{};
-    return std::make_unique<PrometheusPushExporter>(opts);
+    PrometheusPushExporterOptions options{};
+    options.host                 = "localhost";
+    options.port                 = "4138";
+    options.jobname              = "jobname";
+    options.labels["test_label"] = "test_value";
+    options.username             = "user";
+    options.password             = "pawword";
+    options.max_collection_size  = 2345;
+    return std::make_unique<PrometheusPushExporter>(options);
   }
 
   void CheckFactory(PrometheusPushExporter &exporter, const PrometheusPushExporterOptions &options)
