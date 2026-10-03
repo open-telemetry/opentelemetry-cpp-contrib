@@ -1,0 +1,61 @@
+name: CMake
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-26.04
+          - Windows-2025
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install system deps [Linux]
+        if: runner.os == 'Linux'
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          sudo apt update -y 
+          xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
+      - name: Install zlib
+        if: runner.os == 'Windows'
+        run: |
+          git clone https://github.com/madler/zlib.git
+          cd zlib
+          
+          cmake -S . -B .cmake-build -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/sandbox"
+          cmake --build .cmake-build --config Release
+          cmake --install .cmake-build --prefix="${GITHUB_WORKSPACE}/sandbox" --config Release
+
+          vcpkg install zlib
+      - name: Configure (CMake + Conan toolchain) [Linux]
+        if: runner.os == 'Linux'
+        working-directory: ${{ inputs.working-directory }}
+        shell: bash
+        run: |
+          cmake -S . -B .cmake-build -G Ninja -DCMAKE_BUILD_TYPE=Debug
+      - name: Configure (CMake) [Windows]
+        if: runner.os == 'Windows'
+        working-directory: ${{ inputs.working-directory }}
+        shell: bash
+        run: |
+          cmake -S . -B .cmake-build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH="$env:GITHUB_WORKSPACE/sandbox" -DZLIB_ROOT="$env:GITHUB_WORKSPACE/sandbox"
+      - name: Build
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          cmake --build .cmake-build -j"$(nproc)"
+      - name: Test
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          ctest --test-dir .cmake-build -VV
