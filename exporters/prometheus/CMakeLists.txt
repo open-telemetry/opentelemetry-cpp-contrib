@@ -29,8 +29,6 @@ set(ENABLE_TESTING OFF)
 
 include(FetchContent)
 
-find_package(ZLIB REQUIRED)
-
 find_package(prometheus-cpp CONFIG QUIET)
 set(prometheus-cpp_PROVIDER "find_package")
 

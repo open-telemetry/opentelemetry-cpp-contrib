@@ -35,6 +35,9 @@
 # Bazel files
 /bazel-*
 
+# CMake files
+**/.cmake-build/**
+
 # Mac
 .DS_Store
 
