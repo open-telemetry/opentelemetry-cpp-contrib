@@ -102,3 +102,8 @@ jobs:
     uses: $/.github/workflows/ci-conan.yml
     with:
       working-directory: "exporters/prometheus"
+
+  vcpkg:
+    uses: $/.github/workflows/ci-vcpkg.yml
+    with:
+      working-directory: "exporters/prometheus"
