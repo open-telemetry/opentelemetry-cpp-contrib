@@ -39,6 +39,12 @@ if(NOT ZLIB_FOUND)
   )
 
   FetchContent_MakeAvailable(ZLIB)
+
+  if(TARGET zlib)
+      add_library(ZLIB::ZLIB ALIAS zlib)
+  endif()
+endif()
+
 endif()
 
 find_package(prometheus-cpp CONFIG QUIET)
