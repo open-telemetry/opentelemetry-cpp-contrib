@@ -27,36 +27,6 @@ concurrency:
   cancel-in-progress: true # Cancel any previous runs of this workflow
 
 jobs:
-  prometheus_bazel:
-    name: Bazel on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - ubuntu-24.04
-          - macos-26
-    steps:
-      - name: checkout otel contrib prometheus
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Mount Bazel Cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        env:
-          cache-name: bazel_cache
-        with:
-          path: /home/runner/.cache/bazel
-          key: bazel_${{ matrix.os }}
-      - name: run build
-        working-directory: exporters/prometheus
-        run: |
-          bazel --output_user_root=$HOME/.cache/bazel build --@io_opentelemetry_cpp//api:with_abseil //...
-      - name: run tests
-        working-directory: exporters/prometheus
-        run: |
-          bazel --output_user_root=$HOME/.cache/bazel test --@io_opentelemetry_cpp//api:with_abseil //...
-
   prometheus_cmake_window:
     name: VCPKG on Windows
     runs-on: windows-2025
@@ -100,6 +70,11 @@ jobs:
 
   CMake:
     uses: $/.github/workflows/ci-cmake.yml
+    with:
+      working-directory: exporters/prometheus
+
+  Bazel:
+    uses: $/.github/workflows/ci-bazel.yml
     with:
       working-directory: exporters/prometheus
 
