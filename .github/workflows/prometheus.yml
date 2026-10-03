@@ -8,6 +8,7 @@ on:
     paths:
       - "exporters/prometheus/**"
       - 'cmake/**'
+      - '.github/workflows/ci-*.yml'
       - ".github/workflows/prometheus.yml"
   pull_request:
     branches:
@@ -15,6 +16,7 @@ on:
     paths:
       - "exporters/prometheus/**"
       - 'cmake/**'
+      - '.github/workflows/ci-*.yml'
       - ".github/workflows/prometheus.yml"
 
 permissions:
@@ -120,3 +122,8 @@ jobs:
             -DCMAKE_BUILD_TYPE=Debug
           cmake --build . -j$(nproc)
           ctest -VV -R "opentelemetry_cpp_ecosystem_test.*" .
+
+  conan:
+    uses: $/.github/workflows/ci-conan.yml
+    with:
+      working-directory: "exporters/prometheus"
