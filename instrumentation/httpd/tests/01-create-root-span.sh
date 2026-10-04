@@ -25,6 +25,7 @@ check_results() {
    echo Checking span fields
    check name 'HTTP GET'
    check 'span kind' Server
+   check '  status        :' Unset
    [ "`getSpanField span_id`" != "`getSpanField parent_span_id`" ] || fail "Bad span: span.id same as parent span.id"
 
    echo Checking span attributes
