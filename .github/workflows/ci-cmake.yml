@@ -41,6 +41,7 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
         shell: bash
         run: |
+          git config --global core.longpaths true
           cmake -S . -B .cmake-build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH="$env:GITHUB_WORKSPACE/sandbox" -DZLIB_ROOT="$env:GITHUB_WORKSPACE/sandbox"
       - name: Build
         working-directory: ${{ inputs.working-directory }}
