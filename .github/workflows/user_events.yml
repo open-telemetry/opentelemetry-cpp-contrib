@@ -30,4 +30,5 @@ jobs:
   CMake:
     uses: $/.github/workflows/ci-cmake.yml
     with:
+      oses: '["ubuntu-26.04"]'
       working-directory: exporters/user_events
