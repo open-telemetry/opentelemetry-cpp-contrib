@@ -42,12 +42,12 @@ jobs:
         shell: bash
         run: |
           git config --global core.longpaths true
-          cmake -S . -B .cmake-build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH="$env:GITHUB_WORKSPACE/sandbox" -DZLIB_ROOT="$env:GITHUB_WORKSPACE/sandbox"
+          cmake -S . -B .cmake-build -DCMAKE_BUILD_TYPE=Debug
       - name: Build
         working-directory: ${{ inputs.working-directory }}
         run: |
-          cmake --build .cmake-build -j"$(nproc)"
+          cmake --build .cmake-build -j"$(nproc)" --config Debug
       - name: Test
         working-directory: ${{ inputs.working-directory }}
         run: |
-          ctest --test-dir .cmake-build -VV
+          ctest --test-dir .cmake-build -VV -C Debug --output-on-failure
