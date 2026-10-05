@@ -48,4 +48,5 @@
       schedule: ["before 6am every weekday"],
     }
   ],
+  labels: ["dependencies"],
 }
