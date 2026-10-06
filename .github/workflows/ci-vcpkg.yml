@@ -57,14 +57,14 @@ jobs:
         shell: pwsh
         run: |
           $toolchain = "$env:GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake"
-          cmake -S . -B .cmake-build -G Ninja "-DCMAKE_TOOLCHAIN_FILE=$toolchain" -DCMAKE_BUILD_TYPE=DebugDebug
+          cmake -S . -B .cmake-build -G Ninja "-DCMAKE_TOOLCHAIN_FILE=$toolchain" -DCMAKE_BUILD_TYPE=Debug
       - name: Configure (CMake + vcpkg toolchain) [Windows]
         if: runner.os == 'Windows'
         working-directory: ${{ inputs.working-directory }}
         shell: pwsh
         run: |
           $toolchain = "$env:GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake"
-          cmake -S . -B .cmake-build "-DCMAKE_TOOLCHAIN_FILE=$toolchain" -DCMAKE_BUILD_TYPE=Debug
+          cmake -S . -B .cmake-build -G Ninja "-DCMAKE_TOOLCHAIN_FILE=$toolchain" -DCMAKE_BUILD_TYPE=Debug
       - name: Build
         working-directory: ${{ inputs.working-directory }}
         run: cmake --build .cmake-build -j"$(nproc)"
