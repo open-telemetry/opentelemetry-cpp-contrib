@@ -46,6 +46,11 @@ jobs:
         run: |
           cd "${{ github.workspace }}\\vcpkg"
           .\\bootstrap-vcpkg.bat
+      - name: Cache packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: vcpkg/packages
+          key: vcpkg-${{ runner.os }}-${{ hashFiles(format('{0}/vcpkg.json', inputs.working-directory))}}
       - name: Install dependencies from manifest
         working-directory: ${{ inputs.working-directory }}
         shell: bash
@@ -64,10 +69,10 @@ jobs:
         shell: pwsh
         run: |
           $toolchain = "$env:GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake"
-          cmake -S . -B .cmake-build -G Ninja "-DCMAKE_TOOLCHAIN_FILE=$toolchain" -DCMAKE_BUILD_TYPE=Debug
+          cmake -S . -B .cmake-build "-DCMAKE_TOOLCHAIN_FILE=$toolchain" -DCMAKE_BUILD_TYPE=Debug
       - name: Build
         working-directory: ${{ inputs.working-directory }}
-        run: cmake --build .cmake-build -j"$(nproc)"
+        run: cmake --build .cmake-build -j"$(nproc)" --config Debug
       - name: Test
         working-directory: ${{ inputs.working-directory }}
-        run: ctest --test-dir .cmake-build -VV
+        run: ctest --test-dir .cmake-build -VV -C Debug --output-on-failure
