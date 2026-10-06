@@ -29,8 +29,6 @@ set(ENABLE_TESTING OFF)
 
 include(FetchContent)
 
-find_package(ZLIB REQUIRED)
-
 find_package(prometheus-cpp CONFIG QUIET)
 set(prometheus-cpp_PROVIDER "find_package")
 
@@ -53,6 +51,14 @@ if(MAIN_PROJECT)
   set(WITH_PROMETHEUS ON CACHE BOOL "" FORCE)
   list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
   include(opentelemetry-cpp)
+endif()
+
+if(TARGET opentelemetry-cpp::prometheus_exporter)
+    set(OTEL_PROM_TARGET opentelemetry-cpp::prometheus_exporter)
+elseif(TARGET opentelemetry-cpp::exporter_prometheus)
+    set(OTEL_PROM_TARGET opentelemetry-cpp::exporter_prometheus)
+else()
+    message(FATAL_ERROR "No Prometheus exporter target found")
 endif()
 
 get_target_property(OPENTELEMETRY_CPP_API_DEFINITIONS opentelemetry-cpp::api
@@ -112,7 +118,7 @@ target_include_directories(
 
 target_link_libraries(
   opentelemetry_prometheus_push_exporter
-  PUBLIC opentelemetry-cpp::prometheus_exporter opentelemetry-cpp::metrics
+  PUBLIC ${OTEL_PROM_TARGET} opentelemetry-cpp::metrics
          opentelemetry-cpp::resources prometheus-cpp::push prometheus-cpp::core)
 
 target_compile_definitions(

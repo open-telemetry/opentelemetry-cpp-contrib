@@ -22,3 +22,8 @@ common:tsan --test_env=TSAN_OPTIONS=report_atomic_races=0
 
 # --config=legacy : GCC 4.8
 common:legacy --copt=-D__STDC_NO_ATOMICS__ --copt=-Wno-error=shadow --protocopt=--experimental_allow_proto3_optional
+
+# options extracted from ci
+build --@io_opentelemetry_cpp//api:with_abseil
+
+test --@io_opentelemetry_cpp//api:with_abseil
