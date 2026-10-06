@@ -56,7 +56,7 @@ TEST(PrometheusPushExporter, InitializeConstructorIsNotShutdown)
     PrometheusPushExporterOptions{});
 
   // // Asserts that the exporter is not shutdown.
-  ASSERT_TRUE(!exporter->IsShutdown());
+  ASSERT_TRUE(!exporter.IsShutdown());
 }
 
 /**
@@ -68,16 +68,16 @@ TEST(PrometheusPushExporter, ShutdownSetsIsShutdownToTrue)
     PrometheusPushExporterOptions{});
 
   // exporter shuold not be shutdown by default
-  ASSERT_TRUE(!exporter->IsShutdown());
+  ASSERT_TRUE(!exporter.IsShutdown());
 
   exporter->Shutdown();
 
   // the exporter shuold be shutdown
-  ASSERT_TRUE(exporter->IsShutdown());
+  ASSERT_TRUE(exporter.IsShutdown());
 
   // shutdown function should be idempotent
   exporter->Shutdown();
-  ASSERT_TRUE(exporter->IsShutdown());
+  ASSERT_TRUE(exporter.IsShutdown());
 }
 
 /**
@@ -142,7 +142,7 @@ TEST(PrometheusPushExporter, CollectionNotEnoughSpace)
   // one close to max size and another one that, when added
   // to the first, will exceed the size of the collection
 
-  int max_collection_size = exporter.GetMaxCollectionSize();
+  int max_collection_size = exporter->GetMaxCollectionSize();
 
   auto instrumentation_scope =
       opentelemetry::sdk::instrumentationscope::InstrumentationScope::Create("library_name",
