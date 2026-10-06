@@ -56,7 +56,7 @@ TEST(PrometheusPushExporter, InitializeConstructorIsNotShutdown)
     PrometheusPushExporterOptions{});
 
   // // Asserts that the exporter is not shutdown.
-  ASSERT_TRUE(!exporter.IsShutdown());
+  ASSERT_TRUE(!exporter->IsShutdown());
 }
 
 /**
@@ -68,16 +68,16 @@ TEST(PrometheusPushExporter, ShutdownSetsIsShutdownToTrue)
     PrometheusPushExporterOptions{});
 
   // exporter shuold not be shutdown by default
-  ASSERT_TRUE(!exporter.IsShutdown());
+  ASSERT_TRUE(!exporter->IsShutdown());
 
-  exporter.Shutdown();
+  exporter->Shutdown();
 
   // the exporter shuold be shutdown
-  ASSERT_TRUE(exporter.IsShutdown());
+  ASSERT_TRUE(exporter->IsShutdown());
 
   // shutdown function should be idempotent
-  exporter.Shutdown();
-  ASSERT_TRUE(exporter.IsShutdown());
+  exporter->Shutdown();
+  ASSERT_TRUE(exporter->IsShutdown());
 }
 
 /**
@@ -95,7 +95,7 @@ TEST(PrometheusPushExporter, ExportSuccessfully)
 
   auto data = CreateSumPointData(instrumentation_scope.get());
 
-  auto res = exporter.Export(data);
+  auto res = exporter->Export(data);
 
   // result should be kSuccess = 0
   ExportResult code = ExportResult::kSuccess;
@@ -120,7 +120,7 @@ TEST(PrometheusPushExporter, ExporterIsShutdown)
   auto data = CreateSumPointData(instrumentation_scope.get());
 
   // send export request after shutdown
-  auto res = exporter.Export(data);
+  auto res = exporter->Export(data);
 
   // result code should be kFailure = 1
   ExportResult code = ExportResult::kFailure;
@@ -157,7 +157,7 @@ TEST(PrometheusPushExporter, CollectionNotEnoughSpace)
   for (int count = 1; count <= max_collection_size; count += 2)
   {
     auto data = CreateSumPointData(instrumentation_scope.get());
-    auto res  = exporter.Export(data);
+    auto res  = exporter->Export(data);
     ASSERT_EQ(res, code);
   }
 
@@ -165,7 +165,7 @@ TEST(PrometheusPushExporter, CollectionNotEnoughSpace)
 
   // send export request that does not complete
   // due to not enough space in the collection
-  auto res = exporter.Export(data);
+  auto res = exporter->Export(data);
 
   // the result code should be kFailureFull = 2
   code = ExportResult::kFailureFull;
@@ -187,7 +187,7 @@ TEST(PrometheusPushExporter, InvalidArgumentWhenPassedEmptyRecordCollection)
 
   // send export request to fill the
   // collection in the collector
-  auto res = exporter.Export(data);
+  auto res = exporter->Export(data);
 
   // the result code should be kFailureInvalidArgument = 3
   ExportResult code = ExportResult::kFailureInvalidArgument;
