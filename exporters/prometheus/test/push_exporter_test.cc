@@ -52,7 +52,8 @@ using opentelemetry::exporter::metrics::PrometheusPushExporterTest;
  */
 TEST(PrometheusPushExporter, InitializeConstructorIsNotShutdown)
 {
-  PrometheusPushExporter exporter;
+  auto exporter = PrometheusPushExporterFactory::Create(
+    PrometheusPushExporterOptions{});
 
   // // Asserts that the exporter is not shutdown.
   ASSERT_TRUE(!exporter.IsShutdown());
@@ -63,7 +64,8 @@ TEST(PrometheusPushExporter, InitializeConstructorIsNotShutdown)
  */
 TEST(PrometheusPushExporter, ShutdownSetsIsShutdownToTrue)
 {
-  PrometheusPushExporter exporter;
+  auto exporter = PrometheusPushExporterFactory::Create(
+    PrometheusPushExporterOptions{});
 
   // exporter shuold not be shutdown by default
   ASSERT_TRUE(!exporter.IsShutdown());
@@ -84,7 +86,8 @@ TEST(PrometheusPushExporter, ShutdownSetsIsShutdownToTrue)
  */
 TEST(PrometheusPushExporter, ExportSuccessfully)
 {
-  PrometheusPushExporter exporter;
+  auto exporter = PrometheusPushExporterFactory::Create(
+    PrometheusPushExporterOptions{});
 
   auto instrumentation_scope =
       opentelemetry::sdk::instrumentationscope::InstrumentationScope::Create("library_name",
@@ -105,7 +108,8 @@ TEST(PrometheusPushExporter, ExportSuccessfully)
  */
 TEST(PrometheusPushExporter, ExporterIsShutdown)
 {
-  PrometheusPushExporter exporter;
+  auto exporter = PrometheusPushExporterFactory::Create(
+    PrometheusPushExporterOptions{});
 
   exporter.Shutdown();
 
@@ -131,7 +135,8 @@ TEST(PrometheusPushExporter, ExporterIsShutdown)
  */
 TEST(PrometheusPushExporter, CollectionNotEnoughSpace)
 {
-  PrometheusPushExporter exporter;
+  auto exporter = PrometheusPushExporterFactory::Create(
+    PrometheusPushExporterOptions{});
 
   // prepare two collections of records to export,
   // one close to max size and another one that, when added
@@ -174,7 +179,8 @@ TEST(PrometheusPushExporter, CollectionNotEnoughSpace)
  */
 TEST(PrometheusPushExporter, InvalidArgumentWhenPassedEmptyRecordCollection)
 {
-  PrometheusPushExporter exporter;
+  auto exporter = PrometheusPushExporterFactory::Create(
+    PrometheusPushExporterOptions{});
 
   // Initializes an empty colelction of records
   metric_sdk::ResourceMetrics data;
