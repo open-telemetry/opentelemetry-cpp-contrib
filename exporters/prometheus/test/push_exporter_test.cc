@@ -52,8 +52,10 @@ using opentelemetry::exporter::metrics::PrometheusPushExporterTest;
  */
 TEST(PrometheusPushExporter, InitializeConstructorIsNotShutdown)
 {
-  auto exporter = PrometheusPushExporterFactory::Create(
+  auto exporterFactory = PrometheusPushExporterFactory::Create(
     PrometheusPushExporterOptions{});
+  auto &exporter =
+    *static_cast<PrometheusPushExporter *>(exporterFactory.get());
 
   // // Asserts that the exporter is not shutdown.
   ASSERT_TRUE(!exporter.IsShutdown());
@@ -64,19 +66,21 @@ TEST(PrometheusPushExporter, InitializeConstructorIsNotShutdown)
  */
 TEST(PrometheusPushExporter, ShutdownSetsIsShutdownToTrue)
 {
-  auto exporter = PrometheusPushExporterFactory::Create(
+  auto exporterFactory = PrometheusPushExporterFactory::Create(
     PrometheusPushExporterOptions{});
+  auto &exporter =
+    *static_cast<PrometheusPushExporter *>(exporterFactory.get());
 
   // exporter shuold not be shutdown by default
   ASSERT_TRUE(!exporter.IsShutdown());
 
-  exporter->Shutdown();
+  exporter.Shutdown();
 
   // the exporter shuold be shutdown
   ASSERT_TRUE(exporter.IsShutdown());
 
   // shutdown function should be idempotent
-  exporter->Shutdown();
+  exporter.Shutdown();
   ASSERT_TRUE(exporter.IsShutdown());
 }
 
@@ -86,8 +90,10 @@ TEST(PrometheusPushExporter, ShutdownSetsIsShutdownToTrue)
  */
 TEST(PrometheusPushExporter, ExportSuccessfully)
 {
-  auto exporter = PrometheusPushExporterFactory::Create(
+  auto exporterFactory = PrometheusPushExporterFactory::Create(
     PrometheusPushExporterOptions{});
+  auto &exporter =
+    *static_cast<PrometheusPushExporter *>(exporterFactory.get());
 
   auto instrumentation_scope =
       opentelemetry::sdk::instrumentationscope::InstrumentationScope::Create("library_name",
@@ -95,7 +101,7 @@ TEST(PrometheusPushExporter, ExportSuccessfully)
 
   auto data = CreateSumPointData(instrumentation_scope.get());
 
-  auto res = exporter->Export(data);
+  auto res = exporter.Export(data);
 
   // result should be kSuccess = 0
   ExportResult code = ExportResult::kSuccess;
@@ -108,10 +114,12 @@ TEST(PrometheusPushExporter, ExportSuccessfully)
  */
 TEST(PrometheusPushExporter, ExporterIsShutdown)
 {
-  auto exporter = PrometheusPushExporterFactory::Create(
+  auto exporterFactory = PrometheusPushExporterFactory::Create(
     PrometheusPushExporterOptions{});
+  auto &exporter =
+    *static_cast<PrometheusPushExporter *>(exporterFactory.get());
 
-  exporter->Shutdown();
+  exporter.Shutdown();
 
   auto instrumentation_scope =
       opentelemetry::sdk::instrumentationscope::InstrumentationScope::Create("library_name",
@@ -120,7 +128,7 @@ TEST(PrometheusPushExporter, ExporterIsShutdown)
   auto data = CreateSumPointData(instrumentation_scope.get());
 
   // send export request after shutdown
-  auto res = exporter->Export(data);
+  auto res = exporter.Export(data);
 
   // result code should be kFailure = 1
   ExportResult code = ExportResult::kFailure;
@@ -135,8 +143,10 @@ TEST(PrometheusPushExporter, ExporterIsShutdown)
  */
 TEST(PrometheusPushExporter, CollectionNotEnoughSpace)
 {
-  auto exporter = PrometheusPushExporterFactory::Create(
+  auto exporterFactory = PrometheusPushExporterFactory::Create(
     PrometheusPushExporterOptions{});
+  auto &exporter =
+    *static_cast<PrometheusPushExporter *>(exporterFactory.get());
 
   // prepare two collections of records to export,
   // one close to max size and another one that, when added
@@ -165,7 +175,7 @@ TEST(PrometheusPushExporter, CollectionNotEnoughSpace)
 
   // send export request that does not complete
   // due to not enough space in the collection
-  auto res = exporter->Export(data);
+  auto res = exporter.Export(data);
 
   // the result code should be kFailureFull = 2
   code = ExportResult::kFailureFull;
@@ -179,15 +189,17 @@ TEST(PrometheusPushExporter, CollectionNotEnoughSpace)
  */
 TEST(PrometheusPushExporter, InvalidArgumentWhenPassedEmptyRecordCollection)
 {
-  auto exporter = PrometheusPushExporterFactory::Create(
+  auto exporterFactory = PrometheusPushExporterFactory::Create(
     PrometheusPushExporterOptions{});
+  auto &exporter =
+    *static_cast<PrometheusPushExporter *>(exporterFactory.get());
 
   // Initializes an empty colelction of records
   metric_sdk::ResourceMetrics data;
 
   // send export request to fill the
   // collection in the collector
-  auto res = exporter->Export(data);
+  auto res = exporter.Export(data);
 
   // the result code should be kFailureInvalidArgument = 3
   ExportResult code = ExportResult::kFailureInvalidArgument;
