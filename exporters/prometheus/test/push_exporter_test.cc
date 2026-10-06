@@ -111,7 +111,7 @@ TEST(PrometheusPushExporter, ExporterIsShutdown)
   auto exporter = PrometheusPushExporterFactory::Create(
     PrometheusPushExporterOptions{});
 
-  exporter.Shutdown();
+  exporter->Shutdown();
 
   auto instrumentation_scope =
       opentelemetry::sdk::instrumentationscope::InstrumentationScope::Create("library_name",
