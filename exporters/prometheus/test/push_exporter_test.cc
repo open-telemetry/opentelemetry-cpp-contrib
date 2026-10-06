@@ -152,7 +152,7 @@ TEST(PrometheusPushExporter, CollectionNotEnoughSpace)
   // one close to max size and another one that, when added
   // to the first, will exceed the size of the collection
 
-  int max_collection_size = exporter->GetMaxCollectionSize();
+  int max_collection_size = exporter.GetMaxCollectionSize();
 
   auto instrumentation_scope =
       opentelemetry::sdk::instrumentationscope::InstrumentationScope::Create("library_name",
@@ -167,7 +167,7 @@ TEST(PrometheusPushExporter, CollectionNotEnoughSpace)
   for (int count = 1; count <= max_collection_size; count += 2)
   {
     auto data = CreateSumPointData(instrumentation_scope.get());
-    auto res  = exporter->Export(data);
+    auto res  = exporter.Export(data);
     ASSERT_EQ(res, code);
   }
 
