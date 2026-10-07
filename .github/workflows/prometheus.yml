@@ -28,7 +28,7 @@ concurrency:
 
 jobs:
   prometheus_cmake_window:
-    name: CMake on Windows
+    name: VCPKG on Windows
     runs-on: windows-2025
     steps:
       - name: checkout otel contrib prometheus
@@ -68,34 +68,15 @@ jobs:
           cmake --build . -j --config Debug || cmake --build . -j2 --config Debug || cmake --build . --config Debug
           ctest -VV -C Debug -R "opentelemetry_cpp_ecosystem_test.*" .
 
-  prometheus_cmake_linux:
-    name: CMake on Linux
-    runs-on: ubuntu-24.04
-    steps:
-      - name: checkout otel contrib prometheus
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: setup
-        working-directory: exporters/prometheus
-        run: |
-          sudo apt update -y 
-          xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-      - name: run tests
-        working-directory: exporters/prometheus
-        run: |
-          mkdir -p "build_jobs_ci"
-          cd "build_jobs_ci"
-          cmake .. \
-            -G Ninja \
-            -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/sandbox" \
-            -DCMAKE_BUILD_TYPE=Debug
-          cmake --build . -j$(nproc)
-          ctest -VV -R "opentelemetry_cpp_ecosystem_test.*" .
-
   Bazel:
     uses: $/.github/workflows/ci-bazel.yml
     with:
+      working-directory: exporters/prometheus
+
+  CMake:
+    uses: $/.github/workflows/ci-cmake.yml
+    with:
+      oses: '["ubuntu-26.04"]'
       working-directory: exporters/prometheus
 
   conan:
