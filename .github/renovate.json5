@@ -38,7 +38,7 @@
       dependencyDashboardApproval: true,
       matchCategories: ["!ci", "!elixir"],
       matchDepNames: ["!abseil-cpp"],
-      mathManagers: ["!gradle"],
+      matchManagers: ["!gradle"],
       matchUpdateTypes: ["major"],
     },
     {
