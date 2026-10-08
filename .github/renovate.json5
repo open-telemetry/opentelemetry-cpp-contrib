@@ -6,6 +6,7 @@
     ":separateMultipleMajorReleases",
   ],
   ignorePaths: [],
+  prHourlyLimit: 10,
   packageRules: [
     {
       description: "Bundles all patches into 1 easy to review pr",
@@ -35,15 +36,17 @@
     {
       description: "Require approval for all major updates except ci",
       dependencyDashboardApproval: true,
-      matchCategories: ["!ci"],
+      matchCategories: ["!ci", "!elixir"],
+      matchDepNames: ["!abseil-cpp"],
+      mathManagers: ["!gradle"],
       matchUpdateTypes: ["major"],
     },
     {
       description: "Ensure otel is as up to date as possible with individual pr's per minor",
-      dependencyDashboardApproval: true,
       matchDepNames: ["opentelemetry**", "io_opentelemetry**"],
       separateMultipleMinor: true,
       schedule: ["before 6am every weekday"],
     }
   ],
+  labels: ["dependencies"],
 }
