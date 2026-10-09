@@ -174,7 +174,7 @@ target_include_directories(
 
 target_link_libraries(
   opentelemetry_prometheus_file_exporter
-  PUBLIC opentelemetry-cpp::prometheus_exporter opentelemetry-cpp::metrics
+  PUBLIC ${OTEL_PROM_TARGET} opentelemetry-cpp::metrics
          opentelemetry-cpp::resources prometheus-cpp::core)
 
 target_compile_definitions(

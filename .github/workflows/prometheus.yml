@@ -6,18 +6,18 @@ on:
     branches:
       - 'main'
     paths:
-      - "exporters/prometheus/**"
+      - 'exporters/prometheus/**'
       - 'cmake/**'
       - '.github/workflows/ci-*.yml'
-      - ".github/workflows/prometheus.yml"
+      - '.github/workflows/prometheus.yml'
   pull_request:
     branches:
       - 'main'
     paths:
-      - "exporters/prometheus/**"
+      - 'exporters/prometheus/**'
       - 'cmake/**'
       - '.github/workflows/ci-*.yml'
-      - ".github/workflows/prometheus.yml"
+      - '.github/workflows/prometheus.yml'
 
 permissions:
   contents: read
@@ -41,7 +41,7 @@ jobs:
         with:
           persist-credentials: false
           repository: "open-telemetry/opentelemetry-cpp"
-          ref: "v1.19.0"
+          ref: "v1.29.0"
           path: "otel_cpp"
           submodules: "recursive"
       - name: run tests

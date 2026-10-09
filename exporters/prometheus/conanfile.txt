@@ -1,5 +1,5 @@
 [requires]
-opentelemetry-cpp/1.24.0
+opentelemetry-cpp/1.26.0
 prometheus-cpp/1.1.0
 
 [generators]

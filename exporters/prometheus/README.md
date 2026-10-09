@@ -77,6 +77,43 @@ metrics_sdk::Provider::SetMeterProvider(api_provider);
 
 ### File exporter
 
+The file exporter writes metrics in the
+[Prometheus text exposition format](https://prometheus.io/docs/instrumenting/exposition_formats/).
+It applies the same Prometheus translation as the push exporter, converting
+OpenTelemetry metric names and attribute keys to Prometheus metric names and
+labels. For example, `service.rusage.memory.maxrss` becomes
+`service_rusage_memory_maxrss`, and `deployment.environment.name` becomes
+`deployment_environment_name`.
+
+The main difference from the OpenTelemetry C++ OTLP file metric exporter is the
+output structure: the Prometheus file exporter writes Prometheus-formatted text,
+while the OTLP file metric exporter writes JSON Lines (JSONL) using the OTLP
+structure.
+
+Some observability systems provide file collectors that read metrics in the
+Prometheus format. This file exporter can be used for debugging or with those
+collectors.
+
+OpenTelemetry Resource attributes shared by multiple metric records can also be
+exported as labels on a special `target` metadata metric, serialized as a
+`target_info` sample with a value of `1`. This is controlled by
+`PrometheusFileExporterOptions::populate_target_info`, which defaults to `true`.
+Set it to `false` to omit this metadata metric. Resource attribute keys undergo
+the same Prometheus name conversion described above.
+
+For example, an exported file can contain the following gauge samples (excerpt):
+
+```text
+# HELP target Target metadata
+# TYPE target gauge
+target_info{otel_scope_name="service_coroutine",otel_scope_version="0.11.0.202610091452",telemetry_sdk_name="opentelemetry",telemetry_sdk_version="1.28.0",telemetry_sdk_language="cpp",k8s_cluster_name="local",service_instance_id="lobbysvr_1.1.12.1",deployment_environment_name="production",service_name="lobbysvr",service_version="0.11.0.202610091452",process_pid="13968"} 1
+# TYPE service_rusage_memory_maxrss gauge
+service_rusage_memory_maxrss{atfw_telemetry_group="default",deployment_environment_name="production",host_name="11bd2f297d9ed5141ec6189da9b42a7f8bac80a2399e4cca455b851e426772ed",service_area_zone_id="1",otel_scope_name="service_rusage",otel_scope_version="0.11.0.202610091452"} 80552
+# TYPE service_rusage_cpu_all_percent gauge
+service_rusage_cpu_all_percent{atfw_telemetry_group="default",deployment_environment_name="production",host_name="11bd2f297d9ed5141ec6189da9b42a7f8bac80a2399e4cca455b851e426772ed",service_area_zone_id="1",otel_scope_name="service_rusage",otel_scope_version="0.11.0.202610091452"} 0.6511
+```
+
+
 Replace the push headers/options above with the file exporter and keep the same
 reader/provider setup:
 
