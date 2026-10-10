@@ -19,11 +19,6 @@ endif()
 include(FetchContent)
 
 if(MAIN_PROJECT)
-  # TODO: cleanup the dependent packages
-  find_package(Protobuf REQUIRED)
-  find_package(CURL REQUIRED)
-  find_package(nlohmann_json REQUIRED)
-
   set(WITH_OTLP_HTTP ON CACHE BOOL "" FORCE)
   list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
   include(opentelemetry-cpp)
@@ -78,7 +73,7 @@ target_compile_features(opentelemetry_exporter_user_events_metrics
 
 target_link_libraries(
   opentelemetry_exporter_user_events_metrics
-  PUBLIC opentelemetry-cpp::metrics opentelemetry-cpp::resources opentelemetry-cpp::common opentelemetry-cpp::otlp_recordable tracepoint protobuf::libprotobuf)
+  PUBLIC opentelemetry-cpp::metrics opentelemetry-cpp::resources opentelemetry-cpp::common opentelemetry-cpp::otlp_recordable tracepoint)
 
 if(WITH_EXAMPLES)
   add_executable(user_events_logs example/logs/main.cc
