@@ -29,8 +29,6 @@ namespace metrics
 class PrometheusPushExporterTest
 {  // : public ::testing::Test
 public:
-  PrometheusPushExporter GetExporter() { return PrometheusPushExporter(); }
-
   void CheckFactory(PrometheusPushExporter &exporter, const PrometheusPushExporterOptions &options)
   {
     ASSERT_EQ(exporter.options_.host, options.host);
@@ -54,8 +52,10 @@ using opentelemetry::exporter::metrics::PrometheusPushExporterTest;
  */
 TEST(PrometheusPushExporter, InitializeConstructorIsNotShutdown)
 {
-  PrometheusPushExporterTest p;
-  PrometheusPushExporter exporter = p.GetExporter();
+  auto exporterFactory = PrometheusPushExporterFactory::Create(
+    PrometheusPushExporterOptions{});
+  auto &exporter =
+    *static_cast<PrometheusPushExporter *>(exporterFactory.get());
 
   // // Asserts that the exporter is not shutdown.
   ASSERT_TRUE(!exporter.IsShutdown());
@@ -66,8 +66,10 @@ TEST(PrometheusPushExporter, InitializeConstructorIsNotShutdown)
  */
 TEST(PrometheusPushExporter, ShutdownSetsIsShutdownToTrue)
 {
-  PrometheusPushExporterTest p;
-  PrometheusPushExporter exporter = p.GetExporter();
+  auto exporterFactory = PrometheusPushExporterFactory::Create(
+    PrometheusPushExporterOptions{});
+  auto &exporter =
+    *static_cast<PrometheusPushExporter *>(exporterFactory.get());
 
   // exporter shuold not be shutdown by default
   ASSERT_TRUE(!exporter.IsShutdown());
@@ -88,8 +90,10 @@ TEST(PrometheusPushExporter, ShutdownSetsIsShutdownToTrue)
  */
 TEST(PrometheusPushExporter, ExportSuccessfully)
 {
-  PrometheusPushExporterTest p;
-  PrometheusPushExporter exporter = p.GetExporter();
+  auto exporterFactory = PrometheusPushExporterFactory::Create(
+    PrometheusPushExporterOptions{});
+  auto &exporter =
+    *static_cast<PrometheusPushExporter *>(exporterFactory.get());
 
   auto instrumentation_scope =
       opentelemetry::sdk::instrumentationscope::InstrumentationScope::Create("library_name",
@@ -110,8 +114,10 @@ TEST(PrometheusPushExporter, ExportSuccessfully)
  */
 TEST(PrometheusPushExporter, ExporterIsShutdown)
 {
-  PrometheusPushExporterTest p;
-  PrometheusPushExporter exporter = p.GetExporter();
+  auto exporterFactory = PrometheusPushExporterFactory::Create(
+    PrometheusPushExporterOptions{});
+  auto &exporter =
+    *static_cast<PrometheusPushExporter *>(exporterFactory.get());
 
   exporter.Shutdown();
 
@@ -137,8 +143,10 @@ TEST(PrometheusPushExporter, ExporterIsShutdown)
  */
 TEST(PrometheusPushExporter, CollectionNotEnoughSpace)
 {
-  PrometheusPushExporterTest p;
-  PrometheusPushExporter exporter = p.GetExporter();
+  auto exporterFactory = PrometheusPushExporterFactory::Create(
+    PrometheusPushExporterOptions{});
+  auto &exporter =
+    *static_cast<PrometheusPushExporter *>(exporterFactory.get());
 
   // prepare two collections of records to export,
   // one close to max size and another one that, when added
@@ -181,8 +189,10 @@ TEST(PrometheusPushExporter, CollectionNotEnoughSpace)
  */
 TEST(PrometheusPushExporter, InvalidArgumentWhenPassedEmptyRecordCollection)
 {
-  PrometheusPushExporterTest p;
-  PrometheusPushExporter exporter = p.GetExporter();
+  auto exporterFactory = PrometheusPushExporterFactory::Create(
+    PrometheusPushExporterOptions{});
+  auto &exporter =
+    *static_cast<PrometheusPushExporter *>(exporterFactory.get());
 
   // Initializes an empty colelction of records
   metric_sdk::ResourceMetrics data;

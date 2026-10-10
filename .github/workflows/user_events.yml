@@ -32,3 +32,9 @@ jobs:
     with:
       oses: '["ubuntu-26.04"]'
       working-directory: exporters/user_events
+
+  vcpkg:
+    uses: $/.github/workflows/ci-vcpkg.yml
+    with:
+      oses: '["ubuntu-26.04"]'
+      working-directory: "exporters/user_events"
