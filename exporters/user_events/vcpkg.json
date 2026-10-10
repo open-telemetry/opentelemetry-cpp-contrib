@@ -1,5 +1,5 @@
 {
-  "name": "otel-geneva-user_events",
+  "name": "otel-geneva-user-events",
   "version-string": "1.19.0",
   "dependencies": [
     {
