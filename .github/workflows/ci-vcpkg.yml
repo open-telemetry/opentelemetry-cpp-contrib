@@ -15,6 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
+          - macos-26
           - ubuntu-26.04
           - Windows-2025
     steps:
@@ -32,20 +33,12 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
-      - name: Clone vcpkg
+      - name: Setup vcpkg
         shell: bash
         run: |
           git clone https://github.com/microsoft/vcpkg.git "${GITHUB_WORKSPACE}/vcpkg"
-      - name: Bootstrap vcpkg [Linux]
-        if: runner.os == 'Linux'
-        run: |
           cd "${GITHUB_WORKSPACE}/vcpkg"
           ./bootstrap-vcpkg.sh
-      - name: Bootstrap vcpkg [Windows]
-        if: runner.os == 'Windows'
-        run: |
-          cd "${{ github.workspace }}\\vcpkg"
-          .\\bootstrap-vcpkg.bat
       - name: Cache packages
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
@@ -63,11 +56,12 @@ jobs:
         run: |
           $toolchain = "$env:GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake"
           cmake -S . -B .cmake-build -G Ninja "-DCMAKE_TOOLCHAIN_FILE=$toolchain" -DCMAKE_BUILD_TYPE=Debug
-      - name: Configure (CMake + vcpkg toolchain) [Windows]
-        if: runner.os == 'Windows'
+      - name: Configure (CMake + vcpkg toolchain) [Non-Linux]
+        if: runner.os != 'Linux'
         working-directory: ${{ inputs.working-directory }}
         shell: pwsh
         run: |
+          git config --global core.longpaths true
           $toolchain = "$env:GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake"
           cmake -S . -B .cmake-build "-DCMAKE_TOOLCHAIN_FILE=$toolchain" -DCMAKE_BUILD_TYPE=Debug
       - name: Build
