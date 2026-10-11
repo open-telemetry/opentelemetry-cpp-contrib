@@ -6,7 +6,8 @@
 #include <opentelemetry/instrumentation/boost_log/sink.h>
 
 #include <opentelemetry/logs/provider.h>
-#include <opentelemetry/trace/semantic_conventions.h>
+#include <opentelemetry/semconv/incubating/code_attributes.h>
+#include <opentelemetry/semconv/incubating/thread_attributes.h>
 
 #include <boost/log/attributes/value_extraction.hpp>
 #include <boost/log/utility/setup/common_attributes.hpp>
@@ -78,7 +79,8 @@ OpenTelemetrySinkBackend::OpenTelemetrySinkBackend(const ValueMappers &mappers) 
   mappers_.ToCodeFunc  = mappers.ToCodeFunc ? mappers.ToCodeFunc : ToFuncNameDefault;
   mappers_.ToCodeLine  = mappers.ToCodeLine ? mappers.ToCodeLine : ToLineNumberDefault;
 
-  using namespace opentelemetry::trace::SemanticConventions;
+  using namespace opentelemetry::semconv::code;
+  using namespace opentelemetry::semconv::thread;
   using opentelemetry::logs::LogRecord;
   using timestamp_t = std::chrono::system_clock::time_point;
 

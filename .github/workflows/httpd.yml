@@ -3,18 +3,27 @@ name: httpd instrumentation CI
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: 
+      - 'main'
     paths:
       - 'instrumentation/httpd/**'
+      - 'cmake/**'
       - '.github/workflows/httpd.yml'
+      - 'apt-package.txt'
   pull_request:
-    branches: [ main ]
+    branches:
+      - 'main'
     paths:
       - 'instrumentation/httpd/**'
+      - 'cmake/**'
       - '.github/workflows/httpd.yml'
 
 permissions:
   contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }} # Ensure that only one instance of this workflow is running per Pull Request/branch/ref
+  cancel-in-progress: true # Cancel any previous runs of this workflow
 
 jobs:
   build_cmake:
@@ -33,6 +42,7 @@ jobs:
         working-directory: instrumentation/httpd
         run: |
           sudo apt update -y
+          xargs -a ../../apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
           xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
       - name: Compile
         run: |
