@@ -6,7 +6,7 @@
 #include <opentelemetry/instrumentation/glog/sink.h>
 
 #include <opentelemetry/logs/provider.h>
-#include <opentelemetry/trace/semantic_conventions.h>
+#include <opentelemetry/semconv/incubating/code_attributes.h>
 #include <opentelemetry/version.h>
 
 #include <chrono>
@@ -32,7 +32,7 @@ void OpenTelemetrySink::send(google::LogSeverity severity,
 
   if (log_record)
   {
-    using namespace opentelemetry::trace::SemanticConventions;
+    using namespace opentelemetry::semconv::code;
     using namespace std::chrono;
 
     log_record->SetSeverity(levelToSeverity(severity));

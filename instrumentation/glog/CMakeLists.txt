@@ -5,17 +5,38 @@ cmake_minimum_required(VERSION 3.16)
 
 set(this_target opentelemetry_glog_sink)
 
-project(${this_target})
+set(MAIN_PROJECT OFF)
+
+if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+  set(MAIN_PROJECT ON)
+  project(${this_target})
+  message(STATUS "${PROJECT_NAME} is main project")
+endif()
 
 include(FetchContent)
 
-find_package(opentelemetry-cpp REQUIRED)
-find_package(glog 0.7.0 REQUIRED)
+if(MAIN_PROJECT)
+  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
+  include(opentelemetry-cpp)
+endif()
+
+find_package(glog 0.7.0 QUIET)
+
+if(NOT glog_FOUND)
+  FetchContent_Declare(
+    glog
+    GIT_REPOSITORY https://github.com/google/glog.git
+    GIT_TAG 34b8da6496aec6a98277808701cfa834fae9801f # v0.7.0
+  )
+
+  FetchContent_MakeAvailable(glog)
+endif()
 
 add_library(${this_target} src/sink.cc)
 
 target_compile_options(${this_target} PUBLIC
   -Wall -Wextra -Werror -Wpedantic -fPIC
+  -Wno-error=deprecated-declarations
 )
 
 set_target_properties(${this_target} PROPERTIES EXPORT_NAME ${this_target})
@@ -23,11 +44,11 @@ set_target_properties(${this_target} PROPERTIES EXPORT_NAME ${this_target})
 target_include_directories(${this_target} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-  ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
 )
 
-target_link_libraries(${this_target} PRIVATE
+target_link_libraries(${this_target} PUBLIC
   glog::glog
+  opentelemetry-cpp::api
 )
 
 if(OPENTELEMETRY_INSTALL)
@@ -58,21 +79,9 @@ if(OPENTELEMETRY_INSTALL)
     FILES
       "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake"
     DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
-
-  export(
-    EXPORT "${PROJECT_NAME}-target"
-    NAMESPACE ${PROJECT_NAME}::
-    FILE "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-target.cmake")
-
-  install(
-    EXPORT "${PROJECT_NAME}-target"
-    NAMESPACE ${PROJECT_NAME}::
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 endif() # OPENTELEMETRY_INSTALL
 
 if(BUILD_TESTING)
-  include(FetchContent)
-
   FetchContent_Declare(
     googletest
     GIT_REPOSITORY https://github.com/google/googletest.git
@@ -89,15 +98,9 @@ if(BUILD_TESTING)
 
   add_executable(${testname} "test/${testname}.cc")
 
-  target_include_directories(${testname} PUBLIC
-    ${CMAKE_CURRENT_LIST_DIR}/include
-    ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
-  )
-
   target_link_libraries(${testname} PRIVATE
     GTest::gmock
     GTest::gtest
-    glog::glog
     opentelemetry-cpp::ostream_log_record_exporter
     ${this_target}
   )
@@ -114,17 +117,11 @@ if(WITH_EXAMPLES)
   add_executable(${example_exe} example/main.cc)
   set_target_properties(${example_exe} PROPERTIES EXPORT_NAME ${example_exe})
 
-  target_include_directories(${example_exe} PUBLIC
-    ${CMAKE_CURRENT_LIST_DIR}/include
-    ${OPENTELEMETRY_CPP_INCLUDE_DIRS}
-  )
-
   target_link_libraries(${example_exe} PRIVATE
     opentelemetry-cpp::logs
     opentelemetry-cpp::trace
     opentelemetry-cpp::ostream_log_record_exporter
     opentelemetry-cpp::ostream_span_exporter
-    glog::glog
     ${this_target}
   )
 endif() # WITH_EXAMPLES

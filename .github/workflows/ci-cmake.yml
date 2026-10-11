@@ -1,0 +1,53 @@
+name: CMake
+
+on:
+  workflow_call:
+    inputs:
+      oses:
+        type: string
+        required: false
+        default: '["ubuntu-26.04","windows-2025"]'
+      working-directory:
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJSON(inputs.oses) }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install system deps [Linux]
+        if: runner.os == 'Linux'
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          sudo apt update -y 
+          xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
+      - name: Configure (CMake) [Linux]
+        if: runner.os == 'Linux'
+        working-directory: ${{ inputs.working-directory }}
+        shell: bash
+        run: |
+          cmake -S . -B .cmake-build -G Ninja -DCMAKE_BUILD_TYPE=Debug
+      - name: Configure (CMake) [Windows]
+        if: runner.os == 'Windows'
+        working-directory: ${{ inputs.working-directory }}
+        shell: bash
+        run: |
+          git config --global core.longpaths true
+          cmake -S . -B .cmake-build -DCMAKE_BUILD_TYPE=Debug
+      - name: Build
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          cmake --build .cmake-build -j"$(nproc)" --config Debug
+      - name: Test
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          ctest --test-dir .cmake-build -VV -C Debug --output-on-failure
