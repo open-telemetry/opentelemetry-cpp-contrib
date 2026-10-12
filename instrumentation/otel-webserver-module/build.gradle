@@ -403,6 +403,8 @@ nginxSupportedVersions.each { nginxVersion ->
         group = 'OpenTelemetry module for Nginx'
         description = 'Deleting old Makefile'
 
+        dependsOn "configureNginx${nginxVersion}"
+
         workingDir "${buildDir}/nginx-${nginxVersion}/objs"
         commandLine 'rm', '-rf', 'Makefile'
     }
@@ -419,6 +421,8 @@ nginxSupportedVersions.each { nginxVersion ->
     task("updateMakefile${nginxVersion}", type: Exec) {
         group = 'OpenTelemetry module for Nginx'
         description = 'Updating the Makefile for dynamic build'
+
+        dependsOn "configureNginx${nginxVersion}"
 
         commandLine 'bash', '-c', "src/nginx/script.sh ${buildDir}/nginx-${nginxVersion}/objs/Makefile"
     }
