@@ -205,7 +205,9 @@ task stripLibrary(type: Exec) {
 
     onlyIf { !debug }
 
-    inputs.dir stageLibrary
+    dependsOn stageLibrary
+    inputs.dir libraryStageDir
+
     outputs.dir "${libraryStageDir}/sdk_lib/lib/libopentelemetry_webserver_sdk.${sharedLibraryExt}"
 
     workingDir "${libraryStageDir}/sdk_lib/lib"
@@ -271,14 +273,16 @@ task bundleAprSources {
 }
 
 task configureApache22(type: Exec) {
-    inputs.dir bundleAprSources
+    dependsOn bundleAprSources
+    inputs.dir "${platBuildDir}/httpd-${apache22Version}"
 
     workingDir "${platBuildDir}/httpd-${apache22Version}"
     commandLine './configure', '--with-included-apr'
 }
 
 task configureApache24(type: Exec) {
-    inputs.dir extractApache
+    dependsOn bundleAprSources
+    inputs.dir "${platBuildDir}/httpd-${apache24Version}"
 
     workingDir "${platBuildDir}/httpd-${apache24Version}"
     commandLine './configure', '--with-included-apr'
@@ -350,7 +354,8 @@ task stripApacheModule(type: Exec) {
 
     onlyIf { !debug }
 
-    inputs.dir stageApacheModule
+    inputs.dir apacheStageDir
+
     outputs.dir "${apacheStageDir}/libopentelemetry_webserver_sdk.${sharedLibraryExt}"
 
     workingDir apacheStageDir
@@ -448,7 +453,7 @@ nginxSupportedVersions.each { nginxVersion ->
         dependsOn "stageNginxModule${nginxVersion}"
         onlyIf { !debug }
 
-        inputs.dir "stageNginxModule${nginxVersion}"
+        inputs.dir "${nginxStageDir}/${nginxVersion}"
         outputs.file "${nginxStageDir}/${nginxVersion}/ngx_http_opentelemetry_module.${sharedLibraryExt}"
 
         workingDir "${nginxStageDir}/${nginxVersion}"
