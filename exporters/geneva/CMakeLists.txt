@@ -25,7 +25,7 @@ if(MAIN_PROJECT)
   FetchContent_Declare(
     opentelemetry-cpp
     GIT_REPOSITORY https://github.com/open-telemetry/opentelemetry-cpp.git
-    GIT_TAG a7b100834dce58c949ab9bdfccdf1613db460d1c # v1.24.0
+    GIT_TAG 3143f93098a5f8fe59b071f3e1de7aa485e8c834 # v1.25.0
   )
 
   FetchContent_MakeAvailable(opentelemetry-cpp)
