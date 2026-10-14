@@ -35,14 +35,14 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
         shell: bash
         run: |
-          cmake -S . -B .cmake-build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=on
+          cmake -S . -B .cmake-build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON
       - name: Configure (CMake) [Windows]
         if: runner.os == 'Windows'
         working-directory: ${{ inputs.working-directory }}
         shell: bash
         run: |
           git config --global core.longpaths true
-          cmake -S . -B .cmake-build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=on
+          cmake -S . -B .cmake-build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON
       - name: Build
         working-directory: ${{ inputs.working-directory }}
         run: |
