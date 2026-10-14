@@ -119,7 +119,7 @@ if(WITH_BENCHMARK)
   FetchContent_Declare(
     benchmark
     GIT_REPOSITORY https://github.com/google/benchmark.git
-    GIT_TAG 192ef10025eb2c4cdd392bc502f0c852196baa48 # v1.9.5
+    GIT_TAG a6b4a9f00b36c19af9997d68a1cf6e0b5b3d032c # v1.10.0
   )
   FetchContent_MakeAvailable(benchmark)
   add_executable(user_events_logger_benchmark benchmark/logger_benchmark.cc)
