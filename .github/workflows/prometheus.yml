@@ -28,7 +28,7 @@ concurrency:
 
 jobs:
   prometheus_cmake_window:
-    name: VCPKG on Windows
+    name: vcpkg / Windows-2025
     runs-on: windows-2025
     steps:
       - name: checkout otel contrib prometheus
@@ -87,4 +87,5 @@ jobs:
   vcpkg:
     uses: $/.github/workflows/ci-vcpkg.yml
     with:
+      oses: '["ubuntu-26.04"]'
       working-directory: "exporters/prometheus"

@@ -31,3 +31,8 @@ jobs:
     uses: $/.github/workflows/ci-cmake.yml
     with:
       working-directory: exporters/geneva
+
+  vcpkg:
+    uses: $/.github/workflows/ci-vcpkg.yml
+    with:
+      working-directory: "exporters/geneva"
