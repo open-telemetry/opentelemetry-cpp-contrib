@@ -53,7 +53,7 @@ add_library(opentelemetry_exporter_fluentd_trace
   src/trace/fluentd_exporter.cc src/trace/recordable.cc)
 
 set_target_properties(opentelemetry_exporter_fluentd_trace
-  PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_trace)
+  PROPERTIES EXPORT_NAME opentelemetry_exporter_fluentd_trace)
 
 target_link_libraries(opentelemetry_exporter_fluentd_trace
   PUBLIC opentelemetry-cpp::trace opentelemetry-cpp::resources opentelemetry-cpp::common opentelemetry-cpp::ext
@@ -64,10 +64,11 @@ add_library(opentelemetry_exporter_fluentd_logs
   src/log/fluentd_exporter.cc src/log/recordable.cc)
 
 set_target_properties(opentelemetry_exporter_fluentd_logs
-  PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_logs)
+  PROPERTIES EXPORT_NAME opentelemetry_exporter_fluentd_logs)
 
 target_link_libraries(opentelemetry_exporter_fluentd_logs
-  PUBLIC opentelemetry-cpp::logs opentelemetry-cpp::resources opentelemetry-cpp::common opentelemetry-cpp::ext)
+  PUBLIC opentelemetry-cpp::logs opentelemetry-cpp::resources opentelemetry-cpp::common opentelemetry-cpp::ext
+  INTERFACE nlohmann_json::nlohmann_json)
 
 if (WITH_EXAMPLES)
   add_subdirectory(example)
