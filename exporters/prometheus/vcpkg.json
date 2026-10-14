@@ -1,6 +1,6 @@
 {
   "name": "otel-prometheus-exporter",
-  "version-string": "1.19.0",
+  "version-string": "1.28.0",
   "dependencies": [
     {
       "name": "opentelemetry-cpp",
@@ -15,12 +15,7 @@
         "push"
       ]
     },
-    "nlohmann-json",
-    "gtest",
-    "benchmark",
-    "curl",
-    "openssl",
-    "zlib"
+    "gtest"
   ],
   "overrides": [
     {

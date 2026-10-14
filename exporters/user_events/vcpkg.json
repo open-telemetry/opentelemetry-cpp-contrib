@@ -1,17 +1,15 @@
 {
-  "name": "otel-geneva-user-events",
-  "version-string": "1.19.0",
+  "name": "otel-user-events-exporter",
+  "version-string": "1.28.0",
   "dependencies": [
     {
       "name": "opentelemetry-cpp",
-      "features": ["otlp-http"]
+      "features": [
+        "otlp-http"
+      ]
     },
-    "nlohmann-json",
     "gtest",
-    "benchmark",
-    "curl",
-    "openssl",
-    "zlib"
+    "benchmark"
   ],
   "overrides": [
     {

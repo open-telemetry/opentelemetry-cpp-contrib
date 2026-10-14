@@ -1,16 +1,12 @@
 {
   "name": "otel-geneva-exporter",
-  "version-string": "1.19.0",
+  "version-string": "1.28.0",
   "dependencies": [
     {
       "name": "opentelemetry-cpp"
     },
-    "nlohmann-json",
     "gtest",
-    "benchmark",
-    "curl",
-    "openssl",
-    "zlib"
+    "benchmark"
   ],
   "overrides": [
     {
