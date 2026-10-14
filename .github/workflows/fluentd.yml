@@ -10,12 +10,16 @@ on:
       - 'main'
     paths:
       - 'exporters/fluentd/**'
+      - 'cmake/**'
+      - '.github/workflows/ci-*.yml'
       - '.github/workflows/fluentd.yml'
   pull_request:
     branches:
       - 'main'
     paths:
       - 'exporters/fluentd/**'
+      - 'cmake/**'
+      - '.github/workflows/ci-*.yml'
       - '.github/workflows/fluentd.yml'
 
 permissions:
@@ -26,49 +30,7 @@ concurrency:
   cancel-in-progress: true # Cancel any previous runs of this workflow
 
 jobs:
-  cmake_linux:
-    name: CMake Linux
-    runs-on: ubuntu-24.04
-    steps:
-      - name: checkout opentelemetry-cpp-contrib
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: setup dependencies
-        working-directory: exporters/fluentd
-        run: |
-          sudo apt update -y
-          xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-      - name: build and test
-        working-directory: exporters/fluentd
-        run: |
-          mkdir -p "build"
-          cd "build"
-          cmake .. \
-            -G Ninja \
-            -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/sandbox" \
-            -DBUILD_TESTING=ON \
-            -DWITH_EXAMPLES=ON \
-            -DOPENTELEMETRY_INSTALL=ON
-          cmake --build . -j$(nproc)
-          ctest -j1 --output-on-failure
-      - name: build opentelemetry-cpp
-        run: |
-          mkdir -p "${GITHUB_WORKSPACE}/opentelemetry-cpp/build"
-          cd "${GITHUB_WORKSPACE}/opentelemetry-cpp/build"
-          cmake .. -G Ninja -DBUILD_TESTING=OFF -DWITH_BENCHMARK=OFF -DOPENTELEMETRY_INSTALL=ON
-          cmake --build . -j$(nproc)
-          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
-      - name: build exporters/fluentd contrib
-        run: |
-          mkdir -p "${GITHUB_WORKSPACE}/exporters-fluentd/build"
-          cd "${GITHUB_WORKSPACE}/exporters-fluentd/build"
-          cmake ../../opentelemetry-cpp-contrib/exporters/fluentd \
-            -G Ninja \
-            -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/sandbox" \
-            -DBUILD_TESTING=ON \
-            -DWITH_EXAMPLES=ON \
-            -DOPENTELEMETRY_INSTALL=ON
-          cmake --build . -j$(nproc)
-          ctest -j1 --output-on-failure
-          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
+  CMake:
+    uses: $/.github/workflows/ci-cmake.yml
+    with:
+      working-directory: exporters/fluentd
