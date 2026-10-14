@@ -6,3 +6,4 @@ libcurl4-openssl-dev
 libbenchmark-dev
 libgmock-dev
 libgtest-dev
+nlohmann-json3-dev
