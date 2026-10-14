@@ -165,7 +165,7 @@ if(BUILD_TESTING)
     GTest::gmock
     GTest::gtest
     GTest::gtest_main
-    opentelemetry_exporter_geneva_logs)
+    opentelemetry_exporter_fluentd_logs)
 
   gtest_add_tests(
     TARGET fluentd_recordable_logs_test
