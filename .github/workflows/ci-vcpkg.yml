@@ -44,7 +44,9 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: vcpkg/packages
-          key: vcpkg-${{ runner.os }}-${{ hashFiles(format('{0}/vcpkg.json', inputs.working-directory))}}
+          key: vcpkg-${{ runner.os }}-${{ inputs.working-directory }}-${{ hashFiles(format('{0}/vcpkg.json', inputs.working-directory))}}
+          restore-keys: |
+            vcpkg-${{ runner.os }}-${{ inputs.working-directory }}-
       - name: Install dependencies from manifest
         working-directory: ${{ inputs.working-directory }}
         shell: bash
