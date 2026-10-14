@@ -6,6 +6,7 @@
     ":separateMultipleMajorReleases",
   ],
   ignorePaths: [],
+  prHourlyLimit: 10,
   packageRules: [
     {
       description: "Bundles all patches into 1 easy to review pr",
@@ -35,15 +36,32 @@
     {
       description: "Require approval for all major updates except ci",
       dependencyDashboardApproval: true,
-      matchCategories: ["!ci"],
+      matchCategories: ["!ci", "!elixir"],
+      matchDepNames: ["!abseil-cpp"],
+      matchManagers: ["!gradle"],
       matchUpdateTypes: ["major"],
     },
     {
       description: "Ensure otel is as up to date as possible with individual pr's per minor",
-      dependencyDashboardApproval: true,
       matchDepNames: ["opentelemetry**", "io_opentelemetry**"],
       separateMultipleMinor: true,
       schedule: ["before 6am every weekday"],
-    }
+    },
   ],
+  customManagers: [
+    {
+      customType: "regex",
+      description: "Update cmake fetch content",
+      managerFilePatterns: [
+        "**/CMakeLists.txt",
+        "**/*.cmake",
+      ],
+      matchStrings: [
+        "FetchContent_Declare\\(\\n\\s+(?<depName>.+?)\\n\\s+GIT_REPOSITORY (\")?(?<registryUrl>https:\/\/.+?)\\/(?<packageName>.+).git(\")?\\n\\s+GIT_TAG (?<currentDigest>[a-f0-9]{40,64}) \\# (?<currentValue>v[0-9.]+)",
+      ],
+      datasourceTemplate: "github-releases",
+      versioningTemplate: "semver",
+    },
+  ],
+  labels: ["dependencies"],
 }

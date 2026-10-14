@@ -8,6 +8,7 @@ on:
     paths:
       - 'exporters/geneva/**'
       - 'cmake/**'
+      - '.github/workflows/ci-*.yml'
       - '.github/workflows/geneva_metrics.yml'
   pull_request:
     branches:
@@ -15,6 +16,7 @@ on:
     paths:
       - 'exporters/geneva/**'
       - 'cmake/**'
+      - '.github/workflows/ci-*.yml'
       - '.github/workflows/geneva_metrics.yml'
 
 permissions:
@@ -25,25 +27,7 @@ concurrency:
   cancel-in-progress: true # Cancel any previous runs of this workflow
 
 jobs:
-  cmake_linux:
-    name: CMake on Linux
-    runs-on: ubuntu-24.04
-    steps:
-      - name: checkout otel contrib geneva metrics
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: setup
-        working-directory: exporters/geneva
-        run: |
-          sudo apt update -y 
-          xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-      - name: run tests
-        working-directory: exporters/geneva
-        run: |
-          mkdir -p "build"
-          cd "build"
-          cmake .. "-DCMAKE_PREFIX_PATH=$HOME/prebuilt-otel" \
-            -DBUILD_TESTING=ON -DWITH_EXAMPLES=ON
-          cmake --build . -j$(nproc)
-          ctest
+  CMake:
+    uses: $/.github/workflows/ci-cmake.yml
+    with:
+      working-directory: exporters/geneva

@@ -19,11 +19,6 @@ endif()
 include(FetchContent)
 
 if(MAIN_PROJECT)
-  # TODO: cleanup the dependent packages
-  find_package(Protobuf REQUIRED)
-  find_package(CURL REQUIRED)
-  find_package(nlohmann_json REQUIRED)
-
   set(WITH_OTLP_HTTP ON CACHE BOOL "" FORCE)
   list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
   include(opentelemetry-cpp)
@@ -78,7 +73,7 @@ target_compile_features(opentelemetry_exporter_user_events_metrics
 
 target_link_libraries(
   opentelemetry_exporter_user_events_metrics
-  PUBLIC opentelemetry-cpp::metrics opentelemetry-cpp::resources opentelemetry-cpp::common opentelemetry-cpp::otlp_recordable tracepoint protobuf::libprotobuf)
+  PUBLIC opentelemetry-cpp::metrics opentelemetry-cpp::resources opentelemetry-cpp::common opentelemetry-cpp::otlp_recordable tracepoint)
 
 if(WITH_EXAMPLES)
   add_executable(user_events_logs example/logs/main.cc
@@ -96,7 +91,7 @@ if(BUILD_TESTING)
   FetchContent_Declare(
     googletest
     GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG 15460959cbbfa20e66ef0b5ab497367e47fc0a04 # v1.12.0
+    GIT_TAG 063de7e9578f82b369302001269680b4b1553359 # v1.18.0
   )
 
   FetchContent_MakeAvailable(googletest)
@@ -124,7 +119,7 @@ if(WITH_BENCHMARK)
   FetchContent_Declare(
     benchmark
     GIT_REPOSITORY https://github.com/google/benchmark.git
-    GIT_TAG 192ef10025eb2c4cdd392bc502f0c852196baa48 # v1.9.5
+    GIT_TAG a6b4a9f00b36c19af9997d68a1cf6e0b5b3d032c # v1.10.0
   )
   FetchContent_MakeAvailable(benchmark)
   add_executable(user_events_logger_benchmark benchmark/logger_benchmark.cc)

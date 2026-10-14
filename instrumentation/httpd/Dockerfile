@@ -9,9 +9,11 @@ ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /setup-ci
 
 COPY apt-packages.txt /setup-ci/apt-packages.txt
+COPY ../../apt-packages.txt /setup-ci/otel-contrib-apt-packages.txt
 
 RUN apt-get update -y \
   && xargs -a apt-packages.txt apt-get install -y --no-install-recommends --no-install-suggests \
+  && xargs -a otel-contrib-apt-packages.txt apt-get install -y --no-install-recommends --no-install-suggests \
   && rm -rf /var/lib/apt/lists/*
 
 COPY setup-buildtools.sh /setup-ci/setup-buildtools.sh

@@ -9,6 +9,7 @@ on:
       - 'instrumentation/httpd/**'
       - 'cmake/**'
       - '.github/workflows/httpd.yml'
+      - 'apt-package.txt'
   pull_request:
     branches:
       - 'main'
@@ -41,6 +42,7 @@ jobs:
         working-directory: instrumentation/httpd
         run: |
           sudo apt update -y
+          xargs -a ../../apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
           xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
       - name: Compile
         run: |

@@ -124,6 +124,7 @@ On Ubuntu the required packages are listed in [apt-packages.txt](./apt-packages.
 ```bash
 sudo apt update -y
 xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
+xargs -a ../../apt-packages.txt apt-get install -y --no-install-recommends --no-install-suggests
 ```
 
 For a Bazel build also run [setup-buildtools.sh](./setup-buildtools.sh), which installs bazelisk. Then just execute [build.sh](./build.sh).

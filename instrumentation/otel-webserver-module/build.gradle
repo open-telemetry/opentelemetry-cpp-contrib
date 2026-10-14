@@ -1,5 +1,5 @@
 plugins {
-    id "de.undercouch.download" version "3.4.3"
+    id "de.undercouch.download" version "5.7.0"
 }
 
 apply plugin: 'cpp'
@@ -205,7 +205,9 @@ task stripLibrary(type: Exec) {
 
     onlyIf { !debug }
 
-    inputs.dir stageLibrary
+    dependsOn stageLibrary
+    inputs.dir libraryStageDir
+
     outputs.dir "${libraryStageDir}/sdk_lib/lib/libopentelemetry_webserver_sdk.${sharedLibraryExt}"
 
     workingDir "${libraryStageDir}/sdk_lib/lib"
@@ -271,14 +273,16 @@ task bundleAprSources {
 }
 
 task configureApache22(type: Exec) {
-    inputs.dir bundleAprSources
+    dependsOn bundleAprSources
+    inputs.dir "${platBuildDir}/httpd-${apache22Version}"
 
     workingDir "${platBuildDir}/httpd-${apache22Version}"
     commandLine './configure', '--with-included-apr'
 }
 
 task configureApache24(type: Exec) {
-    inputs.dir extractApache
+    dependsOn bundleAprSources
+    inputs.dir "${platBuildDir}/httpd-${apache24Version}"
 
     workingDir "${platBuildDir}/httpd-${apache24Version}"
     commandLine './configure', '--with-included-apr'
@@ -350,7 +354,8 @@ task stripApacheModule(type: Exec) {
 
     onlyIf { !debug }
 
-    inputs.dir stageApacheModule
+    inputs.dir apacheStageDir
+
     outputs.dir "${apacheStageDir}/libopentelemetry_webserver_sdk.${sharedLibraryExt}"
 
     workingDir apacheStageDir
@@ -398,6 +403,8 @@ nginxSupportedVersions.each { nginxVersion ->
         group = 'OpenTelemetry module for Nginx'
         description = 'Deleting old Makefile'
 
+        dependsOn "configureNginx${nginxVersion}"
+
         workingDir "${buildDir}/nginx-${nginxVersion}/objs"
         commandLine 'rm', '-rf', 'Makefile'
     }
@@ -414,6 +421,8 @@ nginxSupportedVersions.each { nginxVersion ->
     task("updateMakefile${nginxVersion}", type: Exec) {
         group = 'OpenTelemetry module for Nginx'
         description = 'Updating the Makefile for dynamic build'
+
+        dependsOn "configureNginx${nginxVersion}"
 
         commandLine 'bash', '-c', "src/nginx/script.sh ${buildDir}/nginx-${nginxVersion}/objs/Makefile"
     }
@@ -448,7 +457,7 @@ nginxSupportedVersions.each { nginxVersion ->
         dependsOn "stageNginxModule${nginxVersion}"
         onlyIf { !debug }
 
-        inputs.dir "stageNginxModule${nginxVersion}"
+        inputs.dir "${nginxStageDir}/${nginxVersion}"
         outputs.file "${nginxStageDir}/${nginxVersion}/ngx_http_opentelemetry_module.${sharedLibraryExt}"
 
         workingDir "${nginxStageDir}/${nginxVersion}"
