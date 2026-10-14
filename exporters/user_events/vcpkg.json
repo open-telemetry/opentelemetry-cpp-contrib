@@ -3,7 +3,8 @@
   "version-string": "1.19.0",
   "dependencies": [
     {
-      "name": "opentelemetry-cpp"
+      "name": "opentelemetry-cpp",
+      "features": ["otlp-http"]
     },
     "nlohmann-json",
     "gtest",
