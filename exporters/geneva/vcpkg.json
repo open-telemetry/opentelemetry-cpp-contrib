@@ -1,0 +1,18 @@
+{
+  "name": "otel-geneva-exporter",
+  "version-string": "1.28.0",
+  "dependencies": [
+    {
+      "name": "opentelemetry-cpp"
+    },
+    "gtest",
+    "benchmark"
+  ],
+  "overrides": [
+    {
+      "name": "opentelemetry-cpp",
+      "version": "1.28.0"
+    }
+  ],
+  "builtin-baseline": "b4ae67c6051bb665f9414fca5c66f66cacc71970"
+}
