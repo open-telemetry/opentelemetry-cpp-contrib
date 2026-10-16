@@ -22,7 +22,6 @@
 
 #include <gtest/gtest.h>
 
-#include "../common/msgpack_timestamp.h"
 #include "../common/socket_server.h"
 #include "nlohmann/json.hpp"
 
