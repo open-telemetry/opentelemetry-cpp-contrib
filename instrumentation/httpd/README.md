@@ -5,6 +5,7 @@
 - Supports exporters: plain file, OTLP
 - Supports batch processor
 - Supports propagators: [w3c trace-context](https://www.w3.org/TR/trace-context/), [B3](https://github.com/openzipkin/b3-propagation)
+- Reports HTTP span attributes (see [Emitted spans](#emitted-spans))
 
 ## Requirements
 
@@ -85,7 +86,39 @@ __OpenTelemetryIgnoreInbound__
  __OpenTelemetrySetAttribute__
 Allows to add extra attribute for each span. It takes two text arguments. For example `OpenTelemetrySetAttribute foo bar` 
  
+__OpenTelemetrySetResource__
+Allows to set a resource attribute for the whole daemon. It takes two text arguments. For example `OpenTelemetrySetResource service.name apache-web-server`
+
 List of configuration options can be found in [provided configuration file](./opentelemetry.conf)
+
+## Emitted spans
+
+One span is created per incoming request. An additional child span is created for
+each outgoing `mod_proxy` request.
+
+| | Span kind | Span name |
+|---|---|---|
+| Incoming request | `Server` | `HTTP <METHOD>` |
+| Outgoing `mod_proxy` request | `Client` | `HTTP <METHOD>` |
+
+### Span attributes
+
+Attributes set by the module. Attributes configured with `OpenTelemetrySetAttribute`
+are added to every span in addition to these.
+
+| Attribute | Server span | Client span |
+|---|---|---|
+| `http.server_name` | always | always |
+| `http.method` | when set | when set |
+| `http.scheme` | when set | - |
+| `http.host` | when set | - |
+| `http.target` | when set | - |
+| `http.url` | - | when set |
+| `http.flavor` | HTTP/1.0 and HTTP/1.1 only | - |
+| `http.client_ip` | always | always, see below |
+| `net.peer.ip` | only when it differs from `http.client_ip` | - |
+| `http.status_code` | always | always |
+| `http.response_content_length` | always | always |
 
 ## Development
 
