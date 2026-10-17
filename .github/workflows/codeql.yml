@@ -9,7 +9,7 @@ on:
       - 'instrumentation/**'
       - 'cmake/**'
       - '.github/workflows/codeql.yml'
-      - 'apt-package.txt'
+      - 'apt-packages.txt'
   pull_request:
     branches:
       - 'main'
@@ -18,7 +18,7 @@ on:
       - 'instrumentation/**'
       - 'cmake/**'
       - '.github/workflows/codeql.yml'
-      - 'apt-package.txt'
+      - 'apt-packages.txt'
 
 permissions:
   contents: read
