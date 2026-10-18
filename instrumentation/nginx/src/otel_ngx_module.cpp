@@ -981,7 +981,7 @@ char* OtelNgxSetBspScheduleDelayMillis(ngx_conf_t* cf, ngx_command_t*, void*) {
   if (v <= 0) {
     ngx_log_error(NGX_LOG_ERR, cf->log, 0, "opentelemetry: bsp schedule delay can't be <= 0");
   } else {
-    otelMainConf->agentConfig.processor.batch.maxExportBatchSize = v;
+    otelMainConf->agentConfig.processor.batch.scheduleDelayMillis = v;
   }
 
   return NGX_CONF_OK;
