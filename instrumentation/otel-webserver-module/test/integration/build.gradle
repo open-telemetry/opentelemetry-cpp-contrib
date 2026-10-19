@@ -21,7 +21,7 @@ dependencies {
     implementation group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.1.1'
     testImplementation group: 'io.rest-assured', name: 'rest-assured', version: '6.1.0'
     testImplementation group: 'org.testng', name: 'testng', version: '7.12.0'
-    testImplementation group: 'io.rest-assured', name: 'json-schema-validator', version: '6.1.0'
+    testImplementation group: 'io.rest-assured', name: 'json-schema-validator', version: '6.2.0'
     implementation group: 'org.json', name: 'json', version: '20160810'
 
 }
