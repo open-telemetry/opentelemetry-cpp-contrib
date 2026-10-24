@@ -74,5 +74,4 @@ jobs:
       - name: Cleanup
         working-directory: ${{ inputs.working-directory }}
         run: |
-          conan remove "*" --build -c
-          conan remove "*" --src -c
+          conan cache clean "*"
