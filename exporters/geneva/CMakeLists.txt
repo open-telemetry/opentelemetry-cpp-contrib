@@ -141,7 +141,7 @@ if(WITH_EXAMPLES)
 
   target_link_libraries(${example_exe} PRIVATE opentelemetry_exporter_geneva_metrics)
 
-  if(NOT WIN32)
+  if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     add_executable(stress_test_linux example/stress_test_linux.cc)
     find_package(Boost QUIET)
     if(Boost_FOUND)
