@@ -20,6 +20,8 @@ if(MAIN_PROJECT)
   include(opentelemetry-cpp)
 endif()
 
+find_package(EXPAT QUIET)
+
 find_package(log4cxx QUIET)
 
 if (log4cxx_FOUND)
@@ -32,8 +34,15 @@ endif()
 add_library(${this_target} src/appender.cc)
 
 target_compile_options(${this_target} PUBLIC
-  -Wall -Wextra -Werror -Wpedantic -fPIC
-  -Wno-error=deprecated-declarations
+  $<$<CXX_COMPILER_ID:MSVC>:/W4>
+  $<$<CXX_COMPILER_ID:MSVC>:/WX>
+
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wextra>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Werror>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wpedantic>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-fPIC>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wno-error=deprecated-declarations>
 )
 
 set_target_properties(${this_target} PROPERTIES EXPORT_NAME ${this_target})
