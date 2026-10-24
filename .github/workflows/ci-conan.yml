@@ -3,6 +3,10 @@ name: Conan
 on:
   workflow_call:
     inputs:
+      oses:
+        type: string
+        required: false
+        default: '["ubuntu-26.04","windows-2025"]'
       working-directory:
         required: true
         type: string
@@ -14,9 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - ubuntu-26.04
-          - Windows-2025
+        os: ${{ fromJSON(inputs.oses) }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
