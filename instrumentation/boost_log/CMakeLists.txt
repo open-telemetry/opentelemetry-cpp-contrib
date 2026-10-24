@@ -25,8 +25,17 @@ find_package(Boost 1.73 COMPONENTS log REQUIRED)
 add_library(${this_target} src/sink.cc)
 
 target_compile_options(${this_target} PUBLIC
-  -Wall -Wextra -Werror -Wpedantic -fPIC
-  -Wno-error=deprecated-declarations
+  $<$<CXX_COMPILER_ID:MSVC>:/W4>
+  $<$<CXX_COMPILER_ID:MSVC>:/WX>
+  $<$<CXX_COMPILER_ID:MSVC>:/wd4700>
+  $<$<CXX_COMPILER_ID:MSVC>:/wd4996>
+
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wextra>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Werror>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wpedantic>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-fPIC>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wno-error=deprecated-declarations>
 )
 
 set_target_properties(${this_target} PROPERTIES EXPORT_NAME ${this_target})
