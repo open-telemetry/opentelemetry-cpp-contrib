@@ -8,6 +8,7 @@
         "otlp-http"
       ]
     },
+    "log4cxx",
     "gtest",
     "benchmark"
   ],
