@@ -10,7 +10,6 @@ RUN apt-get install -qq -y --ignore-missing \
 	pkg-config		                        \
 	protobuf-compiler	                    \
 	libprotobuf-dev                         \
-	python2.7		                        \
 	sudo			                        \
 	tar			                            \
 	zip			                            \
