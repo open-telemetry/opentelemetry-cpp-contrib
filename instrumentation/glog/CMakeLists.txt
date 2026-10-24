@@ -37,6 +37,9 @@ add_library(${this_target} src/sink.cc)
 target_compile_options(${this_target} PUBLIC
   $<$<CXX_COMPILER_ID:MSVC>:/W4>
   $<$<CXX_COMPILER_ID:MSVC>:/WX>
+  $<$<CXX_COMPILER_ID:MSVC>:/wd4244>
+  $<$<CXX_COMPILER_ID:MSVC>:/wd4251>
+  $<$<CXX_COMPILER_ID:MSVC>:/wd4700>
   $<$<CXX_COMPILER_ID:MSVC>:/wd4996>
 
   $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall>
