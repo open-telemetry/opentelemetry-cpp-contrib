@@ -2,7 +2,7 @@ ARG image=ubuntu:24.04@sha256:008173c23f95b170204355c12626cb5a965d779a7e1283b09e
 FROM $image AS build
 
 ARG otel_cpp_version=1.17.0
-ARG nginx_version=1.27.3
+ARG nginx_version=1.30.6
 
 RUN apt-get update && \
     apt-get install --no-install-recommends --no-install-suggests -y \
