@@ -431,7 +431,8 @@ TEST(FluentdExporter, SendTraceEvents) {
   tracer->ForceFlushWithMicroseconds(1000);
   tracer->CloseWithMicroseconds(0);
 #else
-  /* In ABI 2 >= otel-cpp v1.16.0, only the sdk Tracer objects
+  /*
+   * In ABI 2 >= otel-cpp v1.16.0, only the sdk Tracer objects
    * have the ForceFlush...() and Close...() methods. The Close()
    * method simply calls ForceFlush(). Use the SDK provider ForceFlush() instead.
    */
