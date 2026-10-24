@@ -1,4 +1,5 @@
 [requires]
+log4cxx/1.8.0
 opentelemetry-cpp/1.26.0
 
 [generators]

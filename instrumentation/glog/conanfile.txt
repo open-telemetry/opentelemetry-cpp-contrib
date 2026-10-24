@@ -1,4 +1,5 @@
 [requires]
+glog/0.7.1
 opentelemetry-cpp/1.26.0
 
 [generators]
