@@ -3,12 +3,8 @@
   "version-string": "1.28.0",
   "dependencies": [
     {
-      "name": "opentelemetry-cpp",
-      "features": [
-        "otlp-http"
-      ]
+      "name": "opentelemetry-cpp"
     },
-    "boost-log",
     "gtest",
     "benchmark"
   ],

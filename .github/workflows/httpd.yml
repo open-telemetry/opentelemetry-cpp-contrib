@@ -36,11 +36,15 @@ jobs:
   conan:
     uses: $/.github/workflows/ci-conan.yml
     with:
+      install-apt-packages: true
+      oses: '["ubuntu-26.04"]'
       working-directory: instrumentation/httpd
 
   vcpkg:
     uses: $/.github/workflows/ci-vcpkg.yml
     with:
+      install-apt-packages: true
+      oses: '["ubuntu-26.04"]'
       working-directory: instrumentation/httpd
 
   e2e_tests:

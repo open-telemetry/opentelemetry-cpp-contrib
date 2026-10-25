@@ -3,6 +3,10 @@ name: Bazel
 on:
   workflow_call:
     inputs:
+      install-apt-packages:
+        type: boolean
+        required: false
+        default: false
       working-directory:
         required: true
         type: string
@@ -30,6 +34,17 @@ jobs:
         with:
           path: /home/runner/.cache/bazel
           key: bazel_${{ matrix.os }}
+      - name: Install system deps [Linux]
+        if: runner.os == 'Linux'
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          sudo apt update -y 
+        env:
+          INSTALL_APT_PACKAGES: ${{ inputs.install-apt-packages }}
+        run: |
+          if [[ "$INSTALL_APT_PACKAGES" == "true" ]]; then
+            xargs -a ../../apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
+          fi
       - name: run build
         working-directory: ${{ inputs.working-directory }}
         run: |

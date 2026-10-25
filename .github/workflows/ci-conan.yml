@@ -3,6 +3,10 @@ name: Conan
 on:
   workflow_call:
     inputs:
+      install-apt-packages:
+        type: boolean
+        required: false
+        default: false
       oses:
         type: string
         required: false
@@ -42,9 +46,15 @@ jobs:
       - name: Install system deps [Linux]
         if: runner.os == 'Linux'
         working-directory: ${{ inputs.working-directory }}
+        env:
+          INSTALL_APT_PACKAGES: ${{ inputs.install-apt-packages }}
         run: |
           sudo apt update -y 
-          xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
+          xargs -a ../../apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
+
+          if [[ "$INSTALL_APT_PACKAGES" == "true" ]]; then
+            xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
+          fi
       - name: Install dependencies from manifest
         working-directory: ${{ inputs.working-directory }}
         shell: bash
