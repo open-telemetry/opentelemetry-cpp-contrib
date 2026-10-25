@@ -10,6 +10,7 @@ on:
       - 'cmake/**'
       - '.github/workflows/ci-*.yml'
       - '.github/workflows/geneva_metrics.yml'
+      - 'apt-packages.txt'
   pull_request:
     branches:
       - 'main'
@@ -18,6 +19,7 @@ on:
       - 'cmake/**'
       - '.github/workflows/ci-*.yml'
       - '.github/workflows/geneva_metrics.yml'
+      - 'apt-packages.txt'
 
 permissions:
   contents: read

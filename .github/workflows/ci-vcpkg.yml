@@ -28,8 +28,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt update -y
-          sudo apt install -y --no-install-recommends --no-install-suggests \
-            cmake ninja-build pkg-config
+          xargs -a ../../apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
       - name: Install system deps [Windows]
         if: runner.os == 'Windows'
         run: |
