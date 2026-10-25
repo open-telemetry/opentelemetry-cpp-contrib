@@ -18,18 +18,26 @@ add_executable(unit_test
     AgentCore_test.cpp
     RequestProcessingEngine_test.cpp
     SpanNamer_test.cpp
-    integration_test.cpp)
+    integration_test.cpp
+    ApacheConfig_test.cpp
+    ../../src/apache/ApacheConfig.cpp)
 
 target_compile_definitions(unit_test PRIVATE HAVE_ABSEIL)
 
 target_include_directories(unit_test PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/../../include/core"
     "${CMAKE_CURRENT_SOURCE_DIR}/../../include/util"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../include/apache"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../src/apache"
+    "${OTEL_APACHE24_INCLUDE_DIR}"
+    "${OTEL_APACHE24_INCLUDE_DIR}/../os/unix"
     "${OTEL_GTEST_ROOT}/include"
     "${OTEL_CPP_SDK_ROOT}/include"
     "${OTEL_LOG4CXX_ROOT}/include"
     "${OTEL_APR_ROOT}/include"
-    "${OTEL_APRUTIL_ROOT}/include")
+    "${OTEL_APR_ROOT}/include/apr-1"
+    "${OTEL_APRUTIL_ROOT}/include"
+    "${OTEL_APRUTIL_ROOT}/include/apr-1")
 
 target_compile_options(unit_test PRIVATE -Wall -pthread)
 

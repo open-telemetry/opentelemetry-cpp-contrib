@@ -63,8 +63,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: ["ubuntu:24.04", "debian:12", "alpine:3.20", "amazonlinux:2", "amazonlinux:2023"]
-        nginx: ["1.27.3", "1.27.2", "1.27.1", "1.26.2", "1.24.0", "1.22.1"]
+        image: ["ubuntu:24.04", "debian:12", "alpine:3.22", "amazonlinux:2023"]
+        nginx: ["1.31.8", "1.30.6"]
     steps:
       - name: checkout otel nginx
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

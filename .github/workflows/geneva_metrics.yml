@@ -31,3 +31,9 @@ jobs:
     uses: $/.github/workflows/ci-cmake.yml
     with:
       working-directory: exporters/geneva
+
+  vcpkg:
+    uses: $/.github/workflows/ci-vcpkg.yml
+    with:
+      oses: '["ubuntu-26.04","windows-2025"]'
+      working-directory: "exporters/geneva"
