@@ -43,11 +43,10 @@ jobs:
       - name: Install system deps [Linux]
         if: runner.os == 'Linux'
         working-directory: ${{ inputs.working-directory }}
-        run: |
-          sudo apt update -y 
         env:
           INSTALL_APT_PACKAGES: ${{ inputs.install-apt-packages }}
         run: |
+          sudo apt update -y 
           if [[ "$INSTALL_APT_PACKAGES" == "true" ]]; then
             xargs -a ../../apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
           fi
