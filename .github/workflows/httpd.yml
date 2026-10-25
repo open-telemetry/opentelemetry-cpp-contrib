@@ -30,6 +30,7 @@ jobs:
   Bazel:
     uses: $/.github/workflows/ci-bazel.yml
     with:
+      install-apt-packages: true
       working-directory: instrumentation/httpd
 
   CMake:
