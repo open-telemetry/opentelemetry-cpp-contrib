@@ -1,9 +1,1 @@
 build-essential
-ca-certificates
-wget
-git
-valgrind
-lcov
-libbenchmark-dev
-libgmock-dev
-libgtest-dev
