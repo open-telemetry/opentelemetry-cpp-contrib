@@ -73,9 +73,15 @@ jobs:
           ctest --test-dir .cmake-build -VV
       - name: Cleanup
         working-directory: ${{ inputs.working-directory }}
+        shell: pwsh
         run: |
-          du -h --max-depth=1 "$(conan config home)" | sort -hr
+          $conanHome = conan config home
+          $size = (Get-ChildItem $conanHome -Recurse -File |
+                   Measure-Object Length -Sum).Sum
+          Write-Host ("Size: {0:N2} GiB" -f ($size / 1GB))
           conan cache clean "*"
           conan remove "*" --lru=3h -c
-          du -h --max-depth=1 "$(conan config home)" | sort -hr
+          $size = (Get-ChildItem $conanHome -Recurse -File |
+                   Measure-Object Length -Sum).Sum
+          Write-Host ("Size: {0:N2} GiB" -f ($size / 1GB))
 
