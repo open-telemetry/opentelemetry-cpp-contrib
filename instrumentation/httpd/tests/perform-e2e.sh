@@ -5,14 +5,14 @@ HTTPD_DIR="$(cd "${TESTS_DIR}/.." && pwd)"
 echo "==> Building OpenTelemetry module with CMake"
 cd "${HTTPD_DIR}"
 
-rm -rf build
+rm -rf .cmake-build
 
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake -S . -B .cmake-build -DCMAKE_BUILD_TYPE=Release
 
-cmake --build build --parallel "$(nproc)"
+cmake --build .cmake-build --parallel "$(nproc)"
 
 echo "==> Creating test load"
-./create-otel-load.sh
+sudo ./create-otel-load.sh
 
 echo "==> Installing module"
 sudo ./httpd_install_otel.sh
