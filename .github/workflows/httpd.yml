@@ -27,29 +27,21 @@ concurrency:
   cancel-in-progress: true # Cancel any previous runs of this workflow
 
 jobs:
-  build_cmake:
-    name: Build module with CMake
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-22.04, ubuntu-24.04]
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Setup dependencies
-        working-directory: instrumentation/httpd
-        run: |
-          sudo apt update -y
-          xargs -a ../../apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-          xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-      - name: Compile
-        run: |
-          cd instrumentation/httpd
-          cmake -B build -DCMAKE_BUILD_TYPE=Release
-          cmake --build build --parallel "$(nproc)"
+  CMake:
+    uses: $/.github/workflows/ci-cmake.yml
+    with:
+      oses: '["ubuntu-26.04"]'
+      working-directory: instrumentation/httpd
+
+  conan:
+    uses: $/.github/workflows/ci-conan.yml
+    with:
+      working-directory: instrumentation/httpd
+
+  vcpkg:
+    uses: $/.github/workflows/ci-vcpkg.yml
+    with:
+      working-directory: instrumentation/httpd
 
   e2e_tests:
     name: Run end-to-end tests

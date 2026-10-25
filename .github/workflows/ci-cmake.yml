@@ -28,7 +28,8 @@ jobs:
         if: runner.os == 'Linux'
         working-directory: ${{ inputs.working-directory }}
         run: |
-          sudo apt update -y 
+          sudo apt update -y
+          xargs -a ../../apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
           xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
       - name: Configure (CMake) [Linux]
         if: runner.os == 'Linux'
