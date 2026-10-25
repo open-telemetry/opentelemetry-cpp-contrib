@@ -26,6 +26,7 @@ jobs:
           persist-credentials: false
       - name: Install system deps [Linux]
         if: runner.os == 'Linux'
+        working-directory: ${{ inputs.working-directory }}
         run: |
           sudo apt update -y
           xargs -a ../../apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
