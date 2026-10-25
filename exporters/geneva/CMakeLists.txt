@@ -25,7 +25,7 @@ if(MAIN_PROJECT)
   FetchContent_Declare(
     opentelemetry-cpp
     GIT_REPOSITORY https://github.com/open-telemetry/opentelemetry-cpp.git
-    GIT_TAG ea1f0d61ce5baa5584b097266bf133d1f31e3607 # v1.23.0
+    GIT_TAG c7b64ec660c1b6c65dff0932b3d1c3483bc6db64 # v1.30.0
   )
 
   FetchContent_MakeAvailable(opentelemetry-cpp)
@@ -68,7 +68,7 @@ if(BUILD_TESTING)
   FetchContent_Declare(
     googletest
     GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG 15460959cbbfa20e66ef0b5ab497367e47fc0a04 # v1.12.0
+    GIT_TAG 063de7e9578f82b369302001269680b4b1553359 # v1.18.0
   )
 
   FetchContent_MakeAvailable(googletest)

@@ -46,7 +46,22 @@
       matchDepNames: ["opentelemetry**", "io_opentelemetry**"],
       separateMultipleMinor: true,
       schedule: ["before 6am every weekday"],
-    }
+    },
+  ],
+  customManagers: [
+    {
+      customType: "regex",
+      description: "Update cmake fetch content",
+      managerFilePatterns: [
+        "**/CMakeLists.txt",
+        "**/*.cmake",
+      ],
+      matchStrings: [
+        "FetchContent_Declare\\(\\n\\s+(?<depName>.+?)\\n\\s+GIT_REPOSITORY (\")?(?<registryUrl>https:\/\/.+?)\\/(?<packageName>.+).git(\")?\\n\\s+GIT_TAG (?<currentDigest>[a-f0-9]{40,64}) \\# (?<currentValue>v[0-9.]+)",
+      ],
+      datasourceTemplate: "github-releases",
+      versioningTemplate: "semver",
+    },
   ],
   labels: ["dependencies"],
 }
