@@ -33,6 +33,12 @@ jobs:
       oses: '["ubuntu-26.04"]'
       working-directory: exporters/user_events
 
+  conan:
+    uses: $/.github/workflows/ci-conan.yml
+    with:
+      oses: '["ubuntu-26.04"]'
+      working-directory: "exporters/user_events"
+
   vcpkg:
     uses: $/.github/workflows/ci-vcpkg.yml
     with:

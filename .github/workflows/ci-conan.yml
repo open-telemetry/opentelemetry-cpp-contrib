@@ -3,6 +3,10 @@ name: Conan
 on:
   workflow_call:
     inputs:
+      oses:
+        type: string
+        required: false
+        default: '["ubuntu-26.04","windows-2025"]'
       working-directory:
         required: true
         type: string
@@ -14,18 +18,24 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - ubuntu-26.04
-          - Windows-2025
+        os: ${{ fromJSON(inputs.oses) }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Install and setup Conan
+        id: setup-conan
         uses: conan-io/setup-conan@ed3942a6883243f4af84e13e49c972f9440fa1c2 # v1.4.0
         with:
-          cache_packages: true
+          cache_packages: false
+      - name: Cache packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ steps.setup-conan.outputs.conan-home }}/p
+          key: conan-${{ runner.os }}-${{ inputs.working-directory }}-${{ hashFiles(format('{0}/conanfile.txt', inputs.working-directory))}}
+          restore-keys: |
+            conan-${{ runner.os }}-${{ inputs.working-directory }}-
       - name: Setup msbuild
         if: runner.os == 'Windows'
         uses: microsoft/setup-msbuild@30375c66a4eea26614e0d39710365f22f8b0af57 # v3.0.0
@@ -51,6 +61,7 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
         shell: bash
         run: |
+          git config --global core.longpaths true
           cmake -S . -B .cmake-build -DCMAKE_TOOLCHAIN_FILE=.cmake-build/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug
       - name: Build
         working-directory: ${{ inputs.working-directory }}
@@ -60,3 +71,17 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
         run: |
           ctest --test-dir .cmake-build -VV
+      - name: Cleanup
+        working-directory: ${{ inputs.working-directory }}
+        shell: pwsh
+        run: |
+          $conanHome = conan config home
+          $size = (Get-ChildItem $conanHome -Recurse -File |
+                   Measure-Object Length -Sum).Sum
+          Write-Host ("Size: {0:N2} GiB" -f ($size / 1GB))
+          conan cache clean "*"
+          conan remove "*" --lru=3h -c
+          $size = (Get-ChildItem $conanHome -Recurse -File |
+                   Measure-Object Length -Sum).Sum
+          Write-Host ("Size: {0:N2} GiB" -f ($size / 1GB))
+
