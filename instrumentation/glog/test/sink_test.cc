@@ -96,8 +96,8 @@ TEST_F(OpenTelemetrySinkTest, LevelToSeverity)
   ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverity(-42));
   ASSERT_TRUE(Severity::kInfo == ots::levelToSeverity(0));
   ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverity(42));
-  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverity(std::numeric_limits<int>::max() - 1));
-  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverity(std::numeric_limits<int>::max()));
+  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverity((std::numeric_limits<int>::max)() - 1));
+  ASSERT_TRUE(Severity::kInvalid == ots::levelToSeverity((std::numeric_limits<int>::max)()));
 }
 
 TEST_F(OpenTelemetrySinkTest, Log_Success)
