@@ -9,6 +9,7 @@ on:
       - 'instrumentation/boost_log/**'
       - 'cmake/**'
       - '.github/workflows/boost_log.yml'
+      - '.github/workflows/ci-*.yml'
   pull_request:
     branches:
       - 'main'
@@ -16,6 +17,7 @@ on:
       - 'instrumentation/boost_log/**'
       - 'cmake/**'
       - '.github/workflows/boost_log.yml'
+      - '.github/workflows/ci-*.yml'
 
 permissions:
   contents: read
@@ -25,30 +27,18 @@ concurrency:
   cancel-in-progress: true # Cancel any previous runs of this workflow
 
 jobs:
-  cmake_linux:
-    name: CMake Linux
-    runs-on: ubuntu-24.04
-    steps:
-      - name: checkout opentelemetry-cpp-contrib
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: setup dependencies
-        working-directory: instrumentation/boost_log
-        run: |
-          sudo apt update -y
-          xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-      - name: build boost_log contrib
-        working-directory: instrumentation/boost_log
-        run: |
-          mkdir -p "build"
-          cd "build"
-          cmake .. \
-            -G Ninja \
-            -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/sandbox" \
-            -DBUILD_TESTING=ON \
-            -DWITH_EXAMPLES=ON \
-            -DOPENTELEMETRY_INSTALL=ON
-          cmake --build . -j$(nproc)
-          ctest -j1 --output-on-failure
-          cmake --install . --prefix="${GITHUB_WORKSPACE}/sandbox"
+  CMake:
+    uses: $/.github/workflows/ci-cmake.yml
+    with:
+      oses: '["ubuntu-26.04"]'
+      working-directory: instrumentation/boost_log
+
+  conan:
+    uses: $/.github/workflows/ci-conan.yml
+    with:
+      working-directory: instrumentation/boost_log
+
+  vcpkg:
+    uses: $/.github/workflows/ci-vcpkg.yml
+    with:
+      working-directory: instrumentation/boost_log
