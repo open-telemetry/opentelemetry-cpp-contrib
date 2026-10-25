@@ -74,4 +74,8 @@ jobs:
       - name: Cleanup
         working-directory: ${{ inputs.working-directory }}
         run: |
+          du -h --max-depth=1 "$(conan config home)" | sort -hr
           conan cache clean "*"
+          conan remove "*" --lru=3h -c
+          du -h --max-depth=1 "$(conan config home)" | sort -hr
+
