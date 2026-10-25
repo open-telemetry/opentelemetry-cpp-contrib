@@ -4,3 +4,6 @@ opentelemetry-cpp/1.26.0
 [generators]
 CMakeDeps
 CMakeToolchain
+
+[options]
+opentelemetry-cpp/*:with_otlp_http=True
