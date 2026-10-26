@@ -3,6 +3,10 @@ name: vcpkg
 on:
   workflow_call:
     inputs:
+      install-apt-packages:
+        type: boolean
+        required: false
+        default: false
       oses:
         type: string
         required: false
@@ -26,10 +30,16 @@ jobs:
           persist-credentials: false
       - name: Install system deps [Linux]
         if: runner.os == 'Linux'
+        env:
+          INSTALL_APT_PACKAGES: ${{ inputs.install-apt-packages }}
         run: |
           sudo apt update -y
           sudo apt install -y --no-install-recommends --no-install-suggests \
             cmake ninja-build pkg-config
+
+          if [[ "$INSTALL_APT_PACKAGES" == "true" ]]; then
+            xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
+          fi
       - name: Install system deps [Windows]
         if: runner.os == 'Windows'
         run: |

@@ -27,8 +27,35 @@ concurrency:
   cancel-in-progress: true # Cancel any previous runs of this workflow
 
 jobs:
-  build_cmake:
-    name: Build module with CMake
+  Bazel:
+    uses: $/.github/workflows/ci-bazel.yml
+    with:
+      install-apt-packages: true
+      oses: '["ubuntu-26.04"]'
+      working-directory: instrumentation/httpd
+
+  CMake:
+    uses: $/.github/workflows/ci-cmake.yml
+    with:
+      oses: '["ubuntu-26.04"]'
+      working-directory: instrumentation/httpd
+
+  conan:
+    uses: $/.github/workflows/ci-conan.yml
+    with:
+      install-apt-packages: true
+      oses: '["ubuntu-26.04"]'
+      working-directory: instrumentation/httpd
+
+  vcpkg:
+    uses: $/.github/workflows/ci-vcpkg.yml
+    with:
+      install-apt-packages: true
+      oses: '["ubuntu-26.04"]'
+      working-directory: instrumentation/httpd
+
+  e2e_tests:
+    name: CMake / end-to-end tests / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -45,40 +72,10 @@ jobs:
           sudo apt update -y
           xargs -a ../../apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
           xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-      - name: Compile
-        run: |
-          cd instrumentation/httpd
-          cmake -B build -DCMAKE_BUILD_TYPE=Release
-          cmake --build build --parallel "$(nproc)"
-
-  e2e_tests:
-    name: Run end-to-end tests
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-22.04, ubuntu-24.04]
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Setup dependencies
+          xargs -a tests/apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
+      - name: Run tests
         working-directory: instrumentation/httpd
         run: |
-          sudo apt update -y
-          xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-          xargs -a tests/apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-      - name: Setup bazel
-        uses: bazel-contrib/setup-bazel@c5acdfb288317d0b5c0bbd7a396a3dc868bb0f86 # 0.19.0
-        with:
-          module-root: instrumentation/httpd
-          bazelisk-cache: true
-          repository-cache: true
-      - name: Compile
-        run: cd instrumentation/httpd && ./build.sh
-      - name: Run tests
-        run: |
-          cd instrumentation/httpd && ./create-otel-load.sh
-          sudo ./httpd_install_otel.sh
-          cd tests && sudo ./run-all.sh
+          cd tests
+          chmod +x perform-e2e.sh
+          sudo ./perform-e2e.sh
