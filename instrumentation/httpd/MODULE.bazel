@@ -8,7 +8,7 @@ module(
 
 bazel_dep(
     name = "opentelemetry-cpp",
-    version = "1.29.0",
+    version = "1.30.0",
     repo_name = "io_opentelemetry_cpp",
 )
 
