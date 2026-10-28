@@ -215,14 +215,14 @@ RUN apt-get install apache2 -y && a2enmod proxy && a2enmod proxy_http \
     && a2enmod proxy_balancer && a2enmod dav
 
 #Build and install boost
-RUN wget https://archives.boost.io/release/${BOOST_VERSION}/source/${BOOST_FILENAME}_rc1.tar.gz \
-    && tar -xvf ${BOOST_FILENAME}_rc1.tar.gz \
+RUN wget https://archives.boost.io/release/${BOOST_VERSION}/source/${BOOST_FILENAME}.tar.gz \
+    && tar -xvf ${BOOST_FILENAME}.tar.gz \
     && cd ${BOOST_FILENAME} \
     && ./bootstrap.sh --with-libraries=filesystem,system --prefix=/dependencies/boost/${BOOST_VERSION}/ \
     && ./b2 install define=BOOST_ERROR_CODE_HEADER_ONLY link=static threading=multi cxxflags="-fvisibility=hidden -fPIC" cflags="-fvisibility=hidden -fPIC" \
     && ./b2 headers \
     && cp -rL boost /dependencies/boost/${BOOST_VERSION}/include/ \
-    && cd .. && rm -rf ${BOOST_FILENAME} && rm ${BOOST_FILENAME}_rc1.tar.gz
+    && cd .. && rm -rf ${BOOST_FILENAME} && rm ${BOOST_FILENAME}.tar.gz
 
 # install pcre
 RUN mkdir -p dependencies/pcre/${PCRE_VERSION}/ \

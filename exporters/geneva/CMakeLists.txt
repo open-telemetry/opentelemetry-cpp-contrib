@@ -22,7 +22,13 @@ endif()
     
 add_definitions(-DHAVE_CONSOLE_LOG)
 if(MAIN_PROJECT)
-  find_package(opentelemetry-cpp REQUIRED)
+  FetchContent_Declare(
+    opentelemetry-cpp
+    GIT_REPOSITORY https://github.com/open-telemetry/opentelemetry-cpp.git
+    GIT_TAG c7b64ec660c1b6c65dff0932b3d1c3483bc6db64 # v1.30.0
+  )
+
+  FetchContent_MakeAvailable(opentelemetry-cpp)
 endif()
 
 include_directories(include)
@@ -62,7 +68,7 @@ if(BUILD_TESTING)
   FetchContent_Declare(
     googletest
     GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG 15460959cbbfa20e66ef0b5ab497367e47fc0a04 # v1.12.0
+    GIT_TAG 063de7e9578f82b369302001269680b4b1553359 # v1.18.0
   )
 
   FetchContent_MakeAvailable(googletest)
@@ -135,7 +141,7 @@ if(WITH_EXAMPLES)
 
   target_link_libraries(${example_exe} PRIVATE opentelemetry_exporter_geneva_metrics)
 
-  if(NOT WIN32)
+  if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     add_executable(stress_test_linux example/stress_test_linux.cc)
     find_package(Boost QUIET)
     if(Boost_FOUND)

@@ -1,8 +1,8 @@
-ARG image=amazonlinux:2.0.20260831.0@sha256:f962447192b7321863c0c15ebe3b52896a0fc175b5bbcc103e12275c0304f343
+ARG image=amazonlinux:2023.12.20261021.0@sha256:c04a1012acc483977f61f7f91c28624a39a621e56a59781319a75dec528be9b6
 FROM $image AS build
 
 ARG otel_cpp_version=1.17.0
-ARG nginx_version=1.27.3
+ARG nginx_version=1.30.6
 
 RUN yum install -y git gcc-c++ make tar curl-devel unzip zlib-devel pcre2-devel
 

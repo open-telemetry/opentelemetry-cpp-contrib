@@ -1,6 +1,1 @@
 build-essential
-ca-certificates
-wget
-git
-valgrind
-lcov

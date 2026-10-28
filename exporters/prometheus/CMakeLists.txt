@@ -29,12 +29,6 @@ set(ENABLE_TESTING OFF)
 
 include(FetchContent)
 
-if(MAIN_PROJECT)
-  find_package(opentelemetry-cpp REQUIRED)
-endif()
-
-find_package(ZLIB REQUIRED)
-
 find_package(prometheus-cpp CONFIG QUIET)
 set(prometheus-cpp_PROVIDER "find_package")
 
@@ -51,6 +45,20 @@ endif()
 if(NOT TARGET prometheus-cpp::core OR
    NOT TARGET prometheus-cpp::push)
   message(FATAL_ERROR "A required prometheus-cpp target (prometheus-cpp::core or prometheus-cpp::push) was not imported")
+endif()
+
+if(MAIN_PROJECT)
+  set(WITH_PROMETHEUS ON CACHE BOOL "" FORCE)
+  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
+  include(opentelemetry-cpp)
+endif()
+
+if(TARGET opentelemetry-cpp::prometheus_exporter)
+    set(OTEL_PROM_TARGET opentelemetry-cpp::prometheus_exporter)
+elseif(TARGET opentelemetry-cpp::exporter_prometheus)
+    set(OTEL_PROM_TARGET opentelemetry-cpp::exporter_prometheus)
+else()
+    message(FATAL_ERROR "No Prometheus exporter target found")
 endif()
 
 get_target_property(OPENTELEMETRY_CPP_API_DEFINITIONS opentelemetry-cpp::api
@@ -75,7 +83,7 @@ if(BUILD_TESTING)
   FetchContent_Declare(
     googletest
     GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG 15460959cbbfa20e66ef0b5ab497367e47fc0a04 # v1.12.0
+    GIT_TAG 063de7e9578f82b369302001269680b4b1553359 # v1.18.0
   )
 
   FetchContent_MakeAvailable(googletest)
@@ -110,7 +118,7 @@ target_include_directories(
 
 target_link_libraries(
   opentelemetry_prometheus_push_exporter
-  PUBLIC opentelemetry-cpp::prometheus_exporter opentelemetry-cpp::metrics
+  PUBLIC ${OTEL_PROM_TARGET} opentelemetry-cpp::metrics
          opentelemetry-cpp::resources prometheus-cpp::push prometheus-cpp::core)
 
 target_compile_definitions(
@@ -216,14 +224,4 @@ install(
   FILES
     "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config-version.cmake"
-  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
-
-export(
-  EXPORT "${PROJECT_NAME}-target"
-  NAMESPACE ${PROJECT_NAME}::
-  FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-target.cmake"
-)
-install(
-  EXPORT "${PROJECT_NAME}-target"
-  NAMESPACE ${PROJECT_NAME}::
   DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")

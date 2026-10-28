@@ -42,6 +42,7 @@ cc_test(
     srcs = [
         "test/push_exporter_test.cc",
     ],
+    linkstatic = True,
     tags = [
         "prometheus",
         "test",

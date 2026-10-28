@@ -3,18 +3,22 @@
     'target_name': 'unit_test',
     'type': 'executable',
 
-    # opentelemetry-cpp is built WITH_ABSEIL, so nostd::variant resolves to
-    # absl::variant here too. Must match the SDK library.
-    'defines': ['HAVE_ABSEIL', 'OPENTELEMETRY_PROTO_API=__attribute__((visibility("default")))'],
+    'defines': ['OPENTELEMETRY_PROTO_API=__attribute__((visibility("default")))'],
 
     'include_dirs': [
       '../../include/core/',
       '../../include/util/',
+      '../../include/apache/',
+      '../../src/apache/',
+      '$(APACHE24_INCLUDE_DIR)',
+      '$(APACHE24_INCLUDE_DIR)/../os/unix',
       '$(GTEST_INCLUDE_DIR)',
       '$(ANSDK_DIR)/opentelemetry/$(CPP_SDK_VERSION)/include/',
       '$(ANSDK_DIR)/apache-log4cxx/1.8.0/include',
       '$(ANSDK_DIR)/apr/1.7.6/include',
       '$(ANSDK_DIR)/apr-util/1.6.5/include',
+      '$(ANSDK_DIR)/apr/1.7.6/include/apr-1',
+      '$(ANSDK_DIR)/apr-util/1.6.5/include/apr-1',
       '$(BOOST_INCLUDE)'
     ],
 
@@ -30,6 +34,8 @@
       'RequestProcessingEngine_test.cpp',
       'SpanNamer_test.cpp',
       'integration_test.cpp',
+      'ApacheConfig_test.cpp',
+      '../../src/apache/ApacheConfig.cpp',
     ],
 
 

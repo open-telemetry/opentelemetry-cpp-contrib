@@ -5,11 +5,21 @@ cmake_minimum_required(VERSION 3.16)
 
 set(this_target opentelemetry_glog_sink)
 
-project(${this_target})
+set(MAIN_PROJECT OFF)
+
+if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+  set(MAIN_PROJECT ON)
+  project(${this_target})
+  message(STATUS "${PROJECT_NAME} is main project")
+endif()
 
 include(FetchContent)
 
-find_package(opentelemetry-cpp REQUIRED)
+if(MAIN_PROJECT)
+  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
+  include(opentelemetry-cpp)
+endif()
+
 find_package(glog 0.7.0 QUIET)
 
 if(NOT glog_FOUND)
@@ -25,7 +35,19 @@ endif()
 add_library(${this_target} src/sink.cc)
 
 target_compile_options(${this_target} PUBLIC
-  -Wall -Wextra -Werror -Wpedantic -fPIC
+  $<$<CXX_COMPILER_ID:MSVC>:/W4>
+  $<$<CXX_COMPILER_ID:MSVC>:/WX>
+  $<$<CXX_COMPILER_ID:MSVC>:/wd4244>
+  $<$<CXX_COMPILER_ID:MSVC>:/wd4251>
+  $<$<CXX_COMPILER_ID:MSVC>:/wd4700>
+  $<$<CXX_COMPILER_ID:MSVC>:/wd4996>
+
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wextra>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Werror>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wpedantic>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-fPIC>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wno-error=deprecated-declarations>
 )
 
 set_target_properties(${this_target} PROPERTIES EXPORT_NAME ${this_target})
@@ -68,23 +90,13 @@ if(OPENTELEMETRY_INSTALL)
     FILES
       "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake"
     DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
-
-  export(
-    EXPORT "${PROJECT_NAME}-target"
-    NAMESPACE ${PROJECT_NAME}::
-    FILE "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-target.cmake")
-
-  install(
-    EXPORT "${PROJECT_NAME}-target"
-    NAMESPACE ${PROJECT_NAME}::
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 endif() # OPENTELEMETRY_INSTALL
 
 if(BUILD_TESTING)
   FetchContent_Declare(
     googletest
     GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG 15460959cbbfa20e66ef0b5ab497367e47fc0a04 # v1.12.0
+    GIT_TAG 063de7e9578f82b369302001269680b4b1553359 # v1.18.0
   )
 
   FetchContent_MakeAvailable(googletest)
@@ -96,10 +108,6 @@ if(BUILD_TESTING)
   include(GoogleTest)
 
   add_executable(${testname} "test/${testname}.cc")
-
-  target_include_directories(${testname} PUBLIC
-    ${CMAKE_CURRENT_LIST_DIR}/include
-  )
 
   target_link_libraries(${testname} PRIVATE
     GTest::gmock
@@ -119,10 +127,6 @@ if(WITH_EXAMPLES)
   set(example_exe otel_sink_example)
   add_executable(${example_exe} example/main.cc)
   set_target_properties(${example_exe} PROPERTIES EXPORT_NAME ${example_exe})
-
-  target_include_directories(${example_exe} PUBLIC
-    ${CMAKE_CURRENT_LIST_DIR}/include
-  )
 
   target_link_libraries(${example_exe} PRIVATE
     opentelemetry-cpp::logs

@@ -3,9 +3,7 @@
     'target_name': 'opentelemetry_webserver_sdk',
     'type': 'shared_library',
 
-    # HAVE_ABSEIL: gRPC's public headers pull in real abseil, so opentelemetry-cpp
-    # must use it too rather than its vendored absl::otel_v1 snapshot.
-    'defines': ['TIMER_USE_CGT', 'HAVE_ABSEIL', 'OPENTELEMETRY_PROTO_API=__attribute__((visibility("default")))'],
+    'defines': ['TIMER_USE_CGT', 'OPENTELEMETRY_PROTO_API=__attribute__((visibility("default")))'],
 
     'xcode_settings': {
       'OTHER_CFLAGS': [
