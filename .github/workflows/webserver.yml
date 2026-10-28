@@ -157,3 +157,49 @@ jobs:
       #     sleep 30
       #     ./gradlew :test:integration:integrationTests -i
       #     curl http://localhost:9411/api/v2/spans?serviceName=demoservice
+
+  webserver-build-test-almalinux8-arm64:
+    name: webserver-almalinux8-build-arm64
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: checkout otel webserver
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: setup buildx
+        id: buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+        with:
+          install: true
+      - name: setup docker image
+        run: |
+          cd instrumentation/otel-webserver-module
+          docker buildx build -t apache_almalinux8_arm64 -f docker/almalinux8/Dockerfile \
+            --load .
+      - name: build
+        run: |
+          docker run -idt --name apache_almalinux8_arm64_container apache_almalinux8_arm64 /bin/bash
+          cd instrumentation/otel-webserver-module
+          docker exec apache_almalinux8_arm64_container bash -c \
+            'cd /otel-webserver-module; rm -rf *;'
+          docker cp . $(docker inspect --format="{{.Id}}" apache_almalinux8_arm64_container):/otel-webserver-module/
+          docker exec apache_almalinux8_arm64_container bash -c \
+            'cd /otel-webserver-module; rm -rf build; \
+            cp -r /dependencies /otel-webserver-module/;           \
+            cp -r /build-dependencies /otel-webserver-module/;     \
+            ./gradlew assembleWebServerModule'
+      - name: unit test
+        run: |
+          docker exec --workdir /otel-webserver-module apache_almalinux8_arm64_container \
+            ./gradlew runTests
+      - name: copy artifacts
+        id: artifacts
+        run: |
+          mkdir -p /tmp/apache_almalinux8_arm64/
+          docker cp apache_almalinux8_arm64_container:/otel-webserver-module/build/opentelemetry-webserver-sdk-aarch64-linux.tgz \
+            /tmp/apache_almalinux8_arm64/
+      - name: upload artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: opentelemetry-webserver-sdk-aarch64-linux.tgz
+          path: /tmp/apache_almalinux8_arm64/opentelemetry-webserver-sdk-aarch64-linux.tgz
