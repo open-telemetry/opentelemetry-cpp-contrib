@@ -239,7 +239,7 @@ RUN wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
     && rm -rf nginx-${NGINX_VERSION}.tar.gz
 
 # Install Nginx stable version
-RUN apt install curl gnupg2 ca-certificates lsb-release ubuntu-keyring -y \
+RUN apt-get update -y && apt install curl gnupg2 ca-certificates lsb-release ubuntu-keyring -y \
     && curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor \
     | tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null \
     && gpg --dry-run --quiet --import --import-options import-show /usr/share/keyrings/nginx-archive-keyring.gpg; exit 0
