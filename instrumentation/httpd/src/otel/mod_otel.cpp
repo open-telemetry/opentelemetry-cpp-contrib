@@ -191,6 +191,11 @@ static int opentel_log_transaction(request_rec *r)
   {
     return DECLINED;
   }
+
+  if (req->status >= 500) {
+    req_data->span->SetStatus(opentelemetry::trace::StatusCode::kError);
+  }
+
   // finish span
   req_data->EndSpan({
     req->status,
@@ -290,6 +295,10 @@ static int proxy_end_handler(int *status, request_rec *r)
   if (proxy_error)
   {
     req_data_out->span->SetStatus(opentelemetry::trace::StatusCode::kError, proxy_error);
+  }
+  else if (st_code >= 400)
+  {
+    req_data_out->span->SetStatus(opentelemetry::trace::StatusCode::kError);
   }
 
   // finish span
