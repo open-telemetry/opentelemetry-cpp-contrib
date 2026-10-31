@@ -56,7 +56,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
       - name: checkout opentelemetry-cpp
@@ -94,7 +94,7 @@ jobs:
           cmake --build .cmake-build -j"$(nproc)"
           cmake --install .cmake-build --prefix="${GITHUB_WORKSPACE}/sandbox"
       - name: upload sandbox
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: otel-install
           path: |
@@ -115,7 +115,7 @@ jobs:
         working-directory: ${{ fromJson(needs.discover-configs.outputs.dirs) }}
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
       - name: checkout otel contrib
@@ -123,7 +123,7 @@ jobs:
         with:
           persist-credentials: false
       - name: download otel install
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: otel-install
           path: .
@@ -135,7 +135,7 @@ jobs:
           xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
           xargs -a ../../otel-apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4.39.0
+        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
         with:
           config-file: "${{ matrix.working-directory }}/codeql-config.yml"
           languages: cpp
@@ -151,6 +151,6 @@ jobs:
             -DWITH_EXAMPLES=OFF
           cmake --build .cmake-build -j"$(nproc)"
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4.39.0
+        uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
         with:
           category: "${{ matrix.working-directory }}"
