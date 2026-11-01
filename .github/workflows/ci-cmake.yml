@@ -6,7 +6,7 @@ on:
       oses:
         type: string
         required: false
-        default: '["ubuntu-26.04","windows-2025"]'
+        default: '["macos-26","ubuntu-26.04","windows-2025"]'
       working-directory:
         required: true
         type: string
@@ -36,8 +36,8 @@ jobs:
         shell: bash
         run: |
           cmake -S . -B .cmake-build -G Ninja -DCMAKE_BUILD_TYPE=Debug
-      - name: Configure (CMake) [Windows]
-        if: runner.os == 'Windows'
+      - name: Configure (CMake) [Non-Linux]
+        if: runner.os != 'Linux'
         working-directory: ${{ inputs.working-directory }}
         shell: bash
         run: |
