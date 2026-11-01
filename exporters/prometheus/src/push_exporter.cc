@@ -118,10 +118,13 @@ public:
    * @param records a collection of records to add to the metricsToCollect
    * collection
    */
-  void AddMetricData(const ::opentelemetry::sdk::metrics::ResourceMetrics &data)
+  void AddMetricData(const ::opentelemetry::sdk::metrics::ResourceMetrics &data,
+                     bool populate_target_info,
+                     bool without_otel_scope)
   {
     auto translated =
-        ::opentelemetry::exporter::metrics::PrometheusExporterUtils::TranslateToPrometheus(data);
+        ::opentelemetry::exporter::metrics::PrometheusExporterUtils::TranslateToPrometheus(
+            data, populate_target_info, without_otel_scope);
 
     std::lock_guard<std::mutex> guard{collection_lock_};
 
@@ -235,7 +238,7 @@ PrometheusPushExporter::PrometheusPushExporter() : is_shutdown_(false)
   }
   else
   {
-    collector_->AddMetricData(data);
+    collector_->AddMetricData(data, options_.populate_target_info, options_.without_otel_scope);
     if (gateway_)
     {
       int http_code = gateway_->Push();

@@ -17,8 +17,9 @@ namespace exporter
 namespace metrics
 {
 
-std::unique_ptr<opentelemetry::sdk::metrics::PushMetricExporter>
-PrometheusPushExporterFactory::Create(const PrometheusPushExporterOptions &options)
+OPENTELEMETRY_CONTRIB_PROMETHEUS_PUSH_API
+    std::unique_ptr<opentelemetry::sdk::metrics::PushMetricExporter>
+    PrometheusPushExporterFactory::Create(const PrometheusPushExporterOptions &options)
 {
   return std::unique_ptr<opentelemetry::sdk::metrics::PushMetricExporter>(
       new PrometheusPushExporter(options));
