@@ -128,7 +128,7 @@ jobs:
           name: otel-install
           path: .
       - name: Install system deps
-        uses: $/.github/actions/test_gem
+        uses: $/.github/actions/setup_env
         with:
           install-apt-packages: true
           working-directory: "${{ matrix.working-directory }}"

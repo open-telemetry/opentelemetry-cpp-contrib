@@ -58,7 +58,7 @@ jobs:
       - name: Configure (CMake + vcpkg toolchain)
         uses: $/.github/actions/generate_cmake
         with:
-          toolchain: "$env:GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake"
+          toolchain: ${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
           working-directory: ${{ inputs.working-directory }}
       - name: Build
         working-directory: ${{ inputs.working-directory }}
