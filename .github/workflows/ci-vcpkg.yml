@@ -30,12 +30,12 @@ jobs:
           persist-credentials: false
       - name: Install system deps [Linux]
         if: runner.os == 'Linux'
+        working-directory: ${{ inputs.working-directory }}
         env:
           INSTALL_APT_PACKAGES: ${{ inputs.install-apt-packages }}
         run: |
           sudo apt update -y
-          sudo apt install -y --no-install-recommends --no-install-suggests \
-            cmake ninja-build pkg-config
+          xargs -a ../../apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
 
           if [[ "$INSTALL_APT_PACKAGES" == "true" ]]; then
             xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
