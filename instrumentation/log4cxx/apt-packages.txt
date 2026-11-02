@@ -1,4 +1,1 @@
-build-essential
-cmake
-ninja-build
 liblog4cxx-dev
