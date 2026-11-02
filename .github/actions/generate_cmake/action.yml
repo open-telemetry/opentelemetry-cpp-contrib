@@ -21,6 +21,8 @@ steps:
     if: runner.os != 'Linux'
     working-directory: ${{ inputs.working-directory }}
     shell: pwsh
+    env:
+      TOOLCHAIN: ${{ inputs.toolchain }}
     run: |
       git config --global core.longpaths true
       cmake -S . -B .cmake-build "-DCMAKE_TOOLCHAIN_FILE=$env:TOOLCHAIN" -DCMAKE_BUILD_TYPE=Debug
