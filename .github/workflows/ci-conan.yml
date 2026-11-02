@@ -26,7 +26,7 @@ jobs:
           persist-credentials: false
       - name: Install and setup Conan
         id: setup-conan
-        uses: conan-io/setup-conan@ed3942a6883243f4af84e13e49c972f9440fa1c2 # v1.4.0
+        uses: conan-io/setup-conan@5db0275587014d13a5ca698db681ce4782a6e052 # v1.5.0
         with:
           cache_packages: false
       - name: Cache packages
