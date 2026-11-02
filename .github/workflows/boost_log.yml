@@ -5,21 +5,17 @@ on:
   push:
     branches:
       - 'main'
-    paths:
+    paths: &path_filters
       - 'instrumentation/boost_log/**'
       - 'cmake/**'
+      - '.github/actions/**'
       - '.github/workflows/boost_log.yml'
       - '.github/workflows/ci-*.yml'
       - 'apt-packages.txt'
   pull_request:
     branches:
       - 'main'
-    paths:
-      - 'instrumentation/boost_log/**'
-      - 'cmake/**'
-      - '.github/workflows/boost_log.yml'
-      - '.github/workflows/ci-*.yml'
-      - 'apt-packages.txt'
+    paths: *path_filters
 
 permissions:
   contents: read

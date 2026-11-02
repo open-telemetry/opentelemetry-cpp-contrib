@@ -28,18 +28,11 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Install system deps [Linux]
-        if: runner.os == 'Linux'
-        working-directory: ${{ inputs.working-directory }}
-        env:
-          INSTALL_APT_PACKAGES: ${{ inputs.install-apt-packages }}
-        run: |
-          sudo apt update -y 
-          xargs -a ../../apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-
-          if [[ "$INSTALL_APT_PACKAGES" == "true" ]]; then
-            xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-          fi
+      - name: Install system deps
+        uses: $/.github/actions/setup_env
+        with:
+          install-apt-packages: ${{ inputs.install-apt-packages }}
+          working-directory: ${{ inputs.working-directory }}
       - name: Configure (CMake) [Linux]
         if: runner.os == 'Linux'
         working-directory: ${{ inputs.working-directory }}

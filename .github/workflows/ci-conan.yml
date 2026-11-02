@@ -40,39 +40,21 @@ jobs:
           key: conan-${{ runner.os }}-${{ inputs.working-directory }}-${{ hashFiles(format('{0}/conanfile.txt', inputs.working-directory))}}
           restore-keys: |
             conan-${{ runner.os }}-${{ inputs.working-directory }}-
-      - name: Setup msbuild
-        if: runner.os == 'Windows'
-        uses: microsoft/setup-msbuild@30375c66a4eea26614e0d39710365f22f8b0af57 # v3.0.0
-      - name: Install system deps [Linux]
-        if: runner.os == 'Linux'
-        working-directory: ${{ inputs.working-directory }}
-        env:
-          INSTALL_APT_PACKAGES: ${{ inputs.install-apt-packages }}
-        run: |
-          sudo apt update -y 
-          xargs -a ../../apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-
-          if [[ "$INSTALL_APT_PACKAGES" == "true" ]]; then
-            xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-          fi
+      - name: Install system deps
+        uses: $/.github/actions/setup_env
+        with:
+          install-apt-packages: ${{ inputs.install-apt-packages }}
+          working-directory: ${{ inputs.working-directory }}
       - name: Install dependencies from manifest
         working-directory: ${{ inputs.working-directory }}
         shell: bash
         run: |
           conan install . --output-folder=.cmake-build --build=missing  -s build_type=Debug -s:h compiler.cppstd=17 -s:b compiler.cppstd=17
-      - name: Configure (CMake + Conan toolchain) [Linux]
-        if: runner.os == 'Linux'
-        working-directory: ${{ inputs.working-directory }}
-        shell: bash
-        run: |
-          cmake -S . -B .cmake-build -G Ninja -DCMAKE_TOOLCHAIN_FILE=.cmake-build/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug
-      - name: Configure (CMake + Conan toolchain) [Non-Linux]
-        if: runner.os != 'Linux'
-        working-directory: ${{ inputs.working-directory }}
-        shell: bash
-        run: |
-          git config --global core.longpaths true
-          cmake -S . -B .cmake-build -DCMAKE_TOOLCHAIN_FILE=.cmake-build/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug
+      - name: Configure (CMake + Conan toolchain)
+        uses: $/.github/actions/generate_cmake
+        with:
+          toolchain: .cmake-build/conan_toolchain.cmake
+          working-directory: ${{ inputs.working-directory }}
       - name: Build
         working-directory: ${{ inputs.working-directory }}
         run: |

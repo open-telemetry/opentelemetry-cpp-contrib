@@ -5,21 +5,17 @@ on:
   push:
     branches:
       - 'main'
-    paths:
-      - "exporters/prometheus/**"
+    paths: &path_filters
+      - 'exporters/prometheus/**'
       - 'cmake/**'
+      - '.github/actions/**'
       - '.github/workflows/ci-*.yml'
-      - ".github/workflows/prometheus.yml"
+      - '.github/workflows/prometheus.yml'
       - 'apt-packages.txt'
   pull_request:
     branches:
       - 'main'
-    paths:
-      - "exporters/prometheus/**"
-      - 'cmake/**'
-      - '.github/workflows/ci-*.yml'
-      - ".github/workflows/prometheus.yml"
-      - 'apt-packages.txt'
+    paths: *path_filters
 
 permissions:
   contents: read

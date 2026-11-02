@@ -28,18 +28,11 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Install system deps [Linux]
-        if: runner.os == 'Linux'
-        working-directory: ${{ inputs.working-directory }}
-        env:
-          INSTALL_APT_PACKAGES: ${{ inputs.install-apt-packages }}
-        run: |
-          sudo apt update -y
-          xargs -a ../../apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-
-          if [[ "$INSTALL_APT_PACKAGES" == "true" ]]; then
-            xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-          fi
+      - name: Install system deps
+        uses: $/.github/actions/setup_env
+        with:
+          install-apt-packages: ${{ inputs.install-apt-packages }}
+          working-directory: ${{ inputs.working-directory }}
       - name: Install system deps [Windows]
         if: runner.os == 'Windows'
         run: |
@@ -62,21 +55,11 @@ jobs:
         shell: bash
         run: |
           "${GITHUB_WORKSPACE}/vcpkg/vcpkg" install
-      - name: Configure (CMake + vcpkg toolchain) [Linux]
-        if: runner.os == 'Linux'
-        working-directory: ${{ inputs.working-directory }}
-        shell: pwsh
-        run: |
-          $toolchain = "$env:GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake"
-          cmake -S . -B .cmake-build -G Ninja "-DCMAKE_TOOLCHAIN_FILE=$toolchain" -DCMAKE_BUILD_TYPE=Debug
-      - name: Configure (CMake + vcpkg toolchain) [Non-Linux]
-        if: runner.os != 'Linux'
-        working-directory: ${{ inputs.working-directory }}
-        shell: pwsh
-        run: |
-          git config --global core.longpaths true
-          $toolchain = "$env:GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake"
-          cmake -S . -B .cmake-build "-DCMAKE_TOOLCHAIN_FILE=$toolchain" -DCMAKE_BUILD_TYPE=Debug
+      - name: Configure (CMake + vcpkg toolchain)
+        uses: $/.github/actions/generate_cmake
+        with:
+          toolchain: "$env:GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake"
+          working-directory: ${{ inputs.working-directory }}
       - name: Build
         working-directory: ${{ inputs.working-directory }}
         run: cmake --build .cmake-build -j"$(nproc)" --config Debug
