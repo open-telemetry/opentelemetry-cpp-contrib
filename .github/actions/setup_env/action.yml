@@ -32,7 +32,7 @@ runs:
       run: |
         xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
     - name: Install component deps [Linux]
-      if: "runner.os == 'Linux' && ${{ inputs.install-apt-packages }} && ${{ steps.setup.outputs.apt == 'true' }}"
+      if: runner.os == 'Linux' && inputs.install-apt-packages == 'true' && steps.setup.outputs.apt == 'true'
       working-directory: ${{ inputs.working-directory }}
       shell: bash
       run: |

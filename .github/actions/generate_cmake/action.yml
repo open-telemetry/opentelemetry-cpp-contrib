@@ -8,7 +8,7 @@ inputs:
     required: true
     type: string
 
-steps:
+runs:
   - name: Configure (CMake + vcpkg toolchain) [Linux]
     if: runner.os == 'Linux'
     working-directory: ${{ inputs.working-directory }}
@@ -26,4 +26,3 @@ steps:
     run: |
       git config --global core.longpaths true
       cmake -S . -B .cmake-build "-DCMAKE_TOOLCHAIN_FILE=$env:TOOLCHAIN" -DCMAKE_BUILD_TYPE=Debug
-      
