@@ -78,6 +78,7 @@ jobs:
   CMake:
     uses: $/.github/workflows/ci-cmake.yml
     with:
+      install-apt-packages: true
       oses: '["ubuntu-26.04"]'
       working-directory: exporters/prometheus
 
