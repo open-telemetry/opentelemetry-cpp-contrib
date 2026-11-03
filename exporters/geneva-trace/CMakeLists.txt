@@ -37,7 +37,7 @@ set_target_properties(
   PROPERTIES EXPORT_NAME opentelemetry_exporter_geneva_logs)
 
 target_link_libraries(opentelemetry_exporter_geneva_logs
-                      PUBLIC opentelemetry-cpp::trace opentelemetry-cpp::resources opentelemetry-cpp::common)
+                      INTERFACE opentelemetry-cpp::trace opentelemetry-cpp::resources opentelemetry-cpp::common)
 
 if(WITH_EXAMPLES)
   include_directories(include)

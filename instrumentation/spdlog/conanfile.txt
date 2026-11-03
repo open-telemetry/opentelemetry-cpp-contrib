@@ -1,0 +1,7 @@
+[requires]
+opentelemetry-cpp/1.26.0
+spdlog/1.17.0
+
+[generators]
+CMakeDeps
+CMakeToolchain

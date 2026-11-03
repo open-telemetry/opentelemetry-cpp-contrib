@@ -25,7 +25,13 @@ find_package(spdlog REQUIRED)
 add_library(${this_target} src/sink.cc)
 
 target_compile_options(${this_target} PUBLIC
-  -Wall -Wextra -Wpedantic -fPIC
+  $<$<CXX_COMPILER_ID:MSVC>:/W4>
+  $<$<CXX_COMPILER_ID:MSVC>:/WX>
+
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wextra>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wpedantic>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-fPIC>
 )
 
 set_target_properties(${this_target} PROPERTIES EXPORT_NAME ${this_target})

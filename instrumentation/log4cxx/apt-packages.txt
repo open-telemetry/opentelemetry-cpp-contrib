@@ -1,11 +1,1 @@
-build-essential
-cmake
-ninja-build
-libssl-dev
-libcurl4-openssl-dev
-libprotobuf-dev
-protobuf-compiler
 liblog4cxx-dev
-libbenchmark-dev
-libgmock-dev
-libgtest-dev
