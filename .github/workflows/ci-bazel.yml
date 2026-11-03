@@ -60,4 +60,8 @@ jobs:
       - name: run tests
         working-directory: ${{ inputs.working-directory }}
         run: |
-          bazel --output_user_root=$HOME/.cache/bazel test //...
+          if bazel query 'tests(//...)' | grep -q .; then
+            bazel --output_user_root="$HOME/.cache/bazel" test //...
+          else
+            echo "No tests found, skipping."
+          fi
