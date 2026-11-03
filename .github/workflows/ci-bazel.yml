@@ -7,10 +7,6 @@ on:
         type: boolean
         required: false
         default: false
-      oses:
-        type: string
-        required: false
-        default: '["macos-26","ubuntu-26.04","windows-2025"]'
       working-directory:
         required: true
         type: string
@@ -22,18 +18,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ${{ fromJSON(inputs.oses) }}
+        os:
+          - macos-26
+          - ubuntu-24.04
+          - windows-2025
     steps:
-      - name: checkout otel contrib
+      - name: checkout otel contrib prometheus
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Setup bazel
-        uses: bazel-contrib/setup-bazel@c5acdfb288317d0b5c0bbd7a396a3dc868bb0f86 # 0.19.0
-        with:
-          module-root: ${{ inputs.working-directory }}
-          bazelisk-cache: false
-          repository-cache: false
       - name: Mount Bazel Cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         env:
