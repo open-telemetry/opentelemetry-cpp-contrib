@@ -59,6 +59,7 @@ jobs:
           bazel --output_user_root=$HOME/.cache/bazel build //...
       - name: run tests
         working-directory: ${{ inputs.working-directory }}
+        shell: bash
         run: |
           if bazel query 'tests(//...)' | grep -q .; then
             bazel --output_user_root="$HOME/.cache/bazel" test //...
