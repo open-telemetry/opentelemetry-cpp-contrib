@@ -8,7 +8,7 @@ Supported propagation types:
 
 ## Requirements
 
-* OS: Linux. Test suite currently runs on Ubuntu 24.04, Alpine 3.20, Amazon Linux 2 & 2023.
+* OS: Linux. Test suite currently runs on Ubuntu 24.04, Debian 12, Alpine 3.22 & Amazon Linux 2023.
 * [Nginx](http://nginx.org/en/download.html)
 * Nginx modules
   * ngx_http_upstream_module (proxy_pass)
@@ -27,7 +27,7 @@ cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON ..
 ```
 mkdir build
 cd build
-cmake -DNGINX_VERSION=1.27.3 ..
+cmake -DNGINX_VERSION=1.30.6 ..
 make
 ```
 

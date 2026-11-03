@@ -10,6 +10,7 @@ on:
       - 'cmake/**'
       - '.github/workflows/ci-*.yml'
       - '.github/workflows/user_events.yml'
+      - 'apt-packages.txt'
   pull_request:
     branches:
       - 'main'
@@ -18,6 +19,7 @@ on:
       - 'cmake/**'
       - '.github/workflows/ci-*.yml'
       - '.github/workflows/user_events.yml'
+      - 'apt-packages.txt'
 
 permissions:
   contents: read
@@ -32,3 +34,15 @@ jobs:
     with:
       oses: '["ubuntu-26.04"]'
       working-directory: exporters/user_events
+
+  conan:
+    uses: $/.github/workflows/ci-conan.yml
+    with:
+      oses: '["ubuntu-26.04"]'
+      working-directory: "exporters/user_events"
+
+  vcpkg:
+    uses: $/.github/workflows/ci-vcpkg.yml
+    with:
+      oses: '["ubuntu-26.04"]'
+      working-directory: "exporters/user_events"

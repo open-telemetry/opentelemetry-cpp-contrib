@@ -1,0 +1,23 @@
+{
+  "name": "otel-log4cxx-instrumentation",
+  "version-string": "1.28.0",
+  "dependencies": [
+    {
+      "name": "opentelemetry-cpp",
+      "features": [
+        "otlp-http"
+      ]
+    },
+    "expat",
+    "log4cxx",
+    "gtest",
+    "benchmark"
+  ],
+  "overrides": [
+    {
+      "name": "opentelemetry-cpp",
+      "version": "1.28.0"
+    }
+  ],
+  "builtin-baseline": "b4ae67c6051bb665f9414fca5c66f66cacc71970"
+}

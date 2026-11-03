@@ -18,7 +18,7 @@ if(NOT opentelemetry-cpp_FOUND)
   FetchContent_Declare(
     opentelemetry-cpp
     GIT_REPOSITORY "https://github.com/open-telemetry/opentelemetry-cpp.git"
-    GIT_TAG 6f65c3eded2bb4656c8d675cad43bbe694c531c7 # v1.28.0
+    GIT_TAG c7b64ec660c1b6c65dff0932b3d1c3483bc6db64 # v1.30.0
     GIT_SHALLOW TRUE)
   set(opentelemetry-cpp_PROVIDER "fetch_repository")
 

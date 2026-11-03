@@ -2,7 +2,7 @@ ARG image=alpine:3.24.2@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c
 FROM $image AS build
 
 ARG otel_cpp_version=1.17.0
-ARG nginx_version=1.27.3
+ARG nginx_version=1.30.6
 
 RUN apk update && \
   apk add git cmake build-base curl curl-dev protobuf-dev pcre2-dev

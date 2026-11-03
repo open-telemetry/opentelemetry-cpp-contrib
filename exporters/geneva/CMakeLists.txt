@@ -25,7 +25,7 @@ if(MAIN_PROJECT)
   FetchContent_Declare(
     opentelemetry-cpp
     GIT_REPOSITORY https://github.com/open-telemetry/opentelemetry-cpp.git
-    GIT_TAG 6f65c3eded2bb4656c8d675cad43bbe694c531c7 # v1.28.0
+    GIT_TAG c7b64ec660c1b6c65dff0932b3d1c3483bc6db64 # v1.30.0
   )
 
   FetchContent_MakeAvailable(opentelemetry-cpp)
@@ -141,7 +141,7 @@ if(WITH_EXAMPLES)
 
   target_link_libraries(${example_exe} PRIVATE opentelemetry_exporter_geneva_metrics)
 
-  if(NOT WIN32)
+  if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     add_executable(stress_test_linux example/stress_test_linux.cc)
     find_package(Boost QUIET)
     if(Boost_FOUND)

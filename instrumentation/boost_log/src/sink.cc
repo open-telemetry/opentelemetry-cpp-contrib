@@ -29,7 +29,9 @@ static bool ToTimestampDefault(const boost::log::record_view &record,
 
   auto timestamp =
       boost::log::extract_or_default<boost::posix_time::ptime>(record["TimeStamp"], kInvalid);
-  value = system_clock::time_point(nanoseconds((timestamp - kEpochTime).total_nanoseconds()));
+  value = system_clock::time_point(
+    std::chrono::duration_cast<system_clock::duration>(
+        nanoseconds((timestamp - kEpochTime).total_nanoseconds())));
   return timestamp != kInvalid;
 }
 
