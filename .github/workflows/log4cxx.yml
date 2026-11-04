@@ -5,21 +5,17 @@ on:
   push:
     branches:
       - 'main'
-    paths:
+    paths: &path_filters
       - 'instrumentation/log4cxx/**'
       - 'cmake/**'
+      - '.github/actions/**'
       - '.github/workflows/ci-*.yml'
       - '.github/workflows/log4cxx.yml'
       - 'apt-packages.txt'
   pull_request:
     branches:
       - 'main'
-    paths:
-      - 'instrumentation/log4cxx/**'
-      - 'cmake/**'
-      - '.github/workflows/ci-*.yml'
-      - '.github/workflows/log4cxx.yml'
-      - 'apt-packages.txt'
+    paths: *path_filters
 
 permissions:
   contents: read
@@ -32,6 +28,7 @@ jobs:
   CMake:
     uses: $/.github/workflows/ci-cmake.yml
     with:
+      install-apt-packages: true
       oses: '["ubuntu-26.04"]'
       working-directory: instrumentation/log4cxx
 
