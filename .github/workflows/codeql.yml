@@ -127,13 +127,14 @@ jobs:
         with:
           name: otel-install
           path: .
-      - name: Setup dependencies
-        working-directory: "${{ matrix.working-directory }}"
+      - name: Install system deps
+        uses: $/.github/actions/setup_env
+        with:
+          install-apt-packages: true
+          working-directory: "${{ matrix.working-directory }}"
+      - name: Install otel deps
         run: |
-          sudo apt update -y
-          xargs -a ../../apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-          xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-          xargs -a ../../otel-apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
+          xargs -a otel-apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
       - name: Initialize CodeQL
         uses: github/codeql-action/init@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4.39.0
         with:

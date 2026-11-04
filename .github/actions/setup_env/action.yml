@@ -1,0 +1,42 @@
+name: Setup build env
+description: Installs the tooling necessary to build the components
+inputs:
+  install-apt-packages:
+    type: boolean
+    required: false
+    default: false
+  working-directory:
+    required: true
+    type: string
+
+runs:
+  using: composite
+  steps:
+    - name: setup
+      id: setup
+      if: runner.os == 'Linux'
+      working-directory: ${{ inputs.working-directory }}
+      shell: bash
+      run: |
+        if [[ -f "apt-packages.txt" ]]; then
+          echo "apt=true" >> $GITHUB_OUTPUT
+        fi
+    - name: Update apt [Linux]
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        sudo apt update -y 
+    - name: Install system deps [Linux]
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
+    - name: Install component deps [Linux]
+      if: runner.os == 'Linux' && inputs.install-apt-packages == 'true' && steps.setup.outputs.apt == 'true'
+      working-directory: ${{ inputs.working-directory }}
+      shell: bash
+      run: |
+        xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
+    - name: Setup msbuild
+      if: runner.os == 'Windows'
+      uses: microsoft/setup-msbuild@30375c66a4eea26614e0d39710365f22f8b0af57 # v3.0.0

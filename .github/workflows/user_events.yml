@@ -5,21 +5,17 @@ on:
   push:
     branches:
       - 'main'
-    paths:
+    paths: &path_filters
       - 'exporters/user_events/**'
       - 'cmake/**'
+      - '.github/actions/**'
       - '.github/workflows/ci-*.yml'
       - '.github/workflows/user_events.yml'
       - 'apt-packages.txt'
   pull_request:
     branches:
       - 'main'
-    paths:
-      - 'exporters/user_events/**'
-      - 'cmake/**'
-      - '.github/workflows/ci-*.yml'
-      - '.github/workflows/user_events.yml'
-      - 'apt-packages.txt'
+    paths: *path_filters
 
 permissions:
   contents: read
