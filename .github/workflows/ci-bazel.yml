@@ -41,18 +41,11 @@ jobs:
         with:
           path: /home/runner/.cache/bazel
           key: bazel_${{ matrix.os }}
-      - name: Install system deps [Linux]
-        if: runner.os == 'Linux'
-        working-directory: ${{ inputs.working-directory }}
-        env:
-          INSTALL_APT_PACKAGES: ${{ inputs.install-apt-packages }}
-        run: |
-          sudo apt update -y 
-          xargs -a ../../apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-
-          if [[ "$INSTALL_APT_PACKAGES" == "true" ]]; then
-            xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
-          fi
+      - name: Install system deps
+        uses: $/.github/actions/setup_env
+        with:
+          install-apt-packages: ${{ inputs.install-apt-packages }}
+          working-directory: ${{ inputs.working-directory }}
       - name: run build
         working-directory: ${{ inputs.working-directory }}
         run: |

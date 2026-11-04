@@ -5,21 +5,17 @@ on:
   push:
     branches:
       - 'main'
-    paths:
+    paths: &path_filters
       - 'exporters/geneva/**'
       - 'cmake/**'
+      - '.github/actions/**'
       - '.github/workflows/ci-*.yml'
       - '.github/workflows/geneva_metrics.yml'
       - 'apt-packages.txt'
   pull_request:
     branches:
       - 'main'
-    paths:
-      - 'exporters/geneva/**'
-      - 'cmake/**'
-      - '.github/workflows/ci-*.yml'
-      - '.github/workflows/geneva_metrics.yml'
-      - 'apt-packages.txt'
+    paths: *path_filters
 
 permissions:
   contents: read

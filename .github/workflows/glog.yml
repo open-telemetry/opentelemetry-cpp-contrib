@@ -5,21 +5,17 @@ on:
   push:
     branches:
       - 'main'
-    paths:
+    paths: &path_filters
       - 'instrumentation/glog/**'
       - 'cmake/**'
+      - '.github/actions/**'
       - '.github/workflows/ci-*.yml'
       - '.github/workflows/glog.yml'
       - 'apt-packages.txt'
   pull_request:
     branches:
       - 'main'
-    paths:
-      - 'instrumentation/glog/**'
-      - 'cmake/**'
-      - '.github/workflows/ci-*.yml'
-      - '.github/workflows/glog.yml'
-      - 'apt-packages.txt'
+    paths: *path_filters
 
 permissions:
   contents: read
