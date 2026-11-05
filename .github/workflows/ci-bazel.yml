@@ -53,7 +53,6 @@ jobs:
       - name: run tests
         shell: bash
         working-directory: ${{ inputs.working-directory }}
-        shell: bash
         run: |
           if bazel query 'tests(//...)' | grep -q .; then
             bazel --output_user_root="$HOME/.cache/bazel" test //...
