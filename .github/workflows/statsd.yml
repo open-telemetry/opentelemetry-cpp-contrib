@@ -1,0 +1,45 @@
+name: Statsd Metrics CI
+
+on:
+  push:
+    branches: "*"
+    paths:
+      - "exporters/statsd/**"
+      - ".github/workflows/statsd.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "exporters/statsd/**"
+      - ".github/workflows/statsd.yml"
+jobs:
+  cmake_linux:
+    name: CMake on Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout opentelemetry-cpp-contrib
+        uses: actions/checkout@v3
+        with:
+          path: opentelemetry-cpp-contrib
+      - name: checkout opentelemetry-cpp
+        uses: actions/checkout@v3
+        with:
+          repository: "open-telemetry/opentelemetry-cpp"
+          ref: "v1.20.0"
+          path: "opentelemetry-cpp"
+          submodules: "recursive"
+      - name: setup
+        run: |
+          sudo apt update -y 
+          sudo apt install -y --no-install-recommends --no-install-suggests \
+            build-essential \
+            cmake \
+            ninja-build \
+            ca-certificates wget git valgrind lcov
+      - name: run tests
+        run: |
+          sudo $GITHUB_WORKSPACE/opentelemetry-cpp/ci/setup_googletest.sh
+          mkdir -p "$GITHUB_WORKSPACE/opentelemetry-cpp/build"
+          cd "$GITHUB_WORKSPACE/opentelemetry-cpp/build"
+          cmake .. -G Ninja -DOPENTELEMETRY_EXTERNAL_COMPONENT_PATH=$GITHUB_WORKSPACE/opentelemetry-cpp-contrib/exporters/statsd 
+          cmake --build . -j$(nproc)
+          ctest -j1 --output-on-failure
