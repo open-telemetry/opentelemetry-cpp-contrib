@@ -6,5 +6,4 @@ CMakeDeps
 CMakeToolchain
 
 [options]
-opentelemetry-cpp/*:with_otlp_grpc=True
 opentelemetry-cpp/*:with_otlp_http=True
