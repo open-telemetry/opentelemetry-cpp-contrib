@@ -7,7 +7,6 @@ LABEL NAME=apm/build-image-webserver-agent-almalinux8-x64 VERSION=$BUILD_NUMBER
 ENV GOSU_ARCH amd64
 ENV JDK_ARCH x64
 
-ARG PYTHON_VERSION="2.7.18"
 ARG CMAKE_VERSION="3.20"
 ARG CMAKE_0VERSION="3.20.0"
 ARG GRPC_VERSION="1.47.5"
@@ -45,15 +44,6 @@ RUN dnf install wget -y \
 
 RUN dnf groupinstall "Development Tools" -y \
     && dnf install wget bzip2 xz-devel openssl-devel libffi-devel zlib-devel -y
-
-
-# install python 2.7.18
-RUN wget http://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tar.xz \
-    && unxz Python-${PYTHON_VERSION}.tar.xz \
-    && tar -xf Python-${PYTHON_VERSION}.tar \
-    && cd Python-${PYTHON_VERSION} && ./configure --prefix=/usr/local && make && make install \
-    && cd .. \
-    && rm -rf Python-${PYTHON_VERSION}.tar.xz && rm -rf Python-${PYTHON_VERSION}.tar
 
 
 ENV GOSU_VERSION=1.10
