@@ -1,5 +1,9 @@
 libssl-dev
 libcurl4-openssl-dev
+libgrpc++-dev
+libprotobuf-dev
+protobuf-compiler
+protobuf-compiler-grpc
 zlib1g-dev
 libsqlite3-dev
 apache2

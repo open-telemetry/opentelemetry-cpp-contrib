@@ -5,7 +5,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 POSSIBLE_BUILD_OUTPUT=()
 POSSIBLE_BUILD_OUTPUT+=("${SCRIPT_DIR}/bazel-bin/otel.so") # when build was done with Bazel
 POSSIBLE_BUILD_OUTPUT+=("${SCRIPT_DIR}/bazel-out/k8-opt/bin/otel.so") # Bazel, explicit output path
-POSSIBLE_BUILD_OUTPUT+=("${SCRIPT_DIR}/build/otel_httpd_module.so") # when build was done with CMake
+POSSIBLE_BUILD_OUTPUT+=("${SCRIPT_DIR}/.cmake-build/otel_httpd_module.so") # when build was done with CMake
 
 for LOCATE_OUTPUT in "${POSSIBLE_BUILD_OUTPUT[@]}"; do
    if [ -f ${LOCATE_OUTPUT} ]; then
