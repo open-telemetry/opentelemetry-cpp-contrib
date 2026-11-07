@@ -76,6 +76,18 @@ check() {
   echo OK - \"$1\" found with \"$2\"
 }
 
+# check that span(s) of kind $1 (Server/Client) have status $2
+checkSpanStatus() {
+  VALUE=`grep -A1 "span kind     : $1" ${OUTPUT_SPANS} | grep "status        :" | cut -d ':' -f 2- | tr -d ' '`
+  if [ "$VALUE" != "$2" ]; then
+        echo "---"
+        cat ${OUTPUT_SPANS}
+        echo "---"
+        fail "Status for $1 span is not \"$2\" but \"$VALUE\""
+  fi
+  echo OK - $1 span status is \"$2\"
+}
+
 # this one should be redefined in each test
 run_test() {
   :
