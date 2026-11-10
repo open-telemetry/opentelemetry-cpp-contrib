@@ -119,6 +119,8 @@ Service name for the nginx instance (default: `uknown:nginx`).
 
 Adds a custom resource attribute to the trace provider. Resource attributes represent the entity producing telemetry data, e.g. `opentelemetry_resource_attr "service.version" "1.0.0"` or `opentelemetry_resource_attr "deployment.environment.name" "production"`.
 
+If `service.name` is set with this directive, it takes precedence over `opentelemetry_service_name` and the `OTEL_SERVICE_NAME` environment variable, and nginx logs a warning at configuration load.
+
 - **required**: `false`
 - **syntax**: `opentelemetry_resource_attr <key> <value>`
 - **block**: `http`
