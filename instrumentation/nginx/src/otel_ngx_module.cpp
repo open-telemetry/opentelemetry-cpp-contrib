@@ -1077,7 +1077,15 @@ char* OtelNgxSetResourceAttr(ngx_conf_t* cf, ngx_command_t*, void*) {
     return (char*)NGX_CONF_ERROR;
   }
 
-  otelMainConf->agentConfig.resourceAttributes[std::string((const char*)key->data, key->len)] =
+  std::string attrKey((const char*)key->data, key->len);
+
+  if (attrKey == "service.name") {
+    ngx_conf_log_error(NGX_LOG_WARN, cf, 0,
+                       "opentelemetry_resource_attr \"service.name\" overrides "
+                       "opentelemetry_service_name and OTEL_SERVICE_NAME");
+  }
+
+  otelMainConf->agentConfig.resourceAttributes[std::move(attrKey)] =
     std::string((const char*)value->data, value->len);
 
   return NGX_CONF_OK;
