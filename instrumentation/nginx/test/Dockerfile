@@ -1,4 +1,4 @@
-ARG image=ubuntu:24.04@sha256:008173c23f95b170204355c12626cb5a965d779a7e1283b09e9cffbb1bf33ca3
+ARG image=ubuntu:24.04@sha256:2198e4c65076e9cb0b3d695219df667c0e3b0072da64ca3c2648aca17dcecaf5
 FROM $image AS build
 
 ARG otel_cpp_version=1.17.0
