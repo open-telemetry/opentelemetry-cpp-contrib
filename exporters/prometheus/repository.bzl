@@ -81,7 +81,7 @@ def io_opentelemetry_cpp_contrib_deps():
     maybe(
         http_archive,
         name = "com_googlesource_code_re2",  # 2023-06-01
-        sha256 = "2254d2637bd0dc0e698a4121c3208cd91ba7bace3ab70cf44f832e22dea94d61",
-        strip_prefix = "re2-972a15cedd008d846f1a39b2e88ce48d7f166cbd",
-        urls = ["https://github.com/google/re2/archive/972a15cedd008d846f1a39b2e88ce48d7f166cbd.zip"],
+        sha256 = "e5906cd942c9b8e4f872b628cf68be37f440f252f7797c54c92145c68ea21844",
+        strip_prefix = "re2-2da0056814cf180480a19f5cf811e7e1c054bf6d",
+        urls = ["https://github.com/google/re2/archive/2da0056814cf180480a19f5cf811e7e1c054bf6d.zip"],
     )
