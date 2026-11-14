@@ -11,8 +11,8 @@
           '../../include/apache',
           '$(APACHE24_INCLUDE_DIR)',
           '$(APACHE24_INCLUDE_DIR)/../os/unix',
-          '$(ANSDK_DIR)/apr/1.7.0/include/apr-1',
-          '$(ANSDK_DIR)/apr-util/1.6.1/include/apr-1',
+          '$(ANSDK_DIR)/apr/1.7.6/include/apr-1',
+          '$(ANSDK_DIR)/apr-util/1.6.5/include/apr-1',
         ],
 
         'sources': [
@@ -40,7 +40,7 @@
                 '-pipe -Wall -Wp,-O1 -D_FORTIFY_SOURCE=1 -fexceptions -fstack-protector',
                 '--param=ssp-buffer-size=4 -mtune=generic -fno-strict-aliasing',
                 '-Wno-unused-local-typedefs',
-                '-std=c++0x $(ARCH_FLAG)',
+                '-std=c++17 $(ARCH_FLAG)',
             ],
 
               'ldflags': [
@@ -72,7 +72,7 @@
           '-pipe -Wall -Wp,-O1 -D_FORTIFY_SOURCE=1 -fexceptions -fstack-protector',
           '--param=ssp-buffer-size=4 -mtune=generic -fno-strict-aliasing',
           '-Wno-unused-local-typedefs',
-          '-std=c++0x',
+          '-std=c++17',
         ],
         'linkflags': [
         ],
@@ -87,8 +87,8 @@
           '../../include/apache',
           '$(APACHE22_INCLUDE_DIR)',
           '$(APACHE22_INCLUDE_DIR)/../os/unix',
-          '$(ANSDK_DIR)/apr/1.7.0/include/apr-1',
-          '$(ANSDK_DIR)/apr-util/1.6.1/include/apr-1',
+          '$(ANSDK_DIR)/apr/1.7.6/include/apr-1',
+          '$(ANSDK_DIR)/apr-util/1.6.5/include/apr-1',
         ],
         'sources': [
           'ApacheTracing.cpp',
