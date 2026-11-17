@@ -1,6 +1,6 @@
 {
   "name": "otel-prometheus-exporter",
-  "version-string": "1.28.0",
+  "version-string": "1.29.0",
   "dependencies": [
     {
       "name": "opentelemetry-cpp",
@@ -20,8 +20,9 @@
   "overrides": [
     {
       "name": "opentelemetry-cpp",
-      "version": "1.28.0"
+      "version": "1.29.0",
+      "port-version": 1
     }
   ],
-  "builtin-baseline": "b4ae67c6051bb665f9414fca5c66f66cacc71970"
+  "builtin-baseline": "617ef1c0c422737d117eda00a471ea1be5bad088"
 }

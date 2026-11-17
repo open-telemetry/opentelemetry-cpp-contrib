@@ -32,7 +32,6 @@
 #include "opentelemetry/sdk/metrics/push_metric_exporter.h"
 #include "opentelemetry/version.h"
 
-
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace exporter
 {
