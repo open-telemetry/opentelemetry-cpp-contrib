@@ -3,10 +3,14 @@ name: CMake
 on:
   workflow_call:
     inputs:
+      install-apt-packages:
+        type: boolean
+        required: false
+        default: false
       oses:
         type: string
         required: false
-        default: '["ubuntu-26.04","windows-2025"]'
+        default: '["macos-26","ubuntu-26.04","windows-2025"]'
       working-directory:
         required: true
         type: string
@@ -24,20 +28,19 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Install system deps [Linux]
-        if: runner.os == 'Linux'
-        working-directory: ${{ inputs.working-directory }}
-        run: |
-          sudo apt update -y 
-          xargs -a apt-packages.txt sudo apt install -y --no-install-recommends --no-install-suggests
+      - name: Install system deps
+        uses: $/.github/actions/setup_env
+        with:
+          install-apt-packages: ${{ inputs.install-apt-packages }}
+          working-directory: ${{ inputs.working-directory }}
       - name: Configure (CMake) [Linux]
         if: runner.os == 'Linux'
         working-directory: ${{ inputs.working-directory }}
         shell: bash
         run: |
           cmake -S . -B .cmake-build -G Ninja -DCMAKE_BUILD_TYPE=Debug
-      - name: Configure (CMake) [Windows]
-        if: runner.os == 'Windows'
+      - name: Configure (CMake) [Non-Linux]
+        if: runner.os != 'Linux'
         working-directory: ${{ inputs.working-directory }}
         shell: bash
         run: |

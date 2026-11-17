@@ -1,0 +1,30 @@
+name: Generate Cmake
+description: Tests a specific Gem
+inputs:
+  toolchain:
+    required: true
+    type: string
+  working-directory:
+    required: true
+    type: string
+
+runs:
+  using: composite
+  steps:
+    - name: Configure (CMake + vcpkg toolchain) [Linux]
+      if: runner.os == 'Linux'
+      working-directory: ${{ inputs.working-directory }}
+      shell: pwsh
+      env:
+        TOOLCHAIN: ${{ inputs.toolchain }}
+      run: |
+        cmake -S . -B .cmake-build -G Ninja "-DCMAKE_TOOLCHAIN_FILE=$env:TOOLCHAIN" -DCMAKE_BUILD_TYPE=Debug
+    - name: Configure (CMake + vcpkg toolchain) [Non-Linux]
+      if: runner.os != 'Linux'
+      working-directory: ${{ inputs.working-directory }}
+      shell: pwsh
+      env:
+        TOOLCHAIN: ${{ inputs.toolchain }}
+      run: |
+        git config --global core.longpaths true
+        cmake -S . -B .cmake-build "-DCMAKE_TOOLCHAIN_FILE=$env:TOOLCHAIN" -DCMAKE_BUILD_TYPE=Debug
