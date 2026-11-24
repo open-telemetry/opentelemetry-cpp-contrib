@@ -17,7 +17,7 @@ defmodule Instrumentation.MixProject do
 
   defp deps do
     [
-      {:httpoison, "== 2.3.0"},
+      {:httpoison, "== 3.0.1"},
       {:jason, "== 1.4.5"}
     ]
   end
