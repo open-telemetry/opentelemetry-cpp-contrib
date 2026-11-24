@@ -227,6 +227,7 @@ bool FluentdExporter::Connect() {
  */
 bool FluentdExporter::Send(std::vector<uint8_t> &packet) {
   size_t retryCount = options_.retry_count;
+  auto retrySleepMs = std::chrono::milliseconds(options_.retry_delay_ms);
   while (retryCount--) {
     int error_code = 0;
     // Check if socket is Okay
@@ -238,8 +239,12 @@ bool FluentdExporter::Send(std::vector<uint8_t> &packet) {
     }
     // Reconnect if not Okay
     if (!connected_) {
+      Initialize(); // try a DNS lookup, etc
       // Establishing socket connection may take time
       if (!Connect()) {
+	if (retryCount) {
+	  std::this_thread::sleep_for(retrySleepMs);
+	}
         continue;
       }
       LOG_DEBUG("socket connected");
@@ -255,10 +260,15 @@ bool FluentdExporter::Send(std::vector<uint8_t> &packet) {
     }
 
     LOG_WARN("send failed, retrying %u ...", (unsigned int)retryCount);
+    Disconnect();
     // Retry to connect and/or send
+    if (retryCount) {
+      std::this_thread::sleep_for(retrySleepMs);
+    }
   }
 
   LOG_ERROR("send failed!");
+  Disconnect();
   return false;
 }
 
