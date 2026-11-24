@@ -63,7 +63,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: open-telemetry/opentelemetry-cpp
-          ref: v1.28.0
+          ref: 6f65c3eded2bb4656c8d675cad43bbe694c531c7 # v1.28.0
           persist-credentials: false
       - name: setup dependencies
         run: |
