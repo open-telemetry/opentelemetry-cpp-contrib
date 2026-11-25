@@ -21,7 +21,6 @@
 #include <opentelemetry/common/key_value_iterable_view.h>
 #include "AgentLogger.h"
 #include <log4cxx/logger.h>
-#include <log4cxx/rolling/rollingfileappenderskeleton.h>
 #include <log4cxx/xml/domconfigurator.h>
 #include <boost/lexical_cast.hpp>
 
