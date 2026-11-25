@@ -74,6 +74,7 @@ private:
     static int otel_hook_interaction_end_quick_handler(request_rec *r, int i);
     static void otel_hook_interaction_end_insert_filter(request_rec *r);
     static int otel_hook_interaction_end_log_transaction(request_rec *r);
+    static int otel_hook_interaction_end_translate_name(request_rec *r);
 };
 
 class ApacheHooksForStage
@@ -185,6 +186,11 @@ public:
     static int otel_hook_log_transaction3(request_rec* r);
     static int otel_hook_log_transaction4(request_rec* r);
     static int otel_hook_log_transaction5(request_rec* r);
+    static int otel_hook_translate_name1(request_rec* r);
+    static int otel_hook_translate_name2(request_rec* r);
+    static int otel_hook_translate_name3(request_rec* r);
+    static int otel_hook_translate_name4(request_rec* r);
+    static int otel_hook_translate_name5(request_rec* r);
 
     static const std::vector<processRequestHooks> otel_header_parser_hooks;
     static const std::vector<HookContainer::otel_endpoint_indexes> otel_header_parser_indexes;
@@ -206,6 +212,8 @@ public:
     static const std::vector<HookContainer::otel_endpoint_indexes> otel_handler_indexes;
     static const std::vector<processRequestHooks> otel_log_transaction_hooks;
     static const std::vector<HookContainer::otel_endpoint_indexes> otel_log_transaction_indexes;
+    static const std::vector<processRequestHooks> otel_translate_name_hooks;
+    static const std::vector<HookContainer::otel_endpoint_indexes> otel_translate_name_indexes;
 
     template<typename T, typename S>
     static void insertHooksForStage(
