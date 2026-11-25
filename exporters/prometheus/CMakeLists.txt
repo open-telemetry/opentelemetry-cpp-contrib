@@ -32,7 +32,8 @@ include(FetchContent)
 find_package(prometheus-cpp CONFIG QUIET)
 set(prometheus-cpp_PROVIDER "find_package")
 
-if(NOT prometheus-cpp_FOUND)
+if(NOT TARGET prometheus-cpp::core OR
+   NOT TARGET prometheus-cpp::push)
   FetchContent_Declare(
     prometheus-cpp
     GIT_REPOSITORY https://github.com/jupp0r/prometheus-cpp.git
