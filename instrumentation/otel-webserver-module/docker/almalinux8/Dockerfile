@@ -1,4 +1,4 @@
-FROM almalinux:8.10@sha256:768bedc30fe0a536adb0a65d2eddb7caad364e514fbddd0ae9e026975f590342
+FROM almalinux:9.9@sha256:02df05719ef287ebd0df0a1eedb9172a00bd70703aed7b25660e426b8e0d6047
 
 ARG BUILD_NUMBER
 
