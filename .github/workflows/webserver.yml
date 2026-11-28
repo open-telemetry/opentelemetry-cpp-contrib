@@ -26,7 +26,7 @@ concurrency:
 jobs:
   nginx-propagation-header-tests:
     name: nginx propagation header regression tests
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: checkout otel webserver
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -39,7 +39,7 @@ jobs:
 
   webserver-build-test-ubuntu:
     name: webserver-ubuntu-build
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: checkout otel webserver
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -90,7 +90,7 @@ jobs:
 
   webserver-build-test-almalinux8:
     name: webserver-almalinux8-build
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: checkout otel webserver
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
